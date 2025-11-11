@@ -1,0 +1,78 @@
+# ============================================================
+# CEJ Landing - Next.js + pnpm + SCSS
+# .gitignore
+# ============================================================
+
+# ------------------------
+# Dependencies
+# ------------------------
+node_modules/
+.pnp/
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.pnpm-store/
+
+# ------------------------
+# Build outputs
+# ------------------------
+.next/
+out/
+build/
+dist/
+
+# ------------------------
+# Testing / Coverage
+# ------------------------
+coverage/
+*.lcov
+
+# ------------------------
+# Environment files
+# ------------------------
+.env
+.env.*
+!.env.example
+.vercel/
+
+# ------------------------
+# Logs & Debug
+# ------------------------
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# ------------------------
+# Misc / System
+# ------------------------
+.DS_Store
+Thumbs.db
+*.pem
+*.local
+*.swp
+
+# ------------------------
+# TypeScript / IDE
+# ------------------------
+*.tsbuildinfo
+next-env.d.ts
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.iml
+
+# ------------------------
+# Cache / Temporary
+# ------------------------
+.cache/
+tmp/
+temp/
