@@ -1,18 +1,86 @@
-.wrap { display:grid; gap:1rem; padding:1rem; background:#fff; border-radius:1rem; box-shadow:0 2px 12px rgba(0,0,0,.06); }
-.form { display:grid; gap:.75rem; }
-.row { display:grid; gap:.35rem; }
-.chips { display:flex; gap:.5rem; flex-wrap:wrap;
-  button { padding:.5rem .75rem; border:1px solid #ddd; border-radius:999px; background:#fafafa; }
-  .active { background:#eef; border-color:#99f; }
+@use "../../styles/primitives" as p;
+
+.wrapper { @include p.container; padding-block: var(--sp-6); }
+.title { @include p.h2; margin-bottom: var(--sp-2); }
+.kicker { @include p.lead; margin-bottom: var(--sp-6); }
+
+.form {
+  display: grid; gap: var(--sp-4);
+  grid-template-columns: 1fr;
+  @media (min-width: 640px) { grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
 }
-.totals { display:grid; gap:.25rem; font-size:.95rem;
-  div { display:flex; justify-content:space-between; }
-  .sub { margin-top:.25rem; border-top:1px dashed #ddd; padding-top:.25rem; }
-  .total { font-size:1.25rem; font-weight:700; margin-top:.25rem; }
+
+.field {
+  display: grid; gap: var(--sp-2);
+  label { font-weight: 700; font-size: var(--fs-sm); color: var(--c-text); }
+  .hint { font-size: var(--fs-xs); color: var(--c-muted); }
 }
-.ctas { display:flex; gap:.75rem; position:sticky; bottom:.75rem;
-  a { flex:1; text-align:center; padding:.75rem; border-radius:.75rem; font-weight:700; text-decoration:none; }
-  .whatsapp { background:#25D366; color:#073; }
-  .phone { background:#111; color:#fff; }
+
+.control {
+  width: 100%; border-radius: var(--radius); border: 1px solid var(--c-border);
+  padding: .625rem .75rem; background: #fff; font-size: var(--fs-base);
+  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+  /* Fallback primero */
+  &:hover { border-color: var(--c-text); }
+  /* Mejora en navegadores modernos */
+  @supports (color: color-mix(in oklab, #000, #fff)) {
+    &:hover { border-color: color-mix(in oklab, var(--c-border) 60%, var(--c-text) 40%); }
+  }
+  &:focus-visible { box-shadow: 0 0 0 3px var(--c-primary); }
+  @supports (color: color-mix(in oklab, #000, #fff)) {
+    &:focus-visible { box-shadow: 0 0 0 3px color-mix(in oklab, var(--c-primary) 30%, #fff 70%); }
+  }
+  &:disabled { background: var(--c-surface); color: var(--c-muted); cursor: not-allowed; }
 }
-@media(min-width:768px){ .wrap{ padding:1.25rem; } }
+/* number spinners */
+input[type="number"].control { -moz-appearance: textfield; appearance: textfield; }
+input[type="number"].control::-webkit-outer-spin-button,
+input[type="number"].control::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* select con chevron */
+.select {
+  appearance: none;  /* estándar */
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--c-muted) 50%),
+    linear-gradient(135deg, var(--c-muted) 50%, transparent 50%),
+    linear-gradient(to right, transparent, transparent);
+  background-position: calc(100% - 14px) 55%, calc(100% - 8px) 55%, 100% 0;
+  background-size: 6px 6px, 6px 6px, 2.5rem 100%;
+  background-repeat: no-repeat;
+  padding-right: 2.5rem;
+}
+
+.radioGroup { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.radio {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .5rem .75rem; border: 1px solid var(--c-border); border-radius: 999px;
+  background: #fff; cursor: pointer; -webkit-user-select: none; user-select: none;
+  input { accent-color: var(--c-primary); }
+  &:has(input:checked) { border-color: var(--c-primary); box-shadow: var(--shadow-sm); }
+}
+
+/* Totales */
+.totalCard {
+  grid-column: 1 / -1;
+  border: 1px solid var(--c-border); border-radius: var(--radius);
+  background: #fff; box-shadow: var(--shadow-sm); padding: var(--sp-4);
+  display: grid; gap: var(--sp-3); margin-top: var(--sp-2);
+
+  .rows { display: grid; gap: .5rem; }
+  .row { display: flex; justify-content: space-between; font-size: var(--fs-base); }
+  .muted { color: var(--c-muted); }
+  .grand { font-size: var(--fs-xl); font-weight: 800; }
+  .amount { font-variant-numeric: tabular-nums; }
+}
+
+/* CTAs inline (solo >= md) */
+.actions {
+  display: none;
+  @media (min-width: 768px) {
+    margin-top: var(--sp-4);
+    display: flex; gap: var(--sp-2);
+    a { @include p.btn; }
+    a.secondary { @include p.btn-outline; }
+  }
+}

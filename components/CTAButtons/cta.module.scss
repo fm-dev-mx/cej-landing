@@ -7,30 +7,23 @@
   bottom: 0;
   inset-inline: 0;
   z-index: 50;
+  height: var(--sticky-h);                    /* nuevo */
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-4);
-  background: color-mix(in oklab, var(--c-bg) 80%, #000 20%);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background: color-mix(in oklab, var(--c-bg) 92%, #000 8%);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   border-top: 1px solid var(--c-border);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 -2px 12px rgba(0,0,0,.06);    /* más suave */
+  padding-bottom: calc(var(--sp-2) + env(safe-area-inset-bottom, 0px)); /* safe area */
 
   @media (min-width: 768px) { display: none; }
 }
 
 .inlineGroup { display: flex; gap: var(--sp-2); }
 
-.cta {
-  @include p.btn;      /* <- reemplaza el extend */
-  width: 100%;
-  font-size: var(--fs-base);
-}
-
-.whatsapp {
-  background: #22c55e; border-color: #16a34a;
-  &:hover { background: color-mix(in oklab, #22c55e 92%, #fff 8%); }
-}
-
-.phone { @include p.btn-outline; }  /* <- reemplaza el extend */
+.cta { @include p.btn; width: 100%; font-size: var(--fs-base); }
+.whatsapp { background: #22c55e; border-color: #16a34a; &:hover { background: color-mix(in oklab, #22c55e 92%, #fff 8%); } }
+.phone { @include p.btn-outline; }

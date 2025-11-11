@@ -25,17 +25,17 @@ export default function Calculator() {
   );
 
   // Track every recompute of total as a ViewContent
-  useEffect(() => {
-    trackViewContent(quote.total);
-  }, [quote.total]);
+  useEffect(() => { trackViewContent(quote.total); }, [quote.total]);
 
-  // ---- Handlers (typed)
-  const onStrengthChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setStrength(e.target.value as Strength);
-    },
-    []
-  );
+  // ---- Handlers
+  const onM3Change = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    // Permitimos solo números (el min ya protege, pero así evitamos NaN visuales)
+    setM3(e.target.value.replace(/[^\d]/g, ''));
+  }, []);
+
+  const onStrengthChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setStrength(e.target.value as Strength);
+  }, []);
 
   const onTypeClick = useCallback((t: ConcreteType) => setType(t), []);
   const onZoneClick = useCallback((z: Zone) => setZone(z), []);
@@ -62,13 +62,21 @@ export default function Calculator() {
     [m3Num, strength, type, zone, quote]
   );
 
-  const onWhatsAppClick = useCallback(() => {
-    if (waDisabled) return;
-    trackLead(quote.total);
-    // window.open(`https://wa.me/${waNumber}?text=${whatsappText}`, '_blank');
-    window.open(`https://wa.me/${waNumber}?text=${whatsappText}`, '_blank', 'noopener,noreferrer');
-  }, [waDisabled, waNumber, whatsappText, quote.total]);
-
+  const onWhatsAppClick = useCallback(
+    (e?: React.MouseEvent<HTMLButtonElement>) => {
+      if (waDisabled) {
+        e?.preventDefault();
+        return;
+      }
+      trackLead(quote.total);
+      window.open(
+        `https://wa.me/${waNumber}?text=${whatsappText}`,
+        '_blank',
+        'noopener,noreferrer'
+      );
+    },
+    [waDisabled, waNumber, whatsappText, quote.total]
+  );
 
   const onPhoneClick = useCallback(() => {
     if (phone.trim()) trackContact(quote.total);
@@ -76,128 +84,116 @@ export default function Calculator() {
 
   // ---- Render
   return (
-    <section className={styles.wrap} aria-label="Calculadora de Concreto">
+    <section className={styles.wrapper}>
       <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
         {/* Volumen */}
-        <div className={styles.row}>
-          <label htmlFor="calc-volume">Volumen (m³)</label>
-
+        <div className={styles.field}>
+          <label htmlFor="vol">Volumen (m³)</label>
           <input
-            id="calc-volume"
-            inputMode="decimal"
-            pattern="^\d+(\.\d{1,2})?$"
-            minLength={1}
-            maxLength={6}
-            autoComplete="off"
+            id="vol"
+            type="number"
+            min={1}
             value={m3}
-            onChange={(e) => setM3(e.target.value)}
-            required
-            aria-required
+            onChange={onM3Change}
+            className={styles.control}
+            aria-describedby="vol-hint"
+            inputMode="numeric"
           />
-
+          <p id="vol-hint" className="hint">Ingresa solo números enteros.</p>
         </div>
 
         {/* Resistencia */}
-        <div className={styles.row}>
-          <label htmlFor="calc-strength">Resistencia (f’c)</label>
-          <select id="calc-strength" value={strength} onChange={onStrengthChange}>
+        <div className={styles.field}>
+          <label htmlFor="fck">Resistencia (f’c)</label>
+          <select
+            id="fck"
+            value={strength}
+            onChange={onStrengthChange}
+            className={`${styles.control} ${styles.select}`}
+          >
             {STRENGTHS.map((s) => (
-              <option key={s} value={s}>
-                {s} kg/cm²
-              </option>
+              <option key={s} value={s}>{s} kg/cm²</option>
             ))}
           </select>
         </div>
 
         {/* Tipo */}
-        <fieldset className={styles.row}>
-          <legend>Tipo</legend>
-          <div className={styles.chips} aria-label="Tipo de concreto">
+        <div className={styles.field}>
+          <label>Tipo</label>
+          <div className={styles.radioGroup}>
             {TYPES.map((t) => (
-              <label key={t} className={t === type ? styles.active : ''}>
+              <label key={t} className={styles.radio}>
                 <input
                   type="radio"
                   name="tipo"
                   value={t}
-                  checked={t === type}
+                  checked={type === t}
                   onChange={() => onTypeClick(t)}
-                  className="sr-only"
                 />
-                {t}
+                <span>
+                  {t === 'convencional' ? 'Convencional' : t === 'bombeado' ? 'Bombeado' : 'Con fibra'}
+                </span>
               </label>
             ))}
           </div>
-        </fieldset>
+        </div>
 
         {/* Zona */}
-        <fieldset className={styles.row}>
-          <legend>Zona</legend>
-          <div className={styles.chips} aria-label="Zona de concreto">
+        <div className={styles.field}>
+          <label>Zona</label>
+          <div className={styles.radioGroup}>
             {ZONES.map((z) => (
-              <label key={z} className={z === zone ? styles.active : ''}>
+              <label key={z} className={styles.radio}>
                 <input
                   type="radio"
                   name="zona"
                   value={z}
-                  checked={z === zone}
+                  checked={zone === z}
                   onChange={() => onZoneClick(z)}
-                  className="sr-only"
                 />
-                {z}
+                <span>{z === 'urbana' ? 'Urbana' : 'Periferia'}</span>
               </label>
             ))}
           </div>
-        </fieldset>
+        </div>
 
+        {/* Totales */}
+        <aside className={styles.totalCard} aria-live="polite">
+          <div className={styles.rows}>
+            <div className={styles.row}><span className={styles.muted}>Base</span><strong className={styles.amount}>{fmtMXN(quote.base)}</strong></div>
+            <div className={styles.row}><span className={styles.muted}>Extras</span><strong className={styles.amount}>{fmtMXN(quote.extras)}</strong></div>
+            <div className={styles.row}><span className={styles.muted}>Flete</span><strong className={styles.amount}>{fmtMXN(quote.freight)}</strong></div>
+            <div className={styles.row}><span className={styles.muted}>Subtotal</span><strong className={styles.amount}>{fmtMXN(quote.subtotal)}</strong></div>
+            <div className={styles.row}><span className={styles.muted}>IVA 16%</span><strong className={styles.amount}>{fmtMXN(quote.vat)}</strong></div>
+          </div>
+
+          <div className={styles.row}>
+            <span className={styles.grand}>Total</span>
+            <span className={`${styles.grand} ${styles.amount}`}>{fmtMXN(quote.total)}</span>
+          </div>
+
+          {/* CTAs inline para ≥ md */}
+          <div className={styles.actions} role="group" aria-label="Contactar a CEJ (desktop)">
+            <button
+              type="button"
+              onClick={onWhatsAppClick}
+              disabled={waDisabled}
+              title={waDisabled ? 'Configura NEXT_PUBLIC_WHATSAPP_NUMBER' : 'Abrir WhatsApp'}
+            >
+              💬 WhatsApp
+            </button>
+
+            <a
+              className="secondary"
+              href={`tel:+${phone}`}
+              onClick={onPhoneClick}
+              title="Llamar por teléfono"
+            >
+              📞 Llamar
+            </a>
+          </div>
+        </aside>
       </form>
-
-      {/* Totales */}
-      <div className={styles.totals} role="region" aria-live="polite">
-        <div>
-          <span>Base</span>
-          <strong>{fmtMXN(quote.base)}</strong>
-        </div>
-        <div>
-          <span>Extras</span>
-          <strong>{fmtMXN(quote.extras)}</strong>
-        </div>
-        <div>
-          <span>Flete</span>
-          <strong>{fmtMXN(quote.freight)}</strong>
-        </div>
-        <div className={styles.sub}>
-          <span>Subtotal</span>
-          <strong>{fmtMXN(quote.subtotal)}</strong>
-        </div>
-        <div>
-          <span>IVA 16%</span>
-          <strong>{fmtMXN(quote.vat)}</strong>
-        </div>
-        <div className={styles.total}>
-          <span>Total</span>
-          <strong>{fmtMXN(quote.total)}</strong>
-        </div>
-      </div>
-
-      {/* CTAs */}
-      <div className={styles.ctaBar /* renombrado recomendado en SCSS */}>
-        <button
-          type="button"
-          className={styles.whatsapp}
-          onClick={onWhatsAppClick}     // hace window.open(...)
-          disabled={waDisabled}
-        >
-          WhatsApp
-        </button>
-
-        <a
-          className={styles.phone}
-          href={`tel:${phone}`}
-          onClick={onPhoneClick}
-        >
-          Llamar
-        </a>
-      </div>
     </section>
   );
 }
