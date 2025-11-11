@@ -1,19 +1,55 @@
-@use './variables' as *;
-@use './mixins' as *;
+@use "./tokens";
 
-html, body {
-  margin: 0;
-  padding: 0;
-  font-family: system-ui, sans-serif;
-  background: #fafafa;
-  color: #111;
+html { font-size: 100%; }
+body {
+  font-family: var(--font-sans);
+  color: var(--c-text);
+  background: var(--c-bg);
+  line-height: var(--lh-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+/* Contenedor */
+.container {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--sp-4);
+  max-width: 72rem; /* 1152px */
 }
 
+/* Tipos utilitarios */
+.h1 { font-size: var(--fs-3xl); line-height: var(--lh-tight); font-weight: 700; }
+.h2 { font-size: var(--fs-2xl); line-height: var(--lh-tight); font-weight: 700; }
+.lead { font-size: var(--fs-lg); color: var(--c-muted); }
+
+/* Focus ring accesible consistente */
+:where(a, button, [role="button"], input, select, textarea) {
+  &:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--c-primary) 70%, #000 30%);
+    outline-offset: 2px;
+    border-radius: calc(var(--radius) / 2);
+  }
+}
+
+/* Estados */
+.button {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: .5rem; padding: .75rem 1rem; border-radius: var(--radius);
+  border: 1px solid var(--c-border);
+  background: var(--c-text); color: #fff; font-weight: 600;
+  transition: transform .04s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+  &:hover { background: color-mix(in oklab, var(--c-text) 92%, #fff 8%); }
+  &:active { transform: translateY(1px); }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+
+.button--outline {
+  background: #fff; color: var(--c-text);
+  &:hover { background: var(--c-surface); }
+}
+
+/* Visually hidden util */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -26,3 +62,7 @@ a {
   border: 0;
 }
 
+/* Motion-safe */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
