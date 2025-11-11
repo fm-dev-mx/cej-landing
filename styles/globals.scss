@@ -1,4 +1,5 @@
 @use "./tokens";
+@use "./primitives" as p;
 
 html { font-size: 100%; }
 body {
@@ -66,3 +67,6 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+.button { @include p.btn; }
+.button--outline { @include p.btn-outline; }

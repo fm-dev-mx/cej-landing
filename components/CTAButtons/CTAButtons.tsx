@@ -1,10 +1,46 @@
-'use client';
-import styles from './cta.module.scss';
-export default function CTAButtons(){
+// components/CTAButtons/CTAButtons.tsx
+
+"use client";
+import styles from "./cta.module.scss";
+
+type Props = {
+  whatsappNumber: string;  // E.164 ej. 526561234567
+  phoneNumber: string;     // E.164
+  quoteText?: string;      // "Cotización CEJ … Total: $X MXN"
+  onLead?: () => void;     // Meta Pixel Lead
+  onContact?: () => void;  // Meta Pixel Contact
+  sticky?: boolean;
+};
+
+export default function CTAButtons({
+  whatsappNumber,
+  phoneNumber,
+  quoteText = "Cotización CEJ",
+  onLead,
+  onContact,
+  sticky = true,
+}: Props) {
+  const waHref = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(quoteText)}`;
+  const telHref = `tel:+${phoneNumber}`;
+
   return (
-    <div className={styles.bar} role="toolbar" aria-label="Contactar CEJ">
-      <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}`} >WhatsApp</a>
-      <a href={`tel:${process.env.NEXT_PUBLIC_PHONE}`}>Llamar</a>
+    <div className={sticky ? styles.stickyBar : styles.inlineGroup} role="group" aria-label="Contactar a CEJ">
+      <a
+        className={`${styles.cta} ${styles.whatsapp}`}
+        href={waHref}
+        onClick={onLead}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <span aria-hidden>💬</span> WhatsApp
+      </a>
+      <a
+        className={`${styles.cta} ${styles.phone}`}
+        href={telHref}
+        onClick={onContact}
+      >
+        <span aria-hidden>📞</span> Llamar
+      </a>
     </div>
   );
 }
