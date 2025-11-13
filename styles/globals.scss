@@ -1,5 +1,7 @@
 @use "./tokens";
 @use "./primitives" as p;
+@use "./mixins" as *;
+@use "./variables" as *;
 
 html { font-size: 100%; }
 body {

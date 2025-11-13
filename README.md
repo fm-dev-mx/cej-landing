@@ -71,8 +71,8 @@ cej-landing/
 │  └─ utils.ts            # Helpers (formatting, WhatsApp link)
 ├─ styles/
 │  ├─ globals.scss        # Global base styles
-│  ├─ variables.scss      # Color palette and variables
-│  └─ mixins.scss         # Shared mixins
+│  ├─ _variables.scss     # Color palette and variables
+│  └─ _mixins.scss        # Shared mixins
 ├─ public/
 │  └─ logo-cej.svg
 └─ .env.local             # Environment variables (ignored by Git)

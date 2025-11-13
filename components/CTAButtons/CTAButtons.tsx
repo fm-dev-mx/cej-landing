@@ -1,7 +1,7 @@
 // components/CTAButtons/CTAButtons.tsx
 
 "use client";
-import styles from "./cta.module.scss";
+import styles from "./CTAButtons.module.scss";
 
 type Props = {
   whatsappNumber: string;  // E.164 ej. 526561234567

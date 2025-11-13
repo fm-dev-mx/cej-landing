@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { calcQuote, Strength, ConcreteType, Zone } from '@/lib/pricing';
 import { clamp, fmtMXN, parseNum } from '@/lib/utils';
 import { trackLead, trackViewContent, trackContact } from '@/lib/pixel';
-import styles from './calculator.module.scss';
+import styles from './Calculator.module.scss';
 
 const STRENGTHS: Strength[] = ['150', '200', '250', '300', '350'];
 const TYPES: ConcreteType[] = ['convencional', 'bombeado', 'fibra'];
