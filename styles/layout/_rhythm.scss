@@ -1,0 +1,28 @@
+/* styles/layout/_rhythm.scss */
+
+@use "../mixins" as *;
+
+:root {
+  /* Vertical section spacing */
+  --section-py: clamp(2rem, 6vw, 4.5rem);
+}
+
+/* Generic section spacing for content blocks */
+.section {
+  padding-block: var(--section-py);
+}
+
+/* Extra padding at the top to respect device safe-area */
+.section--with-safe-top {
+  padding-top: calc(var(--section-py) + env(safe-area-inset-top));
+}
+
+/* Extra padding at the bottom to respect device safe-area */
+.section--with-safe-bottom {
+  padding-bottom: calc(var(--section-py) + env(safe-area-inset-bottom));
+}
+
+/* Global container helper, using the shared container mixin */
+.container {
+  @include container;
+}

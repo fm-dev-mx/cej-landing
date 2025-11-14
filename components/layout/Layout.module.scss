@@ -1,0 +1,31 @@
+/* components/layout/Layout.module.scss */
+
+@use "../../styles/primitives" as p;
+
+.layout {
+  display: block;
+}
+
+/* Visually hidden skip link until focused */
+.layout__skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+
+  &:focus-visible {
+    position: fixed;
+    left: 1rem;
+    top: calc(1rem + env(safe-area-inset-top));
+    width: auto;
+    height: auto;
+    padding: 0.5rem 0.75rem;
+    background-color: var(--cej-surface, #ffffff);
+    color: var(--cej-foreground, #0f172a);
+    border-radius: 0.5rem;
+    box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.1);
+    z-index: 1000;
+  }
+}

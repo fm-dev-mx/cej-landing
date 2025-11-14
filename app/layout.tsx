@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import "../styles/globals.scss";
+import Layout from "@/components/layout/Layout";
 
 export const metadata: Metadata = {
   title: "Concreto y Equipos de Juárez",
@@ -9,43 +10,46 @@ export const metadata: Metadata = {
     "No te compliques, concreto premezclado y equipos de construcción en Juárez al mejor precio.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const pid = process.env.NEXT_PUBLIC_PIXEL_ID;
-  const isProd = process.env.NODE_ENV === "production";
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  const pixelId = process.env.NEXT_PUBLIC_PIXEL_ID;
+  const isProduction = process.env.NODE_ENV === "production";
 
   return (
     <html lang="es-MX">
-      <head>
-        {isProd && pid ? (
-          <Script id="meta-pixel" strategy="afterInteractive">
-            {`
-              !function(f,b,e,v,n,t,s){
-                if(f.fbq)return;
-                n=f.fbq=function(){ n.callMethod ? n.callMethod.apply(n,arguments) : n.queue.push(arguments) };
-                if(!f._fbq)f._fbq=n; n.push=n; n.loaded=!0; n.version='2.0';
-                n.queue=[]; t=b.createElement(e); t.async=!0; t.src=v;
-                s=b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t,s)
-              }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
-              fbq('init', '${pid}');
-              fbq('track', 'PageView');
-            `}
-          </Script>
-        ) : null}
-      </head>
       <body className="app-root">
-        {children}
-        {isProd && pid ? (
-          <noscript>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              height="1"
-              width="1"
-              className="fb-noscript-pixel"
-              src={`https://www.facebook.com/tr?id=${pid}&ev=PageView&noscript=1`}
-              alt=""
-            />
-          </noscript>
-        ) : null}
+        {isProduction && pixelId && (
+          <>
+            <Script id="fb-pixel" strategy="afterInteractive">
+              {`
+                !function(f,b,e,v,n,t,s)
+                {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+                n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+                if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+                n.queue=[];t=b.createElement(e);t.async=!0;
+                t.src=v;s=b.getElementsByTagName(e)[0];
+                s.parentNode.insertBefore(t,s)}(window, document,'script',
+                'https://connect.facebook.net/en_US/fbevents.js');
+                fbq('init', '${pixelId}');
+                fbq('track', 'PageView');
+              `}
+            </Script>
+
+            <noscript>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                height="1"
+                width="1"
+                className="fb-noscript-pixel"
+                src={`https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1`}
+                alt=""
+              />
+            </noscript>
+          </>
+        )}
+
+        <Layout>{children}</Layout>
       </body>
     </html>
   );
