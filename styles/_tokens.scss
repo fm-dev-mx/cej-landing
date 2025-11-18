@@ -20,6 +20,9 @@
   --fs-2xl: 1.5rem;   /* 24px */
   --fs-3xl: 1.875rem; /* 30px */
 
+  /* Typography sizes update for impactful hero */
+  --fs-hero: clamp(2.5rem, 6vw, 4.5rem);
+
   --lh-tight: 1.2;
   --lh-normal: 1.5;
 
@@ -39,13 +42,15 @@
   --radius: 0.75rem;     /* 12px - default for cards and inputs */
   --radius-lg: 1rem;     /* 16px */
 
-  /* Brand colors */
-  --c-primary: #043369;        /* CEJ navy, main brand color */
-  --c-primary-strong: #021f46; /* Strong navy for headers and active states */
-  --c-primary-soft: #e3edf7;   /* Subtle navy-tinted background */
+  /* Brand colors updated */
+  --c-primary: #043369;        /* CEJ Navy */
+  --c-primary-dark: #021a36;   /* Darker Navy for contrast */
+  --c-accent: #fec914;         /* CEJ Yellow (Neon/Bright) */
+  --c-accent-hover: #e5b500;   /* Darker yellow for hover */
 
-  --c-accent: #fec914;         /* CEJ yellow for highlights and key accents */
-  --c-accent-soft: #fff7d1;    /* Soft yellow background for badges and pills */
+  /* Text colors */
+  --c-text-on-dark: #ffffff;
+  --c-muted-on-dark: #cbd5e1;  /* Light gray for secondary text on dark bg */
 
   /* Neutrals */
   --c-bg: #f3f4f6;           /* Page background */
