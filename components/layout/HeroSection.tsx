@@ -9,8 +9,8 @@ type HeroSectionProps = {
 };
 
 export default function HeroSection({
-  videoSrc = "/hero-bg.mp4", // Asegúrate de subir este archivo a public/
-  fallbackImage = "/hero-fallback.jpg",
+  videoSrc = "https://res.cloudinary.com/dwtk0d2dj/video/upload/v1763502599/hero-bg_vluny8.mp4", // Asegúrate de subir este archivo a public/
+  fallbackImage = "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763502640/hero-fallback_yokvg7.jpg",
 }: HeroSectionProps) {
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
 
