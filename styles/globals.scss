@@ -1,11 +1,20 @@
+// styles/globals.scss
+
 @use "./tokens";
 @use "./primitives" as p;
 @use "./mixins" as *;
-@use "./variables" as *;
 @use "./layout/rhythm"; // section spacing, safe-area helpers and .container
 
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
 
-html { font-size: 100%; }
+html {
+  font-size: 100%;
+}
+
 body {
   font-family: var(--font-sans);
   color: var(--c-text);

@@ -8,6 +8,15 @@
   background-color: var(--c-surface);
   box-shadow: var(--shadow-sm);
   padding-top: env(safe-area-inset-top);
+  padding-inline: 2rem;
+  transition:
+    background-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.headerScrolled {
+  background-color: #ffffff;
+  box-shadow: var(--shadow-md);
 }
 
 .inner {
@@ -15,8 +24,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: var(--sticky-h);
-  gap: var(--sp-2);
+  padding-inline: var(--sp-0);
+  min-height: 72px;
+  transition:
+    padding-block 0.18s ease,
+    min-height 0.18s ease;
+}
+
+.headerScrolled .inner {
+  min-height: 80px;
+  padding-block: 0.4rem;
 }
 
 .brand {
@@ -30,9 +47,18 @@
 }
 
 .logo {
-  height: 32px;
+  height: 72px;
   width: auto;
+  transition:
+    height 0.18s ease,
+    transform 0.18s ease;
 }
+
+.headerScrolled .logo {
+  height: 64px;
+}
+
+/* Desktop nav */
 
 .nav {
   display: none;
@@ -55,17 +81,27 @@
 .navLink {
   font-size: var(--fs-sm);
   font-weight: 500;
-  color: var(--c-muted-strong);
+  color: var(--c-muted-strong, var(--c-text));
   text-decoration: none;
-  padding-block: 0.25rem;
+  padding-block: 0.3rem;
   border-bottom: 2px solid transparent;
-  transition: color 0.16s ease, border-color 0.16s ease;
+  transition:
+    color 0.16s ease,
+    border-color 0.16s ease;
 
   &:hover {
     color: var(--c-primary);
     border-color: color-mix(in oklab, var(--c-primary) 85%, #fff 15%);
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--c-primary);
+    outline-offset: 3px;
+    border-color: transparent;
+  }
 }
+
+/* Desktop actions */
 
 .actions {
   display: none;
@@ -77,21 +113,31 @@
   @include p.btn;
   font-size: var(--fs-sm);
   padding-inline: var(--sp-3);
-  min-height: 2.5rem;
-}
 
-.buttonWhatsApp {
-  background-color: var(--c-whatsapp);
-  border-color: var(--c-whatsapp);
-  color: #fff;
-
-  &:hover {
-    background-color: color-mix(in oklab, var(--c-whatsapp) 92%, #fff 8%);
-    border-color: color-mix(in oklab, var(--c-whatsapp) 92%, #fff 8%);
+  &:focus-visible {
+    outline: 2px solid var(--c-primary);
+    outline-offset: 3px;
   }
 }
 
+.buttonWhatsApp {
+  background: linear-gradient(135deg, var(--c-whatsapp), #1ebe5d);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 8px 16px rgba(37, 211, 102, 0.18);
+
+  &:hover {
+    background: linear-gradient(135deg, #29d76a, #19b857);
+    box-shadow: 0 12px 22px rgba(37, 211, 102, 0.24);
+  }
+}
+
+.buttonWhatsAppLabel {
+  font-weight: 600;
+}
+
 .buttonCall {
+  min-height: 3rem;
   background-color: #fff;
   color: var(--c-call);
   border-color: var(--c-border);
@@ -106,6 +152,8 @@
   width: 100%;
 }
 
+/* Hamburger button */
+
 .menuToggle {
   border: none;
   background: transparent;
@@ -116,6 +164,10 @@
   justify-content: center;
   cursor: pointer;
 
+  &:hover {
+    background-color: rgba(15, 23, 42, 0.03);
+  }
+
   &:focus-visible {
     outline: 2px solid var(--c-primary);
     outline-offset: 2px;
@@ -124,54 +176,57 @@
 
 .menuIcon {
   position: relative;
-  width: 20px;
-  height: 14px;
-  display: inline-block;
-
-  &::before,
-  &::after,
-  span {
-    content: "";
-  }
-
-  &::before,
-  &::after {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 2px;
-    border-radius: 999px;
-    background-color: var(--c-text);
-  }
-
-  &::before {
-    top: 0;
-  }
-
-  &::after {
-    bottom: 0;
-  }
-
-  /* Middle line using box-shadow trick */
-  box-shadow: 0 6px 0 0 var(--c-text);
+  width: 22px;
+  height: 16px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-/* Mobile menu */
+.menuIconBar {
+  height: 2px;
+  border-radius: 999px;
+  background-color: var(--c-text);
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.menuIconOpen .menuIconBar:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.menuIconOpen .menuIconBar:nth-child(2) {
+  opacity: 0;
+}
+
+.menuIconOpen .menuIconBar:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Mobile menu overlay */
 
 .mobileMenu {
   position: fixed;
   inset-inline: 0;
+  margin-top: 1rem;
   top: var(--sticky-h);
-  max-height: 0;
-  overflow: hidden;
-  background-color: rgba(15, 23, 42, 0.08);
-  -webkit-backdrop-filter: blur(6px);
-  backdrop-filter: blur(6px);
-  transition: max-height 0.18s ease;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 23, 42, 0.35),
+    rgba(15, 23, 42, 0.55)
+  );
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
 }
 
 .mobileMenuOpen {
-  max-height: 100vh;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .mobileNav {
@@ -179,6 +234,16 @@
   box-shadow: var(--shadow-md);
   padding-inline: var(--sp-4);
   padding-block: var(--sp-3);
+  transform: translateY(-8px);
+  opacity: 0;
+  transition:
+    transform 0.22s ease-out,
+    opacity 0.22s ease-out;
+}
+
+.mobileMenuOpen .mobileNav {
+  transform: translateY(0);
+  opacity: 1;
 }
 
 .mobileNavList {
@@ -193,7 +258,7 @@
 
 .mobileNavLink {
   display: block;
-  padding-block: 0.75rem;
+  padding-block: 0.85rem;
   font-size: var(--fs-base);
   color: var(--c-text);
   text-decoration: none;
@@ -201,10 +266,130 @@
   &:hover {
     color: var(--c-primary);
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--c-primary);
+    outline-offset: 3px;
+  }
 }
 
 .mobileActions {
   margin-top: var(--sp-3);
+}
+
+/* Call dialog (desktop) */
+
+.callDialogOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--sp-10) var(--sp-3) var(--sp-6);
+  background-color: rgba(15, 23, 42, 0.5);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+.callDialog {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--c-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--sp-4);
+}
+
+.callDialogHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+
+.callDialogTitle {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--c-primary-strong);
+}
+
+.callDialogCloseIcon {
+  border: none;
+  background: transparent;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.25rem;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--c-muted-strong);
+
+  &:hover {
+    background-color: var(--c-step-bg);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--c-primary);
+    outline-offset: 2px;
+  }
+}
+
+.callDialogSubtitle {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--c-muted);
+}
+
+.callDialogPhoneBlock {
+  padding: var(--sp-3);
+  border-radius: var(--radius);
+  border: 1px solid var(--c-border-strong);
+  background-color: var(--c-step-bg);
+}
+
+.callDialogPhoneLink {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  text-decoration: none;
+  margin-bottom: var(--sp-2);
+
+  &:hover .callDialogPhoneNumber {
+    color: var(--c-primary);
+  }
+}
+
+.callDialogPhoneLabel {
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-muted);
+}
+
+.callDialogPhoneNumber {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.callDialogHint {
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+}
+
+.callDialogActions {
+  margin-top: var(--sp-3);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.callDialogCloseButton {
+  @include p.btn-outline;
+  font-size: var(--fs-sm);
 }
 
 /* Desktop breakpoint */
@@ -212,6 +397,7 @@
 @media (min-width: 768px) {
   .inner {
     gap: var(--sp-4);
+    padding-inline: var(--sp-4);
   }
 
   .nav {
@@ -220,10 +406,41 @@
 
   .actions {
     display: flex;
+    margin: 0 4rem 0 0;
   }
 
   .menuToggle,
   .mobileMenu {
     display: none;
+  }
+}
+
+/* Wide desktop refinements */
+@media (min-width: 1024px) {
+  .inner {
+    padding-inline: var(--sp-5);
+  }
+
+  .navList {
+    gap: var(--sp-6);
+  }
+
+  .navLink {
+    font-size: var(--fs-base);
+    padding-block: 0.5rem;
+  }
+
+  .actions {
+    gap: var(--sp-3);
+  }
+
+  .button {
+    padding-inline: var(--sp-4);
+  }
+}
+
+@media (min-width: 1280px) {
+  .inner {
+    padding-inline: var(--sp-6);
   }
 }
