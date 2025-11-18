@@ -1,9 +1,9 @@
 // components/Calculator/steps/Step3Summary.tsx
 
-import type { MouseEvent } from 'react';
-import { fmtMXN } from '@/lib/utils';
-import type { QuoteBreakdown } from '../types';
-import styles from '../Calculator.module.scss';
+import type { MouseEvent } from "react";
+import { fmtMXN } from "@/lib/utils";
+import type { QuoteBreakdown } from "../types";
+import styles from "../Calculator.module.scss";
 
 type Props = {
   billedM3: number;
@@ -31,6 +31,8 @@ export function Step3Summary(props: Props) {
     onEditClick,
     estimateLegend,
   } = props;
+
+  const phoneHref = phone.trim() ? `tel:${phone.trim().replace(/\s+/g, "")}` : "";
 
   return (
     <div className={`${styles.step} ${styles.stepAnimated}`}>
@@ -84,21 +86,22 @@ export function Step3Summary(props: Props) {
               disabled={waDisabled || quote.total <= 0}
               title={
                 waDisabled
-                  ? 'Configura NEXT_PUBLIC_WHATSAPP_NUMBER'
-                  : 'Abrir WhatsApp con tu cotización'
+                  ? "Configura NEXT_PUBLIC_WHATSAPP_NUMBER"
+                  : "Abrir WhatsApp con tu cotización"
               }
             >
               💬 WhatsApp
             </button>
 
-            <a
-              className="secondary"
-              href={`tel:+${phone}`}
-              onClick={onPhoneClick}
-              title="Llamar por teléfono"
-            >
-              📞 Llamar
-            </a>
+            {phoneHref && (
+              <a
+                href={phoneHref}
+                onClick={onPhoneClick}
+                title="Llamar por teléfono"
+              >
+                📞 Llamar
+              </a>
+            )}
           </div>
         </aside>
 

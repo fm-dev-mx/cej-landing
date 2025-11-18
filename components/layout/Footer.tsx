@@ -28,7 +28,7 @@ export default function Footer() {
           </li>
           {phoneNumber && (
             <li className={styles.footer__item}>
-              <a className={styles.footer__link} href={`tel:${phoneNumber}`}>
+              <a className={styles.footer__link} href={`tel:+${phoneNumber}`}>
                 {phoneNumber}
               </a>
             </li>

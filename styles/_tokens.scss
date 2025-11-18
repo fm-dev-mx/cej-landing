@@ -1,51 +1,99 @@
-// Escalas livianas, mobile-first
+// styles/_tokens.scss
+// Global design tokens: typography, spacing, color, radii and elevation.
+
 :root {
-  /* Tipografía */
-  --font-sans: var(--font-geist-sans, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji");
-  --fs-xs: 0.8125rem; /* 13 */
-  --fs-sm: 0.875rem;  /* 14 */
-  --fs-base: 1rem;    /* 16 */
-  --fs-lg: 1.125rem;  /* 18 */
-  --fs-xl: 1.25rem;   /* 20 */
-  --fs-2xl: 1.5rem;   /* 24 */
-  --fs-3xl: 1.875rem; /* 30 */
+  /* Typography */
+  --font-sans: var(
+    --font-geist-sans,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif
+  );
+
+  --fs-xs: 0.8125rem; /* 13px */
+  --fs-sm: 0.875rem;  /* 14px */
+  --fs-base: 1rem;    /* 16px */
+  --fs-lg: 1.125rem;  /* 18px */
+  --fs-xl: 1.25rem;   /* 20px */
+  --fs-2xl: 1.5rem;   /* 24px */
+  --fs-3xl: 1.875rem; /* 30px */
 
   --lh-tight: 1.2;
   --lh-normal: 1.5;
 
-  /* Spacing (4pt scale extendida) */
-  --sp-1: 0.25rem;  /* 4  */
-  --sp-2: 0.5rem;   /* 8  */
-  --sp-3: 0.75rem;  /* 12 */
-  --sp-4: 1rem;     /* 16 */
-  --sp-5: 1.25rem;  /* 20 */
-  --sp-6: 1.5rem;   /* 24 */
-  --sp-8: 2rem;     /* 32 */
-  --sp-10: 2.5rem;  /* 40 */
+  /* Spacing (4px base scale) */
+  --sp-1: 0.25rem; /* 4px */
+  --sp-2: 0.5rem;  /* 8px */
+  --sp-3: 0.75rem; /* 12px */
+  --sp-4: 1rem;    /* 16px */
+  --sp-5: 1.25rem; /* 20px */
+  --sp-6: 1.5rem;  /* 24px */
+  --sp-8: 2rem;    /* 32px */
+  --sp-10: 2.5rem; /* 40px */
 
-  /* Colores (alto contraste por defecto) */
-  --c-bg: #ffffff;
-  --c-surface: #f6f7f9;
-  --c-text: #1b1f24;
-  --c-muted: #6b7280;
-  --c-border: #e5e7eb;
-  --c-primary: #0ea5e9; /* azul claro usable en blanco */
-  --c-primary-ink: #0b6b9c;
+  /* Radii */
+  --radius-sm: 0.375rem; /* 6px */
+  --radius: 0.75rem;     /* 12px - default for cards and inputs */
+  --radius-lg: 1rem;     /* 16px */
+
+  /* Brand colors */
+  --c-primary: #043369;        /* CEJ navy, main brand color */
+  --c-primary-strong: #021f46; /* Strong navy for headers and active states */
+  --c-primary-soft: #e3edf7;   /* Subtle navy-tinted background */
+
+  --c-accent: #fec914;         /* CEJ yellow for highlights and key accents */
+  --c-accent-soft: #fff7d1;    /* Soft yellow background for badges and pills */
+
+  /* Neutrals */
+  --c-bg: #f3f4f6;           /* Page background */
+  --c-surface: #ffffff;      /* Cards, panels, header background */
+  --c-text: #111827;         /* Main text on light backgrounds */
+  --c-muted: #6b7280;        /* Secondary text */
+  --c-muted-strong: #4b5563; /* Stronger muted text, labels */
+
+  --c-border: #e5e7eb;        /* Default borders and dividers */
+  --c-border-strong: #cbd5e1; /* Emphasized borders and outlines */
+
+  /* Form and feedback states */
   --c-success: #16a34a;
-  --c-danger: #dc2626;
+  --c-success-soft: #ecfdf3;
 
-  /* Bordes / sombras */
-  --radius: 12px;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
-  --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+  --c-warning: #f59e0b;
+  --c-warning-soft: #fffbeb;
 
-  --sticky-h: 64px; /* altura barra sticky móvil */
+  --c-error-text: #b91c1c;
+  --c-error-border: #fecaca;
+  --c-error-soft: #fef2f2;
+
+  /* Wizard / stepper */
+  --c-step-bg: #f9fafb;
+  --c-step-border: #e5e7eb;
+  --c-step-current: #043369;
+  --c-step-current-soft: #e3edf7;
+
+  /* Channel-specific CTAs */
+  --c-whatsapp: #25d366;
+  --c-whatsapp-soft: #e8f9f0;
+
+  --c-call: #043369;      /* Uses brand navy */
+  --c-call-soft: #e3edf7;
+
+  /* Shadows and elevation */
+  --shadow-xs: 0 1px 1px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+
+  /* Layout */
+  --sticky-h: 64px; /* Sticky header height on mobile */
 }
 
-/* Modo alto-contraste del usuario */
+/* High-contrast user preference */
 @media (prefers-contrast: more) {
   :root {
     --c-border: #d1d5db;
+    --shadow-xs: none;
     --shadow-sm: none;
     --shadow-md: none;
   }
