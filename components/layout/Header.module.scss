@@ -2,6 +2,8 @@
 @use "../../styles/primitives" as p;
 
 .header {
+  --header-shrink: 0;
+
   position: sticky;
   top: 0;
   z-index: 40;
@@ -24,16 +26,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  /* Altura y padding interpolados con el scroll */
+  min-height: calc(88px - 20px * var(--header-shrink));
+  padding-block: calc(1.25rem - 0.45rem * var(--header-shrink));
   padding-inline: var(--sp-0);
-  min-height: 72px;
+
+  gap: var(--sp-2);
   transition:
     padding-block 0.18s ease,
     min-height 0.18s ease;
-}
-
-.headerScrolled .inner {
-  min-height: 80px;
-  padding-block: 0.4rem;
 }
 
 .brand {
@@ -47,15 +49,11 @@
 }
 
 .logo {
-  height: 72px;
+  height: calc(72px - 18px * var(--header-shrink));
   width: auto;
   transition:
     height 0.18s ease,
     transform 0.18s ease;
-}
-
-.headerScrolled .logo {
-  height: 64px;
 }
 
 /* Desktop nav */
@@ -99,6 +97,12 @@
     outline-offset: 3px;
     border-color: transparent;
   }
+}
+
+.navLinkActive {
+  color: var(--c-primary-strong);
+  border-bottom-color: var(--c-primary);
+  font-weight: 600;
 }
 
 /* Desktop actions */
@@ -163,6 +167,12 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+
+  /* Escala suave del botón hamburguesa */
+  transform: scale(calc(1 - 0.08 * var(--header-shrink)));
+  transition:
+    background-color 0.18s ease,
+    transform 0.24s ease;
 
   &:hover {
     background-color: rgba(15, 23, 42, 0.03);
@@ -273,8 +283,16 @@
   }
 }
 
+.mobileNavLinkActive {
+  color: var(--c-primary-strong);
+  font-weight: 600;
+}
+
 .mobileActions {
   margin-top: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
 }
 
 /* Call dialog (desktop) */
@@ -406,7 +424,7 @@
 
   .actions {
     display: flex;
-    margin: 0 4rem 0 0;
+    margin-right: 4rem;
   }
 
   .menuToggle,
