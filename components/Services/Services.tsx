@@ -43,7 +43,7 @@ export default function Services() {
             <span>en un solo lugar.</span>
           </h2>
           <p className={styles.subtitle}>
-            Soluciones integrales de concreto para contratistas y autoconstructores en Ciudad Juárez.
+            Soluciones integrales de concreto para contratistas y constructores en Ciudad Juárez.
           </p>
         </div>
 

@@ -1,6 +1,5 @@
 // components/layout/HeroSection.tsx
 
-import Link from "next/link";
 import styles from "./HeroSection.module.scss";
 
 type HeroSectionProps = {

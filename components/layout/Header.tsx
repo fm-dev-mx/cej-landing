@@ -58,7 +58,7 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Bloquear scroll cuando el menú está abierto
+  // Block scroll when menu is open
   useEffect(() => {
     if (isMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -95,8 +95,11 @@ export default function Header() {
 
   return (
     <>
-      {/* Header Principal */}
-      <header className={`${styles.header} ${isScrolled ? styles.headerScrolled : ""}`} style={headerStyle}>
+      {/* Main Header */}
+      <header
+        className={`${styles.header} ${isScrolled ? styles.headerScrolled : ""}`}
+        style={headerStyle}
+      >
         <div className={styles.inner}>
           <div className={styles.brand}>
             <Link href="/" className={styles.logoLink} aria-label="Inicio">
@@ -160,7 +163,7 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Menú Móvil (Fuera del Header para evitar clipping) */}
+      {/* Mobile Menu */}
       <div
         id="mobile-menu"
         className={`${styles.mobileMenu} ${isMenuOpen ? styles.mobileMenuOpen : ""}`}
@@ -184,7 +187,6 @@ export default function Header() {
             })}
           </ul>
 
-          {/* Botones de acción DENTRO del menú (porque el menú tapa la sticky bar) */}
           <div className={styles.mobileActions}>
             {waHref && (
               <a href={waHref} target="_blank" rel="noreferrer" className={`${styles.button} ${styles.buttonWhatsApp}`}>

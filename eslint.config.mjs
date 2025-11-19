@@ -13,6 +13,14 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  // Custom rule overrides
+  {
+    files: ["components/Calculator/hooks/useCalculatorState.ts"],
+    rules: {
+      // Allow specific hydration pattern from localStorage
+      "react-hooks/set-state-in-effect": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
