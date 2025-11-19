@@ -1,38 +1,82 @@
 // components/Calculator/steps/Step4Summary.tsx
+'use client';
 
-import type { MouseEvent } from "react";
+import { useMemo, useCallback, type MouseEvent } from "react";
+import { useCalculatorContext } from "../context/CalculatorContext";
 import { fmtMXN } from "@/lib/utils";
-import type { QuoteBreakdown } from "../types";
+import { trackLead, trackContact } from "@/lib/pixel";
 import styles from "../Calculator.module.scss";
 
 type Props = {
-  billedM3: number;
-  quote: QuoteBreakdown;
-  unitPriceLabel: string;
-  waDisabled: boolean;
-  phone: string;
-  volumeError: string | null;
-  onWhatsAppClick: (e?: MouseEvent<HTMLButtonElement>) => void;
-  onPhoneClick: () => void;
-  onEditClick: () => void; // Will likely go back to Step 3 (Specs)
   estimateLegend: string;
 };
 
-export function Step4Summary(props: Props) {
+export function Step4Summary({ estimateLegend }: Props) {
   const {
     billedM3,
+    requestedM3,
     quote,
     unitPriceLabel,
-    waDisabled,
-    phone,
     volumeError,
-    onWhatsAppClick,
-    onPhoneClick,
-    onEditClick,
-    estimateLegend,
-  } = props;
+    setStep,
+    modeLabel,
+    hasCoffered,
+    cofferedSize,
+    strength,
+    type
+  } = useCalculatorContext();
 
+  // --- Contact & Tracking Logic ---
+
+  const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
+  const phone = process.env.NEXT_PUBLIC_PHONE ?? "";
+  const waDisabled = waNumber.trim().length === 0;
   const phoneHref = phone.trim() ? `tel:${phone.trim().replace(/\s+/g, "")}` : "";
+
+  // Generate WhatsApp message string
+  const whatsappText = useMemo(() => {
+    const cofferedDetail =
+      hasCoffered === 'yes' && cofferedSize
+        ? ` (Casetón ${cofferedSize}cm)`
+        : hasCoffered === 'yes'
+        ? ' (Aligerada)'
+        : '';
+
+    return encodeURIComponent(
+      `Cotización CEJ\n` +
+      `Modo: ${modeLabel}${cofferedDetail}\n` +
+      `Volumen solicitado: ${requestedM3.toFixed(2)} m³\n` +
+      `Volumen facturable: ${billedM3.toFixed(2)} m³\n` +
+      `Precio por m³: ${unitPriceLabel}\n` +
+      `f’c: ${strength} kg/cm²\n` +
+      `Tipo: ${type === 'direct' ? 'Tiro directo' : 'Bombeado'}\n` +
+      `Subtotal: ${fmtMXN(quote.subtotal)}\n` +
+      `IVA 8%: ${fmtMXN(quote.vat)}\n` +
+      `Total: ${fmtMXN(quote.total)}`
+    );
+  }, [
+    modeLabel, hasCoffered, cofferedSize, requestedM3, billedM3,
+    unitPriceLabel, strength, type, quote
+  ]);
+
+  const handleWhatsAppClick = useCallback((e?: MouseEvent<HTMLButtonElement>) => {
+    if (waDisabled || quote.total <= 0) {
+      e?.preventDefault();
+      return;
+    }
+    trackLead(quote.total);
+    window.open(
+      `https://wa.me/${waNumber}?text=${whatsappText}`,
+      '_blank',
+      'noopener,noreferrer'
+    );
+  }, [waDisabled, waNumber, whatsappText, quote.total]);
+
+  const handlePhoneClick = useCallback(() => {
+    if (phone.trim() && quote.total > 0) {
+      trackContact(quote.total);
+    }
+  }, [phone, quote.total]);
 
   return (
     <div className={`${styles.step} ${styles.stepAnimated}`}>
@@ -82,7 +126,7 @@ export function Step4Summary(props: Props) {
           >
             <button
               type="button"
-              onClick={onWhatsAppClick}
+              onClick={handleWhatsAppClick}
               disabled={waDisabled || quote.total <= 0}
             >
               💬 WhatsApp
@@ -91,7 +135,7 @@ export function Step4Summary(props: Props) {
             {phoneHref && (
               <a
                 href={phoneHref}
-                onClick={onPhoneClick}
+                onClick={handlePhoneClick}
               >
                 📞 Llamar
               </a>
@@ -109,7 +153,7 @@ export function Step4Summary(props: Props) {
           <button
             type="button"
             className={styles.secondaryBtn}
-            onClick={onEditClick}
+            onClick={() => setStep(3)}
           >
             Editar especificaciones
           </button>

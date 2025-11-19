@@ -1,21 +1,35 @@
 // components/Calculator/steps/Step1Mode.tsx
+'use client';
 
+import { useCallback } from 'react';
+import { useCalculatorContext } from '../context/CalculatorContext';
 import { WORK_TYPES, type CalculatorMode, type WorkTypeId } from '../types';
 import styles from '../Calculator.module.scss';
 
-type Props = {
-  mode: CalculatorMode | null;
-  workType: WorkTypeId;
-  onModeChange: (mode: CalculatorMode) => void;
-  onWorkTypeSelect: (id: WorkTypeId) => void;
-};
+export function Step1Mode() {
+  const {
+    mode,
+    workType,
+    setMode,
+    setWorkType,
+    setStep
+  } = useCalculatorContext();
 
-export function Step1Mode({
-  mode,
-  workType,
-  onModeChange,
-  onWorkTypeSelect,
-}: Props) {
+  // Encapsulated navigation logic
+  const handleModeChange = useCallback((newMode: CalculatorMode) => {
+    setMode(newMode);
+    // If user knows M3, skip directly to inputs (Step 2)
+    if (newMode === 'knownM3') {
+      setStep(2);
+    }
+  }, [setMode, setStep]);
+
+  const handleWorkTypeSelect = useCallback((id: WorkTypeId) => {
+    setWorkType(id);
+    // Proceed to Step 2 upon work type selection
+    setStep(2);
+  }, [setWorkType, setStep]);
+
   return (
     <div className={`${styles.step} ${styles.stepAnimated}`}>
       <header className={styles.stepHeader}>
@@ -33,9 +47,7 @@ export function Step1Mode({
               name="calc-mode"
               value="knownM3"
               checked={mode === 'knownM3'}
-              // Clicking "Si" immediately sets mode and should trigger navigation in parent
-              onClick={() => onModeChange('knownM3')}
-              onChange={() => onModeChange('knownM3')}
+              onChange={() => handleModeChange('knownM3')}
             />
             <span>Si</span>
           </label>
@@ -46,15 +58,13 @@ export function Step1Mode({
               name="calc-mode"
               value="assistM3"
               checked={mode === 'assistM3'}
-              // Clicking "No" sets mode but keeps us here to choose Work Type
-              onClick={() => onModeChange('assistM3')}
-              onChange={() => onModeChange('assistM3')}
+              onChange={() => handleModeChange('assistM3')}
             />
             <span>No, ayúdame a definirlo</span>
           </label>
         </div>
 
-        {/* Expanded Selection: Work Types (Only visible if "No" is selected) */}
+        {/* Expanded Selection: Work Types */}
         {mode === 'assistM3' && (
           <div className={styles.stepAnimated} style={{ marginTop: '2rem' }}>
             <p className={styles.field} style={{ marginBottom: '1rem', color: 'var(--c-muted-on-dark)' }}>
@@ -66,15 +76,14 @@ export function Step1Mode({
                 <label
                   key={w.id}
                   className={styles.radio}
-                  // Use onClick to trigger selection + navigation
-                  onClick={() => onWorkTypeSelect(w.id)}
+                  onClick={() => handleWorkTypeSelect(w.id)}
                 >
                   <input
                     type="radio"
                     name="work-type"
                     value={w.id}
                     checked={workType === w.id}
-                    readOnly // Controlled by the onClick parent handler
+                    readOnly
                   />
                   <span>
                     <strong>{w.label}</strong>

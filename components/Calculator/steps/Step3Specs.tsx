@@ -1,41 +1,26 @@
 // components/Calculator/steps/Step3Specs.tsx
+'use client';
 
 import { useCallback, type ChangeEvent } from "react";
-import {
-  CONCRETE_TYPES,
-  STRENGTHS,
-  type CalculatorMode,
-  type Strength,
-  type ConcreteType,
-} from "../types";
+import { useCalculatorContext } from "../context/CalculatorContext";
+import { CONCRETE_TYPES, STRENGTHS, type Strength } from "../types";
 import styles from "../Calculator.module.scss";
 
-type Props = {
-  strength: Strength;
-  type: ConcreteType;
-  mode: CalculatorMode | null;
-  onStrengthChange: (strength: Strength) => void;
-  onTypeChange: (type: ConcreteType) => void;
-  onBack: () => void;
-  onContinue: () => void;
-};
-
-export function Step3Specs(props: Props) {
+export function Step3Specs() {
   const {
     strength,
     type,
     mode,
-    onStrengthChange,
-    onTypeChange,
-    onBack,
-    onContinue,
-  } = props;
+    setStrength,
+    setType,
+    setStep
+  } = useCalculatorContext();
 
   const handleStrengthChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
-      onStrengthChange(e.target.value as Strength);
+      setStrength(e.target.value as Strength);
     },
-    [onStrengthChange]
+    [setStrength]
   );
 
   return (
@@ -73,7 +58,7 @@ export function Step3Specs(props: Props) {
                   name="tipo"
                   value={t.value}
                   checked={type === t.value}
-                  onChange={() => onTypeChange(t.value)}
+                  onChange={() => setType(t.value)}
                 />
                 <span>{t.label}</span>
               </label>
@@ -85,14 +70,14 @@ export function Step3Specs(props: Props) {
           <button
             type="button"
             className={styles.secondaryBtn}
-            onClick={onBack}
+            onClick={() => setStep(2)}
           >
             Atrás
           </button>
           <button
             type="button"
             className={styles.primaryBtn}
-            onClick={onContinue}
+            onClick={() => setStep(4)}
           >
             Ver Cotización Final
           </button>
