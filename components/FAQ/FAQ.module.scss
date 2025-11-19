@@ -1,0 +1,114 @@
+@use "../../styles/primitives" as p;
+@use "../../styles/mixins" as *;
+
+.section {
+  // Uses global variable --section-py defined in rhythm.scss with a fallback
+  padding-block: var(--section-py, 4rem);
+  background-color: var(--c-surface);
+}
+
+.container {
+  @include container;
+  max-width: 800px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--sp-8);
+}
+
+.title {
+  @include p.h2;
+  color: var(--c-text);
+  margin-bottom: var(--sp-2);
+}
+
+.subtitle {
+  @include p.lead;
+  color: var(--c-muted);
+}
+
+/* Accordion Styles */
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.item {
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  background-color: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: var(--c-border-strong);
+  }
+
+  &[data-open="true"] {
+    border-color: var(--c-primary);
+    box-shadow: var(--shadow-sm);
+
+    .trigger {
+      color: var(--c-primary);
+    }
+
+    .icon {
+      transform: rotate(180deg);
+      color: var(--c-accent);
+    }
+  }
+}
+
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-4) var(--sp-5);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-sans);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  color: var(--c-text);
+  transition: color 0.2s ease;
+
+  &:focus-visible {
+    outline: 2px solid var(--c-primary);
+    outline-offset: -2px;
+    border-radius: var(--radius);
+  }
+}
+
+.icon {
+  flex-shrink: 0;
+  margin-left: var(--sp-4);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease;
+  color: var(--c-muted);
+}
+
+/* Height animation using CSS Grid */
+.contentWrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.item[data-open="true"] .contentWrapper {
+  grid-template-rows: 1fr;
+}
+
+.contentInner {
+  overflow: hidden;
+}
+
+.answer {
+  padding: 0 var(--sp-5) var(--sp-5);
+  color: var(--c-muted-strong);
+  line-height: 1.6;
+  font-size: var(--fs-base);
+  margin: 0;
+}

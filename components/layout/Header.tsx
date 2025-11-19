@@ -15,7 +15,7 @@ type NavItem = {
 const PRIMARY_NAV: NavItem[] = [
   { href: "#calculator", label: "Calcula tu concreto" },
   { href: "#services", label: "Servicios" },
-  { href: "#coverage", label: "Cobertura" },
+  { href: "#service-area", label: "Área de servicio" },
   { href: "#faq", label: "FAQ" },
   { href: "#contact", label: "Contacto" },
 ];
