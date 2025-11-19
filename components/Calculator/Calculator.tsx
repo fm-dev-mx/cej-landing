@@ -6,8 +6,8 @@ import { Step1Mode } from './steps/Step1Mode';
 import { Step2Inputs } from './steps/Step2Inputs';
 import { Step3Specs } from './steps/Step3Specs';
 import { Step4Summary } from './steps/Step4Summary';
+import { ESTIMATE_LEGEND } from '@/config/business';
 import styles from './Calculator.module.scss';
-import { ESTIMATE_LEGEND } from './types';
 
 // Internal component consuming the context
 function CalculatorContent() {
@@ -37,7 +37,6 @@ function CalculatorContent() {
 
       <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
         {step === 1 && <Step1Mode />}
-        {/* Removed canProceedToSpecs prop as it is handled internally by Step2Inputs via Context */}
         {step === 2 && mode !== null && <Step2Inputs />}
         {step === 3 && mode !== null && <Step3Specs />}
         {step === 4 && mode !== null && <Step4Summary estimateLegend={ESTIMATE_LEGEND} />}

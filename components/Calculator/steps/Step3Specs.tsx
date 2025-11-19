@@ -3,7 +3,8 @@
 
 import { useCallback, type ChangeEvent } from "react";
 import { useCalculatorContext } from "../context/CalculatorContext";
-import { CONCRETE_TYPES, STRENGTHS, type Strength } from "../types";
+import { type Strength } from "../types";
+import { STRENGTHS, CONCRETE_TYPES } from "@/config/business";
 import styles from "../Calculator.module.scss";
 
 export function Step3Specs() {

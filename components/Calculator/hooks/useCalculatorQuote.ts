@@ -5,13 +5,12 @@ import {
     calcQuote,
     calcVolumeFromArea,
     calcVolumeFromDimensions,
-    EMPTY_QUOTE,
-    MIN_M3_BY_TYPE,
+    EMPTY_QUOTE
 } from '@/lib/pricing';
+import { MIN_M3_BY_TYPE, CONCRETE_TYPES } from '@/config/business';
 import { clamp, fmtMXN, parseNum } from '@/lib/utils';
 import { trackViewContent } from '@/lib/pixel';
 import {
-    CONCRETE_TYPES,
     type AssistVolumeMode,
     type CalculatorMode,
     type ConcreteType,
@@ -33,23 +32,22 @@ type QuoteInput = {
     type: ConcreteType;
 };
 
-// Structured warning state for the UI to consume
 export type QuoteWarning =
     | {
-          code: 'BELOW_MINIMUM';
-          minM3: number;
-          billedM3: number;
-          typeLabel: string;
-      }
+        code: 'BELOW_MINIMUM';
+        minM3: number;
+        billedM3: number;
+        typeLabel: string;
+    }
     | {
-          code: 'ROUNDING_POLICY';
-          requestedM3: number;
-          billedM3: number;
-      }
+        code: 'ROUNDING_POLICY';
+        requestedM3: number;
+        billedM3: number;
+    }
     | {
-          code: 'ROUNDING_ADJUSTMENT';
-          billedM3: number;
-      }
+        code: 'ROUNDING_ADJUSTMENT';
+        billedM3: number;
+    }
     | null;
 
 export type QuoteState = {

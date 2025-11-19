@@ -3,7 +3,8 @@
 
 import { useCallback } from 'react';
 import { useCalculatorContext } from '../context/CalculatorContext';
-import { WORK_TYPES, type CalculatorMode, type WorkTypeId } from '../types';
+import { type CalculatorMode, type WorkTypeId } from '../types';
+import { WORK_TYPES } from '@/config/business';
 import styles from '../Calculator.module.scss';
 
 export function Step1Mode() {

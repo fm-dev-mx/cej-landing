@@ -1,34 +1,38 @@
 // lib/pricing.ts
 
-export type Strength = '100' | '150' | '200' | '250' | '300';
-export type ConcreteType = 'direct' | 'pumped';
+import {
+    CASETON_FACTORS,
+    M3_STEP,
+    MIN_M3_BY_TYPE,
+    PRICE_TABLE,
+    VAT_RATE
+} from "@/config/business";
+import type {
+    ConcreteType,
+    NormalizedVolume,
+    PriceTable,
+    QuoteBreakdown,
+    Strength
+} from "@/components/Calculator/types";
 
-export const MXN = 'MXN';
-
-// 8% VAT for the quoted total
-export const VAT_RATE = 0.08;
-export const M3_STEP = 0.5 as const;
-
-// Minimum volume by concrete type (in m³)
-export const MIN_M3_BY_TYPE: Record<ConcreteType, number> = {
-    direct: 2,
-    pumped: 3,
+// Re-export empty quote for initial usage
+export const EMPTY_QUOTE: QuoteBreakdown = {
+    volume: {
+        requestedM3: 0,
+        roundedM3: 0,
+        minM3ForType: 0,
+        billedM3: 0,
+        isBelowMinimum: false,
+    },
+    strength: '200',
+    concreteType: 'direct',
+    unitPricePerM3: 0,
+    subtotal: 0,
+    vat: 0,
+    total: 0,
 };
-
-export const CASETON_FACTORS = {
-    withCofferedSlab: 0.71, // slab with coffers / voids
-    solidSlab: 0.98,        // solid slab (no coffers)
-} as const;
 
 // ---------- Volume helpers ----------
-
-export type NormalizedVolume = {
-    requestedM3: number;
-    roundedM3: number;
-    minM3ForType: number;
-    billedM3: number;
-    isBelowMinimum: boolean;
-};
 
 export function roundUpToStep(value: number, step: number): number {
     if (!Number.isFinite(value) || value <= 0) return 0;
@@ -101,96 +105,7 @@ export function calcVolumeFromArea(input: SlabAreaInput): number {
     return baseVolume * factor;
 }
 
-// ---------- Pricing tables by type + strength + volume tier ----------
-
-export type VolumeTier = {
-    minM3: number;           // inclusive
-    maxM3?: number;          // inclusive (if omitted, treated as Infinity)
-    pricePerM3Cents: number; // Price in integer cents per m³ (without VAT)
-};
-
-type BasePriceTable = Record<
-    ConcreteType,
-    Record<Strength, VolumeTier[]>
->;
-
-export type PriceTable = {
-    base: BasePriceTable;
-};
-
-// Convert pesos to integer cents
-function pesos(n: number): number {
-    return Math.round(n * 100);
-}
-
-// Helpers for tier ranges (accept pesos, store cents)
-function tier(
-    minM3: number,
-    unitPricePesos: number,
-    maxM3?: number,
-): VolumeTier {
-    return {
-        minM3,
-        maxM3,
-        pricePerM3Cents: pesos(unitPricePesos),
-    };
-}
-
-// Prices from your Excel (without VAT)
-//
-// Tiro directo
-//  - Tier 1: 2–2.5 m³
-//  - Tier 2: >= 3 m³
-//
-// Concreto bombeado
-//  - Tier 1: 3–4.5 m³
-//  - Tier 2: >= 5 m³
-export const PRICE_TABLE: PriceTable = {
-    base: {
-        direct: {
-            '100': [tier(2, 2231, 2.5), tier(3, 2082)],
-            '150': [tier(2, 2509, 2.5), tier(3, 2269)],
-            '200': [tier(2, 2731, 2.5), tier(3, 2481)],
-            '250': [tier(2, 3018, 2.5), tier(3, 2769)],
-            '300': [tier(2, 3091, 2.5), tier(3, 3035)],
-        },
-        pumped: {
-            '100': [tier(3, 2527, 4.5), tier(5, 2481)],
-            '150': [tier(3, 2758, 4.5), tier(5, 2666)],
-            '200': [tier(3, 3008, 4.5), tier(5, 2958)],
-            '250': [tier(3, 3259, 4.5), tier(5, 3167)],
-            '300': [tier(3, 3478, 4.5), tier(5, 3385)],
-        },
-    },
-};
-
 // ---------- Quote engine ----------
-
-export type QuoteBreakdown = {
-    volume: NormalizedVolume;
-    strength: Strength;
-    concreteType: ConcreteType;
-    unitPricePerM3: number; // MXN without VAT (formatted from cents)
-    subtotal: number; // MXN without VAT
-    vat: number; // MXN (8%)
-    total: number; // MXN with VAT
-};
-
-export const EMPTY_QUOTE: QuoteBreakdown = {
-    volume: {
-        requestedM3: 0,
-        roundedM3: 0,
-        minM3ForType: 0,
-        billedM3: 0,
-        isBelowMinimum: false,
-    },
-    strength: '200',
-    concreteType: 'direct',
-    unitPricePerM3: 0,
-    subtotal: 0,
-    vat: 0,
-    total: 0,
-};
 
 function resolveUnitPricePerM3Cents(
     billedM3: number,
@@ -242,7 +157,7 @@ export function calcQuote(
         table,
     );
 
-    // All monetary math in integer cents
+    // All monetary calculations in integer cents
     const subtotalCents = Math.round(volume.billedM3 * unitCents);
     const vatCents = Math.round(subtotalCents * VAT_RATE);
     const totalCents = subtotalCents + vatCents;

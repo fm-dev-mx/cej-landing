@@ -2,18 +2,36 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {
-    DEFAULT_CALCULATOR_STATE,
-    STORAGE_KEY,
-    WORK_TYPES,
     type AssistVolumeMode,
     type CalculatorMode,
     type CalculatorState,
+    type CofferedSize,
+    type ConcreteType,
     type Step,
     type Strength,
-    type ConcreteType,
     type WorkTypeId,
-    type CofferedSize, // Importar el tipo
 } from '../types';
+import {
+    STORAGE_KEY,
+    WORK_TYPES
+} from '@/config/business';
+
+export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
+    step: 1,
+    mode: null,
+    volumeMode: 'dimensions',
+    strength: '200',
+    type: 'direct',
+    m3: '',
+    workType: 'slab',
+    length: '',
+    width: '',
+    thicknessByDims: '12',
+    area: '',
+    thicknessByArea: '12',
+    hasCoffered: 'no',
+    cofferedSize: null,
+};
 
 export function useCalculatorState() {
     const [state, setState] = useState<CalculatorState>(
@@ -31,7 +49,7 @@ export function useCalculatorState() {
                 ...saved,
             }));
         } catch {
-            // ignore
+            // Ignore parsing/storage errors
         }
     }, []);
 
@@ -85,7 +103,7 @@ export function useCalculatorState() {
                 workType,
                 strength: cfg ? cfg.recommendedStrength : prev.strength,
                 hasCoffered: 'no',
-                cofferedSize: null, // Reset al cambiar de obra
+                cofferedSize: null, // Reset when changing work type
             };
         });
     }, []);
@@ -114,8 +132,8 @@ export function useCalculatorState() {
         setState((prev) => ({
             ...prev,
             hasCoffered,
-            // Si activa casetón, por defecto ponemos 10cm, si desactiva, null
-            cofferedSize: hasCoffered === 'yes' ? '10' : null
+            // If coffered slab is enabled, default to 10 cm; if disabled, reset to null
+            cofferedSize: hasCoffered === 'yes' ? '10' : null,
         }));
     }, []);
 
@@ -138,6 +156,6 @@ export function useCalculatorState() {
         setArea,
         setThicknessByArea,
         setHasCoffered,
-        setCofferedSize, // Exportamos el nuevo setter
+        setCofferedSize,
     };
 }

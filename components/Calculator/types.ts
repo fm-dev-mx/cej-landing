@@ -1,13 +1,15 @@
 // components/Calculator/types.ts
 
-import type { Strength, ConcreteType, QuoteBreakdown } from '@/lib/pricing';
+// Pure type definitions.
+// Constants and business values have been moved to @/config/business.
 
-export type { Strength, ConcreteType, QuoteBreakdown };
+export type Strength = '100' | '150' | '200' | '250' | '300';
+export type ConcreteType = 'direct' | 'pumped';
 
 export type CalculatorMode = 'knownM3' | 'assistM3';
 export type AssistVolumeMode = 'dimensions' | 'area';
 export type Step = 1 | 2 | 3 | 4;
-export type CofferedSize = '7' | '10'; // Nuevo tipo para el tamaño
+export type CofferedSize = '7' | '10';
 
 export type WorkTypeId =
     | 'slab'
@@ -37,67 +39,38 @@ export type CalculatorState = {
     area: string;
     thicknessByArea: string;
     hasCoffered: 'yes' | 'no';
-    cofferedSize: CofferedSize | null; // Nuevo campo
+    cofferedSize: CofferedSize | null;
 };
 
-export const STRENGTHS: Strength[] = ['100', '150', '200', '250', '300'];
+export type NormalizedVolume = {
+    requestedM3: number;
+    roundedM3: number;
+    minM3ForType: number;
+    billedM3: number;
+    isBelowMinimum: boolean;
+};
 
-export const CONCRETE_TYPES: { value: ConcreteType; label: string }[] = [
-    { value: 'direct', label: 'Tiro directo' },
-    { value: 'pumped', label: 'Bombeado' },
-];
+export type VolumeTier = {
+    minM3: number;
+    maxM3?: number;
+    pricePerM3Cents: number;
+};
 
-export const WORK_TYPES: WorkTypeConfig[] = [
-    {
-        id: 'slab',
-        label: 'Losa',
-        description: 'Azoteas y losas de entrepiso.',
-        recommendedStrength: '200',
-    },
-    {
-        id: 'lightInteriorFloor',
-        label: 'Piso interior ligero',
-        description: 'Habitaciones y áreas interiores sin vehículos.',
-        recommendedStrength: '150',
-    },
-    {
-        id: 'vehicleFloor',
-        label: 'Piso exterior / vehículos',
-        description: 'Cochera, patios de maniobras ligeros.',
-        recommendedStrength: '200',
-    },
-    {
-        id: 'footings',
-        label: 'Cimientos / zapatas',
-        description: 'Cimentaciones corridas y zapatas.',
-        recommendedStrength: '200',
-    },
-    {
-        id: 'walls',
-        label: 'Muros / industrial pesado',
-        description: 'Muros estructurales y cargas pesadas.',
-        recommendedStrength: '250',
-    },
-];
+export type BasePriceTable = Record<
+    ConcreteType,
+    Record<Strength, VolumeTier[]>
+>;
 
-export const ESTIMATE_LEGEND =
-    'Los resultados son estimados. Para confirmar el volumen y el precio final realizamos una visita de volumetría sin costo, una vez programado el pedido y con la obra lista para colar.';
+export type PriceTable = {
+    base: BasePriceTable;
+};
 
-export const STORAGE_KEY = 'cej_calculator_v1';
-
-export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
-    step: 1,
-    mode: null,
-    volumeMode: 'dimensions',
-    strength: '200',
-    type: 'direct',
-    m3: '',
-    workType: 'slab',
-    length: '',
-    width: '',
-    thicknessByDims: '12',
-    area: '',
-    thicknessByArea: '12',
-    hasCoffered: 'no',
-    cofferedSize: null, // Valor inicial nulo
+export type QuoteBreakdown = {
+    volume: NormalizedVolume;
+    strength: Strength;
+    concreteType: ConcreteType;
+    unitPricePerM3: number; // MXN without VAT
+    subtotal: number;       // MXN without VAT
+    vat: number;            // MXN (IVA)
+    total: number;          // MXN with VAT
 };
