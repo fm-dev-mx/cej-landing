@@ -1,4 +1,4 @@
-// components/Calculator/steps/Step3Summary.tsx
+// components/Calculator/steps/Step4Summary.tsx
 
 import type { MouseEvent } from "react";
 import { fmtMXN } from "@/lib/utils";
@@ -14,11 +14,11 @@ type Props = {
   volumeError: string | null;
   onWhatsAppClick: (e?: MouseEvent<HTMLButtonElement>) => void;
   onPhoneClick: () => void;
-  onEditClick: () => void;
+  onEditClick: () => void; // Will likely go back to Step 3 (Specs)
   estimateLegend: string;
 };
 
-export function Step3Summary(props: Props) {
+export function Step4Summary(props: Props) {
   const {
     billedM3,
     quote,
@@ -37,7 +37,7 @@ export function Step3Summary(props: Props) {
   return (
     <div className={`${styles.step} ${styles.stepAnimated}`}>
       <header className={styles.stepHeader}>
-        <span className={styles.stepBadge}>3</span>
+        <span className={styles.stepBadge}>4</span>
         <h2 className={styles.stepTitle}>Tu cotización estimada</h2>
       </header>
 
@@ -78,17 +78,12 @@ export function Step3Summary(props: Props) {
           <div
             className={styles.actions}
             role="group"
-            aria-label="Contactar a CEJ (desktop)"
+            aria-label="Contactar a CEJ"
           >
             <button
               type="button"
               onClick={onWhatsAppClick}
               disabled={waDisabled || quote.total <= 0}
-              title={
-                waDisabled
-                  ? "Configura NEXT_PUBLIC_WHATSAPP_NUMBER"
-                  : "Abrir WhatsApp con tu cotización"
-              }
             >
               💬 WhatsApp
             </button>
@@ -97,7 +92,6 @@ export function Step3Summary(props: Props) {
               <a
                 href={phoneHref}
                 onClick={onPhoneClick}
-                title="Llamar por teléfono"
               >
                 📞 Llamar
               </a>
@@ -107,7 +101,7 @@ export function Step3Summary(props: Props) {
 
         {billedM3 === 0 && !volumeError && (
           <p className={styles.note}>
-            Completa los datos del paso anterior para ver la cotización.
+            Faltan datos para completar el cálculo.
           </p>
         )}
 
@@ -117,7 +111,7 @@ export function Step3Summary(props: Props) {
             className={styles.secondaryBtn}
             onClick={onEditClick}
           >
-            Editar datos
+            Editar especificaciones
           </button>
         </div>
 

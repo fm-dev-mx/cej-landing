@@ -12,6 +12,7 @@ import {
     type Strength,
     type ConcreteType,
     type WorkTypeId,
+    type CofferedSize, // Importar el tipo
 } from '../types';
 
 export function useCalculatorState() {
@@ -19,7 +20,6 @@ export function useCalculatorState() {
         DEFAULT_CALCULATOR_STATE,
     );
 
-    // Load from localStorage on mount
     useEffect(() => {
         if (typeof window === 'undefined') return;
         try {
@@ -31,11 +31,10 @@ export function useCalculatorState() {
                 ...saved,
             }));
         } catch {
-            // ignore malformed storage
+            // ignore
         }
     }, []);
 
-    // Persist to localStorage on change
     useEffect(() => {
         if (typeof window === 'undefined') return;
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -49,10 +48,8 @@ export function useCalculatorState() {
         setState((prev) => {
             const next: CalculatorState = {
                 ...prev,
-                step: 2,
                 mode,
             };
-
             if (mode === 'knownM3') {
                 next.length = '';
                 next.width = '';
@@ -60,7 +57,6 @@ export function useCalculatorState() {
             } else {
                 next.m3 = '';
             }
-
             return next;
         });
     }, []);
@@ -88,6 +84,8 @@ export function useCalculatorState() {
                 ...prev,
                 workType,
                 strength: cfg ? cfg.recommendedStrength : prev.strength,
+                hasCoffered: 'no',
+                cofferedSize: null, // Reset al cambiar de obra
             };
         });
     }, []);
@@ -113,7 +111,16 @@ export function useCalculatorState() {
     }, []);
 
     const setHasCoffered = useCallback((hasCoffered: 'yes' | 'no') => {
-        setState((prev) => ({ ...prev, hasCoffered }));
+        setState((prev) => ({
+            ...prev,
+            hasCoffered,
+            // Si activa casetón, por defecto ponemos 10cm, si desactiva, null
+            cofferedSize: hasCoffered === 'yes' ? '10' : null
+        }));
+    }, []);
+
+    const setCofferedSize = useCallback((cofferedSize: CofferedSize) => {
+        setState((prev) => ({ ...prev, cofferedSize }));
     }, []);
 
     return {
@@ -131,5 +138,6 @@ export function useCalculatorState() {
         setArea,
         setThicknessByArea,
         setHasCoffered,
+        setCofferedSize, // Exportamos el nuevo setter
     };
 }

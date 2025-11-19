@@ -2,12 +2,12 @@
 
 import type { Strength, ConcreteType, QuoteBreakdown } from '@/lib/pricing';
 
-// Re-export domain types so other files import from here
 export type { Strength, ConcreteType, QuoteBreakdown };
 
 export type CalculatorMode = 'knownM3' | 'assistM3';
 export type AssistVolumeMode = 'dimensions' | 'area';
-export type Step = 1 | 2 | 3;
+export type Step = 1 | 2 | 3 | 4;
+export type CofferedSize = '7' | '10'; // Nuevo tipo para el tamaño
 
 export type WorkTypeId =
     | 'slab'
@@ -37,6 +37,7 @@ export type CalculatorState = {
     area: string;
     thicknessByArea: string;
     hasCoffered: 'yes' | 'no';
+    cofferedSize: CofferedSize | null; // Nuevo campo
 };
 
 export const STRENGTHS: Strength[] = ['100', '150', '200', '250', '300'];
@@ -98,4 +99,5 @@ export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
     area: '',
     thicknessByArea: '12',
     hasCoffered: 'no',
+    cofferedSize: null, // Valor inicial nulo
 };
