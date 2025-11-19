@@ -12,8 +12,7 @@ export function Step1Mode({ mode, onModeChange }: Props) {
   return (
     <div className={`${styles.step} ${styles.stepAnimated}`}>
       <header className={styles.stepHeader}>
-        <span className={styles.stepBadge}>1</span>
-        <h2 className={styles.stepTitle}>¿Cómo quieres cotizar?</h2>
+        <h2 className={styles.stepTitle}>¿Ya conoces la resistencia y los metros cúbicos que necesitas?</h2>
       </header>
 
       <div className={styles.stepBody}>
@@ -26,7 +25,7 @@ export function Step1Mode({ mode, onModeChange }: Props) {
               checked={mode === 'knownM3'}
               onChange={() => onModeChange('knownM3')}
             />
-            <span>Ya sé cuántos m³ necesito</span>
+            <span>Si</span>
           </label>
           <label className={styles.radio}>
             <input
@@ -36,7 +35,7 @@ export function Step1Mode({ mode, onModeChange }: Props) {
               checked={mode === 'assistM3'}
               onChange={() => onModeChange('assistM3')}
             />
-            <span>Ayúdame a calcular los m³</span>
+            <span>No, ayúdame a definirlo</span>
           </label>
         </div>
       </div>

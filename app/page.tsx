@@ -3,6 +3,7 @@
 import Calculator from '@/components/Calculator/Calculator';
 import CTAButtons from "@/components/CTAButtons/CTAButtons";
 import HeroSection from "@/components/layout/HeroSection";
+import Services from '@/components/Services/Services';
 
 export const metadata = {
   title: 'Concreto y Equipos de Juárez | Cotizador al instante',
@@ -12,13 +13,35 @@ export const metadata = {
 export default function Page() {
   return (
     <main>
-      {/* Hero manages its own content via default props, easier to maintain */}
       <HeroSection />
 
-      {/* Anchor ID matches the Hero button href="#calculator" */}
+      {/* Calculator Section with Dark Glass Integration */}
+      {/* The wrapper background handles the visual transition from the Hero */}
       <div id="calculator">
         <Calculator />
       </div>
+
+      <Services />
+
+      {/* Placeholder: Coverage Section */}
+      <section id="coverage" className="section bgLight">
+        <div className="containerCentered">
+           <h2 className="h2" style={{ color: 'var(--c-text)' }}>Cobertura en Ciudad Juárez</h2>
+           <p className="textMuted">
+             Llegamos a todas las zonas de la ciudad y alrededores. (Mapa próximamente)
+           </p>
+        </div>
+      </section>
+
+      {/* Placeholder: FAQ Section */}
+      <section id="faq" className="section bgWhite">
+        <div className="containerCentered">
+           <h2 className="h2" style={{ color: 'var(--c-text)' }}>Preguntas Frecuentes</h2>
+           <p className="textMuted">
+             Resolvemos tus dudas sobre tiempos de entrega y tipos de concreto.
+           </p>
+        </div>
+      </section>
 
       <CTAButtons
         whatsappNumber={process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? ''}

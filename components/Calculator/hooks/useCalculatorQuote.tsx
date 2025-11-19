@@ -1,20 +1,23 @@
-// components/Calculator/hooks/useCalculatorQuote.ts
+// components/Calculator/hooks/useCalculatorQuote.tsx
+// NOTE: This file must be named .tsx because it contains JSX (ReactNode)
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import {
     calcQuote,
     calcVolumeFromArea,
     calcVolumeFromDimensions,
     EMPTY_QUOTE,
+    MIN_M3_BY_TYPE,
 } from '@/lib/pricing';
 import { clamp, fmtMXN, parseNum } from '@/lib/utils';
 import { trackViewContent } from '@/lib/pixel';
-import type {
-    AssistVolumeMode,
-    CalculatorMode,
-    ConcreteType,
-    QuoteBreakdown,
-    Strength,
+import {
+    CONCRETE_TYPES,
+    type AssistVolumeMode,
+    type CalculatorMode,
+    type ConcreteType,
+    type QuoteBreakdown,
+    type Strength,
 } from '../types';
 
 type QuoteInput = {
@@ -36,7 +39,7 @@ export type QuoteState = {
     requestedM3: number;
     billedM3: number;
     volumeError: string | null;
-    volumeWarning: string | null;
+    volumeWarning: ReactNode | null;
     canProceedToSummary: boolean;
     unitPriceLabel: string;
     modeLabel: string;
@@ -63,7 +66,7 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
             requestedM3: 0,
             billedM3: 0,
             volumeError: '' as string | null,
-            volumeWarning: '' as string | null,
+            volumeWarning: null as ReactNode | null,
         };
 
         if (mode === null) {
@@ -77,12 +80,20 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
         let rawRequested = 0;
         let error: string | null = null;
 
+        // Get min volume early for initial input validation messages
+        const minRequired = MIN_M3_BY_TYPE[type];
+
+        // Resolve human-readable label (e.g., "pumped" -> "Bombeado")
+        const typeConfig = CONCRETE_TYPES.find((t) => t.value === type);
+        const typeLabel = typeConfig ? typeConfig.label : type;
+
         if (mode === 'knownM3') {
             const parsed = clamp(parseNum(m3), 0, 500);
             rawRequested = parsed;
 
             if (!parsed) {
-                error = 'Ingresa un volumen mayor a 0 m³.';
+                // Show error if value is zero/invalid
+                error = `Ingresa un volumen válido (mínimo sugerido ${minRequired} m³).`;
             }
         } else {
             const hasCofferedSlab = hasCoffered === 'yes';
@@ -139,6 +150,7 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
             };
         }
 
+        // If rawRequested > 0, calculate the quote.
         const q = calcQuote(rawRequested, strength, type);
         const {
             requestedM3: normalizedRequested,
@@ -148,71 +160,72 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
             isBelowMinimum,
         } = q.volume;
 
-        let warning: string | null = null;
+        let warning: ReactNode | null = null;
 
         if (isBelowMinimum) {
-            warning = `El mínimo para este tipo de concreto es ${minM3ForType.toFixed(
-                1,
-            )} m³. La cotización se calcula sobre ${normalizedBilled.toFixed(
-                1,
-            )} m³.`;
-        } else if (normalizedBilled !== normalizedRequested) {
-            warning =
-                `Por política, el volumen se redondea hacia arriba a múltiplos de 0.5 m³. ` +
-                `Ingresaste aproximadamente ${normalizedRequested.toFixed(
-                    2,
-                )} m³ y se está cotizando sobre ${normalizedBilled.toFixed(2)} m³.`;
-        } else if (roundedM3 !== normalizedRequested) {
-            warning =
-                `El volumen se ajusta a múltiples de 0.5 m³. Se está cotizando sobre ${normalizedBilled.toFixed(
-                    2,
-                )} m³.`;
-        }
+            warning = (
+                <>
+                Para concreto { typeLabel }, el volumen mínimo es de < strong > { minM3ForType.toFixed(1) } m³</strong>. La cotización se calcula sobre <strong>{normalizedBilled.toFixed(1)} m³</strong >.
+                </>
+            );
+} else if (normalizedBilled !== normalizedRequested) {
+    warning = (
+        <>
+        Por política, el concreto se cotiza en múltiplos de < strong > 0.5 m³</strong>. Ingresaste {normalizedRequested.toFixed(2)} m³ y se está cotizando sobre <strong>{normalizedBilled.toFixed(2)} m³</strong >.
+                </>
+            );
+} else if (roundedM3 !== normalizedRequested) {
+    warning = (
+        <>
+        El volumen se ajusta a múltiplos de < strong > 0.5 m³</strong>. Se está cotizando sobre {normalizedBilled.toFixed(2)} m³.
+            </>
+            );
+}
 
-        return {
-            quote: q,
-            requestedM3: normalizedRequested,
-            billedM3: normalizedBilled,
-            volumeError: null,
-            volumeWarning: warning,
-        };
+return {
+    quote: q,
+    requestedM3: normalizedRequested,
+    billedM3: normalizedBilled,
+    volumeError: null,
+    volumeWarning: warning,
+};
     }, [
-        mode,
-        m3,
-        volumeMode,
-        length,
-        width,
-        thicknessByDims,
-        area,
-        thicknessByArea,
-        hasCoffered,
-        strength,
-        type,
-    ]);
+    mode,
+    m3,
+    volumeMode,
+    length,
+    width,
+    thicknessByDims,
+    area,
+    thicknessByArea,
+    hasCoffered,
+    strength,
+    type,
+]);
 
-    // Track view content whenever quote total changes
-    useEffect(() => {
-        if (core.quote.total > 0) {
-            trackViewContent(core.quote.total);
-        }
-    }, [core.quote.total]);
+// Track view content whenever quote total changes
+useEffect(() => {
+    if (core.quote.total > 0) {
+        trackViewContent(core.quote.total);
+    }
+}, [core.quote.total]);
 
-    const canProceedToSummary =
-        !core.volumeError && core.billedM3 > 0;
+const canProceedToSummary =
+    !core.volumeError && core.billedM3 > 0;
 
-    const unitPriceLabel = fmtMXN(core.quote.unitPricePerM3);
+const unitPriceLabel = fmtMXN(core.quote.unitPricePerM3);
 
-    const modeLabel =
-        mode === 'knownM3'
-            ? 'Ya sé cuántos m³ necesito'
-            : mode === 'assistM3'
-                ? 'Ayúdame a calcular los m³'
-                : 'Modo sin seleccionar';
+const modeLabel =
+    mode === 'knownM3'
+        ? 'Sí'
+        : mode === 'assistM3'
+            ? 'No, ayúdame a definirlo'
+            : 'Modo sin seleccionar';
 
-    return {
-        ...core,
-        canProceedToSummary,
-        unitPriceLabel,
-        modeLabel,
-    };
+return {
+    ...core,
+    canProceedToSummary,
+    unitPriceLabel,
+    modeLabel,
+};
 }

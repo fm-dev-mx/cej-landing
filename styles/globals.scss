@@ -58,7 +58,34 @@ main { padding-bottom: calc(var(--sticky-h, 64px) + env(safe-area-inset-bottom, 
 
 /* Secciones */
 .hero-section { padding-block: var(--sp-6); }
-.section { margin-block: var(--sp-6); }
+
+.section {
+  min-height: 40vh;
+  padding: 4rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bgLight {
+  background-color: var(--c-bg); // Usa tokens globales
+}
+
+.bgWhite {
+  background-color: var(--c-surface);
+}
+
+.containerCentered {
+  @include container;
+  text-align: center;
+  max-width: 800px;
+}
+
+.textMuted {
+  color: var(--c-muted);
+  margin-top: 1rem;
+  font-size: var(--fs-lg);
+}
 
 /* Layout root */
 .app-root { min-height: 100svh; display: flex; flex-direction: column; }

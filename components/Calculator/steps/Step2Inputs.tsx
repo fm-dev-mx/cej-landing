@@ -1,6 +1,10 @@
 // components/Calculator/steps/Step2Inputs.tsx
 
-import { useCallback, type ChangeEvent } from "react";
+import {
+  useCallback,
+  type ChangeEvent,
+  type ReactNode
+} from "react";
 import {
   CONCRETE_TYPES,
   STRENGTHS,
@@ -29,7 +33,7 @@ type Props = {
   requestedM3: number;
   billedM3: number;
   volumeError: string | null;
-  volumeWarning: string | null;
+  volumeWarning: ReactNode | null; // Fix: Allow JSX (ReactNode)
   canProceedToSummary: boolean;
   onBackToStep1: () => void;
   onContinueToStep3: () => void;
@@ -47,6 +51,7 @@ type Props = {
 };
 
 export function Step2Inputs(props: Props) {
+  // --- CORRECCIÓN: Desestructurar todas las props aquí ---
   const {
     mode,
     volumeMode,
@@ -83,6 +88,7 @@ export function Step2Inputs(props: Props) {
   const handleNumericInput = useCallback(
     (next: (value: string) => void) =>
       (e: ChangeEvent<HTMLInputElement>) => {
+        // Replace commas with dots and remove non-numeric chars
         const raw = e.target.value.replace(/,/g, ".");
         const cleaned = raw.replace(/[^0-9.]/g, "");
         next(cleaned);
@@ -99,17 +105,10 @@ export function Step2Inputs(props: Props) {
 
   return (
     <div className={`${styles.step} ${styles.stepAnimated}`}>
-      <header className={styles.stepHeader}>
-        <span className={styles.stepBadge}>2</span>
-        <h2 className={styles.stepTitle}>
-          {mode === "knownM3"
-            ? "Ingresa tu volumen y detalles del concreto"
-            : "Cuéntanos de tu obra para estimar los m³"}
-        </h2>
-      </header>
+      {/* No Header here (handled by parent Calculator.tsx wrapper) */}
 
       <div className={styles.stepBody}>
-        {/* Flow A: user already knows volume */}
+        {/* Flow A: User already knows volume */}
         {mode === "knownM3" && (
           <div className={styles.field}>
             <label htmlFor="vol-known">Volumen (m³)</label>
@@ -117,21 +116,19 @@ export function Step2Inputs(props: Props) {
               id="vol-known"
               type="number"
               min={0}
-              step={0.1}
+              step={0.5}
               value={m3}
               onChange={handleNumericInput(onM3Change)}
-              className={styles.control}
+              className={`${styles.control} ${styles.volumeInput}`}
               aria-describedby="vol-known-hint"
               inputMode="decimal"
+              placeholder="0.0"
             />
-            <p id="vol-known-hint" className={styles.hint}>
-              Puedes ingresar decimales; se cotiza redondeando hacia arriba a
-              múltiplos de 0.5 m³ y respetando el mínimo por tipo de concreto.
-            </p>
+
           </div>
         )}
 
-        {/* Flow B: assist user with volume */}
+        {/* Flow B: Assist user with volume */}
         {mode === "assistM3" && (
           <>
             <div className={styles.field}>
@@ -148,8 +145,7 @@ export function Step2Inputs(props: Props) {
                     />
                     <span>
                       <strong>{w.label}</strong>
-                      <br />
-                      <small>{w.description}</small>
+                      <small style={{ display: 'block', marginTop: '0.2rem' }}>{w.description}</small>
                     </span>
                   </label>
                 ))}
@@ -157,8 +153,8 @@ export function Step2Inputs(props: Props) {
             </div>
 
             <div className={styles.field}>
-              <label>¿Cómo quieres calcular el volumen?</label>
-              <div className={styles.radioGroup}>
+              <label>Método de cálculo</label>
+              <div className={styles.radioRow}>
                 <label className={styles.radio}>
                   <input
                     type="radio"
@@ -167,7 +163,7 @@ export function Step2Inputs(props: Props) {
                     checked={volumeMode === "dimensions"}
                     onChange={() => onVolumeModeChange("dimensions")}
                   />
-                  <span>Por largo × ancho</span>
+                  <span>Largo × Ancho</span>
                 </label>
                 <label className={styles.radio}>
                   <input
@@ -177,7 +173,7 @@ export function Step2Inputs(props: Props) {
                     checked={volumeMode === "area"}
                     onChange={() => onVolumeModeChange("area")}
                   />
-                  <span>Por m²</span>
+                  <span>Por Área (m²)</span>
                 </label>
               </div>
             </div>
@@ -195,6 +191,7 @@ export function Step2Inputs(props: Props) {
                     onChange={handleNumericInput(onLengthChange)}
                     className={styles.control}
                     inputMode="decimal"
+                    placeholder="0.00"
                   />
                 </div>
                 <div className={styles.field}>
@@ -208,6 +205,7 @@ export function Step2Inputs(props: Props) {
                     onChange={handleNumericInput(onWidthChange)}
                     className={styles.control}
                     inputMode="decimal"
+                    placeholder="0.00"
                   />
                 </div>
                 <div className={styles.field}>
@@ -221,6 +219,7 @@ export function Step2Inputs(props: Props) {
                     onChange={handleNumericInput(onThicknessByDimsChange)}
                     className={styles.control}
                     inputMode="decimal"
+                    placeholder="10"
                   />
                 </div>
               </>
@@ -229,7 +228,7 @@ export function Step2Inputs(props: Props) {
             {volumeMode === "area" && (
               <>
                 <div className={styles.field}>
-                  <label htmlFor="area">Área (m²)</label>
+                  <label htmlFor="area">Área total (m²)</label>
                   <input
                     id="area"
                     type="number"
@@ -239,6 +238,7 @@ export function Step2Inputs(props: Props) {
                     onChange={handleNumericInput(onAreaChange)}
                     className={styles.control}
                     inputMode="decimal"
+                    placeholder="0.00"
                   />
                 </div>
                 <div className={styles.field}>
@@ -252,6 +252,7 @@ export function Step2Inputs(props: Props) {
                     onChange={handleNumericInput(onThicknessByAreaChange)}
                     className={styles.control}
                     inputMode="decimal"
+                    placeholder="10"
                   />
                 </div>
               </>
@@ -259,7 +260,7 @@ export function Step2Inputs(props: Props) {
 
             <div className={styles.field}>
               <label>¿La losa lleva casetón?</label>
-              <div className={styles.radioGroup}>
+              <div className={styles.radioRow}>
                 <label className={styles.radio}>
                   <input
                     type="radio"
@@ -268,7 +269,7 @@ export function Step2Inputs(props: Props) {
                     checked={hasCoffered === "no"}
                     onChange={() => onHasCofferedChange("no")}
                   />
-                  <span>No</span>
+                  <span>No (Losa sólida)</span>
                 </label>
                 <label className={styles.radio}>
                   <input
@@ -278,18 +279,14 @@ export function Step2Inputs(props: Props) {
                     checked={hasCoffered === "yes"}
                     onChange={() => onHasCofferedChange("yes")}
                   />
-                  <span>Sí</span>
+                  <span>Sí (Aligerada)</span>
                 </label>
               </div>
-              <p className={styles.hint}>
-                Aplicamos el factor de casetón según tu selección para estimar
-                los m³.
-              </p>
             </div>
           </>
         )}
 
-        {/* Strength */}
+        {/* Common Fields: Strength & Type */}
         <div className={styles.field}>
           <label htmlFor="fck">Resistencia (f’c)</label>
           <select
@@ -306,16 +303,14 @@ export function Step2Inputs(props: Props) {
           </select>
           {mode === "assistM3" && (
             <p className={styles.hint}>
-              La resistencia se sugiere según el tipo de obra, pero puedes
-              ajustarla si tu ingeniero estructurista indica otra.
+              Sugerida según el tipo de obra seleccionado.
             </p>
           )}
         </div>
 
-        {/* Concrete type */}
         <div className={styles.field}>
-          <label>Tipo de concreto</label>
-          <div className={styles.radioGroup}>
+          <label>Tipo de servicio</label>
+          <div className={styles.radioRow}>
             {CONCRETE_TYPES.map((t) => (
               <label key={t.value} className={styles.radio}>
                 <input
@@ -331,7 +326,7 @@ export function Step2Inputs(props: Props) {
           </div>
         </div>
 
-        {/* Volume info / errors */}
+        {/* Errors & Warnings */}
         {volumeError && (
           <p className={styles.error} role="alert">
             {volumeError}
@@ -339,27 +334,33 @@ export function Step2Inputs(props: Props) {
         )}
 
         {!volumeError && billedM3 > 0 && (
-          <p className={styles.note}>
-            Volumen cotizado:{" "}
-            <strong>{billedM3.toFixed(2)} m³</strong>
-            {requestedM3 > 0 &&
-              requestedM3 !== billedM3 &&
-              ` (a partir de ${requestedM3.toFixed(2)} m³ ingresados).`}
-          </p>
+          <div className={styles.note}>
+            <p>
+               Volumen a cotizar: <strong>{billedM3.toFixed(2)} m³</strong>
+            </p>
+            {requestedM3 > 0 && requestedM3 !== billedM3 && (
+              <p className={styles.hint} style={{ marginTop: '0.25rem' }}>
+                 (Calculado: {requestedM3.toFixed(2)} m³)
+              </p>
+            )}
+          </div>
         )}
 
         {!volumeError && volumeWarning && (
-          <p className={styles.note}>{volumeWarning}</p>
+          <div className={styles.error}>
+            {/* Render JSX content directly */}
+            {volumeWarning}
+          </div>
         )}
 
-        {/* Step controls */}
+        {/* Navigation Buttons */}
         <div className={styles.stepControls}>
           <button
             type="button"
             className={styles.secondaryBtn}
             onClick={onBackToStep1}
           >
-            Volver al paso 1
+            Atrás
           </button>
           <button
             type="button"
@@ -367,7 +368,7 @@ export function Step2Inputs(props: Props) {
             onClick={onContinueToStep3}
             disabled={!canProceedToSummary}
           >
-            Continuar a la cotización
+            Ver Cotización
           </button>
         </div>
       </div>

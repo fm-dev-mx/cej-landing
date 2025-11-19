@@ -1,0 +1,114 @@
+/* components/Services/Services.module.scss */
+@use "../../styles/primitives" as p;
+@use "../../styles/mixins" as *;
+
+.section {
+  /* Background matches the end of the calculator gradient or primary dark */
+  background-color: #021024; /* Fallback deep navy */
+  background: linear-gradient(to bottom, #010b18, var(--c-primary-dark));
+  position: relative;
+  overflow: hidden;
+  padding-top: var(--sp-8);
+  padding-bottom: var(--sp-10);
+}
+
+.container {
+  @include container;
+}
+
+.header {
+  max-width: 600px;
+  margin-bottom: var(--sp-8);
+
+  @media (min-width: 768px) {
+    margin-bottom: var(--sp-10);
+  }
+}
+
+.title {
+  @include p.h2;
+  color: white;
+  margin-bottom: var(--sp-3);
+
+  span {
+    color: var(--c-accent);
+  }
+}
+
+.subtitle {
+  @include p.lead;
+  color: var(--c-muted-on-dark);
+  font-size: var(--fs-lg);
+}
+
+/* Grid Layout */
+.grid {
+  display: grid;
+  gap: var(--sp-4);
+
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Card Component */
+.card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-6);
+  transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  height: 100%;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.06);
+
+    .icon {
+      transform: scale(1.15) rotate(5deg);
+    }
+  }
+}
+
+/* 3D Icon Placeholder Simulation */
+.iconWrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: radial-gradient(circle at top left, rgba(255,255,255,0.1), transparent 70%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--sp-2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.icon {
+  font-size: 2rem;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 8px 8px rgba(0,0,0,0.4));
+  cursor: default;
+}
+
+.cardTitle {
+  font-size: var(--fs-xl);
+  color: white;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.cardDesc {
+  color: var(--c-muted-on-dark);
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  margin: 0;
+}
