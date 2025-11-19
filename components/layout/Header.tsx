@@ -6,6 +6,8 @@ import Link from "next/link";
 import Image from "next/image";
 import styles from "./Header.module.scss";
 import { HeaderCallDialog } from "./HeaderCallDialog";
+import { useScrollSpy } from "@/hooks/useScrollSpy";
+import { useLockBodyScroll } from "@/hooks/useLockBodyScroll";
 
 type NavItem = {
   href: string;
@@ -20,6 +22,7 @@ const PRIMARY_NAV: NavItem[] = [
   { href: "#contact", label: "Contacto" },
 ];
 
+// Extract IDs for the hook (remove the #)
 const SECTION_IDS = PRIMARY_NAV.map((item) =>
   item.href.startsWith("#") ? item.href.slice(1) : item.href
 );
@@ -41,13 +44,21 @@ function getPhoneMeta() {
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCallDialogOpen, setIsCallDialogOpen] = useState(false);
+
+  // Scroll handling for header appearance
   const [isScrolled, setIsScrolled] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [activeSectionId, setActiveSectionId] = useState<string>("calculator");
+
+  // 1. Use Custom Hook for Scroll Spy
+  const activeSectionId = useScrollSpy(SECTION_IDS, "calculator");
+
+  // 2. Use Custom Hook for Body Scroll Locking
+  useLockBodyScroll(isMenuOpen);
 
   const waHref = getWhatsAppHref();
   const phoneMeta = getPhoneMeta();
 
+  // Visual scroll effect logic (Header specific, kept here as UI state)
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY;
@@ -58,36 +69,9 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Block scroll when menu is open
-  useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => { document.body.style.overflow = ''; };
-  }, [isMenuOpen]);
-
-  // Scroll Spy
-  useEffect(() => {
-    if (typeof window === "undefined" || !("IntersectionObserver" in window)) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible[0]?.target.id) setActiveSectionId(visible[0].target.id);
-      },
-      { rootMargin: "-20% 0px -60% 0px" }
-    );
-    SECTION_IDS.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
-  }, []);
-
   const handleNavItemClick = (href: string, closeMenu = false) => {
-    const id = href.startsWith("#") ? href.slice(1) : href;
-    setActiveSectionId(id);
+    // activeSectionId updates automatically via observer,
+    // but we can close the menu here.
     if (closeMenu) setIsMenuOpen(false);
   };
 
