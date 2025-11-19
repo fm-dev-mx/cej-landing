@@ -1,46 +1,62 @@
-// components/layout/Header.module.scss
+/* components/layout/Header.module.scss */
+
 @use "../../styles/primitives" as p;
+@use "../../styles/mixins" as *;
 
 .header {
   --header-shrink: 0;
 
-  position: sticky;
+  /* Fixed top */
+  position: fixed;
   top: 0;
-  z-index: 40;
-  background-color: var(--c-surface);
-  box-shadow: var(--shadow-sm);
+  left: 0;
+  width: 100%;
+  z-index: 60;
+
+  background-color: transparent;
+  border-bottom: 1px solid transparent;
+
   padding-top: env(safe-area-inset-top);
-  padding-inline: 2rem;
+  padding-inline: 0rem;
+
   transition:
-    background-color 0.18s ease,
-    box-shadow 0.18s ease;
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    -webkit-backdrop-filter 0.3s ease,
+    backdrop-filter 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease,
+    padding-block 0.3s ease;
 }
 
 .headerScrolled {
-  background-color: #ffffff;
-  box-shadow: var(--shadow-md);
+  /* Fondo oscuro semitransparente al bajar */
+  background-color: rgba(2, 26, 54, 0.9);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .inner {
-  @include p.container;
+  @include container;
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  /* Altura y padding interpolados con el scroll */
-  min-height: calc(88px - 20px * var(--header-shrink));
-  padding-block: calc(1.25rem - 0.45rem * var(--header-shrink));
-  padding-inline: var(--sp-0);
+  /* Altura dinámica */
+  min-height: calc(90px - 20px * var(--header-shrink));
+  padding-block: calc(1rem - 0.25rem * var(--header-shrink));
+  padding-inline: 0;
 
   gap: var(--sp-2);
-  transition:
-    padding-block 0.18s ease,
-    min-height 0.18s ease;
+  transition: min-height 0.3s ease, padding-block 0.3s ease;
 }
 
 .brand {
   display: flex;
   align-items: center;
+  position: relative;
+  z-index: 10; /* Relativo al header */
 }
 
 .logoLink {
@@ -49,14 +65,14 @@
 }
 
 .logo {
-  height: calc(72px - 18px * var(--header-shrink));
+  height: calc(64px - 14px * var(--header-shrink));
   width: auto;
-  transition:
-    height 0.18s ease,
-    transform 0.18s ease;
+  object-fit: contain;
+  transition: height 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 
-/* Desktop nav */
+/* --- Desktop Nav --- */
 
 .nav {
   display: none;
@@ -65,7 +81,7 @@
 .navList {
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
+  gap: var(--sp-6);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -79,386 +95,266 @@
 .navLink {
   font-size: var(--fs-sm);
   font-weight: 500;
-  color: var(--c-muted-strong, var(--c-text));
   text-decoration: none;
-  padding-block: 0.3rem;
-  border-bottom: 2px solid transparent;
-  transition:
-    color 0.16s ease,
-    border-color 0.16s ease;
+  position: relative;
+  padding-block: 0.5rem;
+  color: var(--c-muted-on-dark, #cbd5e1);
+  transition: color 0.2s ease;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 
   &:hover {
-    color: var(--c-primary);
-    border-color: color-mix(in oklab, var(--c-primary) 85%, #fff 15%);
+    color: var(--c-accent);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--c-primary);
-    outline-offset: 3px;
-    border-color: transparent;
+    outline: 2px solid var(--c-accent);
+    border-radius: 4px;
   }
 }
 
 .navLinkActive {
-  color: var(--c-primary-strong);
-  border-bottom-color: var(--c-primary);
-  font-weight: 600;
+  color: #ffffff;
+  font-weight: 700;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background-color: var(--c-accent);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--c-accent);
+  }
 }
 
-/* Desktop actions */
+/* --- Desktop Actions --- */
 
 .actions {
   display: none;
   align-items: center;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
 }
 
 .button {
   @include p.btn;
   font-size: var(--fs-sm);
-  padding-inline: var(--sp-3);
-
-  &:focus-visible {
-    outline: 2px solid var(--c-primary);
-    outline-offset: 3px;
-  }
+  padding: 0.6rem 1.25rem;
+  border-radius: 99px;
+  transition: all 0.2s ease;
 }
 
 .buttonWhatsApp {
-  background: linear-gradient(135deg, var(--c-whatsapp), #1ebe5d);
-  border-color: transparent;
-  color: #fff;
-  box-shadow: 0 8px 16px rgba(37, 211, 102, 0.18);
+  background-color: var(--c-accent);
+  border-color: var(--c-accent);
+  color: var(--c-primary-dark);
+  font-weight: 700;
 
   &:hover {
-    background: linear-gradient(135deg, #29d76a, #19b857);
-    box-shadow: 0 12px 22px rgba(37, 211, 102, 0.24);
+    background-color: var(--c-accent-hover);
+    border-color: var(--c-accent-hover);
+    box-shadow: 0 0 12px rgba(254, 201, 20, 0.4);
+    transform: translateY(-1px);
   }
-}
-
-.buttonWhatsAppLabel {
-  font-weight: 600;
 }
 
 .buttonCall {
-  min-height: 3rem;
-  background-color: #fff;
-  color: var(--c-call);
-  border-color: var(--c-border);
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  min-height: initial;
 
   &:hover {
-    background-color: var(--c-call-soft);
-    border-color: var(--c-call);
+    background-color: rgba(255, 255, 255, 0.2);
+    border-color: #fff;
   }
 }
 
-.buttonFull {
-  width: 100%;
-}
-
-/* Hamburger button */
+/* --- Mobile Toggle --- */
 
 .menuToggle {
   border: none;
-  background: transparent;
-  padding: 0.5rem;
-  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.6rem;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  transition: background-color 0.2s ease, transform 0.2s ease;
 
-  /* Escala suave del botón hamburguesa */
-  transform: scale(calc(1 - 0.08 * var(--header-shrink)));
-  transition:
-    background-color 0.18s ease,
-    transform 0.24s ease;
+  /* Relativo al header (60) */
+  position: relative;
+  z-index: 10;
 
   &:hover {
-    background-color: rgba(15, 23, 42, 0.03);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--c-primary);
-    outline-offset: 2px;
+    background-color: rgba(255, 255, 255, 0.1);
   }
 }
 
 .menuIcon {
   position: relative;
-  width: 22px;
-  height: 16px;
-  display: inline-flex;
+  width: 24px;
+  height: 18px;
+  display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
 .menuIconBar {
   height: 2px;
-  border-radius: 999px;
-  background-color: var(--c-text);
-  transition:
-    transform 0.18s ease,
-    opacity 0.18s ease;
+  width: 100%;
+  background-color: #fff;
+  border-radius: 4px;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
-.menuIconOpen .menuIconBar:nth-child(1) {
-  transform: translateY(7px) rotate(45deg);
-}
+/* Animación de la X */
+.menuIconOpen .menuIconBar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.menuIconOpen .menuIconBar:nth-child(2) { opacity: 0; }
+.menuIconOpen .menuIconBar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 
-.menuIconOpen .menuIconBar:nth-child(2) {
-  opacity: 0;
-}
-
-.menuIconOpen .menuIconBar:nth-child(3) {
-  transform: translateY(-7px) rotate(-45deg);
-}
-
-/* Mobile menu overlay */
+/* --- Mobile Menu Overlay --- */
 
 .mobileMenu {
   position: fixed;
-  inset-inline: 0;
-  margin-top: 1rem;
-  top: var(--sticky-h);
-  bottom: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(15, 23, 42, 0.35),
-    rgba(15, 23, 42, 0.55)
-  );
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
+  inset: 0;
+  /* FIX: Z-Index 50 para estar DEBAJO del header (60) y ENCIMA de la sticky bar (29) */
+  z-index: 50;
+  background-color: var(--c-primary-dark);
+
+  /* Padding superior para librar el header fixed */
+  padding-top: 100px;
+
+  /* Padding inferior para asegurar scroll completo */
+  padding-bottom: calc(120px + env(safe-area-inset-bottom));
+
+  transform: translateY(-100%);
   opacity: 0;
+  visibility: hidden;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease,
+    visibility 0.3s step-end;
   pointer-events: none;
-  transition: opacity 0.18s ease;
 }
 
 .mobileMenuOpen {
+  transform: translateY(0);
   opacity: 1;
+  visibility: visible;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease,
+    visibility 0s step-start;
   pointer-events: auto;
 }
 
 .mobileNav {
-  background-color: var(--c-surface);
-  box-shadow: var(--shadow-md);
+  padding-top: 1rem;
   padding-inline: var(--sp-4);
-  padding-block: var(--sp-3);
-  transform: translateY(-8px);
-  opacity: 0;
-  transition:
-    transform 0.22s ease-out,
-    opacity 0.22s ease-out;
-}
-
-.mobileMenuOpen .mobileNav {
-  transform: translateY(0);
-  opacity: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto; /* Scroll interno si la pantalla es pequeña */
 }
 
 .mobileNavList {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  /* Más espacio entre items para toque fácil */
+  gap: var(--sp-2);
 }
 
-.mobileNavItem + .mobileNavItem {
-  border-top: 1px solid var(--c-border);
+.mobileNavItem {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .mobileNavLink {
   display: block;
-  padding-block: 0.85rem;
-  font-size: var(--fs-base);
-  color: var(--c-text);
+  padding: 1.25rem 0; /* Área de toque generosa */
+  font-size: 1.35rem; /* Texto grande profesional */
+  color: var(--c-muted-on-dark);
   text-decoration: none;
+  font-weight: 500;
+  letter-spacing: -0.02em;
 
-  &:hover {
-    color: var(--c-primary);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--c-primary);
-    outline-offset: 3px;
+  &:hover,
+  &:active {
+    color: var(--c-accent);
+    padding-left: 0.75rem;
+    transition: all 0.2s ease;
   }
 }
 
 .mobileNavLinkActive {
-  color: var(--c-primary-strong);
-  font-weight: 600;
+  color: var(--c-accent);
+  font-weight: 700;
+  /* Indicador visual */
+  border-left: 3px solid var(--c-accent);
+  padding-left: 0.75rem;
 }
 
+/* Botones dentro del menú móvil */
 .mobileActions {
-  margin-top: var(--sp-3);
+  margin-top: auto;
+  padding-top: var(--sp-8);
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
+  align-items: center;
+
+  .button {
+    width: 75%;
+    padding-block: 1rem;
+    font-size: 1rem;
+  }
 }
 
-/* Call dialog (desktop) */
-
+/* Call Dialog (Desktop) */
 .callDialogOverlay {
   position: fixed;
   inset: 0;
-  z-index: 60;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: var(--sp-10) var(--sp-3) var(--sp-6);
-  background-color: rgba(15, 23, 42, 0.5);
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.7);
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  padding-top: 15vh;
 }
 
 .callDialog {
-  width: 100%;
-  max-width: 420px;
   background-color: var(--c-surface);
+  width: 90%;
+  max-width: 400px;
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: var(--sp-4);
+  padding: var(--sp-5);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  animation: dialogIn 0.2s ease-out;
 }
 
-.callDialogHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--sp-2);
-  margin-bottom: var(--sp-3);
+@keyframes dialogIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
-
-.callDialogTitle {
-  margin: 0;
-  font-size: var(--fs-lg);
-  font-weight: 600;
-  color: var(--c-primary-strong);
-}
-
-.callDialogCloseIcon {
-  border: none;
-  background: transparent;
-  font-size: 1.25rem;
-  line-height: 1;
-  padding: 0.25rem;
-  border-radius: 999px;
-  cursor: pointer;
-  color: var(--c-muted-strong);
-
-  &:hover {
-    background-color: var(--c-step-bg);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--c-primary);
-    outline-offset: 2px;
-  }
-}
-
-.callDialogSubtitle {
-  margin: 0 0 var(--sp-3);
-  font-size: var(--fs-sm);
-  color: var(--c-muted);
-}
-
-.callDialogPhoneBlock {
-  padding: var(--sp-3);
-  border-radius: var(--radius);
-  border: 1px solid var(--c-border-strong);
-  background-color: var(--c-step-bg);
-}
-
-.callDialogPhoneLink {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.15rem;
-  text-decoration: none;
-  margin-bottom: var(--sp-2);
-
-  &:hover .callDialogPhoneNumber {
-    color: var(--c-primary);
-  }
-}
-
-.callDialogPhoneLabel {
-  font-size: var(--fs-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--c-muted);
-}
-
-.callDialogPhoneNumber {
-  font-size: var(--fs-lg);
-  font-weight: 600;
-  color: var(--c-text);
-}
-
-.callDialogHint {
-  margin: 0;
-  font-size: var(--fs-xs);
-  color: var(--c-muted);
-}
-
-.callDialogActions {
-  margin-top: var(--sp-3);
-  display: flex;
-  justify-content: flex-end;
-}
-
-.callDialogCloseButton {
-  @include p.btn-outline;
-  font-size: var(--fs-sm);
-}
-
-/* Desktop breakpoint */
 
 @media (min-width: 768px) {
-  .inner {
-    gap: var(--sp-4);
-    padding-inline: var(--sp-4);
-  }
-
-  .nav {
-    display: block;
-  }
-
-  .actions {
-    display: flex;
-    margin-right: 4rem;
-  }
-
-  .menuToggle,
-  .mobileMenu {
-    display: none;
-  }
+  .header { padding-inline: 2rem; }
+  .nav { display: block; }
+  .actions { display: flex; margin-right: 2rem; }
+  .menuToggle, .mobileMenu { display: none; }
 }
 
-/* Wide desktop refinements */
 @media (min-width: 1024px) {
-  .inner {
-    padding-inline: var(--sp-5);
-  }
-
-  .navList {
-    gap: var(--sp-6);
-  }
-
-  .navLink {
-    font-size: var(--fs-base);
-    padding-block: 0.5rem;
-  }
-
-  .actions {
-    gap: var(--sp-3);
-  }
-
-  .button {
-    padding-inline: var(--sp-4);
-  }
-}
-
-@media (min-width: 1280px) {
-  .inner {
-    padding-inline: var(--sp-6);
-  }
+  .inner { padding-inline: var(--sp-5); }
+  .navList { gap: var(--sp-8); }
 }

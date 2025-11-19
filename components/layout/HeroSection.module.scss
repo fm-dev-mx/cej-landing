@@ -52,6 +52,7 @@
   @include container;
   position: relative;
   z-index: 2; /* Por encima del video/overlay */
+  margin-top: 2rem;
   padding-block: var(--sp-8);
 }
 
@@ -75,6 +76,9 @@
   font-weight: 500;
   color: var(--c-accent);
   width: fit-content;
+
+  /* FIX: Safari support */
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
 

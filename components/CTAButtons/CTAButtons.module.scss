@@ -6,24 +6,60 @@
   position: sticky;
   bottom: 0;
   inset-inline: 0;
-  z-index: 50;
-  height: var(--sticky-h);                    /* nuevo */
+  z-index: 29; /* Debajo del menú móvil (55) */
+
+  min-height: 60px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-4);
-  background: color-mix(in oklab, var(--c-bg) 92%, #000 8%);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  border-top: 1px solid var(--c-border);
-  box-shadow: 0 -2px 12px rgba(0,0,0,.06);    /* más suave */
-  padding-bottom: calc(var(--sp-2) + env(safe-area-inset-bottom, 0px)); /* safe area */
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-4);
+
+  /* Dark Glass Theme */
+  background: rgba(2, 26, 54, 0.95); /* Navy muy oscuro */
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+
+  padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
 
   @media (min-width: 768px) { display: none; }
 }
 
 .inlineGroup { display: flex; gap: var(--sp-2); }
 
-.cta { @include p.btn; width: 100%; font-size: var(--fs-base); }
-.whatsapp { background: #22c55e; border-color: #16a34a; &:hover { background: color-mix(in oklab, #22c55e 92%, #fff 8%); } }
-.phone { @include p.btn-outline; }
+.cta {
+  @include p.btn;
+  width: 80%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  justify-content: center;
+  border-radius: 99px; /* Pills */
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Botón WhatsApp */
+.whatsapp {
+  background: var(--c-accent);
+  color: var(--c-primary-dark);
+  border: 1px solid var(--c-accent);
+
+  &:hover {
+    background: var(--c-accent-hover);
+    transform: translateY(-1px);
+  }
+}
+
+/* Botón Llamar */
+.phone {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #fff;
+  }
+}
