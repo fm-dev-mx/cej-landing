@@ -3,7 +3,41 @@
 
 import { useCallback, type ChangeEvent } from 'react';
 import { useCalculatorContext } from '../context/CalculatorContext';
+import type { QuoteWarning } from '../hooks/useCalculatorQuote';
 import styles from '../Calculator.module.scss';
+
+// Helper component to render warnings
+function VolumeWarningMessage({ warning }: { warning: QuoteWarning }) {
+  if (!warning) return null;
+
+  switch (warning.code) {
+    case 'BELOW_MINIMUM':
+      return (
+        <>
+          Para concreto <strong>{warning.typeLabel}</strong>, el volumen mínimo es de{' '}
+          <strong>{warning.minM3.toFixed(1)} m³</strong>. La cotización se calcula
+          sobre <strong>{warning.billedM3.toFixed(1)} m³</strong>.
+        </>
+      );
+    case 'ROUNDING_POLICY':
+      return (
+        <>
+          Por política, el concreto se cotiza en múltiplos de{' '}
+          <strong>0.5 m³</strong>. Ingresaste {warning.requestedM3.toFixed(2)} m³
+          y se está cotizando sobre <strong>{warning.billedM3.toFixed(2)} m³</strong>.
+        </>
+      );
+    case 'ROUNDING_ADJUSTMENT':
+      return (
+        <>
+          El volumen se ajusta a múltiplos de <strong>0.5 m³</strong>. Se está
+          cotizando sobre {warning.billedM3.toFixed(2)} m³.
+        </>
+      );
+    default:
+      return null;
+  }
+}
 
 export function Step2Inputs() {
   const {
@@ -272,7 +306,9 @@ export function Step2Inputs() {
         )}
 
         {!volumeError && volumeWarning && (
-          <div className={styles.error}>{volumeWarning}</div>
+          <div className={styles.error}>
+            <VolumeWarningMessage warning={volumeWarning} />
+          </div>
         )}
 
         <div className={styles.stepControls}>

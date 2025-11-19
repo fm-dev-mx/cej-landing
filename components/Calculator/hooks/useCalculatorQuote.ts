@@ -1,7 +1,6 @@
-// components/Calculator/hooks/useCalculatorQuote.tsx
-// NOTE: This file must be named .tsx because it contains JSX (ReactNode)
+// components/Calculator/hooks/useCalculatorQuote.ts
 
-import { useEffect, useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
     calcQuote,
     calcVolumeFromArea,
@@ -34,12 +33,31 @@ type QuoteInput = {
     type: ConcreteType;
 };
 
+// Structured warning state for the UI to consume
+export type QuoteWarning =
+    | {
+          code: 'BELOW_MINIMUM';
+          minM3: number;
+          billedM3: number;
+          typeLabel: string;
+      }
+    | {
+          code: 'ROUNDING_POLICY';
+          requestedM3: number;
+          billedM3: number;
+      }
+    | {
+          code: 'ROUNDING_ADJUSTMENT';
+          billedM3: number;
+      }
+    | null;
+
 export type QuoteState = {
     quote: QuoteBreakdown;
     requestedM3: number;
     billedM3: number;
     volumeError: string | null;
-    volumeWarning: ReactNode | null;
+    volumeWarning: QuoteWarning;
     canProceedToSummary: boolean;
     unitPriceLabel: string;
     modeLabel: string;
@@ -66,7 +84,7 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
             requestedM3: 0,
             billedM3: 0,
             volumeError: '' as string | null,
-            volumeWarning: null as ReactNode | null,
+            volumeWarning: null as QuoteWarning,
         };
 
         if (mode === null) {
@@ -160,72 +178,71 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
             isBelowMinimum,
         } = q.volume;
 
-        let warning: ReactNode | null = null;
+        let warning: QuoteWarning = null;
 
         if (isBelowMinimum) {
-            warning = (
-                <>
-                Para concreto { typeLabel }, el volumen mínimo es de < strong > { minM3ForType.toFixed(1) } m³</strong>. La cotización se calcula sobre <strong>{normalizedBilled.toFixed(1)} m³</strong >.
-                </>
-            );
-} else if (normalizedBilled !== normalizedRequested) {
-    warning = (
-        <>
-        Por política, el concreto se cotiza en múltiplos de < strong > 0.5 m³</strong>. Ingresaste {normalizedRequested.toFixed(2)} m³ y se está cotizando sobre <strong>{normalizedBilled.toFixed(2)} m³</strong >.
-                </>
-            );
-} else if (roundedM3 !== normalizedRequested) {
-    warning = (
-        <>
-        El volumen se ajusta a múltiplos de < strong > 0.5 m³</strong>. Se está cotizando sobre {normalizedBilled.toFixed(2)} m³.
-            </>
-            );
-}
+            warning = {
+                code: 'BELOW_MINIMUM',
+                minM3: minM3ForType,
+                billedM3: normalizedBilled,
+                typeLabel,
+            };
+        } else if (normalizedBilled !== normalizedRequested) {
+            warning = {
+                code: 'ROUNDING_POLICY',
+                requestedM3: normalizedRequested,
+                billedM3: normalizedBilled,
+            };
+        } else if (roundedM3 !== normalizedRequested) {
+            warning = {
+                code: 'ROUNDING_ADJUSTMENT',
+                billedM3: normalizedBilled,
+            };
+        }
 
-return {
-    quote: q,
-    requestedM3: normalizedRequested,
-    billedM3: normalizedBilled,
-    volumeError: null,
-    volumeWarning: warning,
-};
+        return {
+            quote: q,
+            requestedM3: normalizedRequested,
+            billedM3: normalizedBilled,
+            volumeError: null,
+            volumeWarning: warning,
+        };
     }, [
-    mode,
-    m3,
-    volumeMode,
-    length,
-    width,
-    thicknessByDims,
-    area,
-    thicknessByArea,
-    hasCoffered,
-    strength,
-    type,
-]);
+        mode,
+        m3,
+        volumeMode,
+        length,
+        width,
+        thicknessByDims,
+        area,
+        thicknessByArea,
+        hasCoffered,
+        strength,
+        type,
+    ]);
 
-// Track view content whenever quote total changes
-useEffect(() => {
-    if (core.quote.total > 0) {
-        trackViewContent(core.quote.total);
-    }
-}, [core.quote.total]);
+    // Track view content whenever quote total changes
+    useEffect(() => {
+        if (core.quote.total > 0) {
+            trackViewContent(core.quote.total);
+        }
+    }, [core.quote.total]);
 
-const canProceedToSummary =
-    !core.volumeError && core.billedM3 > 0;
+    const canProceedToSummary = !core.volumeError && core.billedM3 > 0;
 
-const unitPriceLabel = fmtMXN(core.quote.unitPricePerM3);
+    const unitPriceLabel = fmtMXN(core.quote.unitPricePerM3);
 
-const modeLabel =
-    mode === 'knownM3'
-        ? 'Sí'
-        : mode === 'assistM3'
-            ? 'No, ayúdame a definirlo'
-            : 'Modo sin seleccionar';
+    const modeLabel =
+        mode === 'knownM3'
+            ? 'Sí'
+            : mode === 'assistM3'
+                ? 'No, ayúdame a definirlo'
+                : 'Modo sin seleccionar';
 
-return {
-    ...core,
-    canProceedToSummary,
-    unitPriceLabel,
-    modeLabel,
-};
+    return {
+        ...core,
+        canProceedToSummary,
+        unitPriceLabel,
+        modeLabel,
+    };
 }
