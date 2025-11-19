@@ -7,9 +7,14 @@ import {
     calcVolumeFromDimensions,
     EMPTY_QUOTE
 } from '@/lib/pricing';
-import { MIN_M3_BY_TYPE, CONCRETE_TYPES } from '@/config/business';
-import { clamp, fmtMXN, parseNum } from '@/lib/utils';
+import { CONCRETE_TYPES } from '@/config/business';
+import { fmtMXN } from '@/lib/utils';
 import { trackViewContent } from '@/lib/pixel';
+import {
+    createKnownVolumeSchema,
+    DimensionsSchema,
+    AreaSchema
+} from '@/lib/schemas';
 import {
     type AssistVolumeMode,
     type CalculatorMode,
@@ -86,74 +91,75 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
         };
 
         if (mode === null) {
-            return {
-                ...empty,
-                volumeError: null,
-                volumeWarning: null,
-            };
+            return { ...empty, volumeError: null, volumeWarning: null };
         }
 
         let rawRequested = 0;
         let error: string | null = null;
 
-        // Get min volume early for initial input validation messages
-        const minRequired = MIN_M3_BY_TYPE[type];
-
-        // Resolve human-readable label (e.g., "pumped" -> "Bombeado")
-        const typeConfig = CONCRETE_TYPES.find((t) => t.value === type);
-        const typeLabel = typeConfig ? typeConfig.label : type;
-
+        // 1. Validate & Parse Input using Zod Schemas
         if (mode === 'knownM3') {
-            const parsed = clamp(parseNum(m3), 0, 500);
-            rawRequested = parsed;
+            const schema = createKnownVolumeSchema();
+            const result = schema.safeParse({ m3 });
 
-            if (!parsed) {
-                // Show error if value is zero/invalid
-                error = `Ingresa un volumen válido (mínimo sugerido ${minRequired} m³).`;
+            if (!result.success) {
+                // Use the first validation error message
+                error = result.error.issues[0].message;
+            } else {
+                rawRequested = result.data.m3;
             }
         } else {
             const hasCofferedSlab = hasCoffered === 'yes';
 
             if (volumeMode === 'dimensions') {
-                const lengthNum = clamp(parseNum(length), 0, 1000);
-                const widthNum = clamp(parseNum(width), 0, 1000);
-                const thicknessNum = clamp(parseNum(thicknessByDims), 0, 100);
+                const result = DimensionsSchema.safeParse({
+                    length,
+                    width,
+                    thickness: thicknessByDims,
+                });
 
-                if (!lengthNum || !widthNum || !thicknessNum) {
-                    error =
-                        'Completa largo, ancho y grosor para poder calcular los m³.';
+                if (!result.success) {
+                    // If fields are empty/zero, we just show a generic prompt or the specific Zod error
+                    // For better UX, if simply empty, we might wait. But here we map Zod errors directly.
+                    // To avoid spamming errors on empty initial state, we can check if strings are empty manually
+                    // or just let Zod handle "min" messages.
+                    const firstIssue = result.error.issues[0];
+                    // Only show error if value is present but invalid, OR if we want strict guidance.
+                    // For this MVP, we return the error to block progress.
+                    if (length || width || thicknessByDims) {
+                        error = firstIssue.message;
+                    } else {
+                        error = 'Completa las medidas para calcular.';
+                    }
                 } else {
-                    const volume = calcVolumeFromDimensions({
-                        lengthM: lengthNum,
-                        widthM: widthNum,
-                        thicknessCm: thicknessNum,
+                    const { length: l, width: w, thickness: t } = result.data;
+                    rawRequested = calcVolumeFromDimensions({
+                        lengthM: l,
+                        widthM: w,
+                        thicknessCm: t,
                         hasCofferedSlab,
                     });
-
-                    rawRequested = volume;
-
-                    if (!volume) {
-                        error = 'Verifica que las medidas sean mayores a 0.';
-                    }
                 }
             } else {
-                const areaNum = clamp(parseNum(area), 0, 20000);
-                const thicknessNum = clamp(parseNum(thicknessByArea), 0, 100);
+                const result = AreaSchema.safeParse({
+                    area,
+                    thickness: thicknessByArea,
+                });
 
-                if (!areaNum || !thicknessNum) {
-                    error = 'Completa área y grosor para poder calcular los m³.';
+                if (!result.success) {
+                    const firstIssue = result.error.issues[0];
+                    if (area || thicknessByArea) {
+                        error = firstIssue.message;
+                    } else {
+                        error = 'Completa área y grosor para calcular.';
+                    }
                 } else {
-                    const volume = calcVolumeFromArea({
-                        areaM2: areaNum,
-                        thicknessCm: thicknessNum,
+                    const { area: a, thickness: t } = result.data;
+                    rawRequested = calcVolumeFromArea({
+                        areaM2: a,
+                        thicknessCm: t,
                         hasCofferedSlab,
                     });
-
-                    rawRequested = volume;
-
-                    if (!volume) {
-                        error = 'Verifica que las medidas sean mayores a 0.';
-                    }
                 }
             }
         }
@@ -166,7 +172,7 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
             };
         }
 
-        // If rawRequested > 0, calculate the quote.
+        // 2. Calculate Quote (Business Logic)
         const q = calcQuote(rawRequested, strength, type);
         const {
             requestedM3: normalizedRequested,
@@ -176,7 +182,9 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
             isBelowMinimum,
         } = q.volume;
 
+        // 3. Determine Warnings
         let warning: QuoteWarning = null;
+        const typeLabel = CONCRETE_TYPES.find((t) => t.value === type)?.label ?? type;
 
         if (isBelowMinimum) {
             warning = {
@@ -227,7 +235,6 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
     }, [core.quote.total]);
 
     const canProceedToSummary = !core.volumeError && core.billedM3 > 0;
-
     const unitPriceLabel = fmtMXN(core.quote.unitPricePerM3);
 
     const modeLabel =
