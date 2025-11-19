@@ -5,6 +5,7 @@ import { useMemo, useCallback, type MouseEvent } from "react";
 import { useCalculatorContext } from "../context/CalculatorContext";
 import { fmtMXN } from "@/lib/utils";
 import { trackLead, trackContact } from "@/lib/pixel";
+import { env } from "@/config/env";
 import styles from "../Calculator.module.scss";
 
 type Props = {
@@ -28,8 +29,8 @@ export function Step4Summary({ estimateLegend }: Props) {
 
   // --- Contact & Tracking Logic ---
 
-  const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
-  const phone = process.env.NEXT_PUBLIC_PHONE ?? "";
+  const waNumber = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+  const phone = env.NEXT_PUBLIC_PHONE;
   const waDisabled = waNumber.trim().length === 0;
   const phoneHref = phone.trim() ? `tel:${phone.trim().replace(/\s+/g, "")}` : "";
 

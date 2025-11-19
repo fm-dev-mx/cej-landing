@@ -1,19 +1,21 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import Script from "next/script";
+import { env } from "@/config/env";
 import "../styles/globals.scss";
 import Layout from "@/components/layout/Layout";
 
 export const metadata: Metadata = {
-  title: "Concreto y Equipos de Juárez",
+  title: env.NEXT_PUBLIC_BRAND_NAME,
   description:
     "No te compliques, concreto premezclado y equipos de construcción en Juárez al mejor precio.",
+  metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const pixelId = process.env.NEXT_PUBLIC_PIXEL_ID;
+  const pixelId = env.NEXT_PUBLIC_PIXEL_ID;
   const isProduction = process.env.NODE_ENV === "production";
 
   return (

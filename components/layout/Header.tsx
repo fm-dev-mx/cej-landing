@@ -4,10 +4,11 @@
 import { CSSProperties, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import styles from "./Header.module.scss";
-import { HeaderCallDialog } from "./HeaderCallDialog";
+import { env } from "@/config/env";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
 import { useLockBodyScroll } from "@/hooks/useLockBodyScroll";
+import { HeaderCallDialog } from "./HeaderCallDialog";
+import styles from "./Header.module.scss";
 
 type NavItem = {
   href: string;
@@ -28,14 +29,14 @@ const SECTION_IDS = PRIMARY_NAV.map((item) =>
 );
 
 function getWhatsAppHref(): string | null {
-  const raw = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+  const raw = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   if (!raw) return null;
   const number = raw.replace(/[^\d]/g, "");
   return number ? `https://wa.me/${number}?text=${encodeURIComponent("Hola, quiero una cotización.")}` : null;
 }
 
 function getPhoneMeta() {
-  const raw = process.env.NEXT_PUBLIC_PHONE;
+  const raw = env.NEXT_PUBLIC_PHONE;
   const trimmed = raw?.trim();
   if (!trimmed) return null;
   return { href: `tel:${trimmed.replace(/\s+/g, "")}`, display: trimmed };

@@ -1,18 +1,19 @@
 // components/layout/Footer.tsx
 
 import Link from "next/link";
+import { env } from "@/config/env";
 import styles from "./Footer.module.scss";
 
 export default function Footer() {
   const year = new Date().getFullYear();
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
-  const phoneNumber = process.env.NEXT_PUBLIC_PHONE ?? "";
+  const whatsappNumber = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+  const phoneNumber = env.NEXT_PUBLIC_PHONE;
 
   return (
     <footer className={styles.footer} id="contact">
       <div className={styles.footer__container}>
         <p className={styles.footer__brand}>
-          © {year} Concreto y Equipos de Juárez
+          © {year} {env.NEXT_PUBLIC_BRAND_NAME}
         </p>
 
         <ul className={styles.footer__links} aria-label="Footer navigation">

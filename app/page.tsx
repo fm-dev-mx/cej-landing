@@ -6,9 +6,10 @@ import HeroSection from "@/components/layout/HeroSection";
 import Services from '@/components/Services/Services';
 import FAQ from '@/components/FAQ/FAQ';
 import ServiceArea from '@/components/ServiceArea/ServiceArea';
+import { env } from '@/config/env';
 
 export const metadata = {
-  title: 'Concreto y Equipos de Juárez | Cotizador al instante',
+  title: `${env.NEXT_PUBLIC_BRAND_NAME} | Cotizador al instante`,
   description: 'Cotiza concreto premezclado en Ciudad Juárez en segundos. Calidad, resistencia y entrega puntual para tu obra.'
 };
 
@@ -30,8 +31,8 @@ export default function Page() {
       <FAQ />
 
       <CTAButtons
-        whatsappNumber={process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? ''}
-        phoneNumber={process.env.NEXT_PUBLIC_PHONE ?? ''}
+        whatsappNumber={env.NEXT_PUBLIC_WHATSAPP_NUMBER}
+        phoneNumber={env.NEXT_PUBLIC_PHONE}
         quoteText="Hola, quiero una cotización de concreto."
       />
     </main>

@@ -1,19 +1,20 @@
 // components/layout/HeroSection.tsx
 
+import { env } from "@/config/env";
 import styles from "./HeroSection.module.scss";
 
 type HeroSectionProps = {
-  videoSrc?: string; // Ruta al video en /public, ej: "/videos/hero-bg.mp4"
-  fallbackImage?: string; // Imagen si el video no carga o en modo ahorro de datos
+  videoSrc?: string; // Path to video in /public or external URL
+  fallbackImage?: string; // Image fallback
 };
 
 export default function HeroSection({
-  videoSrc = "https://res.cloudinary.com/dwtk0d2dj/video/upload/v1763502599/hero-bg_vluny8.mp4", // Asegúrate de subir este archivo a public/
+  videoSrc = "https://res.cloudinary.com/dwtk0d2dj/video/upload/v1763502599/hero-bg_vluny8.mp4",
   fallbackImage = "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763502640/hero-fallback_yokvg7.jpg",
 }: HeroSectionProps) {
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "";
+  const whatsappNumber = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
 
-  // Mensaje predefinido para mejorar la conversión
+  // Predefined message for higher conversion
   const whatsappHref = whatsappNumber
     ? `https://wa.me/${whatsappNumber.replace(/[^\d]/g, "")}?text=${encodeURIComponent(
         "Hola, me interesa cotizar concreto y aprovechar el cálculo de volumetría gratis."
@@ -94,7 +95,7 @@ export default function HeroSection({
   );
 }
 
-// Componente simple de ícono para no depender de librerías externas
+// Simple icon component to avoid external deps
 function CheckIcon() {
   return (
     <svg
@@ -102,7 +103,7 @@ function CheckIcon() {
       height="20"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--c-accent)" /* Usa el amarillo neón */
+      stroke="var(--c-accent)"
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
