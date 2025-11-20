@@ -1,0 +1,111 @@
+/* components/TrustSection/TrustSection.module.scss */
+@use "../../styles/primitives" as p;
+@use "../../styles/mixins" as *;
+
+.section {
+  background-color: var(--c-bg);
+  border-bottom: 1px solid var(--c-border);
+  position: relative;
+  z-index: 10; /* Ensure it sits above calculator negative margin if we add any later */
+
+  /* Padding más sutil que una sección normal para que actúe como 'barra' */
+  padding-block: var(--sp-8);
+
+  @media (min-width: 768px) {
+    padding-block: var(--sp-10);
+  }
+}
+
+.container {
+  @include container;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.grid {
+  display: grid;
+  gap: var(--sp-8);
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--sp-6);
+    /* Add dividers between items on desktop */
+    & > div:not(:last-child) {
+      border-right: 1px solid var(--c-border);
+      padding-right: var(--sp-6);
+    }
+  }
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-3);
+
+  @media (min-width: 768px) {
+    /* Optional: Align left on desktop if preferred, but center works well for 3 columns */
+    align-items: flex-start;
+    text-align: left;
+    flex-direction: row;
+    gap: var(--sp-4);
+  }
+}
+
+.iconBox {
+  font-size: 2.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+  /* Add subtle background circle */
+  width: 3.5rem;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  border: 1px solid var(--c-border);
+
+  @media (min-width: 768px) {
+    font-size: 2rem;
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--c-text);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.desc {
+  font-size: var(--fs-sm);
+  color: var(--c-muted-strong);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 30ch; /* Limit line length for readability */
+
+  @media (min-width: 768px) {
+    max-width: none;
+  }
+}

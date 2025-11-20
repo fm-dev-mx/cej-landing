@@ -3,6 +3,7 @@
 import Calculator from '@/components/Calculator/Calculator';
 import CTAButtons from "@/components/CTAButtons/CTAButtons";
 import HeroSection from "@/components/layout/HeroSection";
+import TrustSection from "@/components/TrustSection/TrustSection";
 import Services from '@/components/Services/Services';
 import FAQ from '@/components/FAQ/FAQ';
 import ServiceArea from '@/components/ServiceArea/ServiceArea';
@@ -18,6 +19,11 @@ export default function Page() {
     <main>
       <HeroSection />
 
+      {/* Punto 1: Sección de Confianza (Social Proof)
+        Insertada antes de la calculadora para reducir ansiedad del usuario.
+      */}
+      <TrustSection />
+
       {/* Calculator Section with Dark Glass Integration */}
       <div id="calculator">
         <Calculator />
@@ -25,7 +31,6 @@ export default function Page() {
 
       <Services />
 
-      {/* Nueva sección de mapa */}
       <ServiceArea />
 
       <FAQ />

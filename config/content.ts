@@ -8,6 +8,13 @@ export interface ServiceItem {
     ariaLabel: string;
 }
 
+export interface TrustItem {
+    id: string;
+    title: string;
+    desc: string;
+    icon: string; // Puede ser emoji o nombre de icono si usamos librería
+}
+
 export interface FaqItem {
     question: string;
     answer: string;
@@ -39,6 +46,29 @@ export const LANDING_CONTENT = {
             primary: "Cotizar ahora",
             secondary: "Hablar con un experto"
         }
+    },
+    trust: {
+        title: "Construimos confianza en cada m³",
+        items: [
+            {
+                id: "time",
+                title: "Puntualidad Inglesa",
+                desc: "Sabemos que el tiempo de tu cuadrilla cuesta. Llegamos a la hora pactada.",
+                icon: "⏱️"
+            },
+            {
+                id: "quality",
+                title: "Resistencia Real",
+                desc: "Certificamos que el f’c que compras es el que recibes. Sin mezclas rebajadas.",
+                icon: "🛡️"
+            },
+            {
+                id: "local",
+                title: "Expertos Locales",
+                desc: "Conocemos Ciudad Juárez, sus agregados y sus retos logísticos.",
+                icon: "📍"
+            }
+        ] as TrustItem[]
     },
     services: {
         title: "Todo lo que necesitas,",
