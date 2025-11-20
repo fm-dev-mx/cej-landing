@@ -12,27 +12,44 @@ import styles from './Calculator.module.scss';
 // Internal component consuming the context
 function CalculatorContent() {
   const { step, mode } = useCalculatorContext();
+  const totalSteps = 4;
 
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
-        <div className={styles.headerBadgeRow}>
-          <div className={styles.stepPill}>
-            <span className={styles.stepPillDot} />
-            <span>{`Paso ${step} de 4`}</span>
-          </div>
+        {/* Progress Bar */}
+        <div
+          className={styles.progressContainer}
+          role="progressbar"
+          aria-valuenow={step}
+          aria-valuemin={1}
+          aria-valuemax={totalSteps}
+          aria-label={`Paso ${step} de ${totalSteps}`}
+        >
+          {Array.from({ length: totalSteps }).map((_, idx) => {
+            const stepNum = idx + 1;
+            const isActive = stepNum <= step;
+            return (
+              <div
+                key={stepNum}
+                className={`${styles.progressSegment} ${isActive ? styles.active : ''}`}
+              />
+            );
+          })}
         </div>
 
-        <h2 id="calculator-heading" className={styles.headerTitle}>
-          Calcula tu <span className={styles.headerTitleAccent}>concreto</span>{' '}
-          al instante.
-        </h2>
+        <div className={styles.headerText}>
+          <h2 id="calculator-heading" className={styles.headerTitle}>
+            Calcula tu <span className={styles.headerTitleAccent}>concreto</span>{' '}
+            al instante.
+          </h2>
 
-        <p className={styles.headerSubtitle}>
-          Calcula en segundos el concreto que necesitas.
-          <br />
-          La volumetría final se confirma en obra por nuestros técnicos.
-        </p>
+          <p className={styles.headerSubtitle}>
+            Obtén un presupuesto estimado en segundos.
+            <br />
+            La volumetría final se confirma en obra por nuestros técnicos.
+          </p>
+        </div>
       </header>
 
       <form className={styles.form} onSubmit={(e) => e.preventDefault()}>

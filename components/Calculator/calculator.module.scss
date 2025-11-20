@@ -26,7 +26,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
 .shell {
   position: relative;
   margin: 0 auto;
-  max-width: 1040px;
+  max-width: 800px; /* Reduced width for better focus */
   border-radius: var(--radius-lg);
 
   /* Dark Glassmorphism Effect */
@@ -36,7 +36,6 @@ $glass-border: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
 
   border: 1px solid $glass-border;
-  /* Subtle inner glow + deep shadow for depth */
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 25px 50px -12px rgba(0, 0, 0, 0.6);
@@ -44,7 +43,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
   color: var(--c-text-on-dark);
   padding: var(--sp-6) var(--sp-5) var(--sp-8);
 
-  /* Fallback for browsers without backdrop-filter */
+  /* Fallback */
   @supports not (backdrop-filter: blur(1px)) {
     background: var(--c-primary-dark);
   }
@@ -54,49 +53,43 @@ $glass-border: rgba(255, 255, 255, 0.1);
   }
 }
 
-/* --- Header Section --- */
+/* --- Header & Progress --- */
 
 .header {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
-  margin-bottom: var(--sp-8);
+  gap: var(--sp-5);
+  margin-bottom: var(--sp-6);
   border-bottom: 1px solid $glass-border;
   padding-bottom: var(--sp-6);
 }
 
-.headerBadgeRow {
+.progressContainer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.stepPill {
-  display: inline-flex;
-  align-items: center;
   gap: 0.5rem;
-  padding: 0.35rem 0.85rem;
-  border-radius: 999px;
-  background: rgba(254, 201, 20, 0.15);
-  border: 1px solid rgba(254, 201, 20, 0.4);
-  color: var(--c-accent);
-  font-size: var(--fs-xs);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  width: 100%;
 }
 
-.stepPillDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: var(--c-accent);
-  box-shadow: 0 0 8px rgba(254, 201, 20, 0.6);
+.progressSegment {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.4s ease;
+
+  &.active {
+    background-color: var(--c-accent);
+    box-shadow: 0 0 8px rgba(254, 201, 20, 0.4);
+  }
+}
+
+.headerText {
+  text-align: center;
 }
 
 .headerTitle {
-  margin: 0.5rem 0 0;
-  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  margin: 0;
+  font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.1;
@@ -108,34 +101,49 @@ $glass-border: rgba(255, 255, 255, 0.1);
 }
 
 .headerSubtitle {
-  @include p.lead;
   font-size: var(--fs-base);
   color: var(--c-muted-on-dark);
-  max-width: 42ch;
   margin-top: var(--sp-2);
+  line-height: 1.5;
 }
 
-/* --- Wizard Layout --- */
+/* --- Form & Steps --- */
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-6);
 }
 
 .stepAnimated {
   animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* New container for subsections (like Work Types) */
-.subsection {
-  @extend .stepAnimated;
-  margin-top: var(--sp-10);
+/* Step Titles (inside steps) */
+.stepHeader {
+  text-align: center;
+  margin-bottom: var(--sp-6);
 }
 
-/* Standardized subsection title (replaces inline styles) */
+.stepTitle {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: white;
+  margin: 0 0 0.25rem 0;
+}
+
+.stepSubtitle {
+  font-size: var(--fs-sm);
+  color: var(--c-muted-on-dark);
+}
+
+/* Subsections */
+.subsection {
+  @extend .stepAnimated;
+  margin-top: var(--sp-8);
+}
+
 .subsectionTitle {
-  margin-bottom: var(--sp-5);
+  margin-bottom: var(--sp-4);
   color: var(--c-muted-on-dark);
   font-size: var(--fs-base);
   font-weight: 600;
@@ -146,148 +154,168 @@ $glass-border: rgba(255, 255, 255, 0.1);
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* --- Ticket / Summary Card --- */
 
-/* Helper texts */
-
-.hint {
-  font-size: var(--fs-xs);
-  color: rgba(148, 163, 184, 0.96);
-}
-
-.error {
-  font-size: 0.875rem;
-  color: #fecaca;
-  padding: 0.75rem;
+.ticketCard {
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--radius);
-  background: rgba(127, 29, 29, 0.2);
+  padding: var(--sp-6);
+  margin-bottom: var(--sp-6);
+  position: relative;
+
+  /* Subtle "Receipt" shadow */
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
 }
 
-/* --- Fields --- */
+.ticketHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--sp-4);
+  font-size: 0.75rem;
+  color: var(--c-muted-on-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  opacity: 0.7;
+}
 
-.field {
+.ticketSection {
+  margin-bottom: var(--sp-4);
+}
+
+.ticketSectionTitle {
+  font-size: 0.85rem;
+  color: var(--c-accent);
+  margin-bottom: var(--sp-3);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.specGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+
+.specItem {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-
-  label {
-    font-size: var(--fs-base);
-    font-weight: 600;
-    color: var(--c-muted-on-dark);
-    margin: 0.8rem 0 0 0;
-  }
 }
 
-/* --- Selection Grid (Step 1 & 3 Refactor) --- */
-/* Replaces older .radioGroup for main selections */
-
-.selectionGrid {
-  display: grid;
-  gap: var(--sp-3);
-  /* Default mobile: 1 column */
-
-  @media (min-width: 640px) {
-    /* Tablet/Desktop: 2 columns */
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  }
+.specLabel {
+  font-size: 0.75rem;
+  color: var(--c-muted-on-dark);
+  margin-bottom: 0.1rem;
 }
 
-/* Legacy radio group support (for Step 3 simple radios) if needed,
-   though moving everything to SelectionCard is preferred over time.
-*/
-.radioGroup {
-  display: grid;
-  gap: var(--sp-3);
-
-  @media (min-width: 640px) {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  }
+.specValue {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
 }
 
+.ticketDivider {
+  border: 0;
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: var(--sp-4) 0;
+  /* Dotted look */
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.3) 33%, rgba(255,255,255,0) 0%);
+  background-position: bottom;
+  background-size: 6px 1px;
+  background-repeat: repeat-x;
+  background-color: transparent;
+}
 
-.radio {
-  position: relative;
+.ticketRows {
   display: flex;
-  align-items: flex-start;
-  gap: var(--sp-5);
-  padding: var(--sp-4);
-  margin-bottom: 0.5rem;
-  border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background-color: rgba(255, 255, 255, 0.03);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-
-  /* Hidden Checkbox interaction */
-  &:has(input:checked) {
-    background-color: rgba(254, 201, 20, 0.08);
-    border-color: var(--c-accent);
-    box-shadow: inset 0 0 0 1px var(--c-accent);
-
-    span strong { color: var(--c-accent); }
-  }
-
-  &:hover:not(:has(input:checked)) {
-    background-color: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.3);
-  }
-
-  input {
-    margin-top: 0.25rem;
-    accent-color: var(--c-accent);
-    width: 1.1rem;
-    height: 1.1rem;
-  }
-
-  span {
-    font-size: var(--fs-sm);
-    color: var(--c-muted-on-dark);
-
-    strong {
-      display: block;
-      color: white;
-      font-size: var(--fs-base);
-      margin-bottom: 0.25rem;
-    }
-  }
-}
-
-/* --- Summary Card --- */
-
-.totalCard {
-  background: linear-gradient(180deg, rgba(2, 26, 54, 0.6) 0%, rgba(0, 0, 0, 0.4) 100%);
-  border: 1px solid var(--c-accent);
-  border-radius: var(--radius);
-  padding: var(--sp-5);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+  flex-direction: column;
+  gap: var(--sp-2);
 }
 
 .row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: var(--sp-2);
   font-size: var(--fs-sm);
+}
+
+.rowLabel {
   color: var(--c-muted-on-dark);
 }
 
-.amount {
+.rowValue {
   font-family: var(--font-mono, monospace);
-  /* Use monospaced if available */
-  font-weight: 600;
+  color: white;
+  font-weight: 500;
+}
+
+.ticketTotal {
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.totalLabel {
+  font-size: var(--fs-lg);
+  font-weight: 700;
   color: white;
 }
 
-.grand {
-  margin-top: var(--sp-4);
-  padding-top: var(--sp-4);
-  border-top: 1px dashed rgba(255, 255, 255, 0.2);
-  font-size: var(--fs-xl);
-  font-weight: 700;
+.totalValue {
+  font-size: 2rem;
+  font-weight: 800;
   color: var(--c-accent);
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
 
-/* --- Actions & Buttons --- */
+/* --- Actions & Helpers --- */
+
+.actionsGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+}
+
+.primaryActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  width: 100%;
+
+  @media (min-width: 640px) {
+    flex-direction: row;
+  }
+}
+
+.actionButton {
+  @media (min-width: 640px) {
+    flex: 1;
+  }
+}
+
+.textLink {
+  background: none;
+  border: none;
+  color: var(--c-muted-on-dark);
+  font-size: var(--fs-sm);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    color: white;
+  }
+}
 
 .stepControls {
   display: flex;
@@ -301,21 +329,6 @@ $glass-border: rgba(255, 255, 255, 0.1);
   }
 }
 
-/* Summary Actions (WA / Phone) */
-.actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-3);
-  margin-top: var(--sp-5);
-
-  @media (min-width: 640px) {
-    flex-direction: row;
-    button, a { flex: 1; }
-  }
-
-  // We use the Button component here, but we can add layout overrides if needed
-}
-
 .note {
   margin: var(--sp-2) 0;
   padding: 0.75rem;
@@ -323,20 +336,100 @@ $glass-border: rgba(255, 255, 255, 0.1);
   font-size: var(--fs-xs);
   color: var(--c-muted-on-dark);
   text-align: right;
-
   strong { color: white; }
+}
+
+.error {
+  font-size: 0.875rem;
+  color: #fecaca;
+  padding: 0.75rem;
+  border-radius: var(--radius);
+  background: rgba(127, 29, 29, 0.2);
+  margin-top: var(--sp-4);
 }
 
 .disclaimer {
   margin-top: var(--sp-4);
-  padding-top: var(--sp-3);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.3);
   text-align: center;
+  line-height: 1.4;
 }
 
-/* --- New "Pill" Styles for sub-options --- */
+/* --- Helper Fields (Reused from previous steps) --- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: var(--fs-base);
+    font-weight: 600;
+    color: var(--c-muted-on-dark);
+    margin: 0.5rem 0 0 0;
+  }
+}
+
+.selectionGrid {
+  display: grid;
+  gap: var(--sp-3);
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+/* Radios & Pills */
+.radioRow {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   gap: var(--sp-3);
+}
+
+.radioRowCompact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+  .radio {
+    margin-bottom: 0;
+    padding: 0.75rem;
+  }
+}
+
+.radio {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:has(input:checked) {
+    background-color: rgba(254, 201, 20, 0.08);
+    border-color: var(--c-accent);
+    box-shadow: inset 0 0 0 1px var(--c-accent);
+    span { color: var(--c-accent); font-weight: 600; }
+  }
+
+  &:hover:not(:has(input:checked)) {
+    background-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  input {
+    accent-color: var(--c-accent);
+    width: 1rem;
+    height: 1rem;
+  }
+  span {
+    font-size: var(--fs-base);
+    color: var(--c-muted-on-dark);
+  }
+}
 
 .pillGroup {
   display: flex;
@@ -346,16 +439,11 @@ $glass-border: rgba(255, 255, 255, 0.1);
 
 .pill {
   position: relative;
-  flex: 1; // Ocupan el mismo ancho
+  flex: 1;
   cursor: pointer;
   font-size: 0.9rem;
 
-  input {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
+  input { position: absolute; opacity: 0; width: 0; height: 0; }
 
   span {
     display: flex;
@@ -364,7 +452,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
     padding: 0.6rem 1rem;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 99px; // Forma de pastilla
+    border-radius: 99px;
     color: var(--c-muted-on-dark);
     font-weight: 500;
     transition: all 0.2s ease;
@@ -376,7 +464,6 @@ $glass-border: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.4);
   }
 
-  // Estado seleccionado
   &:has(input:checked) span {
     background: var(--c-accent);
     color: var(--c-primary-dark);
@@ -386,21 +473,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
   }
 }
 
-/* Utilería para poner radios lado a lado en móviles */
-.radioRowCompact {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--sp-3);
-
-  .radio {
-    margin-bottom: 0; // Quitar margen inferior
-    padding: 0.75rem; // Hacerlos un poco más compactos
-  }
-}
-
-/* Legacy support for radioRow if used in Step2 */
-.radioRow {
-   display: grid;
-   grid-template-columns: 1fr 1fr;
-   gap: var(--sp-3);
+.hint {
+  font-size: var(--fs-xs);
+  color: rgba(148, 163, 184, 0.96);
 }
