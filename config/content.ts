@@ -12,7 +12,14 @@ export interface TrustItem {
     id: string;
     title: string;
     desc: string;
-    icon: string; // Puede ser emoji o nombre de icono si usamos librería
+    icon: string;
+}
+
+export interface ProcessStep {
+    id: string;
+    title: string;
+    desc: string;
+    icon: string;
 }
 
 export interface FaqItem {
@@ -70,6 +77,37 @@ export const LANDING_CONTENT = {
             }
         ] as TrustItem[]
     },
+    // SECTION UPDATED: Reflecting the real process with technical visit and low down payment
+    process: {
+        title: "¿Cómo trabajamos?",
+        subtitle: "Tu concreto en obra, sin errores y sin riesgos.",
+        steps: [
+            {
+                id: "calc",
+                title: "Cotiza",
+                desc: "Usa la calculadora o contáctanos para obtener tu presupuesto al instante.",
+                icon: "📲"
+            },
+            {
+                id: "book",
+                title: "Aparta",
+                desc: "Bloquea tu horario con un anticipo de solo $1,000 MXN.",
+                icon: "📅"
+            },
+            {
+                id: "verify",
+                title: "Verificamos",
+                desc: "Visitamos tu obra para confirmar la cantidad exacta y accesos.",
+                icon: "👷"
+            },
+            {
+                id: "pay",
+                title: "Recibe y Liquida",
+                desc: "Llegamos puntuales. Pagas el resto al recibir tu concreto.",
+                icon: "🤝"
+            }
+        ] as ProcessStep[]
+    },
     services: {
         title: "Todo lo que necesitas,",
         titleHighlight: "en un solo lugar.",
@@ -115,12 +153,12 @@ export const LANDING_CONTENT = {
             {
                 question: "¿Qué formas de pago aceptan?",
                 answer:
-                    "Aceptamos transferencias bancarias (SPEI), depósitos en efectivo y pago con tarjeta (crédito/débito) directo en nuestras oficinas o mediante enlace de pago seguro.",
+                    "Aceptamos transferencias bancarias (SPEI), depósitos en efectivo y pago con tarjeta (crédito/débito). Recuerda que puedes apartar con $1,000 y liquidar contra entrega.",
             },
             {
                 question: "¿Hacen visitas técnicas?",
                 answer:
-                    "Sí. Una vez que tienes una cotización estimada y fecha tentativa, nuestros técnicos pueden visitar la obra sin costo extra para confirmar accesos, volumetría final y tipo de bomba requerida.",
+                    "Sí, es parte de nuestro proceso estándar. Una vez apartado el pedido, un técnico visita tu obra para validar accesos y volumetría final para evitar que te falte o sobre material.",
             },
         ] as FaqItem[]
     }

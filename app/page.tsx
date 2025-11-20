@@ -4,6 +4,7 @@ import Calculator from '@/components/Calculator/Calculator';
 import CTAButtons from "@/components/CTAButtons/CTAButtons";
 import HeroSection from "@/components/layout/HeroSection";
 import TrustSection from "@/components/TrustSection/TrustSection";
+import ProcessSection from "@/components/ProcessSection/ProcessSection";
 import Services from '@/components/Services/Services';
 import FAQ from '@/components/FAQ/FAQ';
 import ServiceArea from '@/components/ServiceArea/ServiceArea';
@@ -19,15 +20,18 @@ export default function Page() {
     <main>
       <HeroSection />
 
-      {/* Punto 1: Sección de Confianza (Social Proof)
-        Insertada antes de la calculadora para reducir ansiedad del usuario.
-      */}
+      {/* Trust Signals / Social Proof */}
       <TrustSection />
 
-      {/* Calculator Section with Dark Glass Integration */}
+      {/* Calculator Hook */}
       <div id="calculator">
         <Calculator />
       </div>
+
+      {/* Point 3: Purchase Process (How it works)
+          Connects the tool (Calculator) with the actual action (Purchase).
+      */}
+      <ProcessSection />
 
       <Services />
 
