@@ -99,24 +99,28 @@ export const LANDING_CONTENT = {
                 title: "Nave Industrial Eje Juan Gabriel",
                 location: "Zona Industrial",
                 category: "Piso Industrial",
-                imageAlt: "Colado de piso industrial con bomba pluma",
-                imageUrl: "https://images.unsplash.com/photo-1621252179027-94459d27d3ee?auto=format&fit=crop&w=800&q=80"
+                // Precisión: Es el interior, estructura metálica y colado de piso.
+                imageAlt: "Interior de nave industrial mostrando el colado de piso de concreto con bomba pluma bajo estructura metálica",
+                imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/maquila_culguq.jpg"
             },
             {
                 id: "work2",
                 title: "Complejo Residencial Sendero",
                 location: "Valle del Sol",
-                category: "Losa de Entrepiso",
-                imageAlt: "Trabajadores colando losa en casa residencial",
-                imageUrl: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=800&q=80"
+                // CORRECCIÓN IMPORTANTE: Cambiado de "Losa de Entrepiso" a "Cimentación"
+                category: "Cimentación y Zapatas",
+                // Precisión: Describe el llenado de las zanjas (zapatas) en el suelo.
+                imageAlt: "Bomba de concreto vertiendo mezcla sobre zapatas corridas y cimentación en terreno de obra residencial",
+                imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673427/complejo_residencial_q3dxfu.jpg"
             },
             {
                 id: "work3",
                 title: "Estacionamiento Comercial",
                 location: "Av. Las Torres",
-                category: "Concreto Estampado",
-                imageAlt: "Acabado de concreto en exterior",
-                imageUrl: "https://images.unsplash.com/photo-1590073844002-64e85f3e9cd7?auto=format&fit=crop&w=800&q=80"
+                category: "Concreto Estampado", // El servicio final es este, aunque la foto sea la preparación.
+                // Precisión: La foto es del armado (varilla/malla) previo al colado.
+                imageAlt: "Armado de acero con silletas y cimbra de madera listos para recibir el colado de concreto en estacionamiento",
+                imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/zona_industrial_gu16sr.jpg"
             }
         ] as WorkItem[]
     },
