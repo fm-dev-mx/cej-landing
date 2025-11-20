@@ -3,63 +3,72 @@
 @use "../../styles/primitives" as p;
 
 .stickyBar {
-  position: sticky;
+  position: fixed; /* Changed from sticky to fixed for better stability on iOS */
   bottom: 0;
-  inset-inline: 0;
-  z-index: 29; /* Debajo del menú móvil (55) */
+  left: 0;
+  width: 100%;
+  z-index: 40; /* Below Mobile Menu (50) but above content */
 
-  min-height: 60px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--sp-3);
-  padding: var(--sp-4) var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
 
-  /* Dark Glass Theme */
-  background: rgba(2, 26, 54, 0.95); /* Navy muy oscuro */
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  /* Safe area padding for iPhone Home Indicator */
+  padding-bottom: calc(var(--sp-3) + env(safe-area-inset-bottom, 0px));
 
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+  /* Dark Glass Theme consistent with Calculator */
+  background: rgba(2, 26, 54, 0.85);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 
-  padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
 
+  /* Hide on Desktop */
   @media (min-width: 768px) { display: none; }
 }
 
-.inlineGroup { display: flex; gap: var(--sp-2); }
+/* Container for inline usage (e.g. inside page content) */
+.inlineGroup {
+  display: flex;
+  gap: var(--sp-2);
+}
 
 .cta {
   @include p.btn;
-  width: 80%;
-  font-size: 0.75rem;
+  width: 100%;
+  font-size: 0.85rem; /* Slightly larger text for tap target */
   font-weight: 700;
   justify-content: center;
-  border-radius: 99px; /* Pills */
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  border-radius: 99px;
+  text-transform: none; /* More friendly than uppercase */
+  letter-spacing: 0.02em;
+  padding-block: 0.75rem;
 }
 
 /* Botón WhatsApp */
 .whatsapp {
-  background: var(--c-accent);
-  color: var(--c-primary-dark);
-  border: 1px solid var(--c-accent);
+  background: var(--c-whatsapp);
+  color: white;
+  border: 1px solid var(--c-whatsapp);
+  box-shadow: 0 2px 10px rgba(37, 211, 102, 0.2);
 
   &:hover {
-    background: var(--c-accent-hover);
-    transform: translateY(-1px);
+    background: color-mix(in oklab, var(--c-whatsapp) 90%, black 10%);
   }
 }
 
 /* Botón Llamar */
 .phone {
   background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 
   &:hover {
     background: rgba(255, 255, 255, 0.2);
-    border-color: #fff;
+    border-color: white;
   }
 }

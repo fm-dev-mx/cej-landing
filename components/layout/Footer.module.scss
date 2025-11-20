@@ -1,54 +1,87 @@
 /* components/layout/Footer.module.scss */
-
 @use "../../styles/primitives" as p;
 @use "../../styles/mixins" as *;
 
 .footer {
-  background-color: var(--cej-surface, #ffffff);
-  border-top: 1px solid var(--cej-border-subtle, #e5e7eb);
-  padding-block: 1.5rem;
+  background-color: var(--c-primary-dark); /* Dark Navy background */
+  color: var(--c-muted-on-dark);
+  padding-block: var(--sp-10) var(--sp-8);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: var(--fs-sm);
 }
 
-.footer__container {
+.container {
   @include container;
   display: grid;
-  gap: 0.75rem;
+  gap: var(--sp-8);
 
   @media (min-width: 768px) {
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: var(--sp-10);
   }
 }
 
-.footer__brand {
-  margin: 0;
-  color: var(--cej-foreground-muted, #64748b);
-}
-
-.footer__links {
+/* Brand Column */
+.brandCol {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.logoLink {
+  display: inline-block;
+  width: fit-content;
+}
+
+.logo {
+  /* Invert brightness/contrast if logo is dark, or assume white logo asset.
+     For safety on this dark footer, we ensure it pops. */
+  filter: brightness(0.9) invert(0.2);
+  opacity: 0.6;
+  height: auto;
+}
+
+.tagline {
+  max-width: 30ch;
+  line-height: 1.5;
+  color: var(--c-text-on-dark);
+  font-weight: 500;
+}
+
+.copyright {
+  font-size: var(--fs-xs);
+  opacity: 0.6;
+  margin-top: var(--sp-2);
+}
+
+/* Navigation Column */
+.navCol {
+  padding-top: var(--sp-2);
+}
+
+.linkList {
   list-style: none;
-  margin: 0;
   padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+
+  @media (min-width: 768px) {
+    align-items: flex-end;
+    text-align: right;
+  }
 }
 
-.footer__item {
-}
-
-.footer__link {
+.link {
+  color: var(--c-muted-on-dark);
   text-decoration: none;
-  color: var(--cej-foreground, #0f172a);
-  font-size: 0.875rem;
+  transition: color 0.2s ease;
 
   &:hover {
+    color: var(--c-accent);
     text-decoration: underline;
-    text-underline-offset: 0.15em;
-  }
-
-  &:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
+    text-underline-offset: 3px;
   }
 }

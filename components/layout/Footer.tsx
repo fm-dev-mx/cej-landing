@@ -1,52 +1,52 @@
 // components/layout/Footer.tsx
 
 import Link from "next/link";
+import Image from "next/image";
 import { env } from "@/config/env";
 import styles from "./Footer.module.scss";
 
 export default function Footer() {
   const year = new Date().getFullYear();
-  const whatsappNumber = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
-  const phoneNumber = env.NEXT_PUBLIC_PHONE;
 
   return (
-    <footer className={styles.footer} id="contact">
-      <div className={styles.footer__container}>
-        <p className={styles.footer__brand}>
-          © {year} {env.NEXT_PUBLIC_BRAND_NAME}
-        </p>
+    <footer className={styles.footer} role="contentinfo">
+      <div className={styles.container}>
 
-        <ul className={styles.footer__links} aria-label="Footer navigation">
-          <li className={styles.footer__item}>
-            <Link href="/privacy" className={styles.footer__link}>
-              Privacy
-            </Link>
-          </li>
-          <li className={styles.footer__item}>
-            <Link href="/terms" className={styles.footer__link}>
-              Terms
-            </Link>
-          </li>
-          {phoneNumber && (
-            <li className={styles.footer__item}>
-              <a className={styles.footer__link} href={`tel:+${phoneNumber}`}>
-                {phoneNumber}
-              </a>
+        {/* Brand Column */}
+        <div className={styles.brandCol}>
+          <Link href="/" className={styles.logoLink} aria-label="Ir al inicio">
+            <Image
+              src="/logo.svg"
+              alt={env.NEXT_PUBLIC_BRAND_NAME}
+              width={140}
+              height={40}
+              className={styles.logo}
+            />
+          </Link>
+          <p className={styles.tagline}>
+            Calidad y resistencia para los cimientos de Ciudad Juárez.
+          </p>
+          <p className={styles.copyright}>
+            © {year} {env.NEXT_PUBLIC_BRAND_NAME}. Todos los derechos reservados.
+          </p>
+        </div>
+
+        {/* Links Column */}
+        <nav className={styles.navCol} aria-label="Legal">
+          <ul className={styles.linkList}>
+            <li>
+              <Link href="/aviso-de-privacidad" className={styles.link}>
+                Aviso de Privacidad
+              </Link>
             </li>
-          )}
-          {whatsappNumber && (
-            <li className={styles.footer__item}>
-              <a
-                className={styles.footer__link}
-                href={`https://wa.me/${whatsappNumber}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                WhatsApp
-              </a>
+            <li>
+              <Link href="/terminos" className={styles.link}>
+                Términos y Condiciones
+              </Link>
             </li>
-          )}
-        </ul>
+          </ul>
+        </nav>
+
       </div>
     </footer>
   );
