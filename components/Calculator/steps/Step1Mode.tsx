@@ -5,6 +5,7 @@ import { useCallback } from 'react';
 import { useCalculatorContext } from '../context/CalculatorContext';
 import { type CalculatorMode, type WorkTypeId } from '../types';
 import { WORK_TYPES } from '@/config/business';
+import { SelectionCard } from '@/components/ui/SelectionCard/SelectionCard';
 import styles from '../Calculator.module.scss';
 
 export function Step1Mode() {
@@ -40,61 +41,53 @@ export function Step1Mode() {
       </header>
 
       <div className={styles.stepBody}>
-        {/* Main Decision: Yes/No */}
-        <div className={styles.radioGroup}>
-          <label className={styles.radio}>
-            <input
-              type="radio"
-              name="calc-mode"
-              value="knownM3"
-              checked={mode === 'knownM3'}
-              onChange={() => handleModeChange('knownM3')}
-              // FIX: Move navigation logic to onClick to handle re-clicks on selected option
-              onClick={() => handleModeChange('knownM3')}
-            />
-            <span>Si</span>
-          </label>
+        {/* Mode Selection using new Cards */}
+        <div className={styles.selectionGrid}>
+          <SelectionCard
+            id="mode-known"
+            name="calc-mode"
+            value="knownM3"
+            label="Sí"
+            description="Ingresa directamente los m³ y la resistencia."
+            isSelected={mode === 'knownM3'}
+            onChange={() => handleModeChange('knownM3')}
+            // Add click handler for better touch response if onChange lags
+            onClick={() => handleModeChange('knownM3')}
+          />
 
-          <label className={styles.radio}>
-            <input
-              type="radio"
-              name="calc-mode"
-              value="assistM3"
-              checked={mode === 'assistM3'}
-              onChange={() => handleModeChange('assistM3')}
-            />
-            <span>No, ayúdame a definirlo</span>
-          </label>
+          <SelectionCard
+            id="mode-assist"
+            name="calc-mode"
+            value="assistM3"
+            label="No, ayúdame a calcular"
+            description="Calcula el volumen basado en medidas o tipo de obra."
+            icon="🛟"
+            isSelected={mode === 'assistM3'}
+            onChange={() => handleModeChange('assistM3')}
+          />
         </div>
 
-        {/* Expanded Selection: Work Types */}
+        {/* Work Type Selection (Only visible in Assist Mode) */}
         {mode === 'assistM3' && (
-          <div className={styles.stepAnimated} style={{ marginTop: '2rem' }}>
-            <p className={styles.field} style={{ marginBottom: '1rem', color: 'var(--c-muted-on-dark)' }}>
-              Selecciona el tipo de obra para continuar:
-            </p>
+          <div className={styles.subsection}>
+            <h3 className={styles.subsectionTitle}>
+              Selecciona qué vas a construir:
+            </h3>
 
-            <div className={styles.radioGroup}>
+            <div className={styles.selectionGrid}>
               {WORK_TYPES.map((w) => (
-                <label
+                <SelectionCard
                   key={w.id}
-                  className={styles.radio}
+                  id={`work-${w.id}`}
+                  name="work-type"
+                  value={w.id}
+                  label={w.label}
+                  description={w.description}
+                  icon={w.icon} // Uses the new icon from business config
+                  isSelected={workType === w.id}
+                  onChange={() => handleWorkTypeSelect(w.id)}
                   onClick={() => handleWorkTypeSelect(w.id)}
-                >
-                  <input
-                    type="radio"
-                    name="work-type"
-                    value={w.id}
-                    checked={workType === w.id}
-                    readOnly
-                  />
-                  <span>
-                    <strong>{w.label}</strong>
-                    <small style={{ display: 'block', marginTop: '0.2rem' }}>
-                      {w.description}
-                    </small>
-                  </span>
-                </label>
+                />
               ))}
             </div>
           </div>

@@ -23,7 +23,8 @@ export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
     strength: '200',
     type: 'direct',
     m3: '',
-    workType: 'slab',
+    // CHANGED: Initialize as null so no option is pre-selected
+    workType: null,
     length: '',
     width: '',
     thicknessByDims: '12',

@@ -23,6 +23,7 @@ export type WorkTypeConfig = {
     label: string;
     description: string;
     recommendedStrength: Strength;
+    icon?: string; // Added for UI enhancement in Step 1
 };
 
 export type CalculatorState = {
@@ -32,7 +33,7 @@ export type CalculatorState = {
     strength: Strength;
     type: ConcreteType;
     m3: string;
-    workType: WorkTypeId;
+    workType: WorkTypeId | null;
     length: string;
     width: string;
     thicknessByDims: string;
