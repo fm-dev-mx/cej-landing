@@ -11,7 +11,37 @@
   justify-content: center;
   text-transform: none;
   cursor: pointer;
-  text-decoration: none; // For 'a' tags disguised as buttons
+  text-decoration: none;
+  position: relative; /* For loader positioning */
+  transition: all 0.2s ease;
+
+  /* Loading state styling */
+  &.loading {
+    color: transparent !important; /* Hide text but keep size */
+    pointer-events: none;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 1.25rem;
+      height: 1.25rem;
+      margin-left: -0.625rem;
+      margin-top: -0.625rem;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      /* Restore color for the spinner (usually white or contrast text) */
+      color: var(--c-primary-dark);
+    }
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Variants */
@@ -32,6 +62,12 @@
     opacity: 0.6;
     cursor: not-allowed;
   }
+
+  /* Fix spinner color for primary button */
+  &.loading::after {
+    border-color: var(--c-primary-dark);
+    border-right-color: transparent;
+  }
 }
 
 .secondary {
@@ -42,6 +78,11 @@
   &:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.1);
     border-color: white;
+  }
+
+  &.loading::after {
+    border-color: white;
+    border-right-color: transparent;
   }
 }
 

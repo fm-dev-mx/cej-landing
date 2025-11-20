@@ -1,7 +1,7 @@
 // components/Calculator/context/CalculatorContext.tsx
 'use client';
 
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, useState, useCallback, type ReactNode } from 'react';
 import { useCalculatorState } from '../hooks/useCalculatorState';
 import { useCalculatorQuote } from '../hooks/useCalculatorQuote';
 
@@ -9,14 +9,18 @@ import { useCalculatorQuote } from '../hooks/useCalculatorQuote';
 type StateHook = ReturnType<typeof useCalculatorState>;
 type QuoteHook = ReturnType<typeof useCalculatorQuote>;
 
-// Context exposes everything: state, setters, and calculated quote
-export type CalculatorContextType = StateHook & QuoteHook;
+// Context exposes everything: state, setters, calculated quote, and UI states
+export type CalculatorContextType = StateHook & QuoteHook & {
+  isCalculating: boolean;
+  simulateCalculation: (onComplete: () => void) => void;
+};
 
 const CalculatorContext = createContext<CalculatorContextType | null>(null);
 
 export function CalculatorProvider({ children }: { children: ReactNode }) {
   // 1. Initialize state
   const state = useCalculatorState();
+  const [isCalculating, setIsCalculating] = useState(false);
 
   // 2. Calculate quote based on current state
   const quoteData = useCalculatorQuote({
@@ -33,11 +37,25 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
     type: state.type,
   });
 
-  // 3. Combine everything into a single memoized object to avoid unnecessary re-renders
+  // 3. Simulation helper
+  const simulateCalculation = useCallback((onComplete: () => void) => {
+    setIsCalculating(true);
+    // Random delay between 600ms and 1000ms for realism
+    const delay = Math.floor(Math.random() * 400) + 900;
+
+    setTimeout(() => {
+      setIsCalculating(false);
+      onComplete();
+    }, delay);
+  }, []);
+
+  // 4. Combine everything into a single memoized object
   const value = useMemo(() => ({
     ...state,
     ...quoteData,
-  }), [state, quoteData]);
+    isCalculating,
+    simulateCalculation,
+  }), [state, quoteData, isCalculating, simulateCalculation]);
 
   return (
     <CalculatorContext.Provider value={value}>

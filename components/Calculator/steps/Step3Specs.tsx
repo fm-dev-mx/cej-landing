@@ -7,6 +7,7 @@ import { type Strength } from "../types";
 import { STRENGTHS, CONCRETE_TYPES } from "@/config/business";
 import { Button } from "@/components/ui/Button/Button";
 import { Select } from "@/components/ui/Select/Select";
+import { SelectionCard } from "@/components/ui/SelectionCard/SelectionCard";
 import styles from "../Calculator.module.scss";
 
 export function Step3Specs() {
@@ -16,7 +17,9 @@ export function Step3Specs() {
     mode,
     setStrength,
     setType,
-    setStep
+    setStep,
+    isCalculating,
+    simulateCalculation
   } = useCalculatorContext();
 
   const handleStrengthChange = useCallback(
@@ -25,6 +28,12 @@ export function Step3Specs() {
     },
     [setStrength]
   );
+
+  const handleCalculate = () => {
+    simulateCalculation(() => {
+        setStep(4);
+    });
+  };
 
   return (
     <div className={`${styles.step} ${styles.stepAnimated}`}>
@@ -52,18 +61,17 @@ export function Step3Specs() {
 
         <div className={styles.field}>
           <label>Tipo de servicio</label>
-          <div className={styles.radioGroup}>
+          <div className={styles.selectionGrid}>
             {CONCRETE_TYPES.map((t) => (
-              <label key={t.value} className={styles.radio}>
-                <input
-                  type="radio"
-                  name="tipo"
-                  value={t.value}
-                  checked={type === t.value}
-                  onChange={() => setType(t.value)}
-                />
-                <span>{t.label}</span>
-              </label>
+              <SelectionCard
+                key={t.value}
+                id={`type-${t.value}`}
+                name="service-type"
+                value={t.value}
+                label={t.label}
+                isSelected={type === t.value}
+                onChange={() => setType(t.value)}
+              />
             ))}
           </div>
         </div>
@@ -72,12 +80,15 @@ export function Step3Specs() {
           <Button
             variant="secondary"
             onClick={() => setStep(2)}
+            disabled={isCalculating}
           >
             Atrás
           </Button>
           <Button
             variant="primary"
-            onClick={() => setStep(4)}
+            onClick={handleCalculate}
+            isLoading={isCalculating}
+            disabled={isCalculating}
           >
             Ver Cotización Final
           </Button>

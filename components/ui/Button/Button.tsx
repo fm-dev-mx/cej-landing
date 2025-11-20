@@ -9,21 +9,25 @@ type ButtonProps = {
   variant?: ButtonVariant;
   fullWidth?: boolean;
   href?: string;
+  isLoading?: boolean;
 } & Partial<ButtonHTMLAttributes<HTMLButtonElement> & AnchorHTMLAttributes<HTMLAnchorElement>>;
 
 export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(
-  ({ className, variant = 'primary', fullWidth, href, children, ...props }, ref) => {
+  ({ className, variant = 'primary', fullWidth, href, isLoading, children, disabled, ...props }, ref) => {
     const rootClassName = [
       styles.base,
       styles[variant],
       fullWidth ? styles.fullWidth : '',
+      isLoading ? styles.loading : '',
       className,
     ]
       .filter(Boolean)
       .join(' ');
 
-    // Render as Anchor if href is provided
-    if (href) {
+    const isDisabled = disabled || isLoading;
+
+    // Render as Anchor if href is provided and not disabled
+    if (href && !isDisabled) {
       return (
         <a
           ref={ref as React.Ref<HTMLAnchorElement>}
@@ -42,6 +46,7 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
         ref={ref as React.Ref<HTMLButtonElement>}
         type="button"
         className={rootClassName}
+        disabled={isDisabled}
         {...(props as ButtonHTMLAttributes<HTMLButtonElement>)}
       >
         {children}
