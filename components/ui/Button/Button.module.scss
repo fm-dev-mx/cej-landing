@@ -10,38 +10,60 @@
   font-weight: 700;
   justify-content: center;
   text-transform: none;
-  cursor: pointer;
+  cursor: pointer; /* Preserved for UX consistency */
   text-decoration: none;
-  position: relative; /* For loader positioning */
-  transition: all 0.2s ease;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Loading state styling */
-  &.loading {
-    color: transparent !important; /* Hide text but keep size */
-    pointer-events: none;
-
-    &::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 1.25rem;
-      height: 1.25rem;
-      margin-left: -0.625rem;
-      margin-top: -0.625rem;
-      border: 2px solid currentColor;
-      border-right-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      /* Restore color for the spinner (usually white or contrast text) */
-      color: var(--c-primary-dark);
-    }
+  /* Disabled state base */
+  &:disabled {
+    filter: grayscale(0.8);
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
   }
+
+  /* Generic Loading State */
+  &.loading {
+    cursor: wait;
+  }
+}
+
+/* Spinner Element */
+.spinner {
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  flex-shrink: 0;
 }
 
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* Variant 1: Loading without text (Absolute centered spinner) */
+.loading:not(.loadingWithText) {
+  .invisibleContent {
+    opacity: 0; /* Maintains button width */
+  }
+
+  .spinner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-left: -0.575rem;
+    margin-top: -0.575rem;
+  }
+}
+
+/* Variant 2: Loading with text (Spinner + Inline text) */
+.loadingWithText {
+  gap: 0.75rem; /* Gap between spinner and text */
 }
 
 /* Variants */
@@ -57,14 +79,7 @@
     box-shadow: 0 6px 20px rgba(254, 201, 20, 0.4);
   }
 
-  &:disabled {
-    filter: grayscale(0.8);
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  /* Fix spinner color for primary button */
-  &.loading::after {
+  .spinner {
     border-color: var(--c-primary-dark);
     border-right-color: transparent;
   }
@@ -80,7 +95,7 @@
     border-color: white;
   }
 
-  &.loading::after {
+  .spinner {
     border-color: white;
     border-right-color: transparent;
   }

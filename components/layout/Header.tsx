@@ -20,7 +20,6 @@ const PRIMARY_NAV: NavItem[] = [
   { href: "#services", label: "Servicios" },
   { href: "#service-area", label: "Área de servicio" },
   { href: "#faq", label: "FAQ" },
-  { href: "#contact", label: "Contacto" },
 ];
 
 // Extract IDs for the hook (remove the #)

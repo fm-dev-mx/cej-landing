@@ -11,6 +11,8 @@
   border-radius: var(--radius);
   border: 1px solid rgba(255, 255, 255, 0.15);
   background-color: rgba(255, 255, 255, 0.03);
+
+  /* Smooth transition for all transform/colors */
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Ensure text contrast */
@@ -19,6 +21,13 @@
   &:hover {
     background-color: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px); /* Slight lift */
+  }
+
+  /* Active/Click Effect: The "Spring" */
+  &:active {
+    transform: scale(0.98);
+    background-color: rgba(255, 255, 255, 0.05);
   }
 
   /* Selected State */
@@ -26,6 +35,7 @@
     background-color: rgba(254, 201, 20, 0.08); /* Tint of brand yellow */
     border-color: var(--c-accent);
     box-shadow: inset 0 0 0 1px var(--c-accent);
+    transform: none; /* Reset lift on selected */
 
     .radioIndicator {
       border-color: var(--c-accent);

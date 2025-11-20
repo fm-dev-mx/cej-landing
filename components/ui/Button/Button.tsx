@@ -10,21 +10,36 @@ type ButtonProps = {
   fullWidth?: boolean;
   href?: string;
   isLoading?: boolean;
+  loadingText?: string; // New prop for explicit feedback
 } & Partial<ButtonHTMLAttributes<HTMLButtonElement> & AnchorHTMLAttributes<HTMLAnchorElement>>;
 
 export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(
-  ({ className, variant = 'primary', fullWidth, href, isLoading, children, disabled, ...props }, ref) => {
+  ({ className, variant = 'primary', fullWidth, href, isLoading, loadingText, children, disabled, ...props }, ref) => {
     const rootClassName = [
       styles.base,
       styles[variant],
       fullWidth ? styles.fullWidth : '',
       isLoading ? styles.loading : '',
+      isLoading && loadingText ? styles.loadingWithText : '', // Conditional class for layout
       className,
     ]
       .filter(Boolean)
       .join(' ');
 
     const isDisabled = disabled || isLoading;
+
+    // Dynamic content: Spinner + Text or just Children
+    const content = isLoading ? (
+      <>
+        <span className={styles.spinner} aria-hidden="true" />
+        {loadingText || (
+          // If no loading text, keep original children (visually hidden by CSS if just spinner)
+          <span className={styles.invisibleContent}>{children}</span>
+        )}
+      </>
+    ) : (
+      children
+    );
 
     // Render as Anchor if href is provided and not disabled
     if (href && !isDisabled) {
@@ -35,7 +50,7 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
           className={rootClassName}
           {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}
         >
-          {children}
+          {content}
         </a>
       );
     }
@@ -49,7 +64,7 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
         disabled={isDisabled}
         {...(props as ButtonHTMLAttributes<HTMLButtonElement>)}
       >
-        {children}
+        {content}
       </button>
     );
   }

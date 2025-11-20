@@ -88,6 +88,7 @@ export function Step3Specs() {
             variant="primary"
             onClick={handleCalculate}
             isLoading={isCalculating}
+            loadingText="Calculando..."
             disabled={isCalculating}
           >
             Ver Cotización Final
