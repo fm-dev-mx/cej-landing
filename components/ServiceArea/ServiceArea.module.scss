@@ -1,9 +1,11 @@
+/* components/ServiceArea/ServiceArea.module.scss */
 @use "../../styles/primitives" as p;
 @use "../../styles/mixins" as *;
 
 .section {
   background-color: var(--c-bg);
-  padding-block: var(--sp-8) var(--sp-10);
+  padding-block: var(--sp-10);
+  position: relative;
 }
 
 .container {
@@ -12,106 +14,254 @@
 
 .grid {
   display: grid;
-  gap: var(--sp-6);
+  gap: var(--sp-8);
 
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1.5fr;
-    align-items: center;
-    gap: var(--sp-8);
+  @media (min-width: 1024px) {
+    grid-template-columns: 1fr 1.2fr; /* Map slightly wider */
+    align-items: start;
+    gap: var(--sp-10);
   }
 }
 
+/* Content Side */
 .content {
-  text-align: center;
-
-  @media (min-width: 768px) {
-    text-align: left;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
 }
 
 .title {
   @include p.h2;
-  margin-bottom: var(--sp-3);
   color: var(--c-text);
+  margin-bottom: var(--sp-2);
 }
 
 .description {
   @include p.lead;
   color: var(--c-muted-strong);
-  margin-bottom: var(--sp-6);
-
-  strong {
-    color: var(--c-primary);
-    font-weight: 700;
-  }
+  font-size: var(--fs-lg);
 }
 
-.list {
+/* Contact List */
+.contactList {
   list-style: none;
   padding: 0;
   margin: 0;
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
-  text-align: left;
+  gap: var(--sp-4);
 }
 
-.listItem {
+.contactItem {
   display: flex;
+  gap: var(--sp-4);
   align-items: flex-start;
-  gap: var(--sp-3);
+}
+
+.iconBox {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  background-color: white;
+  border: 1px solid var(--c-border);
+  border-radius: 50%;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-xs);
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
   font-size: var(--fs-base);
   color: var(--c-muted-strong);
-  line-height: 1.4;
-}
 
-.icon {
-  color: var(--c-success);
-  font-size: 1.1em;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.note {
-  margin-top: var(--sp-6);
-  padding: var(--sp-4);
-  background-color: rgba(254, 201, 20, 0.1);
-  border-left: 4px solid var(--c-accent);
-  border-radius: 4px;
-  font-size: var(--fs-sm);
-  color: var(--c-muted-strong);
-  text-align: left;
-}
-
-/* Map container */
-.mapWrapper {
-  width: 100%;
-  position: relative;
-  border-radius: var(--radius-lg);
-
-  /* Ensure overflowing map UI is clipped to the container */
-  overflow: hidden;
-
-  background-color: var(--c-step-bg);
-  box-shadow: var(--shadow-md);
-  border: 4px solid #fff;
-  aspect-ratio: 4/3;
-
-  @media (min-width: 1024px) {
-    aspect-ratio: 16/9;
+  strong {
+    color: var(--c-text);
+    font-weight: 600;
   }
+
+  p {
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+.address {
+  font-style: normal;
+  line-height: 1.5;
+}
+
+/* Schedule Card */
+.scheduleCard {
+  margin-top: var(--sp-2);
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-left: 4px solid var(--c-accent);
+  padding: var(--sp-5);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.scheduleTitle {
+  font-size: var(--fs-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--c-muted);
+  margin-bottom: var(--sp-3);
+  font-weight: 700;
+}
+
+.scheduleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-block: 0.35rem;
+  border-bottom: 1px dashed var(--c-border);
+  font-size: var(--fs-sm);
+  color: var(--c-text);
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  strong {
+    color: var(--c-primary);
+  }
+}
+
+/* Map Container */
+.mapWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--c-border);
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+
+  @media (min-width: 768px) {
+    aspect-ratio: 16/10;
+  }
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  &.active {
+    border-color: var(--c-accent);
+  }
+}
+
+/* Map Overlay (UX Improvement) */
+.mapOverlay {
+  /* Reset button styles */
+  appearance: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+
+  /* Gradient brand overlay */
+  background: linear-gradient(
+    135deg,
+    rgba(2, 26, 54, 0.85),
+    rgba(4, 51, 105, 0.9)
+  );
+  transition: opacity 0.3s ease;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+
+  &:focus-visible {
+    outline: 2px solid var(--c-accent);
+    outline-offset: -2px;
+  }
+}
+
+.overlayContent {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  color: white;
+  transform: translateY(0);
+  transition: transform 0.3s ease;
+
+  .mapWrapper:hover & {
+    transform: scale(1.05);
+  }
+}
+
+.overlayIcon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.overlayText {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  background-color: var(--c-accent);
+  color: var(--c-primary-dark);
+  padding: 0.5rem 1.25rem;
+  border-radius: 99px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.overlayHint {
+  font-size: var(--fs-xs);
+  opacity: 0.8;
+  margin-top: 0.5rem;
 }
 
 .mapFrame {
   width: 100%;
-
-  /* Make the iframe taller (100% + 64px toolbar area) */
-  height: calc(100% + 64px);
-
+  height: calc(100% + 68px);
   border: 0;
   display: block;
-  transition: opacity 0.3s ease;
+  margin-top: -68px;
+}
 
-  /* Shift the iframe up so the Google Maps top bar sits outside the visible area */
-  margin-top: -64px;
+/* Links */
+.linksStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.textLink {
+  color: var(--c-primary);
+  text-decoration: none;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.2s ease;
+  width: fit-content;
+
+  &:hover {
+    color: var(--c-accent-hover);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+.linkLabel {
+  font-size: 0.8em;
+  color: var(--c-muted);
+  font-weight: 400;
+  margin-left: 0.25rem;
 }
