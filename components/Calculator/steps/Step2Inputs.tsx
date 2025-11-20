@@ -4,6 +4,8 @@
 import { useCallback, type ChangeEvent } from 'react';
 import { useCalculatorContext } from '../context/CalculatorContext';
 import type { QuoteWarning } from '../hooks/useCalculatorQuote';
+import { Button } from '@/components/ui/Button/Button';
+import { Input } from '@/components/ui/Input/Input';
 import styles from '../Calculator.module.scss';
 
 // Helper component to render warnings
@@ -91,25 +93,24 @@ export function Step2Inputs() {
       <div className={styles.stepBody}>
         {/* Flow A: Known Volume */}
         {mode === 'knownM3' && (
-          <div className={styles.field}>
-            <label htmlFor="vol-known">Volumen (m³)</label>
-            <input
-              id="vol-known"
-              type="number"
-              min={0}
-              step={0.5}
-              value={m3}
-              onChange={handleNumericInput(setM3)}
-              className={`${styles.control} ${styles.volumeInput}`}
-              inputMode="decimal"
-              placeholder="0.0"
-            />
-          </div>
+          <Input
+            id="vol-known"
+            label="Volumen (m³)"
+            type="number"
+            min={0}
+            step={0.5}
+            value={m3}
+            onChange={handleNumericInput(setM3)}
+            isVolume={true}
+            inputMode="decimal"
+            placeholder="0.0"
+          />
         )}
 
         {/* Flow B: Assist Volume */}
         {mode === 'assistM3' && (
           <>
+            {/* Radio buttons still use manual layout as they are not simple inputs */}
             <div className={styles.field}>
               <label>Método de cálculo</label>
               <div className={styles.radioRow}>
@@ -138,81 +139,66 @@ export function Step2Inputs() {
 
             {volumeMode === 'dimensions' && (
               <>
-                <div className={styles.field}>
-                  <label htmlFor="length">Largo (m)</label>
-                  <input
-                    id="length"
-                    type="number"
-                    min={0}
-                    step={0.1}
-                    value={length}
-                    onChange={handleNumericInput(setLength)}
-                    className={styles.control}
-                    inputMode="decimal"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className={styles.field}>
-                  <label htmlFor="width">Ancho (m)</label>
-                  <input
-                    id="width"
-                    type="number"
-                    min={0}
-                    step={0.1}
-                    value={width}
-                    onChange={handleNumericInput(setWidth)}
-                    className={styles.control}
-                    inputMode="decimal"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className={styles.field}>
-                  <label htmlFor="thickness-dims">Grosor (cm)</label>
-                  <input
-                    id="thickness-dims"
-                    type="number"
-                    min={0}
-                    step={0.5}
-                    value={thicknessByDims}
-                    onChange={handleNumericInput(setThicknessByDims)}
-                    className={styles.control}
-                    inputMode="decimal"
-                    placeholder="10"
-                  />
-                </div>
+                <Input
+                  id="length"
+                  label="Largo (m)"
+                  type="number"
+                  min={0}
+                  step={0.1}
+                  value={length}
+                  onChange={handleNumericInput(setLength)}
+                  inputMode="decimal"
+                  placeholder="0.00"
+                />
+                <Input
+                  id="width"
+                  label="Ancho (m)"
+                  type="number"
+                  min={0}
+                  step={0.1}
+                  value={width}
+                  onChange={handleNumericInput(setWidth)}
+                  inputMode="decimal"
+                  placeholder="0.00"
+                />
+                <Input
+                  id="thickness-dims"
+                  label="Grosor (cm)"
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  value={thicknessByDims}
+                  onChange={handleNumericInput(setThicknessByDims)}
+                  inputMode="decimal"
+                  placeholder="10"
+                />
               </>
             )}
 
             {volumeMode === 'area' && (
               <>
-                <div className={styles.field}>
-                  <label htmlFor="area">Área total (m²)</label>
-                  <input
-                    id="area"
-                    type="number"
-                    min={0}
-                    step={0.1}
-                    value={area}
-                    onChange={handleNumericInput(setArea)}
-                    className={styles.control}
-                    inputMode="decimal"
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className={styles.field}>
-                  <label htmlFor="thickness-area">Grosor (cm)</label>
-                  <input
-                    id="thickness-area"
-                    type="number"
-                    min={0}
-                    step={0.5}
-                    value={thicknessByArea}
-                    onChange={handleNumericInput(setThicknessByArea)}
-                    className={styles.control}
-                    inputMode="decimal"
-                    placeholder="10"
-                  />
-                </div>
+                <Input
+                  id="area"
+                  label="Área total (m²)"
+                  type="number"
+                  min={0}
+                  step={0.1}
+                  value={area}
+                  onChange={handleNumericInput(setArea)}
+                  inputMode="decimal"
+                  placeholder="0.00"
+                />
+                <Input
+                  id="thickness-area"
+                  label="Grosor (cm)"
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  value={thicknessByArea}
+                  onChange={handleNumericInput(setThicknessByArea)}
+                  inputMode="decimal"
+                  placeholder="10"
+                />
               </>
             )}
 
@@ -312,21 +298,19 @@ export function Step2Inputs() {
         )}
 
         <div className={styles.stepControls}>
-          <button
-            type="button"
-            className={styles.secondaryBtn}
+          <Button
+            variant="secondary"
             onClick={() => setStep(1)}
           >
             Atrás
-          </button>
-          <button
-            type="button"
-            className={styles.primaryBtn}
+          </Button>
+          <Button
+            variant="primary"
             onClick={() => setStep(3)}
             disabled={!canProceedToSpecs}
           >
             Siguiente
-          </button>
+          </Button>
         </div>
       </div>
     </div>

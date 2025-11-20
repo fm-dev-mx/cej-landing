@@ -6,6 +6,7 @@ import { useCalculatorContext } from "../context/CalculatorContext";
 import { fmtMXN } from "@/lib/utils";
 import { trackLead, trackContact } from "@/lib/pixel";
 import { env } from "@/config/env";
+import { Button } from "@/components/ui/Button/Button";
 import styles from "../Calculator.module.scss";
 
 type Props = {
@@ -125,21 +126,23 @@ export function Step4Summary({ estimateLegend }: Props) {
             role="group"
             aria-label="Contactar a CEJ"
           >
-            <button
+            <Button
               type="button"
+              variant="whatsapp"
               onClick={handleWhatsAppClick}
               disabled={waDisabled || quote.total <= 0}
             >
               💬 WhatsApp
-            </button>
+            </Button>
 
             {phoneHref && (
-              <a
+              <Button
+                variant="secondary"
                 href={phoneHref}
                 onClick={handlePhoneClick}
               >
                 📞 Llamar
-              </a>
+              </Button>
             )}
           </div>
         </aside>
@@ -151,13 +154,12 @@ export function Step4Summary({ estimateLegend }: Props) {
         )}
 
         <div className={styles.stepControls}>
-          <button
-            type="button"
-            className={styles.secondaryBtn}
+          <Button
+            variant="secondary"
             onClick={() => setStep(3)}
           >
             Editar especificaciones
-          </button>
+          </Button>
         </div>
 
         <p className={styles.disclaimer}>{estimateLegend}</p>

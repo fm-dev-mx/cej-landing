@@ -5,6 +5,8 @@ import { useCallback, type ChangeEvent } from "react";
 import { useCalculatorContext } from "../context/CalculatorContext";
 import { type Strength } from "../types";
 import { STRENGTHS, CONCRETE_TYPES } from "@/config/business";
+import { Button } from "@/components/ui/Button/Button";
+import { Select } from "@/components/ui/Select/Select";
 import styles from "../Calculator.module.scss";
 
 export function Step3Specs() {
@@ -30,18 +32,17 @@ export function Step3Specs() {
 
         <div className={styles.field}>
           <label htmlFor="fck">Resistencia (f’c)</label>
-          <select
+          <Select
             id="fck"
             value={strength}
             onChange={handleStrengthChange}
-            className={`${styles.control} ${styles.select}`}
           >
             {STRENGTHS.map((s) => (
               <option key={s} value={s}>
                 {s} kg/cm²
               </option>
             ))}
-          </select>
+          </Select>
           {mode === "assistM3" && (
             <p className={styles.hint}>
               Sugerida según el tipo de obra que seleccionaste previamente.
@@ -68,20 +69,18 @@ export function Step3Specs() {
         </div>
 
         <div className={styles.stepControls}>
-          <button
-            type="button"
-            className={styles.secondaryBtn}
+          <Button
+            variant="secondary"
             onClick={() => setStep(2)}
           >
             Atrás
-          </button>
-          <button
-            type="button"
-            className={styles.primaryBtn}
+          </Button>
+          <Button
+            variant="primary"
             onClick={() => setStep(4)}
           >
             Ver Cotización Final
-          </button>
+          </Button>
         </div>
       </div>
     </div>

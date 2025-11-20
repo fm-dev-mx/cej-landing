@@ -5,7 +5,6 @@
 /* Theme Variables & Glass Configuration */
 $glass-surface: rgba(2, 26, 54, 0.9);
 $glass-border: rgba(255, 255, 255, 0.1);
-$input-bg: rgba(0, 0, 0, 0.4);
 
 .wrapper {
   position: relative;
@@ -149,7 +148,7 @@ $input-bg: rgba(0, 0, 0, 0.4);
   background: rgba(127, 29, 29, 0.2);
 }
 
-/* --- Inputs & Fields --- */
+/* --- Fields --- */
 
 .field {
   display: flex;
@@ -162,76 +161,6 @@ $input-bg: rgba(0, 0, 0, 0.4);
     color: var(--c-muted-on-dark);
     margin: 0.8rem 0 0 0;
   }
-}
-
-.control {
-  width: 80%;
-  border-radius: var(--radius);
-  background-color: $input-bg;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: white;
-  padding: 0.85rem 1rem;
-  font-size: 1rem; /* Prevent zoom on iOS */
-  transition: all 0.2s ease-out;
-  appearance: none;
-
-  &::placeholder {
-    color: rgba(255, 255, 255, 0.4);
-  }
-
-  &:hover:not(:disabled) {
-    border-color: rgba(255, 255, 255, 0.3);
-    background-color: rgba(0, 0, 0, 0.5);
-  }
-
-  &:focus-visible {
-    outline: none;
-    border-color: var(--c-accent);
-    background-color: rgba(0, 0, 0, 0.6);
-    box-shadow:
-      0 0 0 1px var(--c-accent),
-      0 0 0 4px rgba(254, 201, 20, 0.15);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* Specific fix for volume inputs - cleaner styling */
-  &.volumeInput {
-    width: 6rem;
-    height: 1.5rem;
-    padding-left: 2rem;
-    font-size: var(--fs-lg);
-    font-weight: 600;
-    letter-spacing: 0.02em;
-  }
-
-  &::-webkit-inner-spin-button,
-    &::-webkit-outer-spin-button {
-      opacity: 0.7;               // más visibles
-      height: 2rem;           // coincide con el input
-      padding: 0.6rem;          // agranda el área del botón
-      cursor: pointer;
-      margin-right: -20%;
-    }
-
-}
-
-
-/* Custom Select Arrow (SVG encoded) */
-.select {
-  padding-right: 2.5rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 1.25rem;
-
-  width: 16rem;
-  height: 3.5rem;
-  font-size:var(--fs-xl);
-
 }
 
 /* --- Radio Cards --- */
@@ -343,47 +272,6 @@ $input-bg: rgba(0, 0, 0, 0.4);
   }
 }
 
-.primaryBtn,
-.secondaryBtn {
-  @include p.btn;
-  border-radius: 99px;
-  padding: 0.85rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 700;
-  justify-content: center;
-  text-transform: none; /* Keep it normal case for better readability */
-}
-
-.primaryBtn {
-  background-color: var(--c-accent);
-  color: var(--c-primary-dark);
-  border-color: var(--c-accent);
-  box-shadow: 0 4px 15px rgba(254, 201, 20, 0.3);
-
-  &:hover:not(:disabled) {
-    background-color: var(--c-accent-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(254, 201, 20, 0.4);
-  }
-
-  &:disabled {
-    filter: grayscale(0.8);
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-}
-
-.secondaryBtn {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: white;
-  }
-}
-
 /* Summary Actions (WA / Phone) */
 .actions {
   display: flex;
@@ -396,34 +284,7 @@ $input-bg: rgba(0, 0, 0, 0.4);
     button, a { flex: 1; }
   }
 
-  button { /* WhatsApp override */
-    @include p.btn;
-    justify-content: center;
-    border-radius: 99px;
-    background-color: var(--c-whatsapp);
-    border-color: var(--c-whatsapp);
-    color: white;
-    font-weight: 700;
-
-    &:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-    }
-  }
-
-  a { /* Call override */
-    @include p.btn;
-    justify-content: center;
-    border-radius: 99px;
-    background-color: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-      border-color: white;
-    }
-  }
+  // We use the Button component here, but we can add layout overrides if needed
 }
 
 .note {
@@ -506,4 +367,11 @@ $input-bg: rgba(0, 0, 0, 0.4);
     margin-bottom: 0; // Quitar margen inferior
     padding: 0.75rem; // Hacerlos un poco más compactos
   }
+}
+
+/* Legacy support for radioRow if used in Step2 */
+.radioRow {
+   display: grid;
+   grid-template-columns: 1fr 1fr;
+   gap: var(--sp-3);
 }

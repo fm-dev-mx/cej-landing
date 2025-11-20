@@ -1,0 +1,57 @@
+// components/ui/Button/Button.module.scss
+@use "../../../styles/primitives" as p;
+@use "../../../styles/mixins" as *;
+
+.base {
+  @include p.btn;
+  border-radius: 99px;
+  padding: 0.85rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  justify-content: center;
+  text-transform: none;
+  cursor: pointer;
+  text-decoration: none; // For 'a' tags disguised as buttons
+}
+
+/* Variants */
+.primary {
+  background-color: var(--c-accent);
+  color: var(--c-primary-dark);
+  border-color: var(--c-accent);
+  box-shadow: 0 4px 15px rgba(254, 201, 20, 0.3);
+
+  &:hover:not(:disabled) {
+    background-color: var(--c-accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(254, 201, 20, 0.4);
+  }
+
+  &:disabled {
+    filter: grayscale(0.8);
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.secondary {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+  }
+}
+
+.whatsapp {
+  background-color: var(--c-whatsapp);
+  border-color: var(--c-whatsapp);
+  color: white;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+  }
+}

@@ -1,0 +1,40 @@
+// components/ui/Select/Select.module.scss
+@use "../../../styles/primitives" as p;
+
+$input-bg: rgba(0, 0, 0, 0.4);
+
+.select {
+  // Inherits base input styles logic but adapted for Select
+  width: 16rem;
+  height: 3.5rem;
+  border-radius: var(--radius);
+  background-color: $input-bg;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  padding: 0.85rem 1rem;
+  padding-right: 2.5rem; // Space for arrow
+  font-size: var(--fs-xl);
+  transition: all 0.2s ease-out;
+  appearance: none;
+  cursor: pointer;
+
+  // Custom SVG Arrow
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25rem;
+
+  &:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--c-accent);
+    background-color: rgba(0, 0, 0, 0.6);
+    box-shadow:
+      0 0 0 1px var(--c-accent),
+      0 0 0 4px rgba(254, 201, 20, 0.15);
+  }
+}
