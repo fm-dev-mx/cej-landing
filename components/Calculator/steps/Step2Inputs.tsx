@@ -110,7 +110,6 @@ export function Step2Inputs() {
         {/* Flow B: Assist Volume */}
         {mode === 'assistM3' && (
           <>
-            {/* Radio buttons still use manual layout as they are not simple inputs */}
             <div className={styles.field}>
               <label>Método de cálculo</label>
               <div className={styles.radioRow}>
@@ -144,7 +143,7 @@ export function Step2Inputs() {
                   label="Largo (m)"
                   type="number"
                   min={0}
-                  step={0.1}
+                  step={0.5}
                   value={length}
                   onChange={handleNumericInput(setLength)}
                   inputMode="decimal"
@@ -155,7 +154,7 @@ export function Step2Inputs() {
                   label="Ancho (m)"
                   type="number"
                   min={0}
-                  step={0.1}
+                  step={0.5}
                   value={width}
                   onChange={handleNumericInput(setWidth)}
                   inputMode="decimal"
@@ -166,7 +165,7 @@ export function Step2Inputs() {
                   label="Grosor (cm)"
                   type="number"
                   min={0}
-                  step={0.5}
+                  step={1}
                   value={thicknessByDims}
                   onChange={handleNumericInput(setThicknessByDims)}
                   inputMode="decimal"
@@ -193,7 +192,7 @@ export function Step2Inputs() {
                   label="Grosor (cm)"
                   type="number"
                   min={0}
-                  step={0.5}
+                  step={1}
                   value={thicknessByArea}
                   onChange={handleNumericInput(setThicknessByArea)}
                   inputMode="decimal"
@@ -202,7 +201,7 @@ export function Step2Inputs() {
               </>
             )}
 
-            {/* Bloque Casetón solo para Losas */}
+            {/* Coffered Slab block */}
             {workType === 'slab' && (
               <>
                 <div className={`${styles.field} ${styles.stepAnimated}`}>
@@ -231,7 +230,7 @@ export function Step2Inputs() {
                   </div>
                 </div>
 
-                {/* SUB-BLOQUE: Tamaño de casetón (Estilo Pills) */}
+                { /* Coffered Slab Dimensions */}
                 {hasCoffered === 'yes' && (
                   <div
                     className={`${styles.field} ${styles.stepAnimated}`}
@@ -271,7 +270,7 @@ export function Step2Inputs() {
           </>
         )}
 
-        {/* Feedback & Nav */}
+        {/* Volume Error and Warning */}
         {volumeError && (
           <p className={styles.error} role="alert">
             {volumeError}

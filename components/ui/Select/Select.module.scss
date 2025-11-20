@@ -1,40 +1,57 @@
 // components/ui/Select/Select.module.scss
-@use "../../../styles/primitives" as p;
+@use "../../../styles/forms" as f;
 
-$input-bg: rgba(0, 0, 0, 0.4);
+.wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 18rem; /* Standard max width for selects */
+}
 
 .select {
-  // Inherits base input styles logic but adapted for Select
-  width: 16rem;
-  height: 3.5rem;
-  border-radius: var(--radius);
-  background-color: $input-bg;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: white;
-  padding: 0.85rem 1rem;
-  padding-right: 2.5rem; // Space for arrow
-  font-size: var(--fs-xl);
-  transition: all 0.2s ease-out;
-  appearance: none;
+  @include f.input-base;
+  padding-right: 2.5rem; /* Space for custom arrow */
   cursor: pointer;
+  width: 100%;
 
-  // Custom SVG Arrow
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 1.25rem;
+  /* Hide default arrow */
+  appearance: none;
+  background-image: none;
 
-  &:hover:not(:disabled) {
-    border-color: rgba(255, 255, 255, 0.3);
-    background-color: rgba(0, 0, 0, 0.5);
-  }
-
-  &:focus-visible {
-    outline: none;
-    border-color: var(--c-accent);
-    background-color: rgba(0, 0, 0, 0.6);
-    box-shadow:
-      0 0 0 1px var(--c-accent),
-      0 0 0 4px rgba(254, 201, 20, 0.15);
+  &::-ms-expand {
+    display: none;
   }
 }
+
+/* Variants */
+.dark {
+  @include f.input-variant-dark;
+}
+
+.light {
+  @include f.input-variant-light;
+}
+
+/* Custom Arrow */
+.arrow {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  width: 0.75rem;
+  height: 0.75rem;
+  pointer-events: none;
+  background-color: currentColor; /* Fallback */
+
+  /* SVG Mask for color control via background-color */
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+.arrow.dark { background-color: rgba(255, 255, 255, 0.7); }
+.arrow.light { background-color: var(--c-muted-strong); }

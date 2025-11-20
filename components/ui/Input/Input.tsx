@@ -5,10 +5,16 @@ import styles from './Input.module.scss';
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   isVolume?: boolean;
   label?: string;
+  variant?: 'dark' | 'light';
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, isVolume, label, id, ...props }, ref) => {
+  ({ className, isVolume, label, id, variant = 'dark', ...props }, ref) => {
+    const containerClass = [
+      styles.container,
+      styles[variant]
+    ].filter(Boolean).join(' ');
+
     const inputClasses = [
       styles.input,
       isVolume ? styles.volumeInput : '',
@@ -33,7 +39,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
     // Si hay label, renderizamos la molécula completa (Layout + Label + Input)
     return (
-      <div className={styles.container}>
+      <div className={containerClass}>
         <label htmlFor={id} className={styles.label}>
           {label}
         </label>

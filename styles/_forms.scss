@@ -1,0 +1,86 @@
+// styles/_forms.scss
+
+@use "tokens";
+
+@mixin input-base {
+  width: 100%;
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  font-size: 1rem; /* Prevent zoom on iOS */
+  line-height: 1.5;
+  transition: all 0.2s ease-out;
+  appearance: none;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Spinners fix for numbers */
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    opacity: 0.5;
+    height: 2rem;
+    margin: 0; /* Standardize margin */
+    cursor: pointer;
+  }
+}
+
+@mixin input-variant-dark {
+  background-color: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--c-accent);
+    background-color: rgba(0, 0, 0, 0.6);
+    box-shadow:
+      0 0 0 1px var(--c-accent),
+      0 0 0 4px rgba(254, 201, 20, 0.15);
+  }
+}
+
+@mixin input-variant-light {
+  background-color: white;
+  border: 1px solid var(--c-border);
+  color: var(--c-text);
+
+  &::placeholder {
+    color: var(--c-muted);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--c-border-strong);
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--c-primary);
+    box-shadow: 0 0 0 4px var(--c-step-current-soft);
+  }
+}
+
+@mixin label-base {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+@mixin label-variant-dark {
+  color: var(--c-muted-on-dark);
+}
+
+@mixin label-variant-light {
+  color: var(--c-muted-strong);
+}

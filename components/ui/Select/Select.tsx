@@ -2,16 +2,31 @@
 import { SelectHTMLAttributes, forwardRef } from 'react';
 import styles from './Select.module.scss';
 
-interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {}
+interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+  variant?: 'dark' | 'light';
+}
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, children, ...props }, ref) => {
-    const rootClassName = [styles.select, className].filter(Boolean).join(' ');
+  ({ className, children, variant = 'dark', ...props }, ref) => {
+    // The input-style class is applied to the inner select
+    const selectClass = [
+      styles.select,
+      styles[variant]
+    ].filter(Boolean).join(' ');
+
+    // The layout class passed from props is applied to the wrapper
+    const wrapperClass = [
+      styles.wrapper,
+      className
+    ].filter(Boolean).join(' ');
 
     return (
-      <select ref={ref} className={rootClassName} {...props}>
-        {children}
-      </select>
+      <div className={wrapperClass}>
+        <select ref={ref} className={selectClass} {...props}>
+          {children}
+        </select>
+        <div className={`${styles.arrow} ${styles[variant]}`} aria-hidden="true" />
+      </div>
     );
   }
 );
