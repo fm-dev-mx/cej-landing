@@ -1,6 +1,7 @@
 // components/layout/HeroSection.tsx
 
 import { env } from "@/config/env";
+import { LANDING_CONTENT } from "@/config/content";
 import styles from "./HeroSection.module.scss";
 
 type HeroSectionProps = {
@@ -13,6 +14,7 @@ export default function HeroSection({
   fallbackImage = "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763502640/hero-fallback_yokvg7.jpg",
 }: HeroSectionProps) {
   const whatsappNumber = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
+  const content = LANDING_CONTENT.hero;
 
   // Predefined message for higher conversion
   const whatsappHref = whatsappNumber
@@ -48,34 +50,38 @@ export default function HeroSection({
         <div className={styles.hero__content}>
           <div className={styles.hero__badge}>
             <span className={styles.hero__badgeIcon}>✦</span>
-            <span>Calidad y Tiempo en Ciudad Juárez</span>
+            <span>{content.badge}</span>
           </div>
 
           <h1 className={styles.hero__title}>
-            Tu obra no se detiene, <br />
-            <span className={styles.hero__highlight}>nosotros tampoco.</span>
+            {content.title.line1} <br />
+            <span className={styles.hero__highlight}>{content.title.highlight}</span>
           </h1>
 
-          <p className={styles.hero__lead}>
-            Suministro de concreto premezclado con <strong>acompañamiento experto</strong> desde el inicio. Evita desperdicios y retrasos.
-          </p>
+          {/* Using dangerouslySetInnerHTML for the lead allows controlled bolding/formatting
+            from the config without complex parsing logic.
+            Ensure config/content.ts is treated as a trusted source.
+          */}
+          <p
+            className={styles.hero__lead}
+            dangerouslySetInnerHTML={{ __html: content.lead }}
+          />
 
           {/* Trust Signals / Differentiators */}
           <ul className={styles.hero__features}>
-            <li className={styles.hero__feature}>
-              <CheckIcon /> <span>Cálculo de volumetría <strong>GRATIS</strong></span>
-            </li>
-            <li className={styles.hero__feature}>
-              <CheckIcon /> <span>Entregas puntuales garantizadas</span>
-            </li>
-            <li className={styles.hero__feature}>
-              <CheckIcon /> <span>Asesoría técnica incluida</span>
-            </li>
+            {content.features.map((feature, idx) => (
+              <li key={idx} className={styles.hero__feature}>
+                <CheckIcon />
+                <span>
+                  {feature.text} {feature.highlight && <strong>{feature.highlight}</strong>}
+                </span>
+              </li>
+            ))}
           </ul>
 
           <div className={styles.hero__actions}>
             <a href="#calculator" className={styles.hero__btnPrimary}>
-              Cotizar ahora
+              {content.cta.primary}
             </a>
             {whatsappHref && (
               <a
@@ -85,7 +91,7 @@ export default function HeroSection({
                 className={styles.hero__btnSecondary}
               >
                 <span className={styles.hero__iconWa}>💬</span>
-                Hablar con un experto
+                {content.cta.secondary}
               </a>
             )}
           </div>
@@ -95,7 +101,7 @@ export default function HeroSection({
   );
 }
 
-// Simple icon component to avoid external deps
+// Componente simple de ícono para no depender de librerías externas
 function CheckIcon() {
   return (
     <svg
@@ -103,7 +109,7 @@ function CheckIcon() {
       height="20"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--c-accent)"
+      stroke="var(--c-accent)" /* Usa el amarillo neón */
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
