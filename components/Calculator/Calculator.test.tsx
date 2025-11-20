@@ -83,6 +83,73 @@ describe('Calculator UI Integration', () => {
     expect(screen.getByRole('button', { name: /WhatsApp/i })).toBeInTheDocument();
   });
 
+  it('completes the flow using Assist Mode (Dimensions)', () => {
+    render(<Calculator />);
+
+    // 1. Step 1: Select Assist Mode
+    // This reveals the Work Type options
+    fireEvent.click(screen.getByLabelText('No, ayúdame a definirlo'));
+
+    // Select Work Type "Losa" (triggers auto-navigation to Step 2)
+    // Use exact match to avoid ambiguity with description text
+    fireEvent.click(screen.getByText(/^Losa$/));
+
+    // 2. Step 2: Fill Dimensions
+    // Inputs: Length (m), Width (m), Thickness (cm)
+    // FIX: Use exact string match for labels to avoid matching radio buttons (e.g., "Largo × Ancho")
+    const lengthInput = screen.getByLabelText('Largo (m)');
+    const widthInput = screen.getByLabelText('Ancho (m)');
+    const thickInput = screen.getByLabelText(/Grosor/i);
+
+    fireEvent.change(lengthInput, { target: { value: '10' } });
+    fireEvent.change(widthInput, { target: { value: '5' } });
+    fireEvent.change(thickInput, { target: { value: '10' } }); // 10cm = 0.1m
+
+    // Verify calculation feedback appears (10 * 5 * 0.1 = 5m3 approx)
+    expect(screen.getByText(/Volumen calculado/i)).toBeInTheDocument();
+
+    // 3. Proceed to Step 3
+    const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
+    expect(nextBtn).not.toBeDisabled();
+    fireEvent.click(nextBtn);
+
+    // 4. Verify Step 3 reached
+    expect(screen.getByText(/Tipo de servicio/i)).toBeInTheDocument();
+  });
+
+  it('completes the flow using Assist Mode (Area)', () => {
+    render(<Calculator />);
+
+    // 1. Step 1: Select Assist Mode
+    fireEvent.click(screen.getByLabelText('No, ayúdame a definirlo'));
+
+    // Select Work Type "Losa"
+    fireEvent.click(screen.getByText(/^Losa$/));
+
+    // 2. Step 2: Switch to "Area" mode
+    // We click the radio button to change the input form
+    fireEvent.click(screen.getByLabelText('Por Área (m²)'));
+
+    // Inputs: Area (m2) and Thickness (cm)
+    const areaInput = screen.getByLabelText(/Área total/i);
+    const thickInput = screen.getByLabelText(/Grosor/i);
+
+    // 50m2 * 0.10m = 5m3
+    fireEvent.change(areaInput, { target: { value: '50' } });
+    fireEvent.change(thickInput, { target: { value: '10' } });
+
+    // Verify calculation feedback appears
+    expect(screen.getByText(/Volumen calculado/i)).toBeInTheDocument();
+
+    // 3. Proceed to Step 3
+    const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
+    expect(nextBtn).not.toBeDisabled();
+    fireEvent.click(nextBtn);
+
+    // 4. Verify Step 3 reached
+    expect(screen.getByText(/Tipo de servicio/i)).toBeInTheDocument();
+  });
+
   it('shows validation errors in UI', () => {
     render(<Calculator />);
 
@@ -99,5 +166,30 @@ describe('Calculator UI Integration', () => {
 
     // Verify error message on screen
     expect(screen.getByText(/El volumen debe ser mayor a 0/i)).toBeInTheDocument();
+  });
+
+  it('navigates to step 2 when clicking "Si" even if already selected (re-click bug)', () => {
+    render(<Calculator />);
+
+    // 1. Click "Si" first time -> Should go to Step 2
+    const radioKnown = screen.getByLabelText('Si');
+    fireEvent.click(radioKnown);
+    expect(screen.getByText(/Volumen \(m³\)/i)).toBeInTheDocument(); // Step 2 active
+
+    // 2. Click "Back" -> Returns to Step 1
+    const backBtn = screen.getByRole('button', { name: /Atrás/i });
+    fireEvent.click(backBtn);
+    expect(screen.getByText(/Calcula tu/i)).toBeInTheDocument(); // Step 1 active
+
+    // 3. Verify "Si" is still checked
+    const radioKnownAfterBack = screen.getByLabelText('Si');
+    expect(radioKnownAfterBack).toBeChecked();
+
+    // 4. Click "Si" AGAIN -> Should go to Step 2 again
+    // This is where it currently FAILS
+    fireEvent.click(radioKnownAfterBack);
+
+    // Assert we are back in Step 2
+    expect(screen.getByText(/Volumen \(m³\)/i)).toBeInTheDocument();
   });
 });

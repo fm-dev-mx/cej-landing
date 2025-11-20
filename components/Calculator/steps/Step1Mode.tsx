@@ -49,6 +49,8 @@ export function Step1Mode() {
               value="knownM3"
               checked={mode === 'knownM3'}
               onChange={() => handleModeChange('knownM3')}
+              // FIX: Move navigation logic to onClick to handle re-clicks on selected option
+              onClick={() => handleModeChange('knownM3')}
             />
             <span>Si</span>
           </label>

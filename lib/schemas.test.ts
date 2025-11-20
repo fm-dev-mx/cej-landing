@@ -58,19 +58,38 @@ describe('Zod Schemas Validation', () => {
             expect(result.success).toBe(true);
             if (result.success) {
                 // The schema implementation replaces ',' with empty string for thousands separators.
-                // NOTE: This means '10,5' becomes 105, NOT 10.5.
-                // This behavior is expected based on current schemas.ts implementation.
                 expect(result.data.length).toBe(105);
             }
         });
 
-        it('validates required ranges', () => {
+        it('validates min dimensions (0)', () => {
             const result = DimensionsSchema.safeParse({
                 length: '0',
                 width: '5',
                 thickness: '10'
             });
-            expect(result.success).toBe(false); // Min 0.1
+            expect(result.success).toBe(false);
+        });
+
+        // NEW: Verify max dimension limits
+        it('validates max dimensions (1000m)', () => {
+            const result = DimensionsSchema.safeParse({
+                length: '1001',
+                width: '5',
+                thickness: '10'
+            });
+            expect(result.success).toBe(false);
+        });
+
+        // NEW: Verify thickness limits (1cm - 200cm)
+        it('validates thickness range', () => {
+            // Too thin (< 1cm)
+            const thin = DimensionsSchema.safeParse({ length: '10', width: '5', thickness: '0.5' });
+            expect(thin.success).toBe(false);
+
+            // Too thick (> 200cm)
+            const thick = DimensionsSchema.safeParse({ length: '10', width: '5', thickness: '201' });
+            expect(thick.success).toBe(false);
         });
     });
 
@@ -81,6 +100,17 @@ describe('Zod Schemas Validation', () => {
                 thickness: '10'
             });
             expect(result.success).toBe(true);
+        });
+
+        // NEW: Verify area limits
+        it('validates area range', () => {
+            // Zero area
+            const zero = AreaSchema.safeParse({ area: '0', thickness: '10' });
+            expect(zero.success).toBe(false);
+
+            // Max area (20,000)
+            const huge = AreaSchema.safeParse({ area: '20001', thickness: '10' });
+            expect(huge.success).toBe(false);
         });
     });
 });

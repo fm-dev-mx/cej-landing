@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { useCalculatorQuote } from './useCalculatorQuote';
-import { MIN_M3_BY_TYPE } from '@/config/business';
+import { MIN_M3_BY_TYPE, CASETON_FACTORS } from '@/config/business';
 
 // Mock pixel to avoid undefined 'window' errors or real calls
 vi.mock('@/lib/pixel', () => ({
@@ -82,7 +82,7 @@ describe('useCalculatorQuote Hook', () => {
     expect(result.current.canProceedToSummary).toBe(false);
   });
 
-  it('should calculate volume from dimensions', () => {
+  it('should calculate volume from dimensions (Solid Slab)', () => {
     const input = {
       ...baseInput,
       mode: 'assistM3' as const,
@@ -90,15 +90,58 @@ describe('useCalculatorQuote Hook', () => {
       length: '10',
       width: '5',
       thicknessByDims: '10', // 10cm = 0.1m
+      hasCoffered: 'no' as const,
     };
 
-    // 10 * 5 * 0.1 = 5m3
-    // Solid slab factor = 0.98 => ~4.9m3
-    // Rounded to 0.5 step => 5.0m3
+    // Logic: 10 * 5 * 0.1 = 5 m³
+    // Solid Factor: 0.98 => 4.9 m³
+    // Rounded Step (0.5): => 5.0 m³
 
     const { result } = renderHook(() => useCalculatorQuote(input));
 
     expect(result.current.billedM3).toBe(5);
     expect(result.current.volumeError).toBeNull();
+  });
+
+  it('should calculate volume from Area', () => {
+    const input = {
+      ...baseInput,
+      mode: 'assistM3' as const,
+      volumeMode: 'area' as const,
+      area: '50',
+      thicknessByArea: '10',
+      hasCoffered: 'no' as const,
+    };
+
+    // Logic: 50 * 0.1 = 5 m³
+    // Solid Factor: 0.98 => 4.9 m³
+    // Rounded Step (0.5): => 5.0 m³
+
+    const { result } = renderHook(() => useCalculatorQuote(input));
+
+    expect(result.current.billedM3).toBe(5);
+  });
+
+  it('should apply coffered slab reduction factor', () => {
+    const input = {
+      ...baseInput,
+      mode: 'assistM3' as const,
+      volumeMode: 'dimensions' as const,
+      length: '10',
+      width: '10',
+      thicknessByDims: '20', // 0.2m
+      hasCoffered: 'yes' as const,
+    };
+
+    // Logic: 10 * 10 * 0.2 = 20 m³
+    // Coffered Factor: 0.71 (CASETON_FACTORS.withCofferedSlab)
+    // Expected Raw: 14.2 m³
+    // Rounded Step (0.5): => 14.5 m³
+
+    const { result } = renderHook(() => useCalculatorQuote(input));
+
+    // Verify factor was applied (significantly less than 20)
+    expect(result.current.requestedM3).toBeCloseTo(20 * CASETON_FACTORS.withCofferedSlab);
+    expect(result.current.billedM3).toBe(14.5);
   });
 });

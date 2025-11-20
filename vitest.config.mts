@@ -7,11 +7,19 @@ export default defineConfig({
     test: {
         environment: 'jsdom',
         globals: true,
-        setupFiles: ['./vitest.setup.ts'], // <-- Added this
+        setupFiles: ['./vitest.setup.ts'],
         include: ['**/*.test.ts', '**/*.test.tsx'],
         coverage: {
             provider: 'v8',
             reporter: ['text', 'json', 'html'],
+        },
+    },
+    css: {
+        preprocessorOptions: {
+            scss: {
+                // Forces Vite to use the modern Sass compiler API
+                api: 'modern-compiler',
+            },
         },
     },
 });

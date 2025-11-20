@@ -71,7 +71,7 @@ describe('Pricing Logic', () => {
                 hasCofferedSlab: false,
             };
             // 10 * 5 * 0.10 = 5 m3
-            // Factor solid = 0.98 (waste factor usually, or specific business rule)
+            // Factor solid = 0.98
             const expected = 5 * CASETON_FACTORS.solidSlab;
 
             expect(calcVolumeFromDimensions(input)).toBeCloseTo(expected);
@@ -91,7 +91,13 @@ describe('Pricing Logic', () => {
             expect(calcVolumeFromDimensions(input)).toBeCloseTo(expected);
         });
 
-        it('calculates volume from area', () => {
+        // NEW: Edge cases for dimensions
+        it('returns 0 for invalid dimensions inputs', () => {
+            expect(calcVolumeFromDimensions({ lengthM: 0, widthM: 5, thicknessCm: 10, hasCofferedSlab: false })).toBe(0);
+            expect(calcVolumeFromDimensions({ lengthM: 10, widthM: -5, thicknessCm: 10, hasCofferedSlab: false })).toBe(0);
+        });
+
+        it('calculates volume from area (solid slab)', () => {
             const input = {
                 areaM2: 50,
                 thicknessCm: 10,
@@ -101,6 +107,25 @@ describe('Pricing Logic', () => {
             const expected = 5 * CASETON_FACTORS.solidSlab;
 
             expect(calcVolumeFromArea(input)).toBeCloseTo(expected);
+        });
+
+        // NEW: Coverage for Area + Coffered
+        it('calculates volume from area (coffered slab)', () => {
+            const input = {
+                areaM2: 50,
+                thicknessCm: 20,
+                hasCofferedSlab: true,
+            };
+            // 50 * 0.20 = 10 m3 * 0.71
+            const expected = 10 * CASETON_FACTORS.withCofferedSlab;
+
+            expect(calcVolumeFromArea(input)).toBeCloseTo(expected);
+        });
+
+        // NEW: Edge cases for area
+        it('returns 0 for invalid area inputs', () => {
+            expect(calcVolumeFromArea({ areaM2: 0, thicknessCm: 10, hasCofferedSlab: false })).toBe(0);
+            expect(calcVolumeFromArea({ areaM2: 50, thicknessCm: -10, hasCofferedSlab: false })).toBe(0);
         });
     });
 
