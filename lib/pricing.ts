@@ -50,7 +50,13 @@ export function normalizeVolume(
 
     const minM3ForType = MIN_M3_BY_TYPE[type];
     const roundedM3 = roundUpToStep(safeRequested, M3_STEP);
-    const billedM3 = Math.max(roundedM3, minM3ForType);
+
+    // FIX: Only apply minimum if the user is actually requesting concrete.
+    // If roundedM3 is 0, billed should be 0.
+    const billedM3 = roundedM3 > 0
+        ? Math.max(roundedM3, minM3ForType)
+        : 0;
+
     const isBelowMinimum = safeRequested > 0 && safeRequested < minM3ForType;
 
     return {
