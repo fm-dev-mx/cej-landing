@@ -27,6 +27,18 @@ export interface FaqItem {
     answer: string;
 }
 
+// NEW: Interface for Social Proof / Works
+export interface WorkItem {
+    id: string;
+    title: string;
+    location: string;
+    category: string;
+    imageAlt: string;
+    // In a real app, this would be a local path like '/images/works/nave.jpg'
+    // Using placeholders for demonstration
+    imageUrl: string;
+}
+
 export const LANDING_CONTENT = {
     hero: {
         badge: "Calidad y Tiempo en Ciudad Juárez",
@@ -55,29 +67,59 @@ export const LANDING_CONTENT = {
         }
     },
     trust: {
-        title: "Construimos confianza en cada m³",
+        title: "Más que concreto, entregamos certidumbre",
         items: [
             {
                 id: "time",
                 title: "Puntualidad Inglesa",
-                desc: "Sabemos que el tiempo de tu cuadrilla cuesta. Llegamos a la hora pactada.",
+                desc: "Respetamos el tiempo de tu cuadrilla. Si decimos a las 8:00 AM, el camión está ahí.",
                 icon: "⏱️"
             },
             {
                 id: "quality",
-                title: "Resistencia Real",
-                desc: "Certificamos que el f’c que compras es el que recibes. Sin mezclas rebajadas.",
+                title: "Resistencia Certificada",
+                desc: "Garantía de f’c real. Lo que pides es exactamente lo que colamos en tu obra.",
                 icon: "🛡️"
             },
             {
                 id: "local",
-                title: "Expertos Locales",
-                desc: "Conocemos Ciudad Juárez, sus agregados y sus retos logísticos.",
+                title: "ADN Juarense",
+                desc: "Conocemos los retos de la ciudad, el tráfico y los agregados locales mejor que nadie.",
                 icon: "📍"
             }
         ] as TrustItem[]
     },
-    // SECTION UPDATED: Reflecting the real process with technical visit and low down payment
+    // NEW SECTION: Social Proof / Works
+    socialProof: {
+        title: "Nuestra huella en Juárez",
+        subtitle: "Desde ampliaciones residenciales hasta naves industriales. La confianza se construye m³ a m³.",
+        works: [
+            {
+                id: "work1",
+                title: "Nave Industrial Eje Juan Gabriel",
+                location: "Zona Industrial",
+                category: "Piso Industrial",
+                imageAlt: "Colado de piso industrial con bomba pluma",
+                imageUrl: "https://images.unsplash.com/photo-1621252179027-94459d27d3ee?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: "work2",
+                title: "Complejo Residencial Sendero",
+                location: "Valle del Sol",
+                category: "Losa de Entrepiso",
+                imageAlt: "Trabajadores colando losa en casa residencial",
+                imageUrl: "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&w=800&q=80"
+            },
+            {
+                id: "work3",
+                title: "Estacionamiento Comercial",
+                location: "Av. Las Torres",
+                category: "Concreto Estampado",
+                imageAlt: "Acabado de concreto en exterior",
+                imageUrl: "https://images.unsplash.com/photo-1590073844002-64e85f3e9cd7?auto=format&fit=crop&w=800&q=80"
+            }
+        ] as WorkItem[]
+    },
     process: {
         title: "¿Cómo trabajamos?",
         subtitle: "Tu concreto en obra, sin errores y sin riesgos.",

@@ -6,23 +6,25 @@ export default function TrustSection() {
   const { title, items } = LANDING_CONTENT.trust;
 
   return (
-    <section className={styles.section} aria-label="Razones para confiar en nosotros">
+    <section
+      className={styles.section}
+      aria-labelledby="trust-heading"
+    >
       <div className={styles.container}>
-        {/* Hidden visually heading for accessibility structure flow (H2 after H1),
-           but visually we just show the grid items as a 'bar'.
-        */}
-        <h2 className={styles.srOnly}>{title}</h2>
+        <h2 id="trust-heading" className={styles.sectionTitle}>
+          {title}
+        </h2>
 
         <div className={styles.grid}>
           {items.map((item) => (
-            <div key={item.id} className={styles.item}>
-              <div className={styles.iconBox} aria-hidden="true">
-                {item.icon}
-              </div>
-              <div className={styles.content}>
+            <div key={item.id} className={styles.card}>
+              <div className={styles.headerRow}>
+                <div className={styles.iconBox} aria-hidden="true">
+                  {item.icon}
+                </div>
                 <h3 className={styles.title}>{item.title}</h3>
-                <p className={styles.desc}>{item.desc}</p>
               </div>
+              <p className={styles.desc}>{item.desc}</p>
             </div>
           ))}
         </div>

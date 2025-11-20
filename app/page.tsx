@@ -5,6 +5,7 @@ import CTAButtons from "@/components/CTAButtons/CTAButtons";
 import HeroSection from "@/components/layout/HeroSection";
 import TrustSection from "@/components/TrustSection/TrustSection";
 import ProcessSection from "@/components/ProcessSection/ProcessSection";
+import SocialProofSection from "@/components/SocialProofSection/SocialProofSection"; // NEW
 import Services from '@/components/Services/Services';
 import FAQ from '@/components/FAQ/FAQ';
 import ServiceArea from '@/components/ServiceArea/ServiceArea';
@@ -20,23 +21,25 @@ export default function Page() {
     <main>
       <HeroSection />
 
-      {/* Trust Signals / Social Proof */}
+      {/* 1. Trust Signals: Immediate reassurance after Hero */}
       <TrustSection />
 
-      {/* Calculator Hook */}
+      {/* 2. The Tool: Core Value Prop */}
       <div id="calculator">
         <Calculator />
       </div>
 
-      {/* Point 3: Purchase Process (How it works)
-          Connects the tool (Calculator) with the actual action (Purchase).
-      */}
+      {/* 3. Process: How it works (rational) */}
       <ProcessSection />
 
+      {/* 4. Social Proof: Tangible Evidence (emotional/trust) - NEW */}
+      <SocialProofSection />
+
+      {/* 5. Services: Detail of what we sell */}
       <Services />
 
+      {/* 6. Logistics & Support */}
       <ServiceArea />
-
       <FAQ />
 
       <CTAButtons
