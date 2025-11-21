@@ -99,7 +99,6 @@ export const LANDING_CONTENT = {
                 title: "Nave Industrial Eje Juan Gabriel",
                 location: "Zona Industrial",
                 category: "Piso Industrial",
-                // Precisión: Es el interior, estructura metálica y colado de piso.
                 imageAlt: "Interior de nave industrial mostrando el colado de piso de concreto con bomba pluma bajo estructura metálica",
                 imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/maquila_culguq.jpg"
             },
@@ -107,9 +106,7 @@ export const LANDING_CONTENT = {
                 id: "work2",
                 title: "Complejo Residencial Sendero",
                 location: "Valle del Sol",
-                // CORRECCIÓN IMPORTANTE: Cambiado de "Losa de Entrepiso" a "Cimentación"
                 category: "Cimentación y Zapatas",
-                // Precisión: Describe el llenado de las zanjas (zapatas) en el suelo.
                 imageAlt: "Bomba de concreto vertiendo mezcla sobre zapatas corridas y cimentación en terreno de obra residencial",
                 imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673427/complejo_residencial_q3dxfu.jpg"
             },
@@ -117,8 +114,7 @@ export const LANDING_CONTENT = {
                 id: "work3",
                 title: "Estacionamiento Comercial",
                 location: "Av. Las Torres",
-                category: "Concreto Estampado", // El servicio final es este, aunque la foto sea la preparación.
-                // Precisión: La foto es del armado (varilla/malla) previo al colado.
+                category: "Concreto Estampado",
                 imageAlt: "Armado de acero con silletas y cimbra de madera listos para recibir el colado de concreto en estacionamiento",
                 imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/zona_industrial_gu16sr.jpg"
             }

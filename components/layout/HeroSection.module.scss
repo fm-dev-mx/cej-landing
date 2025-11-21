@@ -5,16 +5,21 @@
 
 .hero {
   position: relative;
-  /* Altura mínima para impacto visual, ajustada a viewport */
-  min-height: 85svh;
+  /* Mobile: Auto height based on content to avoid excessive scrolling */
+  min-height: auto;
   display: flex;
   align-items: center;
   overflow: hidden;
   background-color: var(--c-primary-dark);
   color: var(--c-text-on-dark);
+
+  /* Desktop: Immersive height */
+  @media (min-width: 768px) {
+    min-height: 85vh;
+  }
 }
 
-/* Capas de Fondo */
+/* Background Layers */
 .hero__background {
   position: absolute;
   inset: 0;
@@ -30,11 +35,10 @@
 }
 
 .hero__imagePlaceholder {
-  background-color: var(--c-primary-strong); /* Fallback color */
+  background-color: var(--c-primary-strong);
 }
 
-/* Overlay: Gradiente para legibilidad */
-/* Va de Navy sólido (izquierda) a Navy transparente (derecha) */
+/* Overlay: Gradient for readability */
 .hero__overlay {
   position: absolute;
   inset: 0;
@@ -47,23 +51,32 @@
   z-index: 1;
 }
 
-/* Contenedor y Layout */
+/* Container and Layout */
 .hero__container {
   @include container;
   position: relative;
-  z-index: 2; /* Por encima del video/overlay */
-  margin-top: 2rem;
-  padding-block: var(--sp-8);
+  z-index: 2;
+
+  /* Mobile: Padding adjusted to clear fixed header (~80px) + spacing */
+  padding-top: calc(5rem + env(safe-area-inset-top));
+  padding-bottom: var(--sp-10);
+
+  @media (min-width: 768px) {
+    padding-block: var(--sp-10);
+    display: flex;
+    align-items: center;
+    min-height: 100%;
+  }
 }
 
 .hero__content {
-  max-width: 42rem; /* Limitar ancho para lectura cómoda */
+  max-width: 42rem;
   display: flex;
   flex-direction: column;
   gap: var(--sp-6);
 }
 
-/* Tipografía y Elementos */
+/* Typography and Elements */
 .hero__badge {
   display: inline-flex;
   align-items: center;
@@ -76,30 +89,28 @@
   font-weight: 500;
   color: var(--c-accent);
   width: fit-content;
-
-  /* FIX: Safari support */
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
 
 .hero__title {
-  font-size: var(--fs-hero, 3rem);
-  line-height: 1.1;
+  /* Mobile: Reduced size for better fit */
+  font-size: 2.25rem;
+  line-height: 1.15;
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 0;
 
-  /* Ajuste óptico para móviles */
-  @media (max-width: 480px) {
-    font-size: 2.5rem;
+  @media (min-width: 768px) {
+    font-size: var(--fs-hero, 3.5rem);
+    line-height: 1.1;
   }
 }
 
 .hero__highlight {
-  color: var(--c-accent); /* Amarillo Neón */
+  color: var(--c-accent);
   position: relative;
 
-  /* Sutil subrayado o efecto */
   &::after {
     content: "";
     position: absolute;
@@ -117,7 +128,7 @@
 .hero__lead {
   @include p.lead;
   color: var(--c-muted-on-dark);
-  font-size: var(--fs-lg);
+  font-size: var(--fs-base);
   line-height: 1.6;
   max-width: 38ch;
   margin: 0;
@@ -126,9 +137,13 @@
     color: white;
     font-weight: 600;
   }
+
+  @media (min-width: 768px) {
+    font-size: var(--fs-lg);
+  }
 }
 
-/* Features List (Diferenciadores) */
+/* Features List */
 .hero__features {
   list-style: none;
   padding: 0;
@@ -150,7 +165,7 @@
   }
 }
 
-/* Botones (CTAs) */
+/* Buttons (CTAs) */
 .hero__actions {
   display: flex;
   flex-wrap: wrap;
@@ -161,17 +176,23 @@
 .hero__btnPrimary {
   @include p.btn;
   background-color: var(--c-accent);
-  color: var(--c-primary-strong); /* Texto oscuro sobre amarillo */
+  color: var(--c-primary-strong);
   border-color: var(--c-accent);
   font-weight: 700;
   font-size: var(--fs-base);
   padding: 0.85rem 2rem;
-  box-shadow: 0 4px 14px rgba(254, 201, 20, 0.3); /* Glow amarillo sutil */
+  width: 100%; /* Full width on mobile for easier tapping */
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(254, 201, 20, 0.3);
 
   &:hover {
     background-color: var(--c-accent-hover);
     border-color: var(--c-accent-hover);
     transform: translateY(-2px);
+  }
+
+  @media (min-width: 640px) {
+    width: auto;
   }
 }
 
@@ -183,9 +204,16 @@
   font-weight: 600;
   padding: 0.85rem 1.5rem;
 
+  /* Hidden on mobile to reduce noise (Sticky Bar handles this action) */
+  display: none;
+
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
     border-color: white;
+  }
+
+  @media (min-width: 640px) {
+    display: inline-flex;
   }
 }
 
