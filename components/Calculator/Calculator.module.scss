@@ -10,8 +10,12 @@ $glass-border: rgba(255, 255, 255, 0.1);
   position: relative;
   padding-block: var(--sp-8);
   padding-inline: var(--sp-3);
-  /* Fallback background */
-  background: linear-gradient(to bottom, var(--c-muted-on-dark), var(--c-muted-on-dark));
+
+  /* Dark Thread Continuity: Fondo oscuro sólido que conecta con TrustSection */
+  background-color: var(--c-primary-dark);
+
+  /* Optional: Subtle gradient overlay for depth */
+  background-image: linear-gradient(to bottom, rgba(0,0,0,0.2), transparent);
 
   min-height: 80svh;
   place-content: center;

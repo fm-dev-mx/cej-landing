@@ -3,9 +3,10 @@
 @use "../../styles/mixins" as *;
 
 .section {
-  /* Background matches the end of the calculator gradient or primary dark */
-  background-color: #021024; /* Fallback deep navy */
-  background: linear-gradient(to bottom, #010b18, var(--c-primary-dark));
+  /* Dark Thread: Consistent background matching Trust/Calculator */
+  background-color: var(--c-primary-dark);
+  /* Subtle gradient to give depth but maintain brand color base */
+  background-image: linear-gradient(to bottom, rgba(1, 11, 24, 0.5), var(--c-primary-dark));
   position: relative;
   overflow: hidden;
   padding-top: var(--sp-8);
@@ -54,9 +55,9 @@
   }
 }
 
-/* Card Component */
+/* Card Component - Consistent with Trust Section */
 .card {
-  background: rgba(255, 255, 255, 0.03);
+  background-color: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-lg);
   padding: var(--sp-6);
@@ -68,8 +69,9 @@
 
   &:hover {
     transform: translateY(-4px);
-    border-color: rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--c-accent); /* Unified hover state */
+    background-color: rgba(255, 255, 255, 0.06);
+    box-shadow: var(--shadow-md);
 
     .icon {
       transform: scale(1.15) rotate(5deg);

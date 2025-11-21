@@ -3,9 +3,11 @@
 @use "../../styles/mixins" as *;
 
 .section {
-  background-color: var(--c-bg); /* Gris claro para separar visualmente */
+  background-color: var(--c-primary-dark); /* Unificación Dark Theme */
   padding-block: var(--sp-10);
-  border-bottom: 1px solid var(--c-border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Separador sutil dark */
+  position: relative;
+  z-index: 1;
 }
 
 .container {
@@ -13,17 +15,14 @@
 }
 
 .sectionTitle {
-  /* Visually hidden normally, but let's show it as a subtitle-like element or keep sr-only if intended purely for structure.
-     Based on new design, we want it visible to introduce the section.
-  */
   text-align: center;
   font-size: var(--fs-xl);
-  color: var(--c-muted-strong);
+  color: var(--c-accent); /* Acento para destacar sobre oscuro */
   margin-bottom: var(--sp-8);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  opacity: 0.8;
+  opacity: 1;
 }
 
 .grid {
@@ -36,14 +35,14 @@
   }
 }
 
-/* New "Solid" Card Design */
+/* "Solid Glass" Card Design para Dark Mode */
 .card {
-  background-color: var(--c-surface);
+  background-color: rgba(255, 255, 255, 0.03);
   padding: var(--sp-6);
   border-radius: var(--radius);
-  border: 1px solid var(--c-border);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 
   display: flex;
   flex-direction: column;
@@ -51,7 +50,8 @@
 
   &:hover {
     transform: translateY(-2px);
-    border-color: var(--c-primary);
+    border-color: var(--c-accent);
+    background-color: rgba(255, 255, 255, 0.06);
     box-shadow: var(--shadow-md);
   }
 }
@@ -64,31 +64,32 @@
 }
 
 .iconBox {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   line-height: 1;
   flex-shrink: 0;
 
-  /* Circle background for icon */
+  /* Circle background for icon adapted to Dark */
   width: 3rem;
   height: 3rem;
   display: grid;
   place-items: center;
-  background-color: var(--c-step-bg);
+  background-color: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  border: 1px solid var(--c-border);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--c-accent); /* Iconos en amarillo marca */
 }
 
 .title {
   font-size: var(--fs-lg);
   font-weight: 700;
-  color: var(--c-text);
+  color: var(--c-text-on-dark); /* Texto blanco */
   margin: 0;
   line-height: 1.2;
 }
 
 .desc {
   font-size: var(--fs-base);
-  color: var(--c-muted-strong);
+  color: var(--c-muted-on-dark); /* Gris claro legible */
   line-height: 1.6;
   margin: 0;
 }
