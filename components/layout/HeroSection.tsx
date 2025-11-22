@@ -5,8 +5,8 @@ import { LANDING_CONTENT } from "@/config/content";
 import styles from "./HeroSection.module.scss";
 
 type HeroSectionProps = {
-  videoSrc?: string; // Path to video in /public or external URL
-  fallbackImage?: string; // Image fallback
+  videoSrc?: string;
+  fallbackImage?: string;
 };
 
 export default function HeroSection({
@@ -16,7 +16,6 @@ export default function HeroSection({
   const whatsappNumber = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   const content = LANDING_CONTENT.hero;
 
-  // Predefined message for higher conversion
   const whatsappHref = whatsappNumber
     ? `https://wa.me/${whatsappNumber.replace(/[^\d]/g, "")}?text=${encodeURIComponent(
         "Hola, me interesa cotizar concreto y aprovechar el cálculo de volumetría gratis."
@@ -24,9 +23,9 @@ export default function HeroSection({
     : undefined;
 
   return (
-    <section className={styles.hero}>
+    <section className={styles.hero} aria-label="Introducción">
       {/* Background Layer */}
-      <div className={styles.hero__background}>
+      <div className={styles.hero__background} aria-hidden="true">
         <div className={styles.hero__overlay} />
         {videoSrc ? (
           <video
@@ -40,7 +39,6 @@ export default function HeroSection({
             <source src={videoSrc} type="video/mp4" />
           </video>
         ) : (
-          // Fallback si no hay video configurado aún
           <div className={styles.hero__imagePlaceholder} />
         )}
       </div>
@@ -58,16 +56,11 @@ export default function HeroSection({
             <span className={styles.hero__highlight}>{content.title.highlight}</span>
           </h1>
 
-          {/* Using dangerouslySetInnerHTML for the lead allows controlled bolding/formatting
-            from the config without complex parsing logic.
-            Ensure config/content.ts is treated as a trusted source.
-          */}
           <p
             className={styles.hero__lead}
             dangerouslySetInnerHTML={{ __html: content.lead }}
           />
 
-          {/* Trust Signals / Differentiators */}
           <ul className={styles.hero__features}>
             {content.features.map((feature, idx) => (
               <li key={idx} className={styles.hero__feature}>
@@ -101,7 +94,6 @@ export default function HeroSection({
   );
 }
 
-// Componente simple de ícono para no depender de librerías externas
 function CheckIcon() {
   return (
     <svg
@@ -109,7 +101,7 @@ function CheckIcon() {
       height="20"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--c-accent)" /* Usa el amarillo neón */
+      stroke="var(--c-accent)"
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"

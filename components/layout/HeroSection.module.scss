@@ -1,22 +1,20 @@
-/* components/layout/HeroSection.module.scss */
+// components/layout/HeroSection.module.scss
 
 @use "../../styles/primitives" as p;
 @use "../../styles/mixins" as *;
 
 .hero {
   position: relative;
-  /* Mobile: Auto height based on content to avoid excessive scrolling */
-  min-height: auto;
   display: flex;
   align-items: center;
   overflow: hidden;
   background-color: var(--c-primary-dark);
   color: var(--c-text-on-dark);
 
-  /* Desktop: Immersive height */
-  @media (min-width: 768px) {
-    min-height: 85vh;
-  }
+  /* Mobile: Use svh (Small Viewport Height) to avoid jumpiness with browser bars.
+    We use min-height to allow content to grow if text is zoomed or content is long.
+  */
+  min-height: 100svh;
 }
 
 /* Background Layers */
@@ -38,17 +36,31 @@
   background-color: var(--c-primary-strong);
 }
 
-/* Overlay: Gradient for readability */
+/* Overlay:
+  Mobile: Vertical gradient (darker at bottom/middle) to ensure text readability
+  regardless of video content.
+*/
 .hero__overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    90deg,
-    rgba(2, 26, 54, 0.95) 0%,
-    rgba(2, 26, 54, 0.85) 50%,
-    rgba(2, 26, 54, 0.4) 100%
+    to bottom,
+    rgba(2, 26, 54, 0.6) 0%,
+    rgba(2, 26, 54, 0.85) 40%,
+    rgba(2, 26, 54, 0.95) 100%
   );
   z-index: 1;
+  width: 101%;
+
+  /* Desktop: Horizontal gradient (left dark, right transparent) */
+  @media (min-width: 1024px) {
+    background: linear-gradient(
+      90deg,
+      rgba(2, 26, 54, 0.95) 0%,
+      rgba(2, 26, 54, 0.85) 50%,
+      rgba(2, 26, 54, 0.3) 100%
+    );
+  }
 }
 
 /* Container and Layout */
@@ -56,12 +68,22 @@
   @include container;
   position: relative;
   z-index: 2;
+  width: 80%;
 
-  /* Mobile: Padding adjusted to clear fixed header (~80px) + spacing */
-  padding-top: calc(5rem + env(safe-area-inset-top));
-  padding-bottom: var(--sp-10);
+  /* Mobile Padding:
+    Top: Clear fixed header (~80px) + extra spacing.
+    Bottom: Clear sticky CTA bar (~80px) + spacing to avoid cramped look.
+  */
+  padding-top: calc(6rem + env(safe-area-inset-top));
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom));
 
   @media (min-width: 768px) {
+    padding-top: 8rem;
+    padding-bottom: 4rem;
+    width: 60%;
+  }
+
+  @media (min-width: 1024px) {
     padding-block: var(--sp-10);
     display: flex;
     align-items: center;
@@ -70,10 +92,22 @@
 }
 
 .hero__content {
-  max-width: 42rem;
+  width: 100%;
+  max-width: 38rem; /* Optimal reading width on mobile/tablet */
   display: flex;
   flex-direction: column;
   gap: var(--sp-6);
+
+  /* Center on mobile for balance, Left on Desktop */
+  align-items: flex-start;
+
+  @media (min-width: 768px) {
+    gap: var(--sp-10);
+  }
+
+  @media (min-width: 1024px) {
+    max-width: 42rem;
+  }
 }
 
 /* Typography and Elements */
@@ -85,32 +119,39 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
-  font-size: var(--fs-sm);
-  font-weight: 500;
+  font-size: var(--fs-xxs);
+  font-weight: 600;
   color: var(--c-accent);
-  width: fit-content;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
+
+  @media (min-width: 640px) {
+    margin-top: 3rem;
+    font-size: var(--fs-sm);
+  }
 }
 
 .hero__title {
-  /* Mobile: Reduced size for better fit */
-  font-size: 2.25rem;
-  line-height: 1.15;
+  /* Uses the clamped variable from tokens for fluid scaling */
+  font-size: var(--fs-hero);
+  line-height: 1.1; /* Tight heading */
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 0;
+  color: white;
 
-  @media (min-width: 768px) {
-    font-size: var(--fs-hero, 3.5rem);
-    line-height: 1.1;
-  }
+  /* Prevent widows */
+  word-break: break-all;
 }
 
 .hero__highlight {
   color: var(--c-accent);
+  display: inline-block; /* Prevents highlight break weirdness */
   position: relative;
 
+  /* Underline decoration */
   &::after {
     content: "";
     position: absolute;
@@ -128,9 +169,9 @@
 .hero__lead {
   @include p.lead;
   color: var(--c-muted-on-dark);
-  font-size: var(--fs-base);
+  font-size: var(--fs-sm);
   line-height: 1.6;
-  max-width: 38ch;
+  max-width: 100%;
   margin: 0;
 
   strong {
@@ -138,8 +179,9 @@
     font-weight: 600;
   }
 
-  @media (min-width: 768px) {
-    font-size: var(--fs-lg);
+  @media (min-width: 640px) {
+    font-size: var(--fs-base);
+    max-width: 40ch; /* Limit line length for readability */
   }
 }
 
@@ -151,39 +193,59 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
+  width: 100%;
 }
 
 .hero__feature {
   display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  font-size: var(--fs-base);
+  align-items: flex-start; /* Align top in case text wraps */
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
   color: var(--c-text-on-dark);
+  line-height: 1.4;
+
+  svg {
+    flex-shrink: 0; /* Icon never shrinks */
+    margin-top: 0.15em; /* Visual adjustment */
+  }
 
   strong {
     color: var(--c-accent);
+    font-weight: 700;
   }
 }
 
 /* Buttons (CTAs) */
 .hero__actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  width: 80%;
   gap: var(--sp-3);
   margin-top: var(--sp-2);
+
+  @media (min-width: 480px) {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+  }
+
+  @media (min-width: 768px) {
+    width: 100%;
+  }
 }
 
 .hero__btnPrimary {
   @include p.btn;
   background-color: var(--c-accent);
-  color: var(--c-primary-strong);
-  border-color: var(--c-accent);
+  color: var(--c-primary-dark);
+  border: 1px solid var(--c-accent);
   font-weight: 700;
-  font-size: var(--fs-base);
-  padding: 0.85rem 2rem;
-  width: 100%; /* Full width on mobile for easier tapping */
+  font-size: 1rem;
+  padding: 0.7rem 1.5rem;
+  width: 100%;
   justify-content: center;
   box-shadow: 0 4px 14px rgba(254, 201, 20, 0.3);
+  text-decoration: none;
 
   &:hover {
     background-color: var(--c-accent-hover);
@@ -191,32 +253,43 @@
     transform: translateY(-2px);
   }
 
-  @media (min-width: 640px) {
+  @media (min-width: 480px) {
     width: auto;
   }
 }
 
 .hero__btnSecondary {
   @include p.btn;
-  background-color: transparent;
+  background-color: rgba(255, 255, 255, 0.05);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
   font-weight: 600;
-  padding: 0.85rem 1.5rem;
+  font-size: 1rem;
+  padding: 0.7rem 1.5rem;
+  width: 100%;
+  justify-content: center;
+  text-decoration: none;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
 
-  /* Hidden on mobile to reduce noise (Sticky Bar handles this action) */
-  display: none;
+  /* On very small mobiles, secondary button might push content too far down.
+     However, "Talk to expert" is high value. We keep it but ensure sticky bar handles the rest.
+     If sticky bar is active (mobile), this might be redundant but reinforces the CTA.
+  */
+  display: flex;
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.15);
     border-color: white;
   }
 
-  @media (min-width: 640px) {
-    display: inline-flex;
+  @media (min-width: 480px) {
+    width: auto;
+    background-color: transparent;
   }
 }
 
 .hero__iconWa {
-  font-size: 1.1em;
+  font-size: 1.2em;
+  margin-right: 0.5rem;
 }

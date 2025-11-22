@@ -1,4 +1,5 @@
 // styles/_tokens.scss
+
 // Global design tokens: typography, spacing, color, radii and elevation.
 
 :root {
@@ -12,6 +13,7 @@
     sans-serif
   );
 
+  --fs-xxs: 0.625rem; /* 10px */
   --fs-xs: 0.8125rem; /* 13px */
   --fs-sm: 0.875rem;  /* 14px */
   --fs-base: 1rem;    /* 16px */
@@ -20,10 +22,11 @@
   --fs-2xl: 1.5rem;   /* 24px */
   --fs-3xl: 1.875rem; /* 30px */
 
-  /* Typography sizes update for impactful hero */
-  --fs-hero: clamp(2.5rem, 6vw, 4.5rem);
+  /* Typography sizes update for impactful hero with better clamp bounds */
+  /* Mobile: 2.5rem (40px) -> Desktop: 4rem (64px) */
+  --fs-hero: clamp(2rem, 3vw + 1rem, 4rem);
 
-  --lh-tight: 1.2;
+  --lh-tight: 1.1;
   --lh-normal: 1.5;
 
   /* Spacing (4px base scale) */
