@@ -1,13 +1,18 @@
-/* components/TrustSection/TrustSection.module.scss */
+// components/TrustSection/TrustSection.module.scss
 @use "../../styles/primitives" as p;
 @use "../../styles/mixins" as *;
 
 .section {
-  background-color: var(--c-primary-dark); /* Unificación Dark Theme */
-  padding-block: var(--sp-10);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Separador sutil dark */
+  background-color: var(--c-primary-dark);
+  // Mobile: slightly less padding for better density
+  padding-block: var(--sp-8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
   z-index: 1;
+
+  @media (min-width: 768px) {
+    padding-block: var(--sp-10);
+  }
 }
 
 .container {
@@ -16,29 +21,47 @@
 
 .sectionTitle {
   text-align: center;
-  font-size: var(--fs-xl);
-  color: var(--c-accent); /* Acento para destacar sobre oscuro */
-  margin-bottom: var(--sp-8);
+  font-size: var(--fs-lg);
+  color: var(--c-accent);
+  margin-bottom: var(--sp-6);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  opacity: 1;
+  line-height: 1.2;
+
+  // Prevent orphans in title
+  word-break: break-word;
+
+  @media (min-width: 768px) {
+    font-size: var(--fs-2xl);
+    margin-bottom: var(--sp-8);
+  }
 }
 
 .grid {
   display: grid;
   gap: var(--sp-4);
 
-  @media (min-width: 768px) {
+  // Mobile: 1 column (default)
+  grid-template-columns: 1fr;
+
+  // Tablet: 2 columns for better balance
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-6) var(--sp-3);
+  }
+
+  // Desktop: 3 columns
+  @media (min-width: 1024px) {
     grid-template-columns: repeat(3, 1fr);
     gap: var(--sp-6);
   }
 }
 
-/* "Solid Glass" Card Design para Dark Mode */
+/* Card Design */
 .card {
   background-color: rgba(255, 255, 255, 0.03);
-  padding: var(--sp-6);
+  padding: var(--sp-5);
   border-radius: var(--radius);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: var(--shadow-sm);
@@ -46,13 +69,20 @@
 
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
+  gap: var(--sp-1);
+
+  // Ensure all cards in a row match height
+  height: 75%;
 
   &:hover {
     transform: translateY(-2px);
     border-color: var(--c-accent);
     background-color: rgba(255, 255, 255, 0.06);
     box-shadow: var(--shadow-md);
+  }
+
+  @media (min-width: 768px) {
+    padding: var(--sp-6);
   }
 }
 
@@ -64,32 +94,34 @@
 }
 
 .iconBox {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   line-height: 1;
   flex-shrink: 0;
 
-  /* Circle background for icon adapted to Dark */
-  width: 3rem;
-  height: 3rem;
+  width: 2.5rem;
+  height: 2.5rem;
   display: grid;
   place-items: center;
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: var(--c-accent); /* Iconos en amarillo marca */
+  color: var(--c-accent);
 }
 
 .title {
-  font-size: var(--fs-lg);
+  font-size: var(--fs-base);
   font-weight: 700;
-  color: var(--c-text-on-dark); /* Texto blanco */
+  color: var(--c-text-on-dark);
   margin: 0;
   line-height: 1.2;
 }
 
 .desc {
-  font-size: var(--fs-base);
-  color: var(--c-muted-on-dark); /* Gris claro legible */
+  font-size: var(--fs-sm);
+  color: var(--c-muted-on-dark);
   line-height: 1.6;
   margin: 0;
+
+  // Ensure readability
+  opacity: 0.9;
 }
