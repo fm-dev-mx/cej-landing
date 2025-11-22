@@ -1,3 +1,9 @@
+// styles/_mixins.scss
+
+// Forward the breakpoint system so it's available automatically
+// whenever this file is imported via @use.
+@forward "breakpoints";
+
 @mixin container {
   width: min(90%, 1200px);
   margin-inline: auto;
