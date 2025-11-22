@@ -3,7 +3,7 @@
 @use "../../styles/mixins" as *;
 
 .footer {
-  background-color: var(--c-primary-dark); /* Dark Navy background */
+  background-color: var(--c-primary-dark);
   color: var(--c-muted-on-dark);
   padding-block: var(--sp-10) var(--sp-8);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -15,7 +15,7 @@
   display: grid;
   gap: var(--sp-8);
 
-  @media (min-width: 768px) {
+  @include respond-to('md') {
     grid-template-columns: 1fr auto;
     align-items: start;
     gap: var(--sp-10);
@@ -35,8 +35,6 @@
 }
 
 .logo {
-  /* Invert brightness/contrast if logo is dark, or assume white logo asset.
-     For safety on this dark footer, we ensure it pops. */
   filter: brightness(0.9) invert(0.2);
   opacity: 0.6;
   height: auto;
@@ -68,7 +66,7 @@
   flex-direction: column;
   gap: var(--sp-3);
 
-  @media (min-width: 768px) {
+  @include respond-to('md') {
     align-items: flex-end;
     text-align: right;
   }

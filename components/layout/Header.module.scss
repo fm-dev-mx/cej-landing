@@ -1,24 +1,19 @@
-/* components/layout/Header.module.scss */
+// components/layout/Header.module.scss
 
 @use "../../styles/primitives" as p;
 @use "../../styles/mixins" as *;
 
 .header {
   --header-shrink: 0;
-
-  /* Fixed top */
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   z-index: 60;
-
   background-color: transparent;
   border-bottom: 1px solid transparent;
-
   padding-top: env(safe-area-inset-top);
   padding-inline: 0rem;
-
   transition:
     background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     -webkit-backdrop-filter 0.3s ease,
@@ -26,10 +21,13 @@
     box-shadow 0.3s ease,
     border-color 0.3s ease,
     padding-block 0.3s ease;
+
+  @include respond-to('md') {
+    padding-inline: 2rem;
+  }
 }
 
 .headerScrolled {
-  /* Fondo oscuro semitransparente al bajar */
   background-color: rgba(2, 26, 54, 0.9);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
@@ -42,21 +40,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  /* Altura dinámica */
   min-height: calc(90px - 20px * var(--header-shrink));
   padding-block: calc(1rem - 0.25rem * var(--header-shrink));
   padding-inline: 0;
-
   gap: var(--sp-2);
   transition: min-height 0.3s ease, padding-block 0.3s ease;
+
+  @include respond-to('lg') {
+    padding-inline: var(--sp-5);
+  }
 }
 
 .brand {
   display: flex;
   align-items: center;
   position: relative;
-  z-index: 10; /* Relativo al header */
+  z-index: 10;
 }
 
 .logoLink {
@@ -76,6 +75,10 @@
 
 .nav {
   display: none;
+
+  @include respond-to('md') {
+    display: block;
+  }
 }
 
 .navList {
@@ -85,6 +88,10 @@
   list-style: none;
   margin: 0;
   padding: 0;
+
+  @include respond-to('lg') {
+    gap: var(--sp-8);
+  }
 }
 
 .navItem {
@@ -136,6 +143,11 @@
   display: none;
   align-items: center;
   gap: var(--sp-3);
+
+  @include respond-to('md') {
+    display: flex;
+    margin-right: 2rem;
+  }
 }
 
 .button {
@@ -186,13 +198,15 @@
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   transition: background-color 0.2s ease, transform 0.2s ease;
-
-  /* Relativo al header (60) */
   position: relative;
   z-index: 10;
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  @include respond-to('md') {
+    display: none;
   }
 }
 
@@ -214,7 +228,6 @@
   box-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
-/* Animación de la X */
 .menuIconOpen .menuIconBar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
 .menuIconOpen .menuIconBar:nth-child(2) { opacity: 0; }
 .menuIconOpen .menuIconBar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
@@ -224,16 +237,10 @@
 .mobileMenu {
   position: fixed;
   inset: 0;
-  /* FIX: Z-Index 50 para estar DEBAJO del header (60) y ENCIMA de la sticky bar (29) */
   z-index: 50;
   background-color: var(--c-primary-dark);
-
-  /* Padding superior para librar el header fixed */
   padding-top: 100px;
-
-  /* Padding inferior para asegurar scroll completo */
   padding-bottom: calc(120px + env(safe-area-inset-bottom));
-
   transform: translateY(-100%);
   opacity: 0;
   visibility: hidden;
@@ -242,6 +249,10 @@
     opacity 0.3s ease,
     visibility 0.3s step-end;
   pointer-events: none;
+
+  @include respond-to('md') {
+    display: none;
+  }
 }
 
 .mobileMenuOpen {
@@ -261,7 +272,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow-y: auto; /* Scroll interno si la pantalla es pequeña */
+  overflow-y: auto;
 }
 
 .mobileNavList {
@@ -270,7 +281,6 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  /* Más espacio entre items para toque fácil */
   gap: var(--sp-2);
 }
 
@@ -280,8 +290,8 @@
 
 .mobileNavLink {
   display: block;
-  padding: 1.25rem 0; /* Área de toque generosa */
-  font-size: 1.35rem; /* Texto grande profesional */
+  padding: 1.25rem 0;
+  font-size: 1.35rem;
   color: var(--c-muted-on-dark);
   text-decoration: none;
   font-weight: 500;
@@ -298,12 +308,10 @@
 .mobileNavLinkActive {
   color: var(--c-accent);
   font-weight: 700;
-  /* Indicador visual */
   border-left: 3px solid var(--c-accent);
   padding-left: 0.75rem;
 }
 
-/* Botones dentro del menú móvil */
 .mobileActions {
   margin-top: auto;
   padding-top: var(--sp-8);
@@ -345,16 +353,4 @@
 @keyframes dialogIn {
   from { opacity: 0; transform: scale(0.95) translateY(10px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-@media (min-width: 768px) {
-  .header { padding-inline: 2rem; }
-  .nav { display: block; }
-  .actions { display: flex; margin-right: 2rem; }
-  .menuToggle, .mobileMenu { display: none; }
-}
-
-@media (min-width: 1024px) {
-  .inner { padding-inline: var(--sp-5); }
-  .navList { gap: var(--sp-8); }
 }

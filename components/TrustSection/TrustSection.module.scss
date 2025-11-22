@@ -4,13 +4,12 @@
 
 .section {
   background-color: var(--c-primary-dark);
-  // Mobile: slightly less padding for better density
   padding-block: var(--sp-8);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
   z-index: 1;
 
-  @media (min-width: 768px) {
+  @include respond-to('md') {
     padding-block: var(--sp-10);
   }
 }
@@ -28,11 +27,9 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   line-height: 1.2;
-
-  // Prevent orphans in title
   word-break: break-word;
 
-  @media (min-width: 768px) {
+  @include respond-to('md') {
     font-size: var(--fs-2xl);
     margin-bottom: var(--sp-8);
   }
@@ -41,18 +38,14 @@
 .grid {
   display: grid;
   gap: var(--sp-4);
-
-  // Mobile: 1 column (default)
   grid-template-columns: 1fr;
 
-  // Tablet: 2 columns for better balance
-  @media (min-width: 640px) {
+  @include respond-to('sm') {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--sp-6) var(--sp-3);
   }
 
-  // Desktop: 3 columns
-  @media (min-width: 1024px) {
+  @include respond-to('lg') {
     grid-template-columns: repeat(3, 1fr);
     gap: var(--sp-6);
   }
@@ -66,13 +59,10 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: var(--shadow-sm);
   transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
-
   display: flex;
   flex-direction: column;
   gap: var(--sp-1);
-
-  // Ensure all cards in a row match height
-  height: 75%;
+  height: 100%;
 
   &:hover {
     transform: translateY(-2px);
@@ -81,7 +71,7 @@
     box-shadow: var(--shadow-md);
   }
 
-  @media (min-width: 768px) {
+  @include respond-to('md') {
     padding: var(--sp-6);
   }
 }
@@ -97,7 +87,6 @@
   font-size: 1.3rem;
   line-height: 1;
   flex-shrink: 0;
-
   width: 2.5rem;
   height: 2.5rem;
   display: grid;
@@ -121,7 +110,5 @@
   color: var(--c-muted-on-dark);
   line-height: 1.6;
   margin: 0;
-
-  // Ensure readability
   opacity: 0.9;
 }

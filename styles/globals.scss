@@ -3,7 +3,7 @@
 @use "./tokens";
 @use "./primitives" as p;
 @use "./mixins" as *;
-@use "./layout/rhythm"; // section spacing, safe-area helpers and .container
+@use "./layout/rhythm";
 
 html,
 body {
@@ -25,21 +25,22 @@ body {
   text-rendering: optimizeLegibility;
 
   /* Mobile sticky bar offset */
-  /* 80px covers the bar height + padding */
   padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 
 /* Reset padding on desktop where sticky bar is hidden */
-@media (min-width: 768px) {
+@include respond-to('md') {
   body {
     padding-bottom: 0;
   }
 }
 
-/* Contenedor utilitario global (desde mixin) */
-.container { @include p.container; }
+/* Global utility container */
+.container {
+  @include p.container;
+}
 
-/* Focus ring accesible (fallback + mejora) */
+/* Accessible focus ring */
 :where(a, button, [role="button"], input, select, textarea) {
   &:focus-visible {
     outline: 2px solid var(--c-primary);
@@ -51,9 +52,13 @@ body {
   }
 }
 
-/* Botones utilitarios (desde mixins) */
-.button { @include p.btn; }
-.button--outline { @include p.btn-outline; }
+/* Utility buttons */
+.button {
+  @include p.btn;
+}
+.button--outline {
+  @include p.btn-outline;
+}
 
 /* Visually hidden util */
 .sr-only {
@@ -64,7 +69,7 @@ body {
 /* Motion-safe */
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
-/* Secciones */
+/* Sections */
 .hero-section { padding-block: var(--sp-6); }
 
 .section {
@@ -93,7 +98,7 @@ body {
 /* Layout root */
 .app-root { min-height: 100svh; display: flex; flex-direction: column; }
 
-/* Tipografía utilitaria */
+/* Utility Typography */
 .h1 { @include p.h1; }
 .h2 { @include p.h2; }
 .lead { @include p.lead; }

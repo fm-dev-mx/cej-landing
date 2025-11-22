@@ -10,10 +10,6 @@
   overflow: hidden;
   background-color: var(--c-primary-dark);
   color: var(--c-text-on-dark);
-
-  /* Mobile: Use svh (Small Viewport Height) to avoid jumpiness with browser bars.
-    We use min-height to allow content to grow if text is zoomed or content is long.
-  */
   min-height: 100svh;
 }
 
@@ -36,10 +32,7 @@
   background-color: var(--c-primary-strong);
 }
 
-/* Overlay:
-  Mobile: Vertical gradient (darker at bottom/middle) to ensure text readability
-  regardless of video content.
-*/
+/* Overlay */
 .hero__overlay {
   position: absolute;
   inset: 0;
@@ -52,8 +45,7 @@
   z-index: 1;
   width: 101%;
 
-  /* Desktop: Horizontal gradient (left dark, right transparent) */
-  @media (min-width: 1024px) {
+  @include respond-to('lg') {
     background: linear-gradient(
       90deg,
       rgba(2, 26, 54, 0.95) 0%,
@@ -70,20 +62,16 @@
   z-index: 2;
   width: 80%;
 
-  /* Mobile Padding:
-    Top: Clear fixed header (~80px) + extra spacing.
-    Bottom: Clear sticky CTA bar (~80px) + spacing to avoid cramped look.
-  */
   padding-top: calc(6rem + env(safe-area-inset-top));
   padding-bottom: calc(6rem + env(safe-area-inset-bottom));
 
-  @media (min-width: 768px) {
+  @include respond-to('md') {
     padding-top: 8rem;
     padding-bottom: 4rem;
     width: 60%;
   }
 
-  @media (min-width: 1024px) {
+  @include respond-to('lg') {
     padding-block: var(--sp-10);
     display: flex;
     align-items: center;
@@ -93,19 +81,17 @@
 
 .hero__content {
   width: 100%;
-  max-width: 38rem; /* Optimal reading width on mobile/tablet */
+  max-width: 38rem;
   display: flex;
   flex-direction: column;
   gap: var(--sp-6);
-
-  /* Center on mobile for balance, Left on Desktop */
   align-items: flex-start;
 
-  @media (min-width: 768px) {
+  @include respond-to('md') {
     gap: var(--sp-10);
   }
 
-  @media (min-width: 1024px) {
+  @include respond-to('lg') {
     max-width: 42rem;
   }
 }
@@ -127,31 +113,27 @@
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 
-  @media (min-width: 640px) {
+  @include respond-to('sm') {
     margin-top: 3rem;
     font-size: var(--fs-sm);
   }
 }
 
 .hero__title {
-  /* Uses the clamped variable from tokens for fluid scaling */
   font-size: var(--fs-hero);
-  line-height: 1.1; /* Tight heading */
+  line-height: 1.1;
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 0;
   color: white;
-
-  /* Prevent widows */
   word-break: break-word;
 }
 
 .hero__highlight {
   color: var(--c-accent);
-  display: inline-block; /* Prevents highlight break weirdness */
+  display: inline-block;
   position: relative;
 
-  /* Underline decoration */
   &::after {
     content: "";
     position: absolute;
@@ -179,9 +161,9 @@
     font-weight: 600;
   }
 
-  @media (min-width: 640px) {
+  @include respond-to('sm') {
     font-size: var(--fs-base);
-    max-width: 40ch; /* Limit line length for readability */
+    max-width: 40ch;
   }
 }
 
@@ -198,15 +180,15 @@
 
 .hero__feature {
   display: flex;
-  align-items: flex-start; /* Align top in case text wraps */
+  align-items: flex-start;
   gap: var(--sp-2);
   font-size: var(--fs-sm);
   color: var(--c-text-on-dark);
   line-height: 1.4;
 
   svg {
-    flex-shrink: 0; /* Icon never shrinks */
-    margin-top: 0.15em; /* Visual adjustment */
+    flex-shrink: 0;
+    margin-top: 0.15em;
   }
 
   strong {
@@ -223,13 +205,14 @@
   gap: var(--sp-3);
   margin-top: var(--sp-2);
 
-  @media (min-width: 480px) {
+  // Consolidated 480px query to 'sm' (640px) for consistency with system
+  @include respond-to('sm') {
     flex-direction: row;
     align-items: center;
     width: 100%;
   }
 
-  @media (min-width: 768px) {
+  @include respond-to('md') {
     width: 100%;
   }
 }
@@ -253,7 +236,7 @@
     transform: translateY(-2px);
   }
 
-  @media (min-width: 480px) {
+  @include respond-to('sm') {
     width: auto;
   }
 }
@@ -271,11 +254,6 @@
   text-decoration: none;
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
-
-  /* On very small mobiles, secondary button might push content too far down.
-     However, "Talk to expert" is high value. We keep it but ensure sticky bar handles the rest.
-     If sticky bar is active (mobile), this might be redundant but reinforces the CTA.
-  */
   display: flex;
 
   &:hover {
@@ -283,7 +261,7 @@
     border-color: white;
   }
 
-  @media (min-width: 480px) {
+  @include respond-to('sm') {
     width: auto;
     background-color: transparent;
   }

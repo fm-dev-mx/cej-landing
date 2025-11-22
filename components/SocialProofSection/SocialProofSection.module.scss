@@ -6,7 +6,6 @@
   padding-block: var(--sp-10);
   background-color: var(--c-surface);
   position: relative;
-  /* Separator line */
   border-bottom: 1px solid var(--c-border);
 }
 
@@ -37,10 +36,11 @@
   display: grid;
   gap: var(--sp-6);
 
-  @media (min-width: 640px) {
+  @include respond-to('sm') {
     grid-template-columns: repeat(2, 1fr);
   }
-  @media (min-width: 1024px) {
+
+  @include respond-to('lg') {
     grid-template-columns: repeat(3, 1fr);
   }
 }
@@ -65,15 +65,14 @@
 .imageWrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 4/3; /* Consistent height */
-  background-color: var(--c-border); /* Placeholder color */
+  aspect-ratio: 4/3;
+  background-color: var(--c-border);
 }
 
 .image {
   object-fit: cover;
   transition: transform 0.5s ease;
 
-  /* Zoom effect on hover */
   .card:hover & {
     transform: scale(1.05);
   }
@@ -83,7 +82,7 @@
   position: absolute;
   bottom: var(--sp-3);
   left: var(--sp-3);
-  background-color: rgba(2, 26, 54, 0.85); /* Brand navy transparent */
+  background-color: rgba(2, 26, 54, 0.85);
   color: white;
   font-size: 0.75rem;
   font-weight: 700;

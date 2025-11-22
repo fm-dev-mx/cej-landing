@@ -3,7 +3,7 @@
 @use "../../styles/mixins" as *;
 
 .section {
-  background-color: var(--c-surface); /* White background for contrast */
+  background-color: var(--c-surface);
   padding-block: var(--sp-10);
   position: relative;
 }
@@ -37,12 +37,12 @@
   gap: var(--sp-8);
   position: relative;
 
-  @media (min-width: 640px) {
+  @include respond-to('sm') {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--sp-6) var(--sp-8);
   }
 
-  @media (min-width: 1024px) {
+  @include respond-to('lg') {
     grid-template-columns: repeat(4, 1fr);
     gap: var(--sp-4);
   }
@@ -54,7 +54,7 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  z-index: 1; /* Above connector */
+  z-index: 1;
 }
 
 /* Icon Circle */
@@ -63,7 +63,7 @@
   width: 5rem;
   height: 5rem;
   border-radius: 50%;
-  background-color: var(--c-bg); /* Light gray bg */
+  background-color: var(--c-bg);
   border: 2px solid var(--c-border);
   display: flex;
   align-items: center;
@@ -104,15 +104,15 @@
 .connector {
   display: none;
 
-  @media (min-width: 1024px) {
+  @include respond-to('lg') {
     display: block;
     position: absolute;
-    top: 2.5rem; /* Half of iconWrapper height */
+    top: 2.5rem;
     left: 50%;
     width: 100%;
     height: 2px;
     background-color: var(--c-border);
-    z-index: -1; /* Behind icon */
+    z-index: -1;
   }
 }
 

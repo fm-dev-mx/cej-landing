@@ -1,23 +1,22 @@
 /* components/CTAButtons/CTAButtons.module.scss */
 
 @use "../../styles/primitives" as p;
+@use "../../styles/mixins" as *;
 
 .stickyBar {
-  position: fixed; /* Changed from sticky to fixed for better stability on iOS */
+  position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  z-index: 40; /* Below Mobile Menu (50) but above content */
+  z-index: 40;
 
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--sp-3);
   padding: var(--sp-3) var(--sp-4);
 
-  /* Safe area padding for iPhone Home Indicator */
   padding-bottom: calc(var(--sp-3) + env(safe-area-inset-bottom, 0px));
 
-  /* Dark Glass Theme consistent with Calculator */
   background: rgba(2, 26, 54, 0.85);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
@@ -25,11 +24,11 @@
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
 
-  /* Hide on Desktop */
-  @media (min-width: 768px) { display: none; }
+  @include respond-to('md') {
+    display: none;
+  }
 }
 
-/* Container for inline usage (e.g. inside page content) */
 .inlineGroup {
   display: flex;
   gap: var(--sp-2);
@@ -38,11 +37,11 @@
 .cta {
   @include p.btn;
   width: 100%;
-  font-size: 0.85rem; /* Slightly larger text for tap target */
+  font-size: 0.85rem;
   font-weight: 700;
   justify-content: center;
   border-radius: 99px;
-  text-transform: none; /* More friendly than uppercase */
+  text-transform: none;
   letter-spacing: 0.02em;
   padding-block: 0.75rem;
 }

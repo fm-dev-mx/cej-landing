@@ -3,9 +3,7 @@
 @use "../../styles/mixins" as *;
 
 .section {
-  /* Dark Thread: Consistent background matching Trust/Calculator */
   background-color: var(--c-primary-dark);
-  /* Subtle gradient to give depth but maintain brand color base */
   background-image: linear-gradient(to bottom, rgba(1, 11, 24, 0.5), var(--c-primary-dark));
   position: relative;
   overflow: hidden;
@@ -21,7 +19,7 @@
   max-width: 600px;
   margin-bottom: var(--sp-8);
 
-  @media (min-width: 768px) {
+  @include respond-to('md') {
     margin-bottom: var(--sp-10);
   }
 }
@@ -47,10 +45,10 @@
   display: grid;
   gap: var(--sp-4);
 
-  @media (min-width: 640px) {
+  @include respond-to('sm') {
     grid-template-columns: repeat(2, 1fr);
   }
-  @media (min-width: 1024px) {
+  @include respond-to('lg') {
     grid-template-columns: repeat(3, 1fr);
   }
 }
@@ -69,7 +67,7 @@
 
   &:hover {
     transform: translateY(-4px);
-    border-color: var(--c-accent); /* Unified hover state */
+    border-color: var(--c-accent);
     background-color: rgba(255, 255, 255, 0.06);
     box-shadow: var(--shadow-md);
 
@@ -79,7 +77,6 @@
   }
 }
 
-/* 3D Icon Placeholder Simulation */
 .iconWrapper {
   width: 64px;
   height: 64px;
