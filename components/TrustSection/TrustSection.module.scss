@@ -1,17 +1,16 @@
 // components/TrustSection/TrustSection.module.scss
+
 @use "../../styles/primitives" as p;
 @use "../../styles/mixins" as *;
 
 .section {
   background-color: var(--c-primary-dark);
-  padding-block: var(--sp-8);
+  /* Combined padding-block with specific bottom override */
+  padding-top: var(--sp-6);
+  padding-bottom: var(--sp-10);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
   z-index: 1;
-
-  @include respond-to('md') {
-    padding-block: var(--sp-10);
-  }
 }
 
 .container {
@@ -37,30 +36,34 @@
 
 .grid {
   display: grid;
-  gap: var(--sp-4);
+  /* Default (Mobile/XXS) styles apply here directly */
   grid-template-columns: 1fr;
+  gap: var(--sp-6);
 
   @include respond-to('sm') {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--sp-6) var(--sp-3);
   }
 
-  @include respond-to('lg') {
+  @include respond-to('md') {
     grid-template-columns: repeat(3, 1fr);
-    gap: var(--sp-6);
+    gap: var(--sp-3);
   }
 }
 
 /* Card Design */
 .card {
   background-color: rgba(255, 255, 255, 0.03);
-  padding: var(--sp-5);
+  /* Default padding (formerly xxs) */
+  padding: var(--sp-2) var(--sp-6);
   border-radius: var(--radius);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: var(--shadow-sm);
   transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
   display: flex;
   flex-direction: column;
+  /* Correct alignment for column flex containers */
+  justify-content: center;
   gap: var(--sp-1);
   height: 100%;
 
@@ -72,7 +75,7 @@
   }
 
   @include respond-to('md') {
-    padding: var(--sp-6);
+    padding: var(--sp-2) var(--sp-4);
   }
 }
 

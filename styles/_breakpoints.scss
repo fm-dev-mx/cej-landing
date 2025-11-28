@@ -7,13 +7,19 @@
 // T-Shirt sizing strategy map.
 // We use 'min-width' logic, so these values represent the START of a range.
 $breakpoints: (
-  'xxs': 375px,   // Extra small mobile
-  'xs': 480px,   // Small mobile
-  'sm': 640px,   // Large mobile / Landscape / Phablets
-  'md': 768px,   // Tablets (Portrait) - Often triggers the first big layout shift
-  'lg': 1024px,  // Laptops / Tablets (Landscape)
-  'xl': 1280px,  // Desktops
-  '2xl': 1536px  // Large wide screens
+  'xxs': 344px,
+  // Extra small mobile
+  'xs': 480px,
+  // Small mobile
+  'sm': 640px,
+  // Large mobile / Landscape / Phablets
+  'md': 768px,
+  // Tablets (Portrait) - Often triggers the first big layout shift
+  'lg': 1024px,
+  // Laptops / Tablets (Landscape)
+  'xl': 1280px,
+  // Desktops
+  '2xl': 1536px // Large wide screens
 );
 
 // -----------------------------------------------------------------------------
@@ -28,7 +34,9 @@ $breakpoints: (
     @media screen and (min-width: $value) {
       @content;
     }
-  } @else {
+  }
+
+  @else {
     @warn "Unknown breakpoint: #{$breakpoint}. Available keys are: #{map-keys($breakpoints)}";
   }
 }
@@ -39,8 +47,9 @@ $breakpoints: (
 // Handles vertical constraints (e.g., sticky elements on landscape mobile).
 // Usage: @include respond-to-height('short') { ...styles... }
 @mixin respond-to-height($type) {
+
   // 'short' covers most landscape phones where sticky headers/footers might obstruct content
-  @if $type == 'short' {
+  @if $type =='short' {
     @media screen and (max-height: 600px) {
       @content;
     }
