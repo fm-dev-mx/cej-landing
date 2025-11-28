@@ -11,7 +11,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
   padding-block: var(--sp-8);
   padding-inline: var(--sp-3);
   background-color: var(--c-primary-dark);
-  background-image: linear-gradient(to bottom, rgba(0,0,0,0.2), transparent);
+  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), transparent);
   min-height: 80svh;
   place-content: center;
 
@@ -147,8 +147,15 @@ $glass-border: rgba(255, 255, 255, 0.1);
 }
 
 @keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* --- Ticket / Summary Card --- */
@@ -216,7 +223,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
   border: 0;
   height: 1px;
   margin: var(--sp-4) 0;
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.3) 33%, rgba(255,255,255,0) 0%);
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.3) 33%, rgba(255, 255, 255, 0) 0%);
   background-position: bottom;
   background-size: 6px 1px;
   background-repeat: repeat-x;
@@ -329,7 +336,10 @@ $glass-border: rgba(255, 255, 255, 0.1);
   font-size: var(--fs-xs);
   color: var(--c-muted-on-dark);
   text-align: right;
-  strong { color: white; }
+
+  strong {
+    color: white;
+  }
 }
 
 .error {
@@ -375,15 +385,16 @@ $glass-border: rgba(255, 255, 255, 0.1);
 
 /* Radios & Pills */
 .radioRow {
-   display: grid;
-   grid-template-columns: 1fr 1fr;
-   gap: var(--sp-3);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
 }
 
 .radioRowCompact {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--sp-3);
+
   .radio {
     margin-bottom: 0;
     padding: 0.75rem;
@@ -406,7 +417,11 @@ $glass-border: rgba(255, 255, 255, 0.1);
     background-color: rgba(254, 201, 20, 0.08);
     border-color: var(--c-accent);
     box-shadow: inset 0 0 0 1px var(--c-accent);
-    span { color: var(--c-accent); font-weight: 600; }
+
+    span {
+      color: var(--c-accent);
+      font-weight: 600;
+    }
   }
 
   &:hover:not(:has(input:checked)) {
@@ -419,6 +434,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
     width: 1rem;
     height: 1rem;
   }
+
   span {
     font-size: var(--fs-base);
     color: var(--c-muted-on-dark);
@@ -437,7 +453,12 @@ $glass-border: rgba(255, 255, 255, 0.1);
   cursor: pointer;
   font-size: 0.9rem;
 
-  input { position: absolute; opacity: 0; width: 0; height: 0; }
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
 
   span {
     display: flex;
