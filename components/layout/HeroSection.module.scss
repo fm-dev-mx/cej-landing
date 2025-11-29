@@ -11,6 +11,10 @@
   background-color: var(--c-primary-dark);
   color: var(--c-text-on-dark);
   min-height: 100svh;
+
+  @include respond-to-height('short') {
+    padding-top: 1rem;
+  }
 }
 
 /* Background Layers */
@@ -36,22 +40,18 @@
 .hero__overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(2, 26, 54, 0.6) 0%,
-    rgba(2, 26, 54, 0.85) 40%,
-    rgba(2, 26, 54, 0.95) 100%
-  );
+  background: linear-gradient(to bottom,
+      rgba(2, 26, 54, 0.6) 0%,
+      rgba(2, 26, 54, 0.85) 40%,
+      rgba(2, 26, 54, 0.95) 100%);
   z-index: 1;
   width: 101%;
 
   @include respond-to('lg') {
-    background: linear-gradient(
-      90deg,
-      rgba(2, 26, 54, 0.95) 0%,
-      rgba(2, 26, 54, 0.85) 50%,
-      rgba(2, 26, 54, 0.3) 100%
-    );
+    background: linear-gradient(90deg,
+        rgba(2, 26, 54, 0.95) 0%,
+        rgba(2, 26, 54, 0.85) 50%,
+        rgba(2, 26, 54, 0.3) 100%);
   }
 }
 
@@ -94,6 +94,10 @@
   @include respond-to('lg') {
     max-width: 42rem;
   }
+
+  @include respond-to-height('short') {
+    gap: var(--sp-6);
+  }
 }
 
 /* Typography and Elements */
@@ -117,16 +121,40 @@
     margin-top: 3rem;
     font-size: var(--fs-sm);
   }
+
+  @include respond-to('md') {
+    font-size: var(--fs-base);
+  }
+
+  @include respond-to('lg') {
+    font-size: var(--fs-lg);
+  }
+
+  @include respond-to-height('short') {
+    font-size: var(--fs-xxs);
+  }
 }
 
 .hero__title {
-  font-size: var(--fs-hero);
+  font-size: var(--fs-2xl);
   line-height: 1.1;
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 0;
   color: white;
   word-break: break-word;
+
+  @include respond-to('xs') {
+    font-size: var(--fs-hero);
+  }
+
+  @include respond-to('md') {
+    font-size: var(--fs-4xl);
+  }
+
+  @include respond-to-height('short') {
+    font-size: var(--fs-3xl);
+  }
 }
 
 .hero__highlight {
@@ -151,7 +179,7 @@
 .hero__lead {
   @include p.lead;
   color: var(--c-muted-on-dark);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-xs);
   line-height: 1.6;
   max-width: 100%;
   margin: 0;
@@ -161,10 +189,15 @@
     font-weight: 600;
   }
 
-  @include respond-to('sm') {
+  @include respond-to('xs') {
     font-size: var(--fs-base);
     max-width: 40ch;
   }
+
+  @include respond-to('md') {
+    font-size: var(--fs-xl);
+  }
+
 }
 
 /* Features List */
@@ -182,7 +215,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--sp-2);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-xs);
   color: var(--c-text-on-dark);
   line-height: 1.4;
 
@@ -195,6 +228,14 @@
     color: var(--c-accent);
     font-weight: 700;
   }
+
+  @include respond-to('xs') {
+    font-size: var(--fs-sm);
+  }
+
+  @include respond-to('md') {
+    font-size: var(--fs-lg);
+  }
 }
 
 /* Buttons (CTAs) */
@@ -202,8 +243,9 @@
   display: flex;
   flex-direction: column;
   width: 80%;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
   margin-top: var(--sp-2);
+  white-space: nowrap;
 
   // Consolidated 480px query to 'sm' (640px) for consistency with system
   @include respond-to('sm') {
@@ -212,9 +254,6 @@
     width: 100%;
   }
 
-  @include respond-to('md') {
-    width: 100%;
-  }
 }
 
 .hero__btnPrimary {
@@ -238,6 +277,16 @@
 
   @include respond-to('sm') {
     width: auto;
+  }
+
+  @include respond-to('md') {
+    font-size: var(--fs-lg);
+    padding: 1rem 2rem;
+  }
+
+  @include respond-to('lg') {
+    font-size: var(--fs-xl);
+    padding: 1rem 2rem;
   }
 }
 
@@ -264,6 +313,16 @@
   @include respond-to('sm') {
     width: auto;
     background-color: transparent;
+  }
+
+  @include respond-to('md') {
+    font-size: var(--fs-lg);
+    padding: 1rem 2rem;
+  }
+
+  @include respond-to('lg') {
+    font-size: var(--fs-xl);
+    padding: 1rem 2rem;
   }
 }
 
