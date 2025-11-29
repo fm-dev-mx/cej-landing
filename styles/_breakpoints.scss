@@ -1,4 +1,5 @@
 // styles/_breakpoints.scss
+@use "sass:map";
 
 // =============================================================================
 // BREAKPOINT SYSTEM (Mobile-First)
@@ -7,7 +8,7 @@
 // T-Shirt sizing strategy map.
 // We use 'min-width' logic, so these values represent the START of a range.
 $breakpoints: (
-  'xxs': 344px,
+  'xxs': 375px,
   // Extra small mobile
   'xs': 480px,
   // Small mobile
@@ -28,8 +29,10 @@ $breakpoints: (
 // Standard mobile-first media query.
 // Usage: @include respond-to('md') { ...styles... }
 @mixin respond-to($breakpoint) {
-  @if map-has-key($breakpoints, $breakpoint) {
-    $value: map-get($breakpoints, $breakpoint);
+
+  // Check if the key exists in the map
+  @if map.has-key($breakpoints, $breakpoint) {
+    $value: map.get($breakpoints, $breakpoint);
 
     @media screen and (min-width: $value) {
       @content;
@@ -37,7 +40,8 @@ $breakpoints: (
   }
 
   @else {
-    @warn "Unknown breakpoint: #{$breakpoint}. Available keys are: #{map-keys($breakpoints)}";
+    // Log a warning if the breakpoint is not found, listing available keys
+    @warn "Unknown breakpoint: #{$breakpoint}. Available keys are: #{map.keys($breakpoints)}";
   }
 }
 
@@ -50,7 +54,7 @@ $breakpoints: (
 
   // 'short' covers most landscape phones where sticky headers/footers might obstruct content
   @if $type =='short' {
-    @media screen and (max-height: 667px) {
+    @media screen and (max-height: 600px) {
       @content;
     }
   }
