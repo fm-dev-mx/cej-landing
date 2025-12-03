@@ -3,14 +3,10 @@
 @use "mixins" as *;
 
 :root {
-  /* Typography */
-  --font-sans: var(--font-geist-sans,
-      system-ui,
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      sans-serif);
+  /* --- Typography --- */
+  --font-sans: var(--font-geist-sans, system-ui, sans-serif);
 
+  // Font sizes (Mobile First)
   --fs-xxs: 0.625rem;
   /* 10px */
   --fs-xs: 0.8125rem;
@@ -30,125 +26,104 @@
   --fs-4xl: 3rem;
   /* 48px */
 
-  /* Typography sizes update for impactful hero with better clamp bounds */
-  /* Mobile: 2.5rem (40px) -> Desktop: 4rem (64px) */
   --fs-hero: clamp(2rem, 3vw + 1rem, 4rem);
 
   --lh-tight: 1.1;
   --lh-normal: 1.5;
 
-  /* Spacing (4px base scale) */
+  /* --- Spacing --- */
   --sp-0: 0rem;
   --sp-1: 0.25rem;
-  /* 4px */
   --sp-2: 0.5rem;
-  /* 8px */
   --sp-3: 0.75rem;
-  /* 12px */
   --sp-4: 1rem;
-  /* 16px */
   --sp-5: 1.25rem;
-  /* 20px */
   --sp-6: 1.5rem;
-  /* 24px */
   --sp-8: 2rem;
-  /* 32px */
   --sp-10: 2.5rem;
-  /* 40px */
   --sp-12: 3rem;
-  /* 48px */
 
-  /* Radii */
+  /* --- Radii --- */
   --radius-sm: 0.375rem;
-  /* 6px */
   --radius: 0.75rem;
-  /* 12px - default for cards and inputs */
   --radius-lg: 1rem;
-  /* 16px */
 
-  /* Brand colors updated */
+  /* --- Colors --- */
   --c-primary: #043369;
-  /* CEJ Navy */
   --c-primary-dark: #021a36;
-  /* Darker Navy for contrast */
   --c-accent: #fec914;
-  /* CEJ Yellow (Neon/Bright) */
   --c-accent-hover: #e5b500;
-  /* Darker yellow for hover */
 
-  /* Text colors */
   --c-text-on-dark: #ffffff;
   --c-muted-on-dark: #cbd5e1;
-  /* Light gray for secondary text on dark bg */
 
-  /* Neutrals */
   --c-bg: #0e243b;
-  /* Page background */
   --c-surface: #ffffff;
   --c-surface-dark: #b2bece;
   --c-surface-light: #f9fafb;
-  /* Cards, panels, header background */
+
   --c-text: #111827;
-  /* Main text on light backgrounds */
   --c-muted: #6b7280;
-  /* Secondary text */
   --c-muted-strong: #4b5563;
-  /* Stronger muted text, labels */
 
   --c-border: #e5e7eb;
-  /* Default borders and dividers */
   --c-border-strong: #cbd5e1;
-  /* Emphasized borders and outlines */
 
-  /* Form and feedback states */
   --c-success: #16a34a;
   --c-success-soft: #ecfdf3;
-
   --c-warning: #f59e0b;
   --c-warning-soft: #fffbeb;
-
   --c-error-text: #b91c1c;
   --c-error-border: #fecaca;
   --c-error-soft: #fef2f2;
 
-  /* Wizard / stepper */
   --c-step-bg: #f9fafb;
   --c-step-border: #e5e7eb;
   --c-step-current: #043369;
   --c-step-current-soft: #e3edf7;
 
-  /* Channel-specific CTAs */
   --c-whatsapp: #25d366;
   --c-whatsapp-soft: #e8f9f0;
-
   --c-call: #043369;
-  /* Uses brand navy */
   --c-call-soft: #e3edf7;
 
-  /* Shadows and elevation */
+  /* --- Shadows --- */
   --shadow-xs: 0 1px 1px rgba(15, 23, 42, 0.04);
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
   --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 
-  /* --- NEW LAYOUT TOKENS --- */
+  /* --- Layout & Dimensions --- */
 
-  /* Header Height: Smaller on mobile, taller on desktop */
+  /* Z-Index Scale */
+  --z-sticky-bar: 40;
+  --z-mobile-menu: 50;
+  --z-header: 60;
+  --z-modal: 100;
+
+  /* Header Heights */
   --header-h: 80px;
+  /* Initial State */
+  --header-h-stuck: 64px;
+  /* Scrolled State (Compact) */
 
-  /* Sticky Bottom Bar (CTA): Height + estimated padding for mobile */
-  --bottom-bar-h: 64px;
+  /* Bottom Bar */
+  --bottom-bar-h: 72px;
+  /* Height of the sticky CTA bar on mobile */
 }
 
 /* Desktop Overrides */
 @include respond-to('md') {
   :root {
-    --header-h: 90px;
+    --header-h: 100px;
+    --header-h-stuck: 80px;
+
+    /* Hide bottom bar logic on desktop */
     --bottom-bar-h: 0px;
-    /* Hidden/Inline on desktop */
   }
 }
 
-/* High-contrast user preference */
+/* High Contrast Preference */
 @media (prefers-contrast: more) {
   :root {
     --c-border: #d1d5db;

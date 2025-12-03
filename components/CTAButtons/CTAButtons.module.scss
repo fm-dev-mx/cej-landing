@@ -1,5 +1,4 @@
-/* components/CTAButtons/CTAButtons.module.scss */
-
+// components/CTAButtons/CTAButtons.module.scss
 @use "../../styles/primitives" as p;
 @use "../../styles/mixins" as *;
 
@@ -7,31 +6,31 @@
   position: fixed;
   bottom: 0;
   left: 0;
-  width: 99%;
-  z-index: 40;
+  width: 100%;
+  z-index: var(--z-sticky-bar);
 
+  // Layout
   display: grid;
   grid-template-columns: 1fr 1fr;
-  // Optimized: Shorthand for align-items and justify-items
   place-items: center;
+  gap: var(--sp-3);
 
-  gap: var(--sp-1); // Increased gap slightly for touch targets
-
-  /* Spacing & Safe Area */
+  // Height Control using Token
+  // We use height: auto, but padding ensures it matches the --bottom-bar-h expectation visually
   padding-top: var(--sp-3);
-  padding-inline: var(--sp-1); // Ensure safe distance from screen edges
-  padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom));
+  padding-inline: var(--sp-4);
 
-  /* Visuals: Glassmorphism */
-  /* Increased opacity for better text contrast against scrolling content */
-  background: rgba(2, 26, 54, 0.75);
+  // Safe area handling for the bar itself
+  padding-bottom: calc(var(--sp-3) + env(safe-area-inset-bottom));
+
+  // Visuals
+  background: rgba(2, 26, 54, 0.95);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
-
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
 
-  /* Hide on desktop */
+  // Hide on desktop
   @include respond-to('md') {
     display: none;
   }
@@ -39,23 +38,18 @@
 
 .inlineGroup {
   display: flex;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
 }
 
 .cta {
   @include p.btn;
-  width: 80%;
+  width: 100%;
   font-size: var(--fs-sm);
   font-weight: 700;
   border-radius: 99px;
   text-transform: none;
-  letter-spacing: 0.01em;
   text-decoration: none;
-
-  /* Touch target size optimization */
-  min-height: 44px; // WCAG recommended min-height
-  max-width: 140px; // Slightly wider to fit text comfortably
-
+  min-height: 44px; // Hit target size
 }
 
 /* WhatsApp Button */
@@ -63,10 +57,9 @@
   background: var(--c-whatsapp);
   color: white;
   border: 1px solid var(--c-whatsapp);
-  box-shadow: 0 2px 10px rgba(37, 211, 102, 0.2);
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.25);
 
   &:hover {
-    // Modern CSS color mixing for hover states
     background: color-mix(in oklab, var(--c-whatsapp) 90%, black 10%);
   }
 }

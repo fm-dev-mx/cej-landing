@@ -1,10 +1,8 @@
 // styles/globals.scss
-
-@use "sass:map";
-@use "./tokens";
-@use "./primitives" as p;
-@use "./mixins" as *;
-@use "./layout/rhythm";
+@use "tokens";
+@use "primitives" as p;
+@use "mixins" as *;
+@use "layout/rhythm";
 
 html,
 body {
@@ -14,13 +12,13 @@ body {
 
 html {
   font-size: 100%;
-
-  /* 1. Dynamic Scroll Padding
-     This ensures when you click a nav link, the section stops EXACTLY
-     below the fixed header, plus a little breathing room.
-  */
-  scroll-padding-top: calc(var(--header-h));
   scroll-behavior: smooth;
+
+  /* SCROLL LANDING FIX:
+    Use the 'stuck' header height for padding.
+    When users click a link, the header is usually already stuck or will be.
+  */
+  scroll-padding-top: calc(var(--header-h-stuck) + 1rem);
 }
 
 body {
@@ -31,22 +29,14 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 
-  /* 2. Mobile Sticky Bar Compensation
-     Adds padding to the bottom of the document so the Footer
-     is never hidden behind the fixed WhatsApp/Call buttons.
-     Uses safe-area-inset for iPhone Home Indicator.
+  /* MOBILE STICKY BAR & SAFE AREA FIX:
+    Padding ensures the Footer is not hidden behind the fixed CTA buttons.
+    We add:
+    1. The CTA bar height.
+    2. The device's safe area (Home Indicator on iOS).
+    3. A small buffer spacing.
   */
-  padding-bottom: env(safe-area-inset-bottom);
-
-  /* Ensure background continuity on overscroll (iOS) */
-  background-color: var(--c-bg);
-}
-
-/* Reset sticky compensation on Desktop where buttons are inline */
-@include respond-to('md') {
-  body {
-    padding-bottom: 0;
-  }
+  padding-bottom: calc(var(--bottom-bar-h) + env(safe-area-inset-bottom) + var(--sp-2));
 }
 
 /* Global utility container */
@@ -77,7 +67,6 @@ body {
   @include p.btn-outline;
 }
 
-/* Visually hidden util */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -90,7 +79,6 @@ body {
   border: 0;
 }
 
-/* Motion-safe */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;

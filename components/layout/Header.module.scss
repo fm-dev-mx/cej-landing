@@ -3,32 +3,38 @@
 @use "../../styles/mixins" as *;
 
 .header {
-  --header-shrink: 0;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 60;
+  z-index: var(--z-header);
+
+  // Transition properties for glass effect and height
   background-color: transparent;
   border-bottom: 1px solid transparent;
-
-  /* Respect system status bar notch */
-  padding-top: env(safe-area-inset-top);
-
   transition:
     background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    -webkit-backdrop-filter 0.3s ease,
     backdrop-filter 0.3s ease,
+    border-color 0.3s ease,
     box-shadow 0.3s ease,
-    border-color 0.3s ease;
+    height 0.3s ease;
+
+  // Use token for consistent initial height
+  height: var(--header-h);
+
+  /* Respect top notch on iPhone X+ */
+  padding-top: env(safe-area-inset-top);
 }
 
 .headerScrolled {
+  // Use token for consistent stuck height
+  height: var(--header-h-stuck);
+
   background-color: rgba(2, 26, 54, 0.9);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border-bottom-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .inner {
@@ -36,13 +42,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  /* Use the global token for consistency */
-  height: var(--header-h);
-
-  /* Dynamic shrinkage logic can still apply if needed via inline styles,
-     but setting a solid base height prevents layout shifts. */
-  transition: height 0.3s ease;
+  height: 100%;
   gap: var(--sp-2);
 
   @include respond-to('lg') {
@@ -53,9 +53,9 @@
 .brand {
   display: flex;
   align-items: center;
-  position: relative;
-  z-index: 10;
   height: 100%;
+  position: relative;
+  z-index: 20; // Above mobile menu
 }
 
 .logoLink {
@@ -66,7 +66,7 @@
 
 .logo {
   /* Calculation remains for dynamic shrink effect */
-  height: calc(100% - (16px + 10px * var(--header-shrink)));
+  height: 80%;
   width: auto;
   object-fit: contain;
   transition: height 0.3s ease;
@@ -112,8 +112,6 @@
     color: var(--c-accent);
   }
 
-
-  /* Active state indicator */
   &Active {
     color: var(--c-text-on-dark);
     font-weight: 700;
@@ -141,7 +139,6 @@
 
   @include respond-to('md') {
     display: flex;
-    margin-right: var(--sp-8);
   }
 }
 
@@ -173,18 +170,17 @@
   }
 }
 
-/* --- Mobile Menu --- */
+/* --- Mobile Menu Toggle --- */
 .menuToggle {
   border: none;
   background: rgba(0, 0, 0, 0.2);
   padding: 0.6rem;
-  /* Keep optical padding */
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 10;
+  z-index: 20; // Above overlay
 
   @include respond-to('md') {
     display: none;
@@ -223,13 +219,20 @@
 .mobileMenu {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: var(--z-mobile-menu);
   background-color: var(--c-primary-dark);
-  padding-top: calc(var(--header-h) + var(--sp-8));
+
+  // Use Dynamic Viewport Height for mobile browsers
+  height: 100dvh;
+  padding-top: calc(var(--header-h) + var(--sp-4));
+
   transform: translateY(-100%);
   opacity: 0;
   visibility: hidden;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, visibility 0.3s;
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease,
+    visibility 0.3s;
 
   &Open {
     transform: translateY(0);
@@ -242,12 +245,17 @@
   }
 }
 
-.mobileNav {
-  height: 100%;
-  overflow-y: auto;
-  padding-inline: var(--sp-4);
+.mobileMenuInner {
   display: flex;
   flex-direction: column;
+  padding-inline: var(--sp-4);
+  /* Ensure padding at bottom for safe area */
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--sp-8));
+  overflow-y: auto;
+}
+
+.mobileNav {
+  flex: 1;
 }
 
 .mobileNavList {
@@ -261,9 +269,8 @@
 
 .mobileNavLink {
   display: block;
-  padding: var(--sp-5) 0;
+  padding: var(--sp-4) 0;
   font-size: 1.5rem;
-  /* Specific large size for mobile menu targets */
   color: var(--c-muted-on-dark);
   text-decoration: none;
   font-weight: 500;
@@ -271,8 +278,8 @@
 
   &Active {
     color: var(--c-accent);
-    padding-left: var(--sp-2);
     border-left: 3px solid var(--c-accent);
+    padding-left: var(--sp-3);
   }
 }
 
@@ -281,7 +288,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-4);
-  padding-block: var(--sp-8);
+  padding-top: var(--sp-6);
 
   .button {
     width: 90%;
