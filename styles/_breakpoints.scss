@@ -54,7 +54,7 @@ $breakpoints: (
 
   // 'short' covers most landscape phones where sticky headers/footers might obstruct content
   @if $type =='short' {
-    @media screen and (max-height: 600px) {
+    @media screen and (max-height: 667px) {
       @content;
     }
   }

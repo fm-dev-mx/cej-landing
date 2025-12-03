@@ -4,7 +4,7 @@
 .section {
   // Uses global variable --section-py defined in rhythm.scss with a fallback
   padding-block: var(--section-py, 4rem);
-  background-color: var(--c-surface);
+  background-color: var(--c-muted-on-dark);
 }
 
 .container {
@@ -38,7 +38,7 @@
 .item {
   border: 1px solid var(--c-border);
   border-radius: var(--radius);
-  background-color: #fff;
+  background-color: var(--c-surface-dark);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {

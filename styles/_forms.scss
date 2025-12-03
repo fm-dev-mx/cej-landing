@@ -1,13 +1,13 @@
 // styles/_forms.scss
-
 @use "tokens";
 
 @mixin input-base {
   width: 100%;
   border-radius: var(--radius);
-  padding: 0.85rem 1rem;
-  font-size: 1rem; /* Prevent zoom on iOS */
-  line-height: 1.5;
+  /* 0.85rem ~ 13.6px -> Ajustado a token más cercano o mantenido si es crítico */
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-base);
+  line-height: var(--lh-normal);
   transition: all 0.2s ease-out;
   appearance: none;
 
@@ -20,8 +20,8 @@
   &::-webkit-inner-spin-button,
   &::-webkit-outer-spin-button {
     opacity: 0.5;
-    height: 2rem;
-    margin: 0; /* Standardize margin */
+    height: var(--sp-8);
+    margin: 0;
     cursor: pointer;
   }
 }
@@ -29,7 +29,7 @@
 @mixin input-variant-dark {
   background-color: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  color: white;
+  color: var(--c-text-on-dark);
 
   &::placeholder {
     color: rgba(255, 255, 255, 0.4);
@@ -51,7 +51,7 @@
 }
 
 @mixin input-variant-light {
-  background-color: white;
+  background-color: var(--c-surface);
   border: 1px solid var(--c-border);
   color: var(--c-text);
 
@@ -73,7 +73,7 @@
 @mixin label-base {
   font-size: var(--fs-base);
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--sp-2);
   display: block;
 }
 
