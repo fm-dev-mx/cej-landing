@@ -1,5 +1,4 @@
 // components/layout/Header.module.scss
-
 @use "../../styles/primitives" as p;
 @use "../../styles/mixins" as *;
 
@@ -12,19 +11,16 @@
   z-index: 60;
   background-color: transparent;
   border-bottom: 1px solid transparent;
+
+  /* Respect system status bar notch */
   padding-top: env(safe-area-inset-top);
-  padding-inline: 0rem;
+
   transition:
     background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     -webkit-backdrop-filter 0.3s ease,
     backdrop-filter 0.3s ease,
     box-shadow 0.3s ease,
-    border-color 0.3s ease,
-    padding-block 0.3s ease;
-
-  @include respond-to('md') {
-    padding-inline: 2rem;
-  }
+    border-color 0.3s ease;
 }
 
 .headerScrolled {
@@ -40,11 +36,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: calc(90px - 20px * var(--header-shrink));
-  padding-block: calc(1rem - 0.25rem * var(--header-shrink));
-  padding-inline: 0;
+
+  /* Use the global token for consistency */
+  height: var(--header-h);
+
+  /* Dynamic shrinkage logic can still apply if needed via inline styles,
+     but setting a solid base height prevents layout shifts. */
+  transition: height 0.3s ease;
   gap: var(--sp-2);
-  transition: min-height 0.3s ease, padding-block 0.3s ease;
 
   @include respond-to('lg') {
     padding-inline: var(--sp-5);
@@ -56,23 +55,24 @@
   align-items: center;
   position: relative;
   z-index: 10;
+  height: 100%;
 }
 
 .logoLink {
   display: inline-flex;
   align-items: center;
+  height: 100%;
 }
 
 .logo {
-  height: calc(64px - 14px * var(--header-shrink));
+  /* Calculation remains for dynamic shrink effect */
+  height: calc(100% - (16px + 10px * var(--header-shrink)));
   width: auto;
   object-fit: contain;
   transition: height 0.3s ease;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* --- Desktop Nav --- */
-
 .nav {
   display: none;
 
@@ -104,41 +104,36 @@
   font-weight: 500;
   text-decoration: none;
   position: relative;
-  padding-block: 0.5rem;
-  color: var(--c-muted-on-dark, #cbd5e1);
+  padding-block: var(--sp-2);
+  color: var(--c-muted-on-dark);
   transition: color 0.2s ease;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 
   &:hover {
     color: var(--c-accent);
   }
 
-  &:focus-visible {
-    outline: 2px solid var(--c-accent);
-    border-radius: 4px;
+
+  /* Active state indicator */
+  &Active {
+    color: var(--c-text-on-dark);
+    font-weight: 700;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      background-color: var(--c-accent);
+      border-radius: 50%;
+      box-shadow: 0 0 6px var(--c-accent);
+    }
   }
 }
 
-.navLinkActive {
-  color: #ffffff;
-  font-weight: 700;
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 4px;
-    height: 4px;
-    background-color: var(--c-accent);
-    border-radius: 50%;
-    box-shadow: 0 0 6px var(--c-accent);
-  }
-}
-
-/* --- Desktop Actions --- */
-
+/* --- Actions --- */
 .actions {
   display: none;
   align-items: center;
@@ -146,64 +141,50 @@
 
   @include respond-to('md') {
     display: flex;
-    margin-right: 2rem;
+    margin-right: var(--sp-8);
   }
 }
 
 .button {
   @include p.btn;
   font-size: var(--fs-sm);
-  padding: 0.6rem 1.25rem;
+  padding: var(--sp-2) var(--sp-5);
   border-radius: 99px;
-  transition: all 0.2s ease;
 }
 
 .buttonWhatsApp {
   background-color: var(--c-accent);
-  border-color: var(--c-accent);
   color: var(--c-primary-dark);
+  border-color: var(--c-accent);
   font-weight: 700;
 
   &:hover {
     background-color: var(--c-accent-hover);
-    border-color: var(--c-accent-hover);
-    box-shadow: 0 0 12px rgba(254, 201, 20, 0.4);
-    transform: translateY(-1px);
   }
 }
 
 .buttonCall {
   background-color: rgba(255, 255, 255, 0.1);
+  color: var(--c-text-on-dark);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
-  min-height: initial;
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.2);
-    border-color: #fff;
   }
 }
 
-/* --- Mobile Toggle --- */
-
+/* --- Mobile Menu --- */
 .menuToggle {
   border: none;
   background: rgba(0, 0, 0, 0.2);
   padding: 0.6rem;
+  /* Keep optical padding */
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-  transition: background-color 0.2s ease, transform 0.2s ease;
-  position: relative;
   z-index: 10;
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
 
   @include respond-to('md') {
     display: none;
@@ -211,7 +192,6 @@
 }
 
 .menuIcon {
-  position: relative;
   width: 24px;
   height: 18px;
   display: flex;
@@ -222,10 +202,9 @@
 .menuIconBar {
   height: 2px;
   width: 100%;
-  background-color: #fff;
+  background-color: var(--c-text-on-dark);
   border-radius: 4px;
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.25s ease, opacity 0.2s ease;
 }
 
 .menuIconOpen .menuIconBar:nth-child(1) {
@@ -241,131 +220,161 @@
 }
 
 /* --- Mobile Menu Overlay --- */
-
 .mobileMenu {
   position: fixed;
   inset: 0;
   z-index: 50;
   background-color: var(--c-primary-dark);
-  padding-top: 100px;
-  padding-bottom: calc(120px + env(safe-area-inset-bottom));
+  padding-top: calc(var(--header-h) + var(--sp-8));
   transform: translateY(-100%);
   opacity: 0;
   visibility: hidden;
-  transition:
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease,
-    visibility 0.3s step-end;
-  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, visibility 0.3s;
+
+  &Open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
 
   @include respond-to('md') {
     display: none;
   }
 }
 
-.mobileMenuOpen {
-  transform: translateY(0);
-  opacity: 1;
-  visibility: visible;
-  transition:
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s ease,
-    visibility 0s step-start;
-  pointer-events: auto;
-}
-
 .mobileNav {
-  padding-top: 1rem;
-  padding-inline: var(--sp-4);
   height: 100%;
+  overflow-y: auto;
+  padding-inline: var(--sp-4);
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
 }
 
 .mobileNavList {
   list-style: none;
-  margin: 0;
   padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
 }
 
-.mobileNavItem {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
 .mobileNavLink {
   display: block;
-  padding: 1.25rem 0;
-  font-size: 1.35rem;
+  padding: var(--sp-5) 0;
+  font-size: 1.5rem;
+  /* Specific large size for mobile menu targets */
   color: var(--c-muted-on-dark);
   text-decoration: none;
   font-weight: 500;
-  letter-spacing: -0.02em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 
-  &:hover,
-  &:active {
+  &Active {
     color: var(--c-accent);
-    padding-left: 0.75rem;
-    transition: all 0.2s ease;
+    padding-left: var(--sp-2);
+    border-left: 3px solid var(--c-accent);
   }
-}
-
-.mobileNavLinkActive {
-  color: var(--c-accent);
-  font-weight: 700;
-  border-left: 3px solid var(--c-accent);
-  padding-left: 0.75rem;
 }
 
 .mobileActions {
   margin-top: auto;
-  padding-top: var(--sp-8);
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
-  align-items: center;
+  gap: var(--sp-4);
+  padding-block: var(--sp-8);
 
   .button {
-    width: 75%;
-    padding-block: 1rem;
-    font-size: 1rem;
+    width: 90%;
+    height: 44px;
+    text-align: center;
   }
 }
 
-/* Call Dialog (Desktop) */
+/* Call Dialog */
 .callDialogOverlay {
   position: fixed;
   inset: 0;
   z-index: 100;
-  background-color: rgba(0, 0, 0, 0.7);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
-  padding-top: 15svh;
+  align-items: start;
+  padding-top: 20svh;
 }
 
 .callDialog {
-  background-color: var(--c-surface);
+  background: var(--c-surface);
   width: 90%;
   max-width: 400px;
   border-radius: var(--radius-lg);
-  padding: var(--sp-5);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  animation: dialogIn 0.2s ease-out;
+  padding: var(--sp-6);
+  box-shadow: var(--shadow-xl, 0 25px 50px -12px rgba(0, 0, 0, 0.25));
 }
 
-@keyframes dialogIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
+.callDialogHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--sp-4);
+}
 
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
+.callDialogTitle {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  margin: 0;
+  color: var(--c-text);
+}
+
+.callDialogCloseIcon {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--c-muted);
+}
+
+.callDialogSubtitle {
+  color: var(--c-muted);
+  margin-bottom: var(--sp-6);
+  line-height: 1.5;
+}
+
+.callDialogPhoneBlock {
+  background: var(--c-bg);
+  padding: var(--sp-4);
+  border-radius: var(--radius);
+  text-align: center;
+  margin-bottom: var(--sp-6);
+}
+
+.callDialogPhoneLink {
+  display: block;
+  text-decoration: none;
+  color: var(--c-primary);
+}
+
+.callDialogPhoneNumber {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.callDialogHint {
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  margin-top: var(--sp-2);
+}
+
+.callDialogActions {
+  text-align: center;
+}
+
+.callDialogCloseButton {
+  background: none;
+  border: 1px solid var(--c-border);
+  padding: 0.5rem 1.5rem;
+  border-radius: 99px;
+  cursor: pointer;
+  color: var(--c-text);
 }

@@ -1,6 +1,6 @@
 // styles/_tokens.scss
-
-// Global design tokens: typography, spacing, color, radii and elevation.
+@use "sass:map";
+@use "mixins" as *;
 
 :root {
   /* Typography */
@@ -82,9 +82,11 @@
   /* Light gray for secondary text on dark bg */
 
   /* Neutrals */
-  --c-bg: #f3f4f6;
+  --c-bg: #0e243b;
   /* Page background */
   --c-surface: #ffffff;
+  --c-surface-dark: #b2bece;
+  --c-surface-light: #f9fafb;
   /* Cards, panels, header background */
   --c-text: #111827;
   /* Main text on light backgrounds */
@@ -128,9 +130,22 @@
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
   --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
 
-  /* Layout */
-  --sticky-h: 64px;
-  /* Sticky header height on mobile */
+  /* --- NEW LAYOUT TOKENS --- */
+
+  /* Header Height: Smaller on mobile, taller on desktop */
+  --header-h: 80px;
+
+  /* Sticky Bottom Bar (CTA): Height + estimated padding for mobile */
+  --bottom-bar-h: 64px;
+}
+
+/* Desktop Overrides */
+@include respond-to('md') {
+  :root {
+    --header-h: 90px;
+    --bottom-bar-h: 0px;
+    /* Hidden/Inline on desktop */
+  }
 }
 
 /* High-contrast user preference */

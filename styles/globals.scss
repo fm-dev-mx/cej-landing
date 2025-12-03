@@ -1,5 +1,6 @@
 // styles/globals.scss
 
+@use "sass:map";
 @use "./tokens";
 @use "./primitives" as p;
 @use "./mixins" as *;
@@ -13,21 +14,13 @@ body {
 
 html {
   font-size: 100%;
+
+  /* 1. Dynamic Scroll Padding
+     This ensures when you click a nav link, the section stops EXACTLY
+     below the fixed header, plus a little breathing room.
+  */
+  scroll-padding-top: calc(var(--header-h));
   scroll-behavior: smooth;
-}
-
-/* Global Scroll Offset
-  Ensures anchor links (like #calculator) are not hidden behind the sticky header.
-*/
-html {
-  /* Mobile: Header height (64px) + Spacing (16px) + Safe Area (notch) */
-  scroll-padding-top: calc(var(--sticky-h) + var(--sp-4) + env(safe-area-inset-top));
-
-  /* Correctly target desktop/tablet devices */
-  @include respond-to('md') {
-    /* Desktop: Larger safe buffer (approx 96px) for taller headers */
-    scroll-padding-top: 5rem;
-  }
 }
 
 body {
@@ -38,11 +31,18 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 
-  /* Mobile sticky bar offset */
-  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  /* 2. Mobile Sticky Bar Compensation
+     Adds padding to the bottom of the document so the Footer
+     is never hidden behind the fixed WhatsApp/Call buttons.
+     Uses safe-area-inset for iPhone Home Indicator.
+  */
+  padding-bottom: env(safe-area-inset-bottom);
+
+  /* Ensure background continuity on overscroll (iOS) */
+  background-color: var(--c-bg);
 }
 
-/* Reset padding on desktop where sticky bar is hidden */
+/* Reset sticky compensation on Desktop where buttons are inline */
 @include respond-to('md') {
   body {
     padding-bottom: 0;
@@ -95,60 +95,8 @@ body {
   * {
     animation: none !important;
     transition: none !important;
+    scroll-behavior: auto !important;
   }
-}
-
-/* Sections */
-.hero-section {
-  padding-block: var(--sp-6);
-}
-
-.section {
-  min-height: 40svh;
-  padding: 4rem 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.bgLight {
-  background-color: var(--c-bg);
-}
-
-.bgWhite {
-  background-color: var(--c-surface);
-}
-
-.containerCentered {
-  @include container;
-  text-align: center;
-  max-width: 800px;
-}
-
-.textMuted {
-  color: var(--c-muted);
-  margin-top: 1rem;
-  font-size: var(--fs-lg);
-}
-
-/* Layout root */
-.app-root {
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Utility Typography */
-.h1 {
-  @include p.h1;
-}
-
-.h2 {
-  @include p.h2;
-}
-
-.lead {
-  @include p.lead;
 }
 
 .fb-noscript-pixel {

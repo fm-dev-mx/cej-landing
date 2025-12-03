@@ -3,7 +3,7 @@
 @use "../../styles/mixins" as *;
 
 .section {
-  background-color: var(--c-bg);
+  background-color: var(--c-surface);
   padding-block: var(--sp-10);
   position: relative;
 }
@@ -173,11 +173,9 @@
   display: grid;
   place-items: center;
   cursor: pointer;
-  background: linear-gradient(
-    135deg,
-    rgba(2, 26, 54, 0.85),
-    rgba(4, 51, 105, 0.9)
-  );
+  background: linear-gradient(135deg,
+      rgba(2, 26, 54, 0.85),
+      rgba(4, 51, 105, 0.9));
   transition: opacity 0.3s ease;
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);

@@ -1,19 +1,23 @@
 // components/layout/HeroSection.module.scss
-
 @use "../../styles/primitives" as p;
 @use "../../styles/mixins" as *;
 
 .hero {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   overflow: hidden;
   background-color: var(--c-primary-dark);
   color: var(--c-text-on-dark);
+
+  /* Modern viewport unit: small viewport height
+     Prevents the "jump" when mobile browser bars appear/disappear.
+  */
   min-height: 100svh;
 
-  @include respond-to-height('short') {
-    padding-top: 1rem;
+  /* Fallback for older browsers */
+  @supports not (height: 100svh) {
+    min-height: 100vh;
   }
 }
 
@@ -33,88 +37,66 @@
 }
 
 .hero__imagePlaceholder {
-  background-color: var(--c-primary-strong);
+  background-color: var(--c-primary-dark);
 }
 
-/* Overlay */
 .hero__overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom,
-      rgba(2, 26, 54, 0.6) 0%,
-      rgba(2, 26, 54, 0.85) 40%,
-      rgba(2, 26, 54, 0.95) 100%);
   z-index: 1;
-  width: 101%;
+  /* Updated gradient for better text readability */
+  background: linear-gradient(to bottom,
+      rgba(2, 26, 54, 0.4) 0%,
+      rgba(2, 26, 54, 0.7) 50%,
+      rgba(2, 26, 54, 1) 100%);
 
   @include respond-to('lg') {
     background: linear-gradient(90deg,
-        rgba(2, 26, 54, 0.95) 0%,
-        rgba(2, 26, 54, 0.85) 50%,
-        rgba(2, 26, 54, 0.3) 100%);
+        rgba(2, 26, 54, 0.9) 0%,
+        rgba(2, 26, 54, 0.7) 60%,
+        rgba(2, 26, 54, 0.2) 100%);
   }
 }
 
-/* Container and Layout */
+/* Content Container */
 .hero__container {
   @include container;
   position: relative;
+  align-self: center;
   z-index: 2;
   width: 80%;
 
-  padding-top: calc(6rem + env(safe-area-inset-top));
-  padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--header-h) + var(--sp-6));
 
-  @include respond-to('md') {
-    padding-top: 8rem;
-    padding-bottom: 4rem;
-    width: 60%;
+  @include respond-to-height('short') {
+    align-self: start;
+    margin-top: calc(env(safe-area-inset-top) + var(--header-h) + var(--sp-2));
   }
 
-  @include respond-to('lg') {
-    padding-block: var(--sp-10);
-    display: flex;
-    align-items: center;
-    min-height: 100%;
-  }
 }
 
 .hero__content {
   width: 100%;
-  max-width: 38rem;
+  max-width: 42rem;
   display: flex;
   flex-direction: column;
   gap: var(--sp-6);
   align-items: flex-start;
-
-  @include respond-to('md') {
-    gap: var(--sp-10);
-  }
-
-  @include respond-to('lg') {
-    max-width: 42rem;
-  }
-
-  @include respond-to-height('short') {
-    gap: var(--sp-6);
-  }
 }
 
-/* Typography and Elements */
 .hero__badge {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 0.35rem 0.75rem;
-  border-radius: 999px;
+  /* Ajuste visual fino sin token */
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 99px;
   font-size: var(--fs-xxs);
-  font-weight: 600;
   color: var(--c-accent);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  -webkit-backdrop-filter: blur(4px);
+  font-weight: 600;
+
   backdrop-filter: blur(4px);
 
   @include respond-to('sm') {
@@ -138,10 +120,9 @@
 .hero__title {
   font-size: var(--fs-2xl);
   line-height: 1.1;
-  font-weight: 800;
-  letter-spacing: -0.02em;
   margin: 0;
-  color: white;
+
+  /* Prevent horizontal overflow on small screens */
   word-break: break-word;
 
   @include respond-to('xs') {
@@ -159,33 +140,17 @@
 
 .hero__highlight {
   color: var(--c-accent);
-  display: inline-block;
-  position: relative;
-
-  &::after {
-    content: "";
-    position: absolute;
-    bottom: 0.05em;
-    left: 0;
-    width: 100%;
-    height: 0.15em;
-    background-color: var(--c-accent);
-    opacity: 0.2;
-    z-index: -1;
-    border-radius: 2px;
-  }
 }
 
 .hero__lead {
   @include p.lead;
   color: var(--c-muted-on-dark);
-  font-size: var(--fs-xs);
-  line-height: 1.6;
-  max-width: 100%;
+  font-size: var(--fs-sm);
   margin: 0;
+  max-width: 36ch;
 
   strong {
-    color: white;
+    color: var(--c-text-on-dark);
     font-weight: 600;
   }
 
@@ -197,40 +162,31 @@
   @include respond-to('md') {
     font-size: var(--fs-xl);
   }
-
 }
 
 /* Features List */
 .hero__features {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 0 var(--sp-2);
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  width: 100%;
 }
 
 .hero__feature {
   display: flex;
-  align-items: flex-start;
   gap: var(--sp-2);
-  font-size: var(--fs-xs);
-  color: var(--c-text-on-dark);
-  line-height: 1.4;
-
-  svg {
-    flex-shrink: 0;
-    margin-top: 0.15em;
-  }
+  color: var(--c-muted-on-dark);
+  font-size: var(--fs-sm);
+  line-height: 1.2;
 
   strong {
     color: var(--c-accent);
-    font-weight: 700;
   }
 
   @include respond-to('xs') {
-    font-size: var(--fs-sm);
+    font-size: var(--fs-base);
   }
 
   @include respond-to('md') {
@@ -242,18 +198,14 @@
 .hero__actions {
   display: flex;
   flex-direction: column;
-  width: 80%;
-  gap: var(--sp-2);
-  margin-top: var(--sp-2);
-  white-space: nowrap;
+  width: 100%;
+  gap: var(--sp-4);
+  margin-top: var(--sp-4);
 
-  // Consolidated 480px query to 'sm' (640px) for consistency with system
   @include respond-to('sm') {
     flex-direction: row;
-    align-items: center;
-    width: 100%;
+    width: auto;
   }
-
 }
 
 .hero__btnPrimary {
@@ -261,12 +213,11 @@
   background-color: var(--c-accent);
   color: var(--c-primary-dark);
   border: 1px solid var(--c-accent);
-  font-weight: 700;
-  font-size: 1rem;
-  padding: 0.7rem 1.5rem;
-  width: 100%;
+  font-size: var(--fs-sm);
   justify-content: center;
+  padding: var(--sp-3) var(--sp-6);
   box-shadow: 0 4px 14px rgba(254, 201, 20, 0.3);
+  font-weight: 700;
   text-decoration: none;
 
   &:hover {
@@ -281,29 +232,23 @@
 
   @include respond-to('md') {
     font-size: var(--fs-lg);
-    padding: 1rem 2rem;
   }
 
   @include respond-to('lg') {
     font-size: var(--fs-xl);
-    padding: 1rem 2rem;
   }
 }
 
 .hero__btnSecondary {
   @include p.btn;
-  background-color: rgba(255, 255, 255, 0.05);
-  color: white;
+  background-color: transparent;
+  color: var(--c-text-on-dark);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  font-weight: 600;
-  font-size: 1rem;
-  padding: 0.7rem 1.5rem;
-  width: 100%;
+  font-size: var(--fs-sm);
   justify-content: center;
+  padding: var(--sp-3) var(--sp-6);
   text-decoration: none;
-  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
-  display: flex;
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.15);
@@ -311,18 +256,15 @@
   }
 
   @include respond-to('sm') {
-    width: auto;
-    background-color: transparent;
+    font-size: var(--fs-base);
   }
 
   @include respond-to('md') {
     font-size: var(--fs-lg);
-    padding: 1rem 2rem;
   }
 
   @include respond-to('lg') {
     font-size: var(--fs-xl);
-    padding: 1rem 2rem;
   }
 }
 
