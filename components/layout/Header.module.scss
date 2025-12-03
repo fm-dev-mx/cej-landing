@@ -68,7 +68,7 @@
   width: auto;
   object-fit: contain;
   transition: height 0.3s ease;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 /* --- Desktop Nav --- */
@@ -107,7 +107,7 @@
   padding-block: 0.5rem;
   color: var(--c-muted-on-dark, #cbd5e1);
   transition: color 0.2s ease;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 
   &:hover {
     color: var(--c-accent);
@@ -225,12 +225,20 @@
   background-color: #fff;
   border-radius: 4px;
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.menuIconOpen .menuIconBar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
-.menuIconOpen .menuIconBar:nth-child(2) { opacity: 0; }
-.menuIconOpen .menuIconBar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+.menuIconOpen .menuIconBar:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.menuIconOpen .menuIconBar:nth-child(2) {
+  opacity: 0;
+}
+
+.menuIconOpen .menuIconBar:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
 
 /* --- Mobile Menu Overlay --- */
 
@@ -337,7 +345,7 @@
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
-  padding-top: 15vh;
+  padding-top: 15svh;
 }
 
 .callDialog {
@@ -351,6 +359,13 @@
 }
 
 @keyframes dialogIn {
-  from { opacity: 0; transform: scale(0.95) translateY(10px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
