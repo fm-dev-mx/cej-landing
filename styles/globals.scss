@@ -18,7 +18,7 @@ html {
     Use the 'stuck' header height for padding.
     When users click a link, the header is usually already stuck or will be.
   */
-  scroll-padding-top: calc(var(--header-h-stuck) + 1rem);
+  scroll-padding-top: var(--header-h-stuck);
 }
 
 body {
