@@ -1,13 +1,12 @@
-// components/Calculator/Calculator.test.tsx
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Calculator from './Calculator';
 
-// 1. Mock environment variables to avoid Zod validation failures and undefined values
+// 1. Mock Environment & Utils
 vi.mock('@/config/env', () => ({
   env: {
     NEXT_PUBLIC_PIXEL_ID: 'test-pixel-id',
-    NEXT_PUBLIC_WHATSAPP_NUMBER: '6561234567',
+    NEXT_PUBLIC_WHATSAPP_NUMBER: '526561234567',
     NEXT_PUBLIC_PHONE: '6561234567',
     NEXT_PUBLIC_SITE_URL: 'http://localhost',
     NEXT_PUBLIC_BRAND_NAME: 'CEJ Test',
@@ -15,14 +14,18 @@ vi.mock('@/config/env', () => ({
   },
 }));
 
-// 2. Mock pixel to avoid execution errors
 vi.mock('@/lib/pixel', () => ({
   trackViewContent: vi.fn(),
   trackLead: vi.fn(),
   trackContact: vi.fn(),
 }));
 
-// Browser API mocks not available in JSDOM
+// Mock window interactions
+const mockScrollIntoView = vi.fn();
+window.HTMLElement.prototype.scrollIntoView = mockScrollIntoView;
+window.open = vi.fn();
+
+// Mock IntersectionObserver
 const mockIntersectionObserver = vi.fn();
 mockIntersectionObserver.mockReturnValue({
   observe: () => null,
@@ -30,166 +33,199 @@ mockIntersectionObserver.mockReturnValue({
   disconnect: () => null
 });
 window.IntersectionObserver = mockIntersectionObserver;
-window.HTMLElement.prototype.scrollIntoView = vi.fn();
 
 describe('Calculator UI Integration', () => {
 
-  // 3. CRITICAL: Clear localStorage before each test.
-  // Otherwise, the second test starts at Step 4 (where the previous one ended)
-  // and fails to find the "Yes" button from Step 1.
   beforeEach(() => {
     window.localStorage.clear();
+    vi.clearAllMocks();
   });
 
-  it('renders the wizard and allows navigation through the flow', () => {
+  it('renders the wizard and allows navigation through the flow (Known M3)', async () => {
     render(<Calculator />);
 
-    // 1. Verify initial state (Step 1)
-    expect(screen.getByText(/Calcula tu/i)).toBeInTheDocument();
+    // 1. Step 1: Mode Selection
+    // Usamos regex flexible para coincidir con "Cotiza tu..." o "Calcula tu..."
+    expect(screen.getByText(/(Cotiza|Calcula) tu/i)).toBeInTheDocument();
 
-    // Select "I know the m3" mode
-    const radioKnown = screen.getByLabelText('Si');
+    // Select "Sí" (Known Volume)
+    // FIX: Usamos getByRole('radio', { name: ... }) que es más robusto para etiquetas compuestas.
+    // La regex busca "Sí" o "Si" al inicio del nombre accesible.
+    const radioKnown = screen.getByRole('radio', { name: /^S[íi]/i });
     fireEvent.click(radioKnown);
 
-    // Verify volume input appears (Step 2)
+    // 2. Step 3: Inputs (Known Mode skips Step 2)
     const volInput = screen.getByLabelText(/Volumen \(m³\)/i);
     expect(volInput).toBeInTheDocument();
 
-    // 2. Input data in Step 2
     fireEvent.change(volInput, { target: { value: '5' } });
     expect(volInput).toHaveValue(5);
 
-    // 3. Navigate to Step 3
     const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
     expect(nextBtn).not.toBeDisabled();
     fireEvent.click(nextBtn);
 
-    // 4. Verify Step 3 (Specifications)
-    expect(screen.getByText(/Tipo de servicio/i)).toBeInTheDocument();
+    // 3. Step 4: Specs
+    expect(screen.getByText(/Especificaciones del Concreto/i)).toBeInTheDocument();
 
-    // Change strength
     const strengthSelect = screen.getByLabelText(/Resistencia/i);
     fireEvent.change(strengthSelect, { target: { value: '250' } });
 
-    // Go to summary
+    // Simulate Calculation (Async simulation)
     const summaryBtn = screen.getByRole('button', { name: /Ver Cotización Final/i });
     fireEvent.click(summaryBtn);
 
-    // 5. Verify Step 4 (Financial Summary)
-    expect(screen.getByText(/Tu cotización estimada/i)).toBeInTheDocument();
-    expect(screen.getByText('5.00 m³')).toBeInTheDocument();
+    // 4. Step 5: Summary (Wait for calculation delay)
+    await waitFor(() => {
+      expect(screen.getByText(/Cotización Lista/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
 
-    // Verify final action buttons
-    expect(screen.getByRole('button', { name: /WhatsApp/i })).toBeInTheDocument();
+    // Verify Ticket Details
+    expect(screen.getByText('5.00 m³')).toBeInTheDocument();
+    expect(screen.getByText(/f’c 250/i)).toBeInTheDocument();
+
+    // Verify WhatsApp Button is enabled
+    const waBtn = screen.getByRole('button', { name: /Agendar por WhatsApp/i });
+    expect(waBtn).toBeEnabled();
   });
 
   it('completes the flow using Assist Mode (Dimensions)', () => {
     render(<Calculator />);
 
     // 1. Step 1: Select Assist Mode
-    // This reveals the Work Type options
-    fireEvent.click(screen.getByLabelText('No, ayúdame a definirlo'));
+    // Busca "No, ayúdame..." siendo flexible con acentos y texto posterior.
+    fireEvent.click(screen.getByRole('radio', { name: /No, ay.dame a/i }));
 
-    // Select Work Type "Losa" (triggers auto-navigation to Step 2)
-    // Use exact match to avoid ambiguity with description text
-    fireEvent.click(screen.getByText(/^Losa$/));
+    // 2. Step 2: Work Type
+    // Select "Losa" - Usamos radio role también para consistencia si es un SelectionCard,
+    // o text match si es solo visual. En WorkTypeSelector son radios.
+    const slabRadio = screen.getByRole('radio', { name: /Losa/i });
+    fireEvent.click(slabRadio);
 
-    // 2. Step 2: Fill Dimensions
-    // Inputs: Length (m), Width (m), Thickness (cm)
-    // FIX: Use exact string match for labels to avoid matching radio buttons (e.g., "Largo × Ancho")
-    const lengthInput = screen.getByLabelText('Largo (m)');
-    const widthInput = screen.getByLabelText('Ancho (m)');
+    // 3. Step 3: Dimensions Form
+    // FIX: Usamos "Largo (m)" exacto o regex más específico para evitar conflicto con radio "Largo × Ancho"
+    const lengthInput = screen.getByLabelText(/Largo \(m\)/i);
+    const widthInput = screen.getByLabelText(/Ancho \(m\)/i);
     const thickInput = screen.getByLabelText(/Grosor/i);
 
     fireEvent.change(lengthInput, { target: { value: '10' } });
     fireEvent.change(widthInput, { target: { value: '5' } });
-    fireEvent.change(thickInput, { target: { value: '10' } }); // 10cm = 0.1m
+    fireEvent.change(thickInput, { target: { value: '10' } });
 
-    // Verify calculation feedback appears (10 * 5 * 0.1 = 5m3 approx)
+    // Verify calculation feedback (10*5*0.1 = 5m3 approx)
     expect(screen.getByText(/Volumen calculado/i)).toBeInTheDocument();
 
-    // 3. Proceed to Step 3
     const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
-    expect(nextBtn).not.toBeDisabled();
     fireEvent.click(nextBtn);
 
-    // 4. Verify Step 3 reached
-    expect(screen.getByText(/Tipo de servicio/i)).toBeInTheDocument();
+    // 4. Step 4 reached
+    expect(screen.getByText(/Especificaciones del Concreto/i)).toBeInTheDocument();
   });
 
   it('completes the flow using Assist Mode (Area)', () => {
     render(<Calculator />);
 
-    // 1. Step 1: Select Assist Mode
-    fireEvent.click(screen.getByLabelText('No, ayúdame a definirlo'));
+    fireEvent.click(screen.getByRole('radio', { name: /No, ay.dame a/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /Losa/i }));
 
-    // Select Work Type "Losa"
-    fireEvent.click(screen.getByText(/^Losa$/));
+    // Switch to Area Mode
+    fireEvent.click(screen.getByLabelText(/Por .rea/i));
 
-    // 2. Step 2: Switch to "Area" mode
-    // We click the radio button to change the input form
-    fireEvent.click(screen.getByLabelText('Por Área (m²)'));
-
-    // Inputs: Area (m2) and Thickness (cm)
     const areaInput = screen.getByLabelText(/Área total/i);
     const thickInput = screen.getByLabelText(/Grosor/i);
 
-    // 50m2 * 0.10m = 5m3
     fireEvent.change(areaInput, { target: { value: '50' } });
     fireEvent.change(thickInput, { target: { value: '10' } });
 
-    // Verify calculation feedback appears
     expect(screen.getByText(/Volumen calculado/i)).toBeInTheDocument();
 
-    // 3. Proceed to Step 3
-    const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
-    expect(nextBtn).not.toBeDisabled();
-    fireEvent.click(nextBtn);
-
-    // 4. Verify Step 3 reached
-    expect(screen.getByText(/Tipo de servicio/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Siguiente/i }));
+    expect(screen.getByText(/Especificaciones del Concreto/i)).toBeInTheDocument();
   });
 
   it('shows validation errors in UI', () => {
     render(<Calculator />);
 
-    // Go to manual inputs
-    fireEvent.click(screen.getByLabelText('Si'));
+    fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
 
-    // Input 0 (invalid)
     const volInput = screen.getByLabelText(/Volumen \(m³\)/i);
     fireEvent.change(volInput, { target: { value: '0' } });
 
-    // Verify button disabled
     const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
     expect(nextBtn).toBeDisabled();
 
-    // Verify error message on screen
     expect(screen.getByText(/El volumen debe ser mayor a 0/i)).toBeInTheDocument();
   });
 
-  it('navigates to step 2 when clicking "Si" even if already selected (re-click bug)', () => {
+  it('persists state to localStorage and rehydrates on reload', () => {
+    const { unmount } = render(<Calculator />);
+
+    // 1. Enter some data
+    fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
+    const volInput = screen.getByLabelText(/Volumen \(m³\)/i);
+    fireEvent.change(volInput, { target: { value: '7.5' } });
+
+    // 2. Unmount (simulating refresh/close)
+    unmount();
+
+    // 3. Render again
     render(<Calculator />);
 
-    // 1. Click "Si" first time -> Should go to Step 2
-    const radioKnown = screen.getByLabelText('Si');
-    fireEvent.click(radioKnown);
-    expect(screen.getByText(/Volumen \(m³\)/i)).toBeInTheDocument(); // Step 2 active
+    // 4. Verify we are still on Step 3 (Inputs) and value is preserved
+    const volInputRestored = screen.getByLabelText(/Volumen \(m³\)/i);
+    expect(volInputRestored).toBeInTheDocument();
+    expect(volInputRestored).toHaveValue(7.5);
+  });
 
-    // 2. Click "Back" -> Returns to Step 1
-    const backBtn = screen.getByRole('button', { name: /Atrás/i });
-    fireEvent.click(backBtn);
-    expect(screen.getByText(/Calcula tu/i)).toBeInTheDocument(); // Step 1 active
+  it('resets the calculator to initial state when requested', async () => {
+    render(<Calculator />);
 
-    // 3. Verify "Si" is still checked
-    const radioKnownAfterBack = screen.getByLabelText('Si');
-    expect(radioKnownAfterBack).toBeChecked();
+    // 1. Advance deep into the flow
+    fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
+    fireEvent.change(screen.getByLabelText(/Volumen \(m³\)/i), { target: { value: '5' } });
+    fireEvent.click(screen.getByRole('button', { name: /Siguiente/i }));
 
-    // 4. Click "Si" AGAIN -> Should go to Step 2 again
-    // This is where it currently FAILS
-    fireEvent.click(radioKnownAfterBack);
+    // Calculate to get to Summary
+    fireEvent.click(screen.getByRole('button', { name: /Ver Cotización Final/i }));
 
-    // Assert we are back in Step 2
+    await waitFor(() => {
+      expect(screen.getByText(/Cotización Lista/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    // 2. Click "Nueva cotización" (Reset)
+    const resetBtn = screen.getByRole('button', { name: /Nueva cotización/i });
+    fireEvent.click(resetBtn);
+
+    // 3. Verify we are back at Step 1
+    expect(screen.getByText(/(Cotiza|Calcula) tu/i)).toBeInTheDocument();
+
+    // "Sí" radio should not be checked (state reset)
+    // FIX: Re-query element because DOM has been reset
+    const radioKnown = screen.getByRole('radio', { name: /^S[íi]/i }) as HTMLInputElement;
+    expect(radioKnown.checked).toBe(false);
+  });
+
+  it('navigates correctly when re-clicking an active mode', () => {
+    render(<Calculator />);
+
+    // Click "Sí" -> Go to Step 3 (Known Input)
+    const radioKnownInitial = screen.getByRole('radio', { name: /^S[íi]/i });
+    fireEvent.click(radioKnownInitial);
+    expect(screen.getByText(/Volumen \(m³\)/i)).toBeInTheDocument();
+
+    // Click "Back" -> Go to Step 1
+    fireEvent.click(screen.getByRole('button', { name: /Atrás/i }));
+    expect(screen.getByText(/(Cotiza|Calcula) tu/i)).toBeInTheDocument();
+
+    // FIX: Re-query the radio button. The previous 'radioKnown' reference is stale
+    // because the component Step1Mode was unmounted and remounted.
+    const radioKnownRestored = screen.getByRole('radio', { name: /^S[íi]/i });
+
+    // Verify "Sí" is still checked (state persistence)
+    expect(radioKnownRestored).toBeChecked();
+
+    // Click "Sí" AGAIN -> Should force navigation to Step 3
+    fireEvent.click(radioKnownRestored);
     expect(screen.getByText(/Volumen \(m³\)/i)).toBeInTheDocument();
   });
 });
