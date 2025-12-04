@@ -58,6 +58,11 @@ export function useCalculatorState() {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }, [state]);
 
+    const resetCalculator = useCallback(() => {
+        setState(DEFAULT_CALCULATOR_STATE);
+        // localStorage update is handled by the useEffect above
+    }, []);
+
     const setStep = useCallback((step: Step) => {
         setState((prev) => ({ ...prev, step }));
     }, []);
@@ -148,6 +153,7 @@ export function useCalculatorState() {
 
     return {
         ...state,
+        resetCalculator, // New export
         setStep,
         setMode,
         setVolumeMode,

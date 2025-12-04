@@ -1,3 +1,4 @@
+// components/Calculator/Calculator.module.scss
 @use "../../styles/primitives" as p;
 @use "../../styles/mixins" as *;
 
@@ -346,6 +347,18 @@ $ticket-text: #111827;
   height: 3.25rem;
   /* Touch target fix */
   font-size: 1rem;
+}
+
+.secondaryLinks {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.linkSeparator {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.75rem;
 }
 
 .textLink {

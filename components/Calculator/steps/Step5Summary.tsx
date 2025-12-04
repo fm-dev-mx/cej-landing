@@ -20,6 +20,7 @@ export function Step5Summary({ estimateLegend }: Props) {
         unitPriceLabel,
         volumeError,
         setStep,
+        resetCalculator,
         strength,
         type,
     } = useCalculatorContext();
@@ -149,7 +150,7 @@ export function Step5Summary({ estimateLegend }: Props) {
                             fullWidth
                             className={styles.actionButton}
                         >
-                            Solicitar por WhatsApp
+                            Agendar por WhatsApp
                         </Button>
 
                         {phoneHref && (
@@ -165,14 +166,27 @@ export function Step5Summary({ estimateLegend }: Props) {
                         )}
                     </div>
 
-                    <button
-                        type="button"
-                        className={styles.textLink}
-                        onClick={() => setStep(4)}
-                        aria-label="Volver a editar especificaciones"
-                    >
-                        <span>←</span> Editar especificaciones
-                    </button>
+                    <div className={styles.secondaryLinks}>
+                        <button
+                            type="button"
+                            className={styles.textLink}
+                            onClick={() => setStep(4)}
+                            aria-label="Volver a editar especificaciones"
+                        >
+                            <span>←</span> Editar
+                        </button>
+
+                        <span className={styles.linkSeparator} aria-hidden="true">•</span>
+
+                        <button
+                            type="button"
+                            className={styles.textLink}
+                            onClick={resetCalculator}
+                            aria-label="Iniciar una nueva cotización desde cero"
+                        >
+                            <span>↺</span> Nueva cotización
+                        </button>
+                    </div>
                 </div>
 
                 <p className={styles.disclaimer}>{estimateLegend}</p>
