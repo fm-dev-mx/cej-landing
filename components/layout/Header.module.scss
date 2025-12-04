@@ -10,7 +10,6 @@
   padding-inline: var(--sp-0);
   z-index: var(--z-header);
 
-  // Transition properties for glass effect and height
   background-color: transparent;
   border-bottom: 1px solid transparent;
   transition:
@@ -20,17 +19,12 @@
     box-shadow 0.3s ease,
     height 0.3s ease;
 
-  // Use token for consistent initial height
   height: var(--header-h);
-
-  /* Respect top notch on iPhone X+ */
   padding-top: env(safe-area-inset-top);
 }
 
 .headerScrolled {
-  // Use token for consistent stuck height
   height: var(--header-h-stuck);
-
   background-color: rgba(2, 26, 54, 0.9);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
@@ -52,7 +46,7 @@
   align-items: center;
   height: 100%;
   position: relative;
-  z-index: 20; // Above mobile menu
+  z-index: 20;
 }
 
 .logoLink {
@@ -62,7 +56,6 @@
 }
 
 .logo {
-  /* Calculation remains for dynamic shrink effect */
   height: 80%;
   width: auto;
   object-fit: contain;
@@ -178,7 +171,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 20; // Above overlay
+  z-index: 20;
 
   @include respond-to('md') {
     display: none;
@@ -220,7 +213,6 @@
   z-index: var(--z-mobile-menu);
   background-color: var(--c-primary-dark);
 
-  // Use Dynamic Viewport Height for mobile browsers
   height: 100dvh;
   padding-top: calc(var(--header-h) + var(--sp-4));
 
@@ -247,7 +239,6 @@
   display: flex;
   flex-direction: column;
   padding-inline: var(--sp-4);
-  /* Ensure padding at bottom for safe area */
   padding-bottom: calc(env(safe-area-inset-bottom) + var(--sp-8));
   overflow-y: auto;
   height: 80svh;
@@ -296,7 +287,7 @@
   }
 }
 
-/* Call Dialog */
+/* --- CALL DIALOG (Optimized) --- */
 .callDialogOverlay {
   position: fixed;
   inset: 0;
@@ -307,15 +298,41 @@
   justify-content: center;
   align-items: start;
   padding-top: 20svh;
+  opacity: 0;
+  animation: fadeIn 0.2s forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
 }
 
 .callDialog {
   background: var(--c-surface);
   width: 90%;
   max-width: 400px;
+  /* Base mobile limit */
   border-radius: var(--radius-lg);
   padding: var(--sp-6);
   box-shadow: var(--shadow-xl, 0 25px 50px -12px rgba(0, 0, 0, 0.25));
+  transform: translateY(10px);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+  /* Desktop Optimization */
+  @include respond-to('md') {
+    max-width: 480px;
+    padding: var(--sp-8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Make it stand out more on desktop */
+    box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.4);
+  }
+}
+
+@keyframes slideUp {
+  to {
+    transform: translateY(0);
+  }
 }
 
 .callDialogHeader {
@@ -330,6 +347,7 @@
   font-weight: 700;
   margin: 0;
   color: var(--c-text);
+  line-height: 1.2;
 }
 
 .callDialogCloseIcon {
@@ -338,20 +356,35 @@
   font-size: 1.5rem;
   cursor: pointer;
   color: var(--c-muted);
+  transition: color 0.2s;
+  padding: 0.25rem;
+
+  &:hover {
+    color: var(--c-text);
+  }
 }
 
 .callDialogSubtitle {
   color: var(--c-muted);
   margin-bottom: var(--sp-6);
   line-height: 1.5;
+  font-size: var(--fs-base);
 }
 
 .callDialogPhoneBlock {
-  background: var(--c-bg);
-  padding: var(--sp-4);
+  /* Ensure contrast if bg is dark theme default, otherwise ensure light theme surface */
+  background-color: #f3f4f6;
+  padding: var(--sp-6);
   border-radius: var(--radius);
   text-align: center;
   margin-bottom: var(--sp-6);
+  border: 1px solid var(--c-border);
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.02);
+    border-color: var(--c-accent);
+  }
 }
 
 .callDialogPhoneLink {
@@ -362,14 +395,18 @@
 
 .callDialogPhoneNumber {
   display: block;
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-top: 0.25rem;
+  color: var(--c-primary);
 }
 
 .callDialogHint {
   font-size: var(--fs-xs);
   color: var(--c-muted);
-  margin-top: var(--sp-2);
+  margin-top: var(--sp-3);
 }
 
 .callDialogActions {
@@ -379,8 +416,15 @@
 .callDialogCloseButton {
   background: none;
   border: 1px solid var(--c-border);
-  padding: 0.5rem 1.5rem;
+  padding: 0.75rem 2rem;
   border-radius: 99px;
   cursor: pointer;
   color: var(--c-text);
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #f3f4f6;
+    border-color: var(--c-muted);
+  }
 }

@@ -1,6 +1,7 @@
 // components/Calculator/Calculator.tsx
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { CalculatorProvider, useCalculatorContext } from './context/CalculatorContext';
 import { Step1Mode } from './steps/Step1Mode';
 import { Step2WorkType } from './steps/Step2WorkType';
@@ -13,6 +14,25 @@ import styles from './Calculator.module.scss';
 function CalculatorContent() {
   const { step, mode } = useCalculatorContext();
 
+  // Reference to the top of the calculator shell
+  const shellRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to top logic whenever 'step' changes
+  useEffect(() => {
+    // We only scroll if the ref exists and we are not in the initial server render
+    if (shellRef.current) {
+      // Small timeout allows the DOM to repaint the new step content properly before scrolling
+      const timer = setTimeout(() => {
+        shellRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start', // Aligns the top of the element to the top of the viewport
+        });
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [step]);
+
   // Total steps logic:
   // If knownM3 -> Steps: 1 (Mode), 3 (Inputs), 4 (Specs), 5 (Summary) [Visual progress logic is simplified here]
   // If assistM3 -> Steps: 1, 2, 3, 4, 5.
@@ -20,7 +40,7 @@ function CalculatorContent() {
   const totalSteps = 5;
 
   return (
-    <div className={styles.shell}>
+    <div className={styles.shell} ref={shellRef}>
       <header className={styles.header}>
         {/* Progress Bar */}
         <div

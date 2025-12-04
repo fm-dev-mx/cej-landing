@@ -10,16 +10,26 @@ $ticket-text: #111827;
 
 .wrapper {
   position: relative;
-  /* Use viewport height to center properly without scrolling on most devices */
-  min-height: 85svh;
-  display: grid;
-  place-items: center;
+
+  /* Mobile: Natural flow, no forced height constraints */
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 
   padding-block: var(--sp-8);
   padding-inline: var(--sp-4);
 
   background-color: var(--c-primary-dark);
   background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
+
+  /* Desktop: Centered viewport look & Fixed Min Height */
+  @include respond-to('md') {
+    min-height: 85svh;
+    display: grid;
+    place-items: center;
+  }
 }
 
 .shell {
@@ -29,13 +39,23 @@ $ticket-text: #111827;
   max-width: 640px;
   /* Constrained width for better focus */
 
-  /* Stability: Reserve minimum height to prevent layout shifts between steps */
-  min-height: 580px;
+  /* Mobile: Auto height to fit content without scroll traps */
+  height: auto;
+  min-height: auto;
   display: flex;
   flex-direction: column;
 
   @include container;
   padding: var(--sp-6) var(--sp-5);
+
+  /* Critical: Add safe area padding for bottom buttons on mobile */
+  padding-bottom: calc(var(--sp-6) + env(safe-area-inset-bottom));
+
+  /* SCROLL FIX:
+     Ensures that when scrollIntoView is triggered, the element stops
+     below the fixed header plus a little breathing room (1rem).
+  */
+  scroll-margin-top: calc(var(--header-h-stuck) + 1rem);
 
   border-radius: var(--radius-lg);
   background: linear-gradient(145deg, $glass-surface, rgba(2, 20, 40, 0.9));
@@ -47,6 +67,7 @@ $ticket-text: #111827;
 
   @include respond-to('md') {
     padding: var(--sp-8) var(--sp-8);
+    /* Stability for desktop: Reserve minimum height to prevent layout shifts */
     min-height: 600px;
   }
 }
@@ -368,9 +389,12 @@ $ticket-text: #111827;
 /* Compact Grid for Dimensions (Length x Width) */
 .compactGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--sp-4);
+  /* KEY CHANGE: Use minmax(0, 1fr) instead of just 1fr to allow shrinking */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
   align-items: start;
+  /* Ensure grid doesn't overflow parent */
+  width: 100%;
 
   /* Ensure labels don't break awkwardly in tight spaces */
   label {
@@ -378,11 +402,13 @@ $ticket-text: #111827;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    /* Ensure it takes available width for text-overflow ellipsis */
+    display: block;
   }
 }
 
 .selectionGrid {
-  @include grid-ram($min-width: 200px, $gap: var(--sp-3));
+  @include grid-ram($min-width: 150px, $gap: var(--sp-3));
 }
 
 .radioRow {
@@ -534,7 +560,7 @@ $ticket-text: #111827;
 /* --- Controls (Sticky Footer effect) --- */
 .stepControls {
   margin-top: auto;
-  /* The Magic: Pushes buttons to the bottom of min-height shell */
+  /* The Magic: Pushes buttons to the bottom of min-height shell (desktop) or just flows (mobile) */
   display: grid;
   gap: var(--sp-3);
   padding-top: var(--sp-4);

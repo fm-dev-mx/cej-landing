@@ -27,7 +27,8 @@
 
 @mixin input-variant-dark {
   background-color: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  /* P1 FIX: Increased contrast from 0.15 to 0.3 for better visibility */
+  border: 1px solid rgba(255, 255, 255, 0.3);
   color: var(--c-text-on-dark);
 
   &::placeholder {
@@ -35,7 +36,8 @@
   }
 
   &:hover:not(:disabled) {
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    /* Also bumped hover contrast */
     background-color: rgba(0, 0, 0, 0.5);
   }
 

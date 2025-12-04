@@ -47,10 +47,12 @@ body {
 /* Accessible focus ring */
 :where(a, button, [role="button"], input, select, textarea) {
   &:focus-visible {
-    outline: 2px solid var(--c-primary);
+    /* P1 FIX: Use Accent Color (Yellow) for better visibility on dark backgrounds */
+    outline: 2px solid var(--c-accent);
 
     @supports (color: color-mix(in oklab, #000, #fff)) {
-      outline: 2px solid color-mix(in oklab, var(--c-primary) 70%, #000 30%);
+      /* Create a dual-tone effect if supported for contrast on mixed backgrounds */
+      outline: 2px solid color-mix(in oklab, var(--c-accent) 80%, white 20%);
     }
 
     outline-offset: 2px;
