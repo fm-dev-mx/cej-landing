@@ -27,7 +27,7 @@ export function AssistVolumeForm() {
         setCofferedSize
     } = useCalculatorContext();
 
-    // Local helper for numeric inputs in this form
+    // Local helper for numeric inputs
     const handleNumericInput = useCallback(
         (setter: (value: string) => void) => (e: ChangeEvent<HTMLInputElement>) => {
             const raw = e.target.value.replace(/,/g, '.');
@@ -67,28 +67,32 @@ export function AssistVolumeForm() {
 
             {volumeMode === 'dimensions' && (
                 <>
-                    <Input
-                        id="length"
-                        label="Largo (m)"
-                        type="number"
-                        min={0}
-                        step={0.5}
-                        value={length}
-                        onChange={handleNumericInput(setLength)}
-                        inputMode="decimal"
-                        placeholder="0.00"
-                    />
-                    <Input
-                        id="width"
-                        label="Ancho (m)"
-                        type="number"
-                        min={0}
-                        step={0.5}
-                        value={width}
-                        onChange={handleNumericInput(setWidth)}
-                        inputMode="decimal"
-                        placeholder="0.00"
-                    />
+                    {/* Compact Grid for Dimensions to save vertical space */}
+                    <div className={styles.compactGrid}>
+                        <Input
+                            id="length"
+                            label="Largo (m)"
+                            type="number"
+                            min={0}
+                            step={0.5}
+                            value={length}
+                            onChange={handleNumericInput(setLength)}
+                            inputMode="decimal"
+                            placeholder="0.00"
+                        />
+                        <Input
+                            id="width"
+                            label="Ancho (m)"
+                            type="number"
+                            min={0}
+                            step={0.5}
+                            value={width}
+                            onChange={handleNumericInput(setWidth)}
+                            inputMode="decimal"
+                            placeholder="0.00"
+                        />
+                    </div>
+
                     <Input
                         id="thickness-dims"
                         label="Grosor (cm)"
@@ -133,9 +137,9 @@ export function AssistVolumeForm() {
             {/* Lightened Slab (Coffered) Block */}
             {workType === 'slab' && (
                 <>
-                    <div className={`${styles.field} ${styles.stepAnimated}`}>
+                    <div className={styles.field}>
                         <label>¿La losa lleva casetón?</label>
-                        <div className={styles.radioRowCompact}>
+                        <div className={styles.radioRow}>
                             <label className={styles.radio}>
                                 <input
                                     type="radio"
@@ -160,12 +164,9 @@ export function AssistVolumeForm() {
                     </div>
 
                     {hasCoffered === 'yes' && (
-                        <div
-                            className={`${styles.field} ${styles.stepAnimated}`}
-                            style={{ marginTop: '1rem' }}
-                        >
-                            <label style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>
-                                Selecciona la altura del casetón:
+                        <div className={`${styles.stepAnimated} ${styles.cofferSection}`}>
+                            <label style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>
+                                Altura del casetón:
                             </label>
 
                             <div className={styles.pillGroup}>
