@@ -7,17 +7,12 @@ import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import styles from './LeadFormModal.module.scss';
 
-export type QuoteSummary = {
-    total: number;
-    volume: number;
-    product: string;
-};
-
 type LeadFormModalProps = {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: (name: string) => void;
-    quoteDetails: QuoteSummary;
+    // Update: Allow a richer and more flexible object structure
+    quoteDetails: Record<string, any>;
 };
 
 export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: LeadFormModalProps) {
@@ -63,11 +58,13 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                 body: JSON.stringify({
                     name: cleanName,
                     phone: cleanPhone,
+                    // Send the enriched object
                     quote: quoteDetails
                 }),
             });
 
             if (!response.ok) {
+                // Optional: Read actual server error if needed
                 throw new Error('Error saving lead data.');
             }
 
@@ -76,7 +73,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
 
         } catch (err) {
             console.error(err);
-            // Fallback: Even if API fails, allow user to proceed to WhatsApp
+            // Fallback: Allow user to proceed to WhatsApp even if save fails
             // to avoid losing the sale due to technical issues.
             onSuccess(cleanName);
         } finally {

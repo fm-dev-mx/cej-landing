@@ -1,13 +1,14 @@
 // components/Calculator/steps/Step5Summary.tsx
 'use client';
 
-import { useMemo, useCallback, useState, type MouseEvent } from "react";
+import { useCallback, useState, useMemo, type MouseEvent } from "react";
 import { useCalculatorContext } from "../context/CalculatorContext";
 import { fmtMXN, getWhatsAppUrl, getPhoneUrl } from "@/lib/utils";
 import { trackLead, trackContact } from "@/lib/pixel";
 import { env } from "@/config/env";
 import { Button } from "@/components/ui/Button/Button";
 import { LeadFormModal } from "../modals/LeadFormModal";
+import { WORK_TYPES } from "@/config/business";
 import styles from "../Calculator.module.scss";
 
 type Props = {
@@ -24,6 +25,14 @@ export function Step5Summary({ estimateLegend }: Props) {
         resetCalculator,
         strength,
         type,
+        // New context fields for enriched data
+        workType,
+        volumeMode,
+        length,
+        width,
+        thicknessByDims,
+        area,
+        thicknessByArea
     } = useCalculatorContext();
 
     const [showLeadModal, setShowLeadModal] = useState(false);
@@ -42,11 +51,31 @@ export function Step5Summary({ estimateLegend }: Props) {
     const serviceTypeLabel = type === "direct" ? "Tiro directo" : "Bombeado";
     const productLabel = `Concreto f’c ${strength} (${serviceTypeLabel})`;
 
-    // Check if we have valid config to enable buttons
-    // We create a dummy WA URL just to check validity of the number config.
+    // Resolve Work Type Label
+    const workTypeLabel = WORK_TYPES.find(w => w.id === workType)?.label || 'Otro';
+
     const hasValidConfig = !!getWhatsAppUrl(waNumber, "test");
 
-    // 1. Initial Click: Intercepts the action to open the Lead Modal
+    // Prepare Enriched Data Payload
+    const enrichedQuoteData = useMemo(() => {
+        const specs = volumeMode === 'dimensions'
+            ? { length, width, thickness: thicknessByDims }
+            : { area, thickness: thicknessByArea };
+
+        return {
+            summary: {
+                total: quote.total,
+                volume: billedM3,
+                product: productLabel,
+            },
+            context: {
+                work_type: workTypeLabel,
+                calculation_method: volumeMode,
+                ...specs
+            }
+        };
+    }, [quote.total, billedM3, productLabel, workTypeLabel, volumeMode, length, width, thicknessByDims, area, thicknessByArea]);
+
     const handleWhatsAppClick = useCallback(
         (e?: MouseEvent<HTMLElement>) => {
             if (quote.total <= 0) {
@@ -71,10 +100,12 @@ export function Step5Summary({ estimateLegend }: Props) {
         });
 
         // B. Generate Personalized WhatsApp URL
+        // Updated formatting for better readability
         const message =
             `Hola soy ${userName}, me interesa esta cotización de CEJ:\n\n` +
             `• *Volumen:* ${billedM3.toFixed(2)} m³\n` +
             `• *Producto:* ${productLabel}\n` +
+            `• *Uso:* ${workTypeLabel}\n` +
             `• *Total Estimado:* ${fmtMXN(quote.total)}\n\n` +
             `¿Me pueden ayudar a confirmar el pedido?`;
 
@@ -83,7 +114,7 @@ export function Step5Summary({ estimateLegend }: Props) {
         if (finalWaUrl) {
             window.open(finalWaUrl, "_blank", "noopener,noreferrer");
         }
-    }, [quote.total, billedM3, waNumber, productLabel]);
+    }, [quote.total, billedM3, waNumber, productLabel, workTypeLabel]);
 
     const handlePhoneClick = useCallback(() => {
         if (phone.trim() && quote.total > 0) {
@@ -137,6 +168,12 @@ export function Step5Summary({ estimateLegend }: Props) {
                                     <span className={styles.specLabel}>Volumen</span>
                                     <span className={styles.specValue}>
                                         {billedM3.toFixed(2)} m³
+                                    </span>
+                                </div>
+                                <div className={styles.specItem}>
+                                    <span className={styles.specLabel}>Aplicación</span>
+                                    <span className={styles.specValue}>
+                                        {workTypeLabel}
                                     </span>
                                 </div>
                             </div>
@@ -226,16 +263,11 @@ export function Step5Summary({ estimateLegend }: Props) {
                 <p className={styles.disclaimer}>{estimateLegend}</p>
             </div>
 
-            {/* --- Data Capture Modal --- */}
             <LeadFormModal
                 isOpen={showLeadModal}
                 onClose={() => setShowLeadModal(false)}
                 onSuccess={handleLeadSuccess}
-                quoteDetails={{
-                    total: quote.total,
-                    volume: billedM3,
-                    product: productLabel
-                }}
+                quoteDetails={enrichedQuoteData}
             />
         </div>
     );
