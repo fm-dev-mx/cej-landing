@@ -30,7 +30,7 @@ export function Step4Specs() {
 
         <div className={styles.stepControls}>
           <Button
-            variant="secondary"
+            variant="tertiary"
             onClick={() => setStep(3)}
             disabled={isCalculating}
           >

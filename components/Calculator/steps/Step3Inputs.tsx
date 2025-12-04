@@ -94,7 +94,7 @@ export function Step3Inputs() {
         )}
 
         <div className={styles.stepControls}>
-          <Button variant="secondary" onClick={handleBack}>
+          <Button variant="tertiary" onClick={handleBack}>
             Atrás
           </Button>
           <Button

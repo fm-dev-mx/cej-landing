@@ -78,6 +78,7 @@
   color: var(--c-primary-dark);
   border-color: var(--c-accent);
   box-shadow: 0 4px 15px rgba(254, 201, 20, 0.3);
+  padding: var(--sp-4) var(--sp-12);
 
   &:hover:not(:disabled) {
     background-color: var(--c-accent-hover);
@@ -105,6 +106,12 @@
     border-color: white;
     border-right-color: transparent;
   }
+}
+
+.tertiary {
+  @extend .secondary;
+  color: var(--c-muted);
+  padding: var(--sp-4) var(--sp-10);
 }
 
 .whatsapp {

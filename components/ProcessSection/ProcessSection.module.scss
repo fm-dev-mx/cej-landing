@@ -118,6 +118,14 @@
   }
 }
 
+.stepWrapper:nth-child(3) {
+  @include respond-to('lg') {
+    .connector {
+      display: none;
+    }
+  }
+}
+
 /* Hide connector for the last item visually in the row */
 .stepWrapper:last-child .connector {
   display: none;

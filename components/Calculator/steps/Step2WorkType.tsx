@@ -22,7 +22,7 @@ export function Step2WorkType() {
         <WorkTypeSelector />
 
         <div className={styles.stepControls}>
-          <Button variant="secondary" onClick={() => setStep(1)}>
+          <Button variant="tertiary" onClick={() => setStep(1)}>
             Atrás
           </Button>
           {/* Note: Forward navigation happens automatically when selecting a card */}

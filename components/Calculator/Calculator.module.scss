@@ -1,4 +1,3 @@
-// components/Calculator/Calculator.module.scss
 @use "../../styles/primitives" as p;
 @use "../../styles/mixins" as *;
 
@@ -11,6 +10,8 @@ $ticket-text: #111827;
 .wrapper {
   position: relative;
   width: 90%;
+  margin-inline: auto;
+  /* Correct: Centers the wrapper horizontally */
 
   /* Mobile: Ensure full viewport coverage allowing scroll */
   min-height: 100dvh;
@@ -27,6 +28,7 @@ $ticket-text: #111827;
   background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
 
   /* Desktop: Centered viewport look & Fixed Min Height */
+  /* REVERTED to 'md': 'xxs' creates scroll/clipping issues on mobile when keyboard opens */
   @include respond-to('md') {
     min-height: 85svh;
     display: grid;
@@ -152,6 +154,7 @@ $ticket-text: #111827;
 
 .stepAnimated {
   animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* Removed explicit width/margin to respect parent (.shell) padding and alignment */
 }
 
 @keyframes fadeSlideUp {
