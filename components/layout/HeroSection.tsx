@@ -2,6 +2,7 @@
 
 import { env } from "@/config/env";
 import { LANDING_CONTENT } from "@/config/content";
+import { getWhatsAppUrl } from "@/lib/utils";
 import styles from "./HeroSection.module.scss";
 
 type HeroSectionProps = {
@@ -16,11 +17,10 @@ export default function HeroSection({
   const whatsappNumber = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   const content = LANDING_CONTENT.hero;
 
-  const whatsappHref = whatsappNumber
-    ? `https://wa.me/${whatsappNumber.replace(/[^\d]/g, "")}?text=${encodeURIComponent(
-        "Hola, me interesa cotizar concreto y aprovechar el cálculo de volumetría gratis."
-      )}`
-    : undefined;
+  const whatsappHref = getWhatsAppUrl(
+    whatsappNumber,
+    "Hola, me interesa cotizar concreto y aprovechar el cálculo de volumetría gratis."
+  );
 
   return (
     <section className={styles.hero} aria-label="Introducción">
@@ -53,7 +53,9 @@ export default function HeroSection({
 
           <h1 className={styles.hero__title}>
             {content.title.line1} <br />
-            <span className={styles.hero__highlight}>{content.title.highlight}</span>
+            <span className={styles.hero__highlight}>
+              {content.title.highlight}
+            </span>
           </h1>
 
           <p
@@ -66,7 +68,8 @@ export default function HeroSection({
               <li key={idx} className={styles.hero__feature}>
                 <CheckIcon />
                 <span>
-                  {feature.text} {feature.highlight && <strong>{feature.highlight}</strong>}
+                  {feature.text}{" "}
+                  {feature.highlight && <strong>{feature.highlight}</strong>}
                 </span>
               </li>
             ))}

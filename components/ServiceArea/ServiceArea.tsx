@@ -1,8 +1,9 @@
 // components/ServiceArea/ServiceArea.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { env } from "@/config/env";
+import { getPhoneUrl, getWhatsAppUrl } from "@/lib/utils";
 import styles from "./ServiceArea.module.scss";
 
 export default function ServiceArea() {
@@ -15,8 +16,10 @@ export default function ServiceArea() {
   const whatsapp = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   const email = "contacto@concretodejuarez.com";
 
-  // Helper to sanitize phone numbers for href (removes spaces, dashes, etc.)
-  const sanitizePhone = (num: string) => num.replace(/[^\d+]/g, "");
+  const links = useMemo(() => ({
+    phone: getPhoneUrl(phone),
+    whatsapp: getWhatsAppUrl(whatsapp)
+  }), [phone, whatsapp]);
 
   return (
     <section id="service-area" className={styles.section}>
@@ -52,18 +55,15 @@ export default function ServiceArea() {
                 <div className={styles.itemText}>
                   <strong>Canales Directos</strong>
                   <div className={styles.linksStack}>
-                    {phone && (
-                      <a
-                        href={`tel:${sanitizePhone(phone)}`}
-                        className={styles.textLink}
-                      >
+                    {phone && links.phone && (
+                      <a href={links.phone} className={styles.textLink}>
                         {phone}{" "}
                         <span className={styles.linkLabel}>(Llamadas)</span>
                       </a>
                     )}
-                    {whatsapp && (
+                    {whatsapp && links.whatsapp && (
                       <a
-                        href={`https://wa.me/${whatsapp}`}
+                        href={links.whatsapp}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={styles.textLink}
@@ -86,10 +86,11 @@ export default function ServiceArea() {
                 </div>
                 <div className={styles.itemText}>
                   <strong>Zona de Servicio</strong>
-                  Cubrimos el area gris mostrada en el mapa.
-                  <span className={styles.linkLabel}>Para obras fuera del área (Samalayuca, Anapra, etc.), <br />
-                  contáctanos para verificar viabilidad por volumen.</span>
-
+                  Cubrimos el área gris mostrada en el mapa.
+                  <span className={styles.linkLabel}>
+                    Para obras fuera del área (Samalayuca, Anapra, etc.), <br />
+                    contáctanos para verificar viabilidad por volumen.
+                  </span>
                 </div>
               </li>
             </ul>
@@ -110,9 +111,8 @@ export default function ServiceArea() {
 
           {/* MAP WRAPPER */}
           <div
-            className={`${styles.mapWrapper} ${
-              isMapActive ? styles.active : ""
-            }`}
+            className={`${styles.mapWrapper} ${isMapActive ? styles.active : ""
+              }`}
           >
             {!isMapActive && (
               <button
@@ -128,9 +128,7 @@ export default function ServiceArea() {
                   <span className={styles.overlayText}>
                     Ver mapa interactivo
                   </span>
-                  <span className={styles.overlayHint}>
-                    (Clic para activar)
-                  </span>
+                  <span className={styles.overlayHint}>(Clic para activar)</span>
                 </div>
               </button>
             )}

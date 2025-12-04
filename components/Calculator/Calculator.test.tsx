@@ -7,7 +7,7 @@ import Calculator from './Calculator';
 vi.mock('@/config/env', () => ({
   env: {
     NEXT_PUBLIC_PIXEL_ID: 'test-pixel-id',
-    NEXT_PUBLIC_WHATSAPP_NUMBER: '5216561234567',
+    NEXT_PUBLIC_WHATSAPP_NUMBER: '6561234567',
     NEXT_PUBLIC_PHONE: '6561234567',
     NEXT_PUBLIC_SITE_URL: 'http://localhost',
     NEXT_PUBLIC_BRAND_NAME: 'CEJ Test',

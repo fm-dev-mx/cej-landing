@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
 import { useLockBodyScroll } from "@/hooks/useLockBodyScroll";
 import { env } from "@/config/env";
+import { getPhoneUrl, getWhatsAppUrl } from "@/lib/utils";
 import { PRIMARY_NAV, type PhoneMeta } from "./header.types";
 
 const SECTION_IDS = PRIMARY_NAV.map((item) =>
@@ -11,7 +12,6 @@ const SECTION_IDS = PRIMARY_NAV.map((item) =>
 
 export function useHeaderLogic() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isCallDialogOpen, setIsCallDialogOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
 
     // 1. Scroll Spy for active state
@@ -32,35 +32,39 @@ export function useHeaderLogic() {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    // 4. Data Helpers (Memoized to prevent unnecessary recalcs)
+    // 4. Data Helpers
     const waHref = useMemo(() => {
-        const raw = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
-        if (!raw) return null;
-        const number = raw.replace(/[^\d]/g, "");
-        return number
-            ? `https://wa.me/${number}?text=${encodeURIComponent(
+        return (
+            getWhatsAppUrl(
+                env.NEXT_PUBLIC_WHATSAPP_NUMBER,
                 "Hola, me interesa una cotización de concreto."
-            )}`
-            : null;
+            ) ?? null
+        );
     }, []);
 
     const phoneMeta: PhoneMeta | null = useMemo(() => {
         const raw = env.NEXT_PUBLIC_PHONE;
+        const href = getPhoneUrl(raw);
         const trimmed = raw?.trim();
-        if (!trimmed) return null;
-        return { href: `tel:${trimmed.replace(/\s+/g, "")}`, display: trimmed };
+
+        if (!href || !trimmed) return null;
+
+        // Visual formatting: 656 123 4567 (if 10 digits and no spaces)
+        const isClean10Digit = /^\d{10}$/.test(trimmed);
+        const display = isClean10Digit
+            ? trimmed.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")
+            : trimmed;
+
+        return { href, display };
     }, []);
 
     // 5. Handlers
     const toggleMenu = () => setIsMenuOpen((prev) => !prev);
     const closeMenu = () => setIsMenuOpen(false);
-    const openCallDialog = () => setIsCallDialogOpen(true);
-    const closeCallDialog = () => setIsCallDialogOpen(false);
 
     return {
         state: {
             isMenuOpen,
-            isCallDialogOpen,
             isScrolled,
             activeSectionId,
         },
@@ -72,8 +76,6 @@ export function useHeaderLogic() {
         actions: {
             toggleMenu,
             closeMenu,
-            openCallDialog,
-            closeCallDialog,
         },
     };
 }

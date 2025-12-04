@@ -4,7 +4,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { env } from "@/config/env";
-import { HeaderCallDialog } from "./HeaderCallDialog";
 import { useHeaderLogic } from "./header/useHeaderLogic";
 import DesktopNav from "./header/DesktopNav";
 import MobileMenu from "./header/MobileMenu";
@@ -34,7 +33,7 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Components extracted for separation of concerns */}
+          {/* Navigation */}
           <DesktopNav
             navItems={data.navItems}
             activeSectionId={state.activeSectionId}
@@ -53,12 +52,14 @@ export default function Header() {
               </a>
             )}
             {data.phoneMeta && (
-              <button
-                onClick={actions.openCallDialog}
+              <a
+                href={data.phoneMeta.href}
                 className={`${styles.button} ${styles.buttonCall}`}
+                title="Llamar ahora"
               >
-                Llamar
-              </button>
+                <span className={styles.buttonIcon}>📞</span>
+                {data.phoneMeta.display}
+              </a>
             )}
           </div>
 
@@ -83,7 +84,7 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Mobile Menu Overlay Component */}
+      {/* Mobile Menu Overlay */}
       <MobileMenu
         isOpen={state.isMenuOpen}
         navItems={data.navItems}
@@ -91,13 +92,6 @@ export default function Header() {
         waHref={data.waHref}
         phoneMeta={data.phoneMeta}
         onClose={actions.closeMenu}
-      />
-
-      <HeaderCallDialog
-        isOpen={state.isCallDialogOpen}
-        phoneHref={data.phoneMeta?.href ?? null}
-        phoneDisplay={data.phoneMeta?.display ?? ""}
-        onClose={actions.closeCallDialog}
       />
     </>
   );

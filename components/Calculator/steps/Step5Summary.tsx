@@ -1,13 +1,13 @@
 // components/Calculator/steps/Step5Summary.tsx
-'use client';
+"use client";
 
-import { useMemo, useCallback, type MouseEvent } from 'react';
-import { useCalculatorContext } from '../context/CalculatorContext';
-import { fmtMXN } from '@/lib/utils';
-import { trackLead, trackContact } from '@/lib/pixel';
-import { env } from '@/config/env';
-import { Button } from '@/components/ui/Button/Button';
-import styles from '../Calculator.module.scss';
+import { useMemo, useCallback, type MouseEvent } from "react";
+import { useCalculatorContext } from "../context/CalculatorContext";
+import { fmtMXN, getWhatsAppUrl, getPhoneUrl } from "@/lib/utils";
+import { trackLead, trackContact } from "@/lib/pixel";
+import { env } from "@/config/env";
+import { Button } from "@/components/ui/Button/Button";
+import styles from "../Calculator.module.scss";
 
 type Props = {
     estimateLegend: string;
@@ -25,41 +25,42 @@ export function Step5Summary({ estimateLegend }: Props) {
         type,
     } = useCalculatorContext();
 
-    const today = new Date().toLocaleDateString('es-MX', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
+    const today = new Date().toLocaleDateString("es-MX", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
     });
 
     const waNumber = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
     const phone = env.NEXT_PUBLIC_PHONE;
-    const waDisabled = waNumber.trim().length === 0;
-    const phoneHref = phone.trim() ? `tel:${phone.trim().replace(/\s+/g, '')}` : '';
 
-    const whatsappText = useMemo(() => {
-        return encodeURIComponent(
+    const phoneHref = getPhoneUrl(phone);
+
+    const whatsappMessage = useMemo(() => {
+        return (
             `Hola, me interesa esta cotización de CEJ:\n\n` +
             `🔹 *Volumen:* ${billedM3.toFixed(2)} m³\n` +
-            `🔹 *Producto:* Concreto f’c ${strength} (${type === 'direct' ? 'Tiro directo' : 'Bombeado'})\n` +
+            `🔹 *Producto:* Concreto f’c ${strength} (${type === "direct" ? "Tiro directo" : "Bombeado"
+            })\n` +
             `🔹 *Total Estimado:* ${fmtMXN(quote.total)}\n\n` +
             `¿Me pueden ayudar a confirmar el pedido?`
         );
     }, [billedM3, strength, type, quote.total]);
 
+    // Generate URL using helper
+    const waHref = getWhatsAppUrl(waNumber, whatsappMessage);
+    const waDisabled = !waHref;
+
     const handleWhatsAppClick = useCallback(
         (e?: MouseEvent<HTMLElement>) => {
-            if (waDisabled || quote.total <= 0) {
+            if (waDisabled || quote.total <= 0 || !waHref) {
                 e?.preventDefault();
                 return;
             }
             trackLead(quote.total);
-            window.open(
-                `https://wa.me/${waNumber}?text=${whatsappText}`,
-                '_blank',
-                'noopener,noreferrer'
-            );
+            window.open(waHref, "_blank", "noopener,noreferrer");
         },
-        [waDisabled, waNumber, whatsappText, quote.total]
+        [waDisabled, waHref, quote.total]
     );
 
     const handlePhoneClick = useCallback(() => {
@@ -79,13 +80,16 @@ export function Step5Summary({ estimateLegend }: Props) {
 
             <div className={styles.stepBody}>
                 {/* Visual "Paper Ticket" Representation */}
-                <article className={styles.ticketCard} aria-label="Desglose de cotización">
+                <article
+                    className={styles.ticketCard}
+                    aria-label="Desglose de cotización"
+                >
                     <div className={styles.ticketContent}>
                         <div className={styles.ticketHeader}>
                             <span className={styles.ticketLabel}>Presupuesto Web</span>
                             <time
                                 className={styles.ticketDate}
-                                dateTime={new Date().toISOString().split('T')[0]}
+                                dateTime={new Date().toISOString().split("T")[0]}
                                 suppressHydrationWarning
                             >
                                 {today}
@@ -93,7 +97,9 @@ export function Step5Summary({ estimateLegend }: Props) {
                         </div>
 
                         <div className={styles.ticketSection}>
-                            <h3 className={styles.ticketSectionTitle}>Detalles del Pedido</h3>
+                            <h3 className={styles.ticketSectionTitle}>
+                                Detalles del Pedido
+                            </h3>
                             <div className={styles.specGrid}>
                                 <div className={styles.specItem}>
                                     <span className={styles.specLabel}>Resistencia</span>
@@ -102,12 +108,14 @@ export function Step5Summary({ estimateLegend }: Props) {
                                 <div className={styles.specItem}>
                                     <span className={styles.specLabel}>Tipo Servicio</span>
                                     <span className={styles.specValue}>
-                                        {type === 'direct' ? 'Tiro Directo' : 'Bombeado'}
+                                        {type === "direct" ? "Tiro Directo" : "Bombeado"}
                                     </span>
                                 </div>
                                 <div className={styles.specItem}>
                                     <span className={styles.specLabel}>Volumen</span>
-                                    <span className={styles.specValue}>{billedM3.toFixed(2)} m³</span>
+                                    <span className={styles.specValue}>
+                                        {billedM3.toFixed(2)} m³
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -119,7 +127,9 @@ export function Step5Summary({ estimateLegend }: Props) {
                             </div>
                             <div className={styles.row}>
                                 <span className={styles.rowLabel}>Subtotal</span>
-                                <span className={styles.rowValue}>{fmtMXN(quote.subtotal)}</span>
+                                <span className={styles.rowValue}>
+                                    {fmtMXN(quote.subtotal)}
+                                </span>
                             </div>
                             <div className={styles.row}>
                                 <span className={styles.rowLabel}>IVA (8%)</span>
@@ -176,7 +186,9 @@ export function Step5Summary({ estimateLegend }: Props) {
                             <span>←</span> Editar
                         </button>
 
-                        <span className={styles.linkSeparator} aria-hidden="true">•</span>
+                        <span className={styles.linkSeparator} aria-hidden="true">
+                            •
+                        </span>
 
                         <button
                             type="button"
