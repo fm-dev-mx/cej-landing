@@ -30,7 +30,8 @@ export function AssistVolumeForm() {
 
     // Helper to determine if a specific field has an error based on global volumeError
     // Simple logic: if there is a global error and the field is empty/invalid, mark it.
-    const hasError = (value: string) => volumeError && (!value || parseFloat(value) <= 0);
+    // FIXED: Cast volumeError to boolean (!!) to prevent returning 'null' which Input props reject
+    const hasError = (value: string) => !!volumeError && (!value || parseFloat(value) <= 0);
 
     const handleNumericInput = useCallback(
         (setter: (value: string) => void) => (e: ChangeEvent<HTMLInputElement>) => {
