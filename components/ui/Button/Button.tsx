@@ -2,7 +2,7 @@
 import { ButtonHTMLAttributes, AnchorHTMLAttributes, forwardRef } from 'react';
 import styles from './Button.module.scss';
 
-type ButtonVariant = 'primary' | 'secondary' | 'whatsapp';
+type ButtonVariant = 'primary' | 'secondary' | 'whatsapp' | 'tertiary';
 
 // Union type allowing props for either a button or an anchor
 type ButtonProps = {
