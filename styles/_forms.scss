@@ -2,7 +2,6 @@
 @use "tokens";
 
 @mixin input-base {
-  width: 100%;
   border-radius: var(--radius);
   /* 0.85rem ~ 13.6px -> Ajustado a token más cercano o mantenido si es crítico */
   padding: var(--sp-3) var(--sp-4);

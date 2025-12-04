@@ -3,57 +3,45 @@
 @use "../../styles/mixins" as *;
 
 /* Theme Variables & Glass Configuration */
-$glass-surface: rgba(2, 26, 54, 0.9);
+$glass-surface: rgba(2, 26, 54, 0.95);
 $glass-border: rgba(255, 255, 255, 0.1);
 
 .wrapper {
   position: relative;
   padding-block: var(--sp-8);
-  padding-inline: var(--sp-3);
+  padding-inline: var(--sp-6);
   background-color: var(--c-primary-dark);
-  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), transparent);
-  min-height: 80svh;
-  place-content: center;
+  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), transparent);
 
-  @include respond-to('md') {
-    padding-block: var(--sp-10);
-    padding-inline: var(--sp-4);
-    min-height: 60svh;
-  }
+  /* Center properly */
+  display: grid;
+  place-items: center;
+  min-height: 80svh;
 }
 
 .shell {
   position: relative;
   margin: 0 auto;
   max-width: 800px;
+
+  /* Container responsiveness */
+  @include container;
+  padding: var(--sp-6) var(--sp-4) var(--sp-8);
+
   border-radius: var(--radius-lg);
   background: linear-gradient(145deg, $glass-surface, rgba(2, 20, 40, 0.85));
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border: 1px solid $glass-border;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  box-shadow: var(--shadow-xl);
   color: var(--c-text-on-dark);
-  padding: var(--sp-6) var(--sp-5) var(--sp-8);
-
-  @supports not (backdrop-filter: blur(1px)) {
-    background: var(--c-primary-dark);
-  }
 
   @include respond-to('md') {
-    padding: var(--sp-8) var(--sp-8) var(--sp-10);
-  }
-
-  // Vertical constraint fix
-  @include respond-to-height('short') {
-    padding: var(--sp-4);
-    margin-top: 0;
+    padding: var(--sp-8) var(--sp-10);
   }
 }
 
 /* --- Header & Progress --- */
-
 .header {
   display: flex;
   flex-direction: column;
@@ -88,11 +76,12 @@ $glass-border: rgba(255, 255, 255, 0.1);
 
 .headerTitle {
   margin: 0;
-  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-size: clamp(1.25rem, 4vw, 2rem); // Fluid typography
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   line-height: 1.1;
   color: white;
+  text-wrap: balance;
 }
 
 .headerTitleAccent {
@@ -100,14 +89,17 @@ $glass-border: rgba(255, 255, 255, 0.1);
 }
 
 .headerSubtitle {
-  font-size: var(--fs-base);
+  font-size: var(--fs-sm);
   color: var(--c-muted-on-dark);
-  margin-top: var(--sp-2);
+  margin-top: var(--sp-3);
   line-height: 1.5;
+
+  @include respond-to('md') {
+    font-size: var(--fs-base);
+  }
 }
 
 /* --- Form & Steps --- */
-
 .form {
   display: flex;
   flex-direction: column;
@@ -126,7 +118,8 @@ $glass-border: rgba(255, 255, 255, 0.1);
   font-size: var(--fs-xl);
   font-weight: 700;
   color: white;
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 0.5rem 0;
+  text-wrap: balance;
 }
 
 .stepSubtitle {
@@ -135,8 +128,9 @@ $glass-border: rgba(255, 255, 255, 0.1);
 }
 
 .subsection {
-  @extend .stepAnimated;
   margin-top: var(--sp-8);
+  padding-top: var(--sp-6);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .subsectionTitle {
@@ -159,15 +153,18 @@ $glass-border: rgba(255, 255, 255, 0.1);
 }
 
 /* --- Ticket / Summary Card --- */
-
 .ticketCard {
-  background-color: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius);
-  padding: var(--sp-6);
+  padding: var(--sp-5);
   margin-bottom: var(--sp-6);
   position: relative;
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+
+  @include respond-to('md') {
+    padding: var(--sp-6);
+  }
 }
 
 .ticketHeader {
@@ -175,12 +172,12 @@ $glass-border: rgba(255, 255, 255, 0.1);
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--sp-4);
-  font-size: 0.75rem;
+  font-size: var(--fs-xs);
   color: var(--c-muted-on-dark);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 700;
-  opacity: 0.7;
+  opacity: 0.8;
 }
 
 .ticketSection {
@@ -188,18 +185,18 @@ $glass-border: rgba(255, 255, 255, 0.1);
 }
 
 .ticketSectionTitle {
-  font-size: 0.85rem;
+  font-size: var(--fs-xs);
   color: var(--c-accent);
   margin-bottom: var(--sp-3);
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
 }
 
+/* Spec Grid: Uses mini-RAM pattern for data points */
 .specGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
   gap: var(--sp-3);
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 }
 
 .specItem {
@@ -210,24 +207,23 @@ $glass-border: rgba(255, 255, 255, 0.1);
 .specLabel {
   font-size: 0.75rem;
   color: var(--c-muted-on-dark);
-  margin-bottom: 0.1rem;
+  margin-bottom: 0.2rem;
 }
 
 .specValue {
-  font-size: 1rem;
+  font-size: var(--fs-base);
   font-weight: 600;
   color: white;
+  word-break: break-word; // Prevent long values from breaking layout
 }
 
 .ticketDivider {
   border: 0;
   height: 1px;
   margin: var(--sp-4) 0;
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.3) 33%, rgba(255, 255, 255, 0) 0%);
-  background-position: bottom;
-  background-size: 6px 1px;
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.3) 50%, transparent 0%);
+  background-size: 8px 1px;
   background-repeat: repeat-x;
-  background-color: transparent;
 }
 
 .ticketRows {
@@ -241,6 +237,9 @@ $glass-border: rgba(255, 255, 255, 0.1);
   justify-content: space-between;
   align-items: baseline;
   font-size: var(--fs-sm);
+
+  /* Ensure dots leader or spacing works */
+  gap: var(--sp-4);
 }
 
 .rowLabel {
@@ -251,6 +250,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
   font-family: var(--font-mono, monospace);
   color: white;
   font-weight: 500;
+  text-align: right;
 }
 
 .ticketTotal {
@@ -259,7 +259,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
 }
 
 .totalLabel {
@@ -269,7 +269,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
 }
 
 .totalValue {
-  font-size: 2rem;
+  font-size: clamp(1.5rem, 5vw, 2rem); // Scale total price
   font-weight: 800;
   color: var(--c-accent);
   line-height: 1;
@@ -277,7 +277,6 @@ $glass-border: rgba(255, 255, 255, 0.1);
 }
 
 /* --- Actions & Helpers --- */
-
 .actionsGroup {
   display: flex;
   flex-direction: column;
@@ -289,7 +288,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
-  width: 100%;
+  width: 90%;
 
   @include respond-to('sm') {
     flex-direction: row;
@@ -297,9 +296,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
 }
 
 .actionButton {
-  @include respond-to('sm') {
-    flex: 1;
-  }
+  width: 100%;
 }
 
 .textLink {
@@ -310,7 +307,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
-  transition: color 0.2s;
+  padding: 0.5rem;
 
   &:hover {
     color: white;
@@ -318,14 +315,19 @@ $glass-border: rgba(255, 255, 255, 0.1);
 }
 
 .stepControls {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: var(--sp-3);
-  margin-top: var(--sp-6);
+  margin-top: var(--sp-8);
+  grid-template-columns: 1fr 2fr; // Back button smaller than Next
 
   @include respond-to('sm') {
-    flex-direction: row;
+    display: flex;
     justify-content: flex-end;
+
+    button {
+      width: auto;
+      min-width: 120px;
+    }
   }
 }
 
@@ -336,6 +338,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
   font-size: var(--fs-xs);
   color: var(--c-muted-on-dark);
   text-align: right;
+  background: rgba(255, 255, 255, 0.03);
 
   strong {
     color: white;
@@ -343,62 +346,52 @@ $glass-border: rgba(255, 255, 255, 0.1);
 }
 
 .error {
-  font-size: 0.875rem;
-  color: #fecaca;
+  font-size: var(--fs-sm);
+  color: var(--c-error-text);
   padding: 0.75rem;
   border-radius: var(--radius);
-  background: rgba(127, 29, 29, 0.2);
+  background: var(--c-error-soft);
   margin-top: var(--sp-4);
+  border: 1px solid var(--c-error-border);
 }
 
 .disclaimer {
-  margin-top: var(--sp-4);
+  margin-top: var(--sp-6);
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.4);
   text-align: center;
   line-height: 1.4;
+  max-width: 50ch;
+  margin-inline: auto;
 }
 
-/* --- Helper Fields --- */
-
+/* --- Input Groups --- */
 .field {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  margin-bottom: var(--sp-4);
 
   label {
     font-size: var(--fs-base);
     font-weight: 600;
     color: var(--c-muted-on-dark);
-    margin: 0.5rem 0 0 0;
   }
 }
 
+/* Responsive Grid for inputs */
 .selectionGrid {
-  display: grid;
-  gap: var(--sp-3);
-
-  @include respond-to('sm') {
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  }
+  @include grid-ram($min-width: 220px, $gap: var(--sp-3));
 }
 
-/* Radios & Pills */
 .radioRow {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--sp-3);
 }
 
 .radioRowCompact {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--sp-3);
-
-  .radio {
-    margin-bottom: 0;
-    padding: 0.75rem;
-  }
+  @extend .radioRow;
 }
 
 .radio {
@@ -406,12 +399,15 @@ $glass-border: rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  padding: var(--sp-4);
+  padding: 1rem;
   border-radius: var(--radius);
   border: 1px solid rgba(255, 255, 255, 0.15);
   background-color: rgba(255, 255, 255, 0.03);
   cursor: pointer;
   transition: all 0.2s ease;
+
+  /* Improved touch target */
+  min-height: 3rem;
 
   &:has(input:checked) {
     background-color: rgba(254, 201, 20, 0.08);
@@ -424,15 +420,10 @@ $glass-border: rgba(255, 255, 255, 0.1);
     }
   }
 
-  &:hover:not(:has(input:checked)) {
-    background-color: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.3);
-  }
-
   input {
     accent-color: var(--c-accent);
-    width: 1rem;
-    height: 1rem;
+    width: 1.1rem;
+    height: 1.1rem;
   }
 
   span {
@@ -443,7 +434,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
 
 .pillGroup {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--sp-3);
   margin-top: 0.5rem;
 }
 
@@ -451,7 +442,6 @@ $glass-border: rgba(255, 255, 255, 0.1);
   position: relative;
   flex: 1;
   cursor: pointer;
-  font-size: 0.9rem;
 
   input {
     position: absolute;
@@ -464,19 +454,13 @@ $glass-border: rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0.6rem 1rem;
+    padding: 0.75rem;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 99px;
     color: var(--c-muted-on-dark);
     font-weight: 500;
     transition: all 0.2s ease;
-    text-align: center;
-  }
-
-  &:hover span {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.4);
   }
 
   &:has(input:checked) span {
@@ -484,11 +468,11 @@ $glass-border: rgba(255, 255, 255, 0.1);
     color: var(--c-primary-dark);
     border-color: var(--c-accent);
     font-weight: 700;
-    box-shadow: 0 2px 10px rgba(254, 201, 20, 0.2);
   }
 }
 
 .hint {
   font-size: var(--fs-xs);
-  color: rgba(148, 163, 184, 0.96);
+  color: rgba(148, 163, 184, 0.8);
+  margin-top: 0.25rem;
 }

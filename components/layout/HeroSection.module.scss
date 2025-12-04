@@ -9,13 +9,10 @@
   overflow: hidden;
   background-color: var(--c-primary-dark);
   color: var(--c-text-on-dark);
-
-  /* Modern viewport unit: small viewport height
-     Prevents the "jump" when mobile browser bars appear/disappear.
-  */
   min-height: 100svh;
+  min-width: 100svw;
 
-  /* Fallback for older browsers */
+  /* Fallback */
   @supports not (height: 100svh) {
     min-height: 100vh;
   }
@@ -44,25 +41,27 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  /* Updated gradient for better text readability */
+  width: 100%;
   background: linear-gradient(to bottom,
       rgba(2, 26, 54, 0.4) 0%,
-      rgba(2, 26, 54, 0.7) 50%,
+      rgba(2, 26, 54, 0.8) 60%,
       rgba(2, 26, 54, 1) 100%);
 
   @include respond-to('lg') {
     background: linear-gradient(90deg,
-        rgba(2, 26, 54, 0.9) 0%,
-        rgba(2, 26, 54, 0.7) 60%,
-        rgba(2, 26, 54, 0.2) 100%);
+        rgba(2, 26, 54, 0.95) 0%,
+        rgba(2, 26, 54, 0.8) 50%,
+        rgba(2, 26, 54, 0.4) 100%);
   }
 }
 
 /* Content Container */
 .hero__container {
   @include container;
+  // Uses standard max-width and padding
   position: relative;
   align-self: center;
+  margin-top: calc(var(--header-h) + var(--sp-6));
   z-index: 2;
   width: 80%;
 
@@ -72,12 +71,11 @@
     align-self: start;
     margin-top: calc(env(safe-area-inset-top) + var(--header-h) + var(--sp-2));
   }
-
 }
 
 .hero__content {
   width: 100%;
-  max-width: 42rem;
+  max-width: 32rem;
   display: flex;
   flex-direction: column;
   gap: var(--sp-6);
@@ -89,52 +87,31 @@
   align-items: center;
   gap: var(--sp-2);
   padding: 0.35rem 0.75rem;
-  /* Ajuste visual fino sin token */
+  /* Fine visual adjustment without token */
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 99px;
-  font-size: var(--fs-xxs);
+  font-size: var(--fs-xs);
+  // Robust small size
   color: var(--c-accent);
   font-weight: 600;
-
   backdrop-filter: blur(4px);
 
-  @include respond-to('sm') {
-    margin-top: 3rem;
-    font-size: var(--fs-sm);
-  }
-
   @include respond-to('md') {
-    font-size: var(--fs-base);
-  }
-
-  @include respond-to('lg') {
-    font-size: var(--fs-lg);
-  }
-
-  @include respond-to-height('short') {
-    font-size: var(--fs-xxs);
+    font-size: var(--fs-sm);
   }
 }
 
 .hero__title {
-  font-size: var(--fs-2xl);
+  font-size: var(--fs-hero);
+  // Uses clamp() from tokens
   line-height: 1.1;
   margin: 0;
-
-  /* Prevent horizontal overflow on small screens */
-  word-break: break-word;
-
-  @include respond-to('xs') {
-    font-size: var(--fs-hero);
-  }
+  /* Prevent orphan words */
+  text-wrap: balance;
 
   @include respond-to('md') {
-    font-size: var(--fs-4xl);
-  }
-
-  @include respond-to-height('short') {
-    font-size: var(--fs-3xl);
+    max-width: 20ch;
   }
 }
 
@@ -145,22 +122,20 @@
 .hero__lead {
   @include p.lead;
   color: var(--c-muted-on-dark);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base);
   margin: 0;
-  max-width: 36ch;
+
+  @include text-measure(36ch);
+  // Limit width for readability
 
   strong {
     color: var(--c-text-on-dark);
     font-weight: 600;
   }
 
-  @include respond-to('xs') {
-    font-size: var(--fs-base);
-    max-width: 40ch;
-  }
-
   @include respond-to('md') {
     font-size: var(--fs-xl);
+    max-width: 40ch;
   }
 }
 
@@ -168,14 +143,21 @@
 .hero__features {
   list-style: none;
   padding: 0;
-  margin: 0 var(--sp-2);
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
+
+  @include respond-to('sm') {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+  }
 }
 
 .hero__feature {
   display: flex;
+  align-items: center;
   gap: var(--sp-2);
   color: var(--c-muted-on-dark);
   font-size: var(--fs-sm);
@@ -183,10 +165,6 @@
 
   strong {
     color: var(--c-accent);
-  }
-
-  @include respond-to('xs') {
-    font-size: var(--fs-base);
   }
 
   @include respond-to('md') {
@@ -199,12 +177,13 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  gap: var(--sp-4);
-  margin-top: var(--sp-4);
+  gap: var(--sp-3);
+  margin-top: var(--sp-2);
 
   @include respond-to('sm') {
     flex-direction: row;
     width: auto;
+    gap: var(--sp-4);
   }
 }
 
@@ -213,7 +192,7 @@
   background-color: var(--c-accent);
   color: var(--c-primary-dark);
   border: 1px solid var(--c-accent);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base); // Better base size
   justify-content: center;
   padding: var(--sp-3) var(--sp-6);
   box-shadow: 0 4px 14px rgba(254, 201, 20, 0.3);
@@ -226,16 +205,8 @@
     transform: translateY(-2px);
   }
 
-  @include respond-to('sm') {
-    width: auto;
-  }
-
   @include respond-to('md') {
     font-size: var(--fs-lg);
-  }
-
-  @include respond-to('lg') {
-    font-size: var(--fs-xl);
   }
 }
 
@@ -244,7 +215,7 @@
   background-color: transparent;
   color: var(--c-text-on-dark);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base);
   justify-content: center;
   padding: var(--sp-3) var(--sp-6);
   text-decoration: none;
@@ -255,16 +226,8 @@
     border-color: white;
   }
 
-  @include respond-to('sm') {
-    font-size: var(--fs-base);
-  }
-
   @include respond-to('md') {
     font-size: var(--fs-lg);
-  }
-
-  @include respond-to('lg') {
-    font-size: var(--fs-xl);
   }
 }
 

@@ -1,10 +1,10 @@
-/* components/ServiceArea/ServiceArea.module.scss */
+// components/ServiceArea/ServiceArea.module.scss
 @use "../../styles/primitives" as p;
 @use "../../styles/mixins" as *;
 
 .section {
   background-color: var(--c-surface);
-  padding-block: var(--sp-10);
+  padding-block: var(--sp-12);
   position: relative;
 }
 
@@ -12,12 +12,17 @@
   @include container;
 }
 
+/* Robust Layout: Stack on mobile, Side-by-side on large screens */
 .grid {
   display: grid;
   gap: var(--sp-8);
 
+  /* Use minmax to prevent content squishing */
+  grid-template-columns: 1fr;
+
   @include respond-to('lg') {
     grid-template-columns: 1fr 1.2fr;
+    /* Favor map slightly */
     align-items: start;
     gap: var(--sp-10);
   }
@@ -28,6 +33,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--sp-6);
+  order: 2;
+  /* Content below map on mobile usually looks better or vice-versa depending on priority. Here standard order. */
+
+  @include respond-to('lg') {
+    order: 1;
+  }
 }
 
 .title {
@@ -39,7 +50,6 @@
 .description {
   @include p.lead;
   color: var(--c-muted-strong);
-  font-size: var(--fs-lg);
 }
 
 /* Contact List */
@@ -49,7 +59,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
+  gap: var(--sp-5);
 }
 
 .contactItem {
@@ -59,13 +69,13 @@
 }
 
 .iconBox {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
   display: grid;
   place-items: center;
   background-color: white;
   border: 1px solid var(--c-border);
-  border-radius: 50%;
+  border-radius: 12px; // Softer square
   font-size: 1.25rem;
   flex-shrink: 0;
   box-shadow: var(--shadow-xs);
@@ -74,33 +84,29 @@
 .itemText {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.25rem;
   font-size: var(--fs-base);
   color: var(--c-muted-strong);
 
   strong {
     color: var(--c-text);
     font-weight: 600;
-  }
-
-  p {
-    margin: 0;
-    line-height: 1.5;
+    font-size: var(--fs-lg);
   }
 }
 
 .address {
   font-style: normal;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 /* Schedule Card */
 .scheduleCard {
-  margin-top: var(--sp-2);
-  background-color: var(--c-surface);
+  margin-top: var(--sp-4);
+  background-color: var(--c-surface-light);
   border: 1px solid var(--c-border);
   border-left: 4px solid var(--c-accent);
-  padding: var(--sp-5);
+  padding: var(--sp-6);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
 }
@@ -118,9 +124,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-block: 0.35rem;
-  border-bottom: 1px dashed var(--c-border);
-  font-size: var(--fs-sm);
+  padding-block: 0.5rem;
+  border-bottom: 1px dashed var(--c-border-strong);
+  font-size: var(--fs-base);
   color: var(--c-text);
 
   &:last-child {
@@ -130,6 +136,7 @@
 
   strong {
     color: var(--c-primary);
+    font-feature-settings: "tnum"; // Tabular numbers alignment
   }
 }
 
@@ -144,13 +151,21 @@
   box-shadow: var(--shadow-md);
   border: 1px solid rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.3s ease;
+  order: 1;
 
-  @include respond-to('md') {
-    aspect-ratio: 16/10;
+  @include respond-to('sm') {
+    aspect-ratio: 16/9;
+  }
+
+  @include respond-to('lg') {
+    order: 2;
+    aspect-ratio: 4/3; // Taller on desktop
+    height: 100%;
+    min-height: 400px;
   }
 
   &:hover {
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-xl);
   }
 
   &.active {
@@ -174,11 +189,10 @@
   place-items: center;
   cursor: pointer;
   background: linear-gradient(135deg,
-      rgba(2, 26, 54, 0.85),
-      rgba(4, 51, 105, 0.9));
+      rgba(2, 26, 54, 0.8),
+      rgba(4, 51, 105, 0.85));
   transition: opacity 0.3s ease;
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(3px);
 
   &:focus-visible {
     outline: 2px solid var(--c-accent);
@@ -191,7 +205,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
   color: white;
   transform: translateY(0);
   transition: transform 0.3s ease;
@@ -202,8 +216,8 @@
 }
 
 .overlayIcon {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
+  font-size: 3rem;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
 }
 
 .overlayText {
@@ -211,15 +225,15 @@
   font-weight: 700;
   background-color: var(--c-accent);
   color: var(--c-primary-dark);
-  padding: 0.5rem 1.25rem;
+  padding: 0.6rem 1.5rem;
   border-radius: 99px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .overlayHint {
-  font-size: var(--fs-xs);
-  opacity: 0.8;
-  margin-top: 0.5rem;
+  font-size: var(--fs-sm);
+  opacity: 0.9;
+  font-weight: 500;
 }
 
 .mapFrame {
@@ -235,27 +249,26 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  margin-top: 0.25rem;
 }
 
 .textLink {
   color: var(--c-primary);
   text-decoration: none;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
+  font-weight: 600;
   transition: color 0.2s ease;
   width: fit-content;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
 
   &:hover {
     color: var(--c-accent-hover);
     text-decoration: underline;
-    text-underline-offset: 2px;
   }
 }
 
 .linkLabel {
-  font-size: 0.8em;
+  font-size: 0.85em;
   color: var(--c-muted);
   font-weight: 400;
-  margin-left: 0.25rem;
 }

@@ -1,16 +1,16 @@
 // components/TrustSection/TrustSection.module.scss
-
 @use "../../styles/primitives" as p;
 @use "../../styles/mixins" as *;
 
 .section {
   background-color: var(--c-primary-dark);
-  /* Combined padding-block with specific bottom override */
-  padding-top: var(--sp-6);
-  padding-bottom: var(--sp-10);
+  padding-block: var(--sp-2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
   z-index: 1;
+  height: 100svh;
+  align-items: center;
+  display: flex;
 }
 
 .container {
@@ -19,63 +19,52 @@
 
 .sectionTitle {
   text-align: center;
-  font-size: var(--fs-lg);
+  font-size: var(--fs-2xl);
   color: var(--c-accent);
-  margin-bottom: var(--sp-6);
+  margin-bottom: var(--sp-8);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   line-height: 1.2;
-  word-break: break-word;
 
   @include respond-to('md') {
-    font-size: var(--fs-2xl);
-    margin-bottom: var(--sp-8);
+    font-size: var(--fs-3xl);
+    margin-bottom: var(--sp-10);
   }
 }
 
+/* RESPONSIVE FIX: Use RAM Pattern */
 .grid {
-  display: grid;
-  /* Default (Mobile/XXS) styles apply here directly */
-  grid-template-columns: 1fr;
-  gap: var(--sp-6);
-
-  @include respond-to('sm') {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--sp-6) var(--sp-3);
-  }
-
-  @include respond-to('md') {
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--sp-3);
-  }
+  /* Min width 280px ensures cards don't get too thin on mobile,
+     but auto-fit allows them to stretch nicely.
+  */
+  @include grid-ram($min-width: 180px, $gap: var(--sp-2));
+  grid-row-gap: var(--sp-6);
 }
 
 /* Card Design */
 .card {
   background-color: rgba(255, 255, 255, 0.03);
-  /* Default padding (formerly xxs) */
-  padding: var(--sp-2) var(--sp-6);
+  padding: var(--sp-2) var(--sp-4);
   border-radius: var(--radius);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: var(--shadow-sm);
-  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+
   display: flex;
   flex-direction: column;
-  /* Correct alignment for column flex containers */
   justify-content: center;
-  gap: var(--sp-1);
-  height: 100%;
+  gap: var(--sp-4);
+  height: 100%; // Ensure equal height in grid row
 
   &:hover {
-    transform: translateY(-2px);
+    transform: translateY(-4px);
     border-color: var(--c-accent);
     background-color: rgba(255, 255, 255, 0.06);
     box-shadow: var(--shadow-md);
-  }
-
-  @include respond-to('md') {
-    padding: var(--sp-2) var(--sp-4);
   }
 }
 

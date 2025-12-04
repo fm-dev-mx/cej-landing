@@ -1,10 +1,68 @@
 // styles/_mixins.scss
+@use "sass:map";
+@use "breakpoints" as b;
 
-// Forward the breakpoint system so it's available automatically
-// whenever this file is imported via @use.
+// Forward breakpoints so they are available when importing mixins
 @forward "breakpoints";
 
 @mixin container {
   width: min(90%, 1200px);
   margin-inline: auto;
+  margin-bottom: var(--sp-6);
+
+}
+
+@mixin container-wide {
+  margin-inline: auto;
+}
+
+// --- NEW: Responsive Patterns ---
+
+/**
+ * RAM (Repeat, Auto, Minmax) Grid Pattern
+ * Creates a responsive grid without media queries.
+ * @param $min-width: The minimum width a card should have before wrapping.
+ * @param $gap: Gap between items.
+ */
+@mixin grid-ram($min-width: 260px, $gap: var(--sp-4)) {
+  display: grid;
+  gap: $gap;
+  /* min(100%, $min-width) ensures that if the container is smaller than
+     the min-width (e.g. tiny phones), the column just takes 100%
+     instead of causing overflow.
+  */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, $min-width), 1fr));
+}
+
+/**
+ * Text Clamp Utility
+ * Limits text width for readability on wide screens.
+ */
+@mixin text-measure($ch: 60ch) {
+  max-width: $ch;
+  /* Prevent widows if possible */
+  text-wrap: pretty;
+}
+
+// Keep existing utilities
+@mixin respond-to($breakpoint) {
+  @if map.has-key(b.$breakpoints, $breakpoint) {
+    $value: map.get(b.$breakpoints, $breakpoint);
+
+    @media screen and (min-width: $value) {
+      @content;
+    }
+  }
+
+  @else {
+    @warn "Unknown breakpoint: #{$breakpoint}.";
+  }
+}
+
+@mixin respond-to-height($type) {
+  @if $type =='short' {
+    @media screen and (max-height: 667px) {
+      @content;
+    }
+  }
 }

@@ -4,15 +4,15 @@
 
 .base {
   @include p.btn;
+  position: relative;
   border-radius: 99px;
-  padding: var(--sp-3) var(--sp-6);
+  padding: var(--sp-2) var(--sp-0);
   font-size: var(--fs-base);
-  font-weight: 700;
+  font-weight: 600;
   justify-content: center;
   text-transform: none;
   cursor: pointer;
   text-decoration: none;
-  position: relative;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Disabled state base */

@@ -3,6 +3,8 @@
 @use "../../styles/mixins" as *;
 
 .stickyBar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   position: fixed;
   bottom: 0;
   left: 0;
@@ -10,10 +12,7 @@
   z-index: var(--z-sticky-bar);
 
   // Layout
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  place-items: center;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
 
   // Height Control using Token
   // We use height: auto, but padding ensures it matches the --bottom-bar-h expectation visually
@@ -43,7 +42,7 @@
 
 .cta {
   @include p.btn;
-  width: 100%;
+  width: 70%;
   font-size: var(--fs-sm);
   font-weight: 700;
   border-radius: 99px;

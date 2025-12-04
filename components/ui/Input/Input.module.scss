@@ -1,10 +1,12 @@
 // components/ui/Input/Input.module.scss
 @use "../../../styles/forms" as f;
+@use "../../../styles/mixins" as *;
 
 .container {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem; /* Tighter gap between label and input */
+  /* Tighter gap between label and input */
+  gap: 0.25rem;
 }
 
 /* Labels */
@@ -15,28 +17,37 @@
 /* Inputs Base */
 .input {
   @include f.input-base;
-  width: 100%; /* Make inputs full width of container by default */
 
-  /* Optional: Max width constraint if needed, but usually handled by parent layout */
-  @media (min-width: 640px) {
-      max-width: 100%;
+  @include respond-to('md') {
+    max-width: 100%;
   }
 }
 
 /* Variants (Applied via container class inheritance or direct class) */
 .dark {
-  .label { @include f.label-variant-dark; }
-  .input { @include f.input-variant-dark; }
+  .label {
+    @include f.label-variant-dark;
+  }
+
+  .input {
+    @include f.input-variant-dark;
+  }
 }
 
 .light {
-  .label { @include f.label-variant-light; }
-  .input { @include f.input-variant-light; }
+  .label {
+    @include f.label-variant-light;
+  }
+
+  .input {
+    @include f.input-variant-light;
+  }
 }
 
 /* Special modifiers */
 .volumeInput {
-  width: 8rem; /* Specific width for volume inputs */
+  /* Specific width for volume inputs */
+  width: 8rem;
   font-weight: 700;
   font-size: 1.125rem;
   text-align: center;
