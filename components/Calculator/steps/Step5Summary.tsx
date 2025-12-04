@@ -1,15 +1,15 @@
-// components/Calculator/steps/Step5Summary.tsx
+// path: components/Calculator/steps/Step5Summary.tsx
 'use client';
 
-import { useCallback, useState, useMemo, type MouseEvent } from "react";
-import { useCalculatorContext } from "../context/CalculatorContext";
-import { fmtMXN, getWhatsAppUrl, getPhoneUrl } from "@/lib/utils";
-import { trackLead, trackContact } from "@/lib/pixel";
-import { env } from "@/config/env";
-import { Button } from "@/components/ui/Button/Button";
-import { LeadFormModal } from "../modals/LeadFormModal";
-import { WORK_TYPES } from "@/config/business";
-import styles from "../Calculator.module.scss";
+import { useCallback, useState, useMemo, type MouseEvent } from 'react';
+import { useCalculatorContext } from '../context/CalculatorContext';
+import { fmtMXN, getWhatsAppUrl, getPhoneUrl } from '@/lib/utils';
+import { trackLead, trackContact } from '@/lib/pixel';
+import { env } from '@/config/env';
+import { Button } from '@/components/ui/Button/Button';
+import { LeadFormModal, type LeadQuoteDetails } from '../modals/LeadFormModal';
+import { WORK_TYPES } from '@/config/business';
+import styles from '../Calculator.module.scss';
 
 type Props = {
     estimateLegend: string;
@@ -25,42 +25,42 @@ export function Step5Summary({ estimateLegend }: Props) {
         resetCalculator,
         strength,
         type,
-        // New context fields for enriched data
+        // Nuevos campos de contexto
         workType,
         volumeMode,
         length,
         width,
         thicknessByDims,
         area,
-        thicknessByArea
+        thicknessByArea,
     } = useCalculatorContext();
 
     const [showLeadModal, setShowLeadModal] = useState(false);
 
-    const today = new Date().toLocaleDateString("es-MX", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
+    const today = new Date().toLocaleDateString('es-MX', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
     });
 
     const waNumber = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
     const phone = env.NEXT_PUBLIC_PHONE;
     const phoneHref = getPhoneUrl(phone);
 
-    // Helpers for product description
-    const serviceTypeLabel = type === "direct" ? "Tiro directo" : "Bombeado";
+    const serviceTypeLabel = type === 'direct' ? 'Tiro directo' : 'Bombeado';
     const productLabel = `Concreto f’c ${strength} (${serviceTypeLabel})`;
 
-    // Resolve Work Type Label
-    const workTypeLabel = WORK_TYPES.find(w => w.id === workType)?.label || 'Otro';
+    const workTypeLabel =
+        WORK_TYPES.find((w) => w.id === workType)?.label ?? 'Otro';
 
-    const hasValidConfig = !!getWhatsAppUrl(waNumber, "test");
+    const hasValidConfig = !!getWhatsAppUrl(waNumber, 'test');
 
-    // Prepare Enriched Data Payload
-    const enrichedQuoteData = useMemo(() => {
-        const specs = volumeMode === 'dimensions'
-            ? { length, width, thickness: thicknessByDims }
-            : { area, thickness: thicknessByArea };
+    // Payload enriquecido que se guarda en quote_data
+    const enrichedQuoteData = useMemo<LeadQuoteDetails>(() => {
+        const specs =
+            volumeMode === 'dimensions'
+                ? { length, width, thickness: thicknessByDims }
+                : { area, thickness: thicknessByArea };
 
         return {
             summary: {
@@ -71,10 +71,21 @@ export function Step5Summary({ estimateLegend }: Props) {
             context: {
                 work_type: workTypeLabel,
                 calculation_method: volumeMode,
-                ...specs
-            }
+                ...specs,
+            },
         };
-    }, [quote.total, billedM3, productLabel, workTypeLabel, volumeMode, length, width, thicknessByDims, area, thicknessByArea]);
+    }, [
+        quote.total,
+        billedM3,
+        productLabel,
+        workTypeLabel,
+        volumeMode,
+        length,
+        width,
+        thicknessByDims,
+        area,
+        thicknessByArea,
+    ]);
 
     const handleWhatsAppClick = useCallback(
         (e?: MouseEvent<HTMLElement>) => {
@@ -82,43 +93,49 @@ export function Step5Summary({ estimateLegend }: Props) {
                 e?.preventDefault();
                 return;
             }
+
+            // Contact intent inicial por WhatsApp
+            trackContact('whatsapp');
+
             setShowLeadModal(true);
         },
-        [quote.total]
+        [quote.total],
     );
 
-    // 2. Success Handler: Called AFTER data is captured in Modal
-    const handleLeadSuccess = useCallback((userName: string) => {
-        setShowLeadModal(false);
+    // Handler después de guardar el lead en la API
+    const handleLeadSuccess = useCallback(
+        (userName: string, fbEventId: string) => {
+            setShowLeadModal(false);
 
-        // A. Track Conversion (High Value)
-        trackLead({
-            value: quote.total,
-            currency: 'MXN',
-            content_name: productLabel,
-            content_category: 'Calculator Quote'
-        });
+            // Evento Lead con event_id para poder hacer matching CAPI en backend
+            trackLead({
+                value: quote.total,
+                currency: 'MXN',
+                content_name: productLabel,
+                content_category: 'Calculator Quote',
+                event_id: fbEventId,
+            });
 
-        // B. Generate Personalized WhatsApp URL
-        // Updated formatting for better readability
-        const message =
-            `Hola soy ${userName}, me interesa esta cotización de CEJ:\n\n` +
-            `• *Volumen:* ${billedM3.toFixed(2)} m³\n` +
-            `• *Producto:* ${productLabel}\n` +
-            `• *Uso:* ${workTypeLabel}\n` +
-            `• *Total Estimado:* ${fmtMXN(quote.total)}\n\n` +
-            `¿Me pueden ayudar a confirmar el pedido?`;
+            const message =
+                `Hola soy ${userName}, me interesa esta cotización de CEJ:\n\n` +
+                `• *Volumen:* ${billedM3.toFixed(2)} m³\n` +
+                `• *Producto:* ${productLabel}\n` +
+                `• *Uso:* ${workTypeLabel}\n` +
+                `• *Total Estimado:* ${fmtMXN(quote.total)}\n\n` +
+                `¿Me pueden ayudar a confirmar el pedido?`;
 
-        const finalWaUrl = getWhatsAppUrl(waNumber, message);
+            const finalWaUrl = getWhatsAppUrl(waNumber, message);
 
-        if (finalWaUrl) {
-            window.open(finalWaUrl, "_blank", "noopener,noreferrer");
-        }
-    }, [quote.total, billedM3, waNumber, productLabel, workTypeLabel]);
+            if (finalWaUrl) {
+                window.open(finalWaUrl, '_blank', 'noopener,noreferrer');
+            }
+        },
+        [quote.total, billedM3, waNumber, productLabel, workTypeLabel],
+    );
 
     const handlePhoneClick = useCallback(() => {
         if (phone.trim() && quote.total > 0) {
-            trackContact('Phone');
+            trackContact('phone');
         }
     }, [phone, quote.total]);
 
@@ -132,7 +149,7 @@ export function Step5Summary({ estimateLegend }: Props) {
             </header>
 
             <div className={styles.stepBody}>
-                {/* Visual "Paper Ticket" Representation */}
+                {/* Tarjeta de resumen tipo "ticket" */}
                 <article
                     className={styles.ticketCard}
                     aria-label="Desglose de cotización"
@@ -142,7 +159,7 @@ export function Step5Summary({ estimateLegend }: Props) {
                             <span className={styles.ticketLabel}>Presupuesto Web</span>
                             <time
                                 className={styles.ticketDate}
-                                dateTime={new Date().toISOString().split("T")[0]}
+                                dateTime={new Date().toISOString().split('T')[0]}
                                 suppressHydrationWarning
                             >
                                 {today}
@@ -150,9 +167,7 @@ export function Step5Summary({ estimateLegend }: Props) {
                         </div>
 
                         <div className={styles.ticketSection}>
-                            <h3 className={styles.ticketSectionTitle}>
-                                Detalles del Pedido
-                            </h3>
+                            <h3 className={styles.ticketSectionTitle}>Detalles del Pedido</h3>
                             <div className={styles.specGrid}>
                                 <div className={styles.specItem}>
                                     <span className={styles.specLabel}>Resistencia</span>
@@ -160,9 +175,7 @@ export function Step5Summary({ estimateLegend }: Props) {
                                 </div>
                                 <div className={styles.specItem}>
                                     <span className={styles.specLabel}>Tipo Servicio</span>
-                                    <span className={styles.specValue}>
-                                        {serviceTypeLabel}
-                                    </span>
+                                    <span className={styles.specValue}>{serviceTypeLabel}</span>
                                 </div>
                                 <div className={styles.specItem}>
                                     <span className={styles.specLabel}>Volumen</span>
@@ -172,9 +185,7 @@ export function Step5Summary({ estimateLegend }: Props) {
                                 </div>
                                 <div className={styles.specItem}>
                                     <span className={styles.specLabel}>Aplicación</span>
-                                    <span className={styles.specValue}>
-                                        {workTypeLabel}
-                                    </span>
+                                    <span className={styles.specValue}>{workTypeLabel}</span>
                                 </div>
                             </div>
                         </div>
@@ -242,7 +253,7 @@ export function Step5Summary({ estimateLegend }: Props) {
                             onClick={() => setStep(4)}
                             aria-label="Volver a editar especificaciones"
                         >
-                            <span>←</span> Editar
+                            <span className={styles.linkIcon}>←</span> Regresar
                         </button>
 
                         <span className={styles.linkSeparator} aria-hidden="true">

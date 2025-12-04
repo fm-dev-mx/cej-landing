@@ -368,7 +368,7 @@ $ticket-text: #111827;
   background: none;
   border: none;
   color: var(--c-muted-on-dark);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-lg);
   text-decoration: none;
   cursor: pointer;
   padding: 0.5rem;
@@ -381,6 +381,11 @@ $ticket-text: #111827;
     color: var(--c-accent);
     text-decoration: underline;
   }
+}
+
+.linkIcon {
+  font-size: var(--fs-lg);
+  color: var(--c-accent);
 }
 
 .disclaimer {

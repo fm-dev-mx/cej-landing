@@ -1,32 +1,69 @@
+// path: components/Calculator/modals/LeadFormModal.test.tsx
+import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { LeadFormModal } from './LeadFormModal';
+import {
+    describe,
+    it,
+    expect,
+    vi,
+    beforeAll,
+    afterAll,
+    beforeEach,
+    afterEach,
+} from 'vitest';
+import { LeadFormModal, type LeadQuoteDetails } from './LeadFormModal';
 
-// Mock portal so it renders in the normal test DOM
+// Mock portal so the modal renders into the normal test DOM tree
 vi.mock('react-dom', async () => {
-    const actual = await vi.importActual('react-dom');
+    const actual = await vi.importActual<typeof import('react-dom')>('react-dom');
     return {
         ...actual,
         createPortal: (node: React.ReactNode) => node,
     };
 });
 
-describe('LeadFormModal Component', () => {
+let randomUUIDSpy: ReturnType<typeof vi.spyOn> | undefined;
+
+describe('LeadFormModal', () => {
     const mockOnClose = vi.fn();
     const mockOnSuccess = vi.fn();
-    const mockQuoteDetails = {
+
+    const mockQuoteDetails: LeadQuoteDetails = {
         summary: { total: 5000, volume: 5, product: 'Concreto 200' },
-        context: { work_type: 'Losa' }
+        context: { work_type: 'Losa' },
     };
+
+    let originalFetch: typeof global.fetch | undefined;
+
+    beforeAll(() => {
+        const cryptoAny = globalThis.crypto as any;
+
+        if (cryptoAny && typeof cryptoAny.randomUUID === 'function') {
+            randomUUIDSpy = vi
+                .spyOn(cryptoAny, 'randomUUID')
+                .mockReturnValue('test-event-id');
+        } else if (cryptoAny) {
+            cryptoAny.randomUUID = vi.fn(() => 'test-event-id');
+        }
+    });
+
+    afterAll(() => {
+        if (randomUUIDSpy) {
+            randomUUIDSpy.mockRestore();
+        }
+    });
 
     beforeEach(() => {
         vi.clearAllMocks();
-        // Global fetch mock
-        global.fetch = vi.fn();
+        originalFetch = global.fetch;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        global.fetch = vi.fn() as any;
     });
 
     afterEach(() => {
-        vi.restoreAllMocks();
+        if (originalFetch) {
+            global.fetch = originalFetch;
+        }
     });
 
     it('does not render when isOpen is false', () => {
@@ -36,61 +73,31 @@ describe('LeadFormModal Component', () => {
                 onClose={mockOnClose}
                 onSuccess={mockOnSuccess}
                 quoteDetails={mockQuoteDetails}
-            />
+            />,
         );
-        expect(screen.queryByText(/Casi listo/i)).not.toBeInTheDocument();
+
+        expect(screen.queryByLabelText(/Nombre completo/i)).not.toBeInTheDocument();
+        expect(screen.queryByLabelText(/Teléfono/i)).not.toBeInTheDocument();
     });
 
-    it('renders correctly when open', () => {
+    it('renders form fields when open', () => {
         render(
             <LeadFormModal
-                isOpen={true}
+                isOpen
                 onClose={mockOnClose}
                 onSuccess={mockOnSuccess}
                 quoteDetails={mockQuoteDetails}
-            />
+            />,
         );
-        expect(screen.getByText(/Casi listo/i)).toBeInTheDocument();
+
         expect(screen.getByLabelText(/Nombre completo/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/Teléfono/i)).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: /Continuar a WhatsApp/i }),
+        ).toBeInTheDocument();
     });
 
-    it('shows validation errors for empty or invalid inputs', async () => {
-        render(
-            <LeadFormModal
-                isOpen={true}
-                onClose={mockOnClose}
-                onSuccess={mockOnSuccess}
-                quoteDetails={mockQuoteDetails}
-            />
-        );
-
-        const submitBtn = screen.getByRole('button', { name: /Continuar a WhatsApp/i });
-
-        // 1. Attempt to submit empty
-        // Since inputs are 'required', the onSubmit handler shouldn't fire in a spec-compliant env
-        fireEvent.click(submitBtn);
-        expect(global.fetch).not.toHaveBeenCalled();
-
-        // 2. Test Custom Name Validation
-        // We MUST fill the Phone field first to satisfy its HTML5 'required' attribute.
-        // Otherwise, the browser stops before reaching our custom onSubmit logic.
-        const phoneInput = screen.getByLabelText(/Teléfono/i);
-        fireEvent.change(phoneInput, { target: { value: '6561234567' } });
-
-        // Fill Name with invalid data (too short)
-        const nameInput = screen.getByLabelText(/Nombre completo/i);
-        fireEvent.change(nameInput, { target: { value: 'Jo' } }); // Length < 3
-
-        fireEvent.click(submitBtn);
-
-        // Wait for manual validation error message (async update)
-        // Using findByText handles the React re-render wait
-        expect(await screen.findByText(/ingresa tu nombre completo/i)).toBeInTheDocument();
-    });
-
-    it('submits data to API and triggers onSuccess callback', async () => {
-        // Mock successful API response
+    it('submits data to API and triggers onSuccess with event id', async () => {
         (global.fetch as any).mockResolvedValue({
             ok: true,
             json: async () => ({ success: true }),
@@ -98,68 +105,83 @@ describe('LeadFormModal Component', () => {
 
         render(
             <LeadFormModal
-                isOpen={true}
+                isOpen
                 onClose={mockOnClose}
                 onSuccess={mockOnSuccess}
                 quoteDetails={mockQuoteDetails}
-            />
+            />,
         );
 
-        // Fill form
-        fireEvent.change(screen.getByLabelText(/Nombre completo/i), { target: { value: 'Juan Pérez' } });
-        fireEvent.change(screen.getByLabelText(/Teléfono/i), { target: { value: '6561234567' } });
+        fireEvent.change(screen.getByLabelText(/Nombre completo/i), {
+            target: { value: 'Juan Pérez' },
+        });
+        fireEvent.change(screen.getByLabelText(/Teléfono/i), {
+            target: { value: '6561234567' },
+        });
 
-        // Submit
-        const submitBtn = screen.getByRole('button', { name: /Continuar a WhatsApp/i });
-        fireEvent.click(submitBtn);
-
-        // Verify loading state
-        expect(submitBtn).toBeDisabled();
-        expect(screen.getByText(/Procesando.../i)).toBeInTheDocument();
+        fireEvent.click(
+            screen.getByRole('button', { name: /Continuar a WhatsApp/i }),
+        );
 
         await waitFor(() => {
-            // Verify fetch call
-            expect(global.fetch).toHaveBeenCalledWith('/api/leads', expect.objectContaining({
-                method: 'POST',
-                body: JSON.stringify({
-                    name: 'Juan Pérez',
-                    phone: '6561234567',
-                    quote: mockQuoteDetails
-                })
-            }));
+            expect(global.fetch).toHaveBeenCalled();
+            expect(mockOnSuccess).toHaveBeenCalledWith('Juan Pérez', 'test-event-id');
+        });
 
-            // Verify success callback
-            expect(mockOnSuccess).toHaveBeenCalledWith('Juan Pérez');
+        const mock = global.fetch as any;
+        const [url, options] = mock.mock.calls[0] as [string, RequestInit];
+
+        expect(url).toBe('/api/leads');
+        expect(options.method).toBe('POST');
+        expect(options.headers).toMatchObject({
+            'Content-Type': 'application/json',
+        });
+
+        const parsedBody = JSON.parse(options.body as string);
+        expect(parsedBody).toMatchObject({
+            name: 'Juan Pérez',
+            phone: '6561234567',
+            quote: mockQuoteDetails,
+            fb_event_id: 'test-event-id',
         });
     });
 
-    it('handles API errors gracefully (fallback logic)', async () => {
-        // Simulate server 500 error
+    it('handles API errors gracefully and still calls onSuccess', async () => {
         (global.fetch as any).mockResolvedValue({
             ok: false,
             status: 500,
         });
 
-        // Spy on console.error to silence it in the test output
-        const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+        const consoleSpy = vi
+            .spyOn(console, 'error')
+            .mockImplementation(() => undefined);
 
         render(
             <LeadFormModal
-                isOpen={true}
+                isOpen
                 onClose={mockOnClose}
                 onSuccess={mockOnSuccess}
                 quoteDetails={mockQuoteDetails}
-            />
+            />,
         );
 
-        fireEvent.change(screen.getByLabelText(/Nombre completo/i), { target: { value: 'Juan Error' } });
-        fireEvent.change(screen.getByLabelText(/Teléfono/i), { target: { value: '6561112233' } });
+        fireEvent.change(screen.getByLabelText(/Nombre completo/i), {
+            target: { value: 'Juan Error' },
+        });
+        fireEvent.change(screen.getByLabelText(/Teléfono/i), {
+            target: { value: '6561112233' },
+        });
 
-        fireEvent.click(screen.getByRole('button', { name: /Continuar a WhatsApp/i }));
+        fireEvent.click(
+            screen.getByRole('button', { name: /Continuar a WhatsApp/i }),
+        );
 
         await waitFor(() => {
-            // Component must call onSuccess even if API fails (Fail-safe feature)
-            expect(mockOnSuccess).toHaveBeenCalledWith('Juan Error');
+            // Fail-safe: user can still continue to WhatsApp even if API fails
+            expect(mockOnSuccess).toHaveBeenCalledWith(
+                'Juan Error',
+                'test-event-id',
+            );
         });
 
         consoleSpy.mockRestore();

@@ -7,12 +7,20 @@ import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import styles from './LeadFormModal.module.scss';
 
+export type LeadQuoteDetails = {
+    summary: {
+        total: number;
+        volume: number;
+        product: string;
+    };
+    context: Record<string, any>;
+};
+
 type LeadFormModalProps = {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess: (name: string) => void;
-    // Update: Allow a richer and more flexible object structure
-    quoteDetails: Record<string, any>;
+    onSuccess: (name: string, fbEventId: string) => void;
+    quoteDetails: LeadQuoteDetails;
 };
 
 export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: LeadFormModalProps) {
@@ -50,6 +58,8 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
 
         setIsSubmitting(true);
 
+        const fbEventId = crypto.randomUUID();
+
         try {
             // Send to Data Layer
             const response = await fetch('/api/leads', {
@@ -58,8 +68,8 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                 body: JSON.stringify({
                     name: cleanName,
                     phone: cleanPhone,
-                    // Send the enriched object
-                    quote: quoteDetails
+                    quote: quoteDetails,
+                    fb_event_id: fbEventId,
                 }),
             });
 
@@ -69,13 +79,13 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
             }
 
             // Success: Trigger parent callback
-            onSuccess(cleanName);
+            onSuccess(cleanName, fbEventId);
 
         } catch (err) {
             console.error(err);
             // Fallback: Allow user to proceed to WhatsApp even if save fails
             // to avoid losing the sale due to technical issues.
-            onSuccess(cleanName);
+            onSuccess(cleanName, fbEventId);
         } finally {
             setIsSubmitting(false);
         }
