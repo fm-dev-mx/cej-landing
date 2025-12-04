@@ -21,6 +21,10 @@ export default function RootLayout({
   return (
     <html lang="es-MX">
       <body className="app-root">
+        {/* Meta Pixel Code
+          Strategy: 'afterInteractive' ensures the script loads after the page becomes interactive,
+          improving Initial Page Load speed.
+        */}
         {isProduction && pixelId && (
           <>
             <Script id="fb-pixel" strategy="afterInteractive">

@@ -1,5 +1,5 @@
 // components/Calculator/steps/Step5Summary.tsx
-"use client";
+'use client';
 
 import { useMemo, useCallback, type MouseEvent } from "react";
 import { useCalculatorContext } from "../context/CalculatorContext";
@@ -57,15 +57,24 @@ export function Step5Summary({ estimateLegend }: Props) {
                 e?.preventDefault();
                 return;
             }
-            trackLead(quote.total);
+
+            // High Value Event: Track Lead with financial data
+            trackLead({
+                value: quote.total,
+                currency: 'MXN',
+                content_name: `Concrete f'c ${strength} - ${type}`,
+                content_category: 'Calculator Quote'
+            });
+
             window.open(waHref, "_blank", "noopener,noreferrer");
         },
-        [waDisabled, waHref, quote.total]
+        [waDisabled, waHref, quote.total, strength, type]
     );
 
     const handlePhoneClick = useCallback(() => {
         if (phone.trim() && quote.total > 0) {
-            trackContact(quote.total);
+            // Track as Contact (Mid Value) since it's just a call intent
+            trackContact('Phone');
         }
     }, [phone, quote.total]);
 

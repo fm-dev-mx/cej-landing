@@ -1,8 +1,9 @@
 // components/CTAButtons/CTAButtons.tsx
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { getWhatsAppUrl, getPhoneUrl } from "@/lib/utils";
+import { trackContact } from "@/lib/pixel";
 import styles from "./CTAButtons.module.scss";
 
 type Props = {
@@ -29,6 +30,16 @@ export default function CTAButtons({
     };
   }, [whatsappNumber, phoneNumber, quoteText]);
 
+  const handleWhatsAppClick = useCallback(() => {
+    trackContact('WhatsApp');
+    if (onLead) onLead();
+  }, [onLead]);
+
+  const handlePhoneClick = useCallback(() => {
+    trackContact('Phone');
+    if (onContact) onContact();
+  }, [onContact]);
+
   if (!links.wa && !links.tel) return null;
 
   return (
@@ -41,7 +52,7 @@ export default function CTAButtons({
         <a
           className={`${styles.cta} ${styles.whatsapp}`}
           href={links.wa}
-          onClick={onLead}
+          onClick={handleWhatsAppClick}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Contactar por WhatsApp"
@@ -53,7 +64,7 @@ export default function CTAButtons({
         <a
           className={`${styles.cta} ${styles.phone}`}
           href={links.tel}
-          onClick={onContact}
+          onClick={handlePhoneClick}
           aria-label="Llamar por teléfono"
         >
           <span aria-hidden="true">📞</span> Llamar

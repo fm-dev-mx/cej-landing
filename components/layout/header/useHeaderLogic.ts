@@ -1,9 +1,10 @@
 // components/layout/header/useHeaderLogic.ts
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
 import { useLockBodyScroll } from "@/hooks/useLockBodyScroll";
 import { env } from "@/config/env";
 import { getPhoneUrl, getWhatsAppUrl } from "@/lib/utils";
+import { trackContact } from "@/lib/pixel";
 import { PRIMARY_NAV, type PhoneMeta } from "./header.types";
 
 const SECTION_IDS = PRIMARY_NAV.map((item) =>
@@ -59,8 +60,17 @@ export function useHeaderLogic() {
     }, []);
 
     // 5. Handlers
-    const toggleMenu = () => setIsMenuOpen((prev) => !prev);
-    const closeMenu = () => setIsMenuOpen(false);
+    const toggleMenu = useCallback(() => setIsMenuOpen((prev) => !prev), []);
+    const closeMenu = useCallback(() => setIsMenuOpen(false), []);
+
+    // Tracking Handlers
+    const handleWaClick = useCallback(() => {
+        trackContact('WhatsApp');
+    }, []);
+
+    const handlePhoneClick = useCallback(() => {
+        trackContact('Phone');
+    }, []);
 
     return {
         state: {
@@ -76,6 +86,8 @@ export function useHeaderLogic() {
         actions: {
             toggleMenu,
             closeMenu,
+            handleWaClick,
+            handlePhoneClick,
         },
     };
 }
