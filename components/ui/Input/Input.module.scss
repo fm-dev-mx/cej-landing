@@ -5,8 +5,8 @@
 .container {
   display: flex;
   flex-direction: column;
-  /* Tighter gap between label and input */
   gap: 0.25rem;
+  position: relative;
 }
 
 /* Labels */
@@ -23,7 +23,26 @@
   }
 }
 
-/* Variants (Applied via container class inheritance or direct class) */
+/* Error Message */
+.errorMessage {
+  font-size: var(--fs-xs);
+  margin-top: 0.1rem;
+  animation: slideDown 0.2s ease-out forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Variants */
 .dark {
   .label {
     @include f.label-variant-dark;
@@ -31,6 +50,10 @@
 
   .input {
     @include f.input-variant-dark;
+  }
+
+  .errorMessage {
+    color: var(--c-error-text-on-dark);
   }
 }
 
@@ -42,11 +65,14 @@
   .input {
     @include f.input-variant-light;
   }
+
+  .errorMessage {
+    color: var(--c-error-text);
+  }
 }
 
 /* Special modifiers */
 .volumeInput {
-  /* Specific width for volume inputs */
   width: 8rem;
   font-weight: 700;
   font-size: 1.125rem;

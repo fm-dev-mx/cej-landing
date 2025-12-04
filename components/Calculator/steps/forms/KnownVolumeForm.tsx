@@ -4,10 +4,9 @@
 import { type ChangeEvent, useCallback } from 'react';
 import { useCalculatorContext } from '../../context/CalculatorContext';
 import { Input } from '@/components/ui/Input/Input';
-import styles from '../../Calculator.module.scss';
 
 export function KnownVolumeForm() {
-    const { m3, setM3 } = useCalculatorContext();
+    const { m3, setM3, volumeError } = useCalculatorContext();
 
     const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         // Normalize commas to dots and remove non-numeric characters
@@ -28,6 +27,8 @@ export function KnownVolumeForm() {
             isVolume={true}
             inputMode="decimal"
             placeholder="0.0"
+            // Pass error state as boolean to trigger border style without inline message
+            error={!!volumeError}
         />
     );
 }

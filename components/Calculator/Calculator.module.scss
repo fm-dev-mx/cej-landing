@@ -536,15 +536,14 @@ $ticket-text: #111827;
 
 /* --- Feedback Elements --- */
 .note {
-  margin-top: auto;
   margin-bottom: var(--sp-4);
-  padding: 0.75rem;
-  border-radius: var(--radius);
-  font-size: var(--fs-sm);
+  padding: 0 1rem;
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-xs);
   color: #93c5fd;
-  background: rgba(14, 165, 233, 0.1);
-  border: 1px solid rgba(14, 165, 233, 0.2);
-  text-align: center;
+  border: 1px solid rgba(var(--c-accent), 0.2);
+  text-align: right;
+
 
   strong {
     color: white;
@@ -553,12 +552,12 @@ $ticket-text: #111827;
 
 .error {
   font-size: var(--fs-sm);
-  color: #fca5a5;
-  padding: 0.75rem;
-  border-radius: var(--radius);
-  background: rgba(239, 68, 68, 0.1);
+  color: rgba(#fca5a5, 0.8);
+  padding: 0.3rem;
+  border-radius: var(--radius-lg);
+  background: rgba(239, 68, 68, 0.05);
   margin-top: var(--sp-4);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.1);
   display: flex;
   align-items: center;
   gap: 0.5rem;

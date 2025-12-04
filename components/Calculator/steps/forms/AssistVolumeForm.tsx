@@ -24,10 +24,14 @@ export function AssistVolumeForm() {
         hasCoffered,
         setHasCoffered,
         cofferedSize,
-        setCofferedSize
+        setCofferedSize,
+        volumeError
     } = useCalculatorContext();
 
-    // Local helper for numeric inputs
+    // Helper to determine if a specific field has an error based on global volumeError
+    // Simple logic: if there is a global error and the field is empty/invalid, mark it.
+    const hasError = (value: string) => volumeError && (!value || parseFloat(value) <= 0);
+
     const handleNumericInput = useCallback(
         (setter: (value: string) => void) => (e: ChangeEvent<HTMLInputElement>) => {
             const raw = e.target.value.replace(/,/g, '.');
@@ -67,7 +71,6 @@ export function AssistVolumeForm() {
 
             {volumeMode === 'dimensions' && (
                 <>
-                    {/* Compact Grid for Dimensions to save vertical space */}
                     <div className={styles.compactGrid}>
                         <Input
                             id="length"
@@ -79,6 +82,7 @@ export function AssistVolumeForm() {
                             onChange={handleNumericInput(setLength)}
                             inputMode="decimal"
                             placeholder="0.00"
+                            error={hasError(length)}
                         />
                         <Input
                             id="width"
@@ -90,6 +94,7 @@ export function AssistVolumeForm() {
                             onChange={handleNumericInput(setWidth)}
                             inputMode="decimal"
                             placeholder="0.00"
+                            error={hasError(width)}
                         />
                     </div>
 
@@ -103,6 +108,7 @@ export function AssistVolumeForm() {
                         onChange={handleNumericInput(setThicknessByDims)}
                         inputMode="decimal"
                         placeholder="10"
+                        error={hasError(thicknessByDims)}
                     />
                 </>
             )}
@@ -119,6 +125,7 @@ export function AssistVolumeForm() {
                         onChange={handleNumericInput(setArea)}
                         inputMode="decimal"
                         placeholder="0.00"
+                        error={hasError(area)}
                     />
                     <Input
                         id="thickness-area"
@@ -130,6 +137,7 @@ export function AssistVolumeForm() {
                         onChange={handleNumericInput(setThicknessByArea)}
                         inputMode="decimal"
                         placeholder="10"
+                        error={hasError(thicknessByArea)}
                     />
                 </>
             )}

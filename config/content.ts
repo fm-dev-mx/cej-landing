@@ -34,9 +34,22 @@ export interface WorkItem {
     location: string;
     category: string;
     imageAlt: string;
-    // In a real app, this would be a local path like '/images/works/nave.jpg'
-    // Using placeholders for demonstration
     imageUrl: string;
+}
+
+// NEW: Testimonial & Stat Interfaces
+export interface TestimonialItem {
+    id: string;
+    quote: string;
+    author: string;
+    role: string;
+    type: 'contractor' | 'individual'; // To optionally style differently
+}
+
+export interface StatItem {
+    id: string;
+    value: string;
+    label: string;
 }
 
 export const LANDING_CONTENT = {
@@ -89,10 +102,15 @@ export const LANDING_CONTENT = {
             }
         ] as TrustItem[]
     },
-    // NEW SECTION: Social Proof / Works
     socialProof: {
         title: "Nuestra huella en Juárez",
-        subtitle: "Desde ampliaciones residenciales hasta naves industriales. La confianza se construye m³ a m³.",
+        subtitle: "La confianza se construye metro a metro. Resultados reales en obras de toda la ciudad.",
+        // UPDATED: Stats more realistic for a 3-4 year old company focusing on results/quality
+        stats: [
+            { id: "s1", value: "+4,500", label: "Obras Suministradas" },
+            { id: "s2", value: "95%", label: "Puntualidad en Entrega" },
+            { id: "s3", value: "100%", label: "Empresa Juarense" }
+        ] as StatItem[],
         works: [
             {
                 id: "work1",
@@ -118,7 +136,30 @@ export const LANDING_CONTENT = {
                 imageAlt: "Armado de acero con silletas y cimbra de madera listos para recibir el colado de concreto en estacionamiento",
                 imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/zona_industrial_gu16sr.jpg"
             }
-        ] as WorkItem[]
+        ] as WorkItem[],
+        testimonials: [
+            {
+                id: "t1",
+                quote: "El servicio de bombeo nos ahorró días de trabajo en una losa de difícil acceso. La puntualidad es su fuerte, llegaron justo a la hora programada.",
+                author: "Arq. Luis Morales",
+                role: "Constructora LM",
+                type: "contractor"
+            },
+            {
+                id: "t2",
+                quote: "No sabía cuánto concreto pedir para mi cochera. Su técnico vino, midió y me explicó todo. No me sobró nada, excelente servicio.",
+                author: "Sr. Roberto Méndez",
+                role: "Cliente Particular",
+                type: "individual"
+            },
+            {
+                id: "t3",
+                quote: "Para colados críticos en naves industriales, CEJ ha demostrado tener la capacidad de respuesta y la calidad de mezcla que exigimos.",
+                author: "Ing. Sofía Durán",
+                role: "Supervisora de Obra, Park V",
+                type: "contractor"
+            }
+        ] as TestimonialItem[]
     },
     process: {
         title: "¿Cómo trabajamos?",

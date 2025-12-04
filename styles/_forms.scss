@@ -27,7 +27,6 @@
 
 @mixin input-variant-dark {
   background-color: rgba(0, 0, 0, 0.4);
-  /* P1 FIX: Increased contrast from 0.15 to 0.3 for better visibility */
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: var(--c-text-on-dark);
 
@@ -37,7 +36,6 @@
 
   &:hover:not(:disabled) {
     border-color: rgba(255, 255, 255, 0.5);
-    /* Also bumped hover contrast */
     background-color: rgba(0, 0, 0, 0.5);
   }
 
@@ -48,6 +46,17 @@
     box-shadow:
       0 0 0 1px var(--c-accent),
       0 0 0 4px rgba(254, 201, 20, 0.15);
+  }
+
+  /* Error State */
+  &[aria-invalid="true"] {
+    border-color: var(--c-error-text-on-dark);
+    background-color: rgba(239, 68, 68, 0.05);
+
+    &:focus-visible {
+      border-color: var(--c-error-text-on-dark);
+      box-shadow: 0 0 0 4px var(--c-error-bg-on-dark);
+    }
   }
 }
 
@@ -68,6 +77,17 @@
     outline: none;
     border-color: var(--c-primary);
     box-shadow: 0 0 0 4px var(--c-step-current-soft);
+  }
+
+  /* Error State */
+  &[aria-invalid="true"] {
+    border-color: var(--c-error-text);
+    background-color: var(--c-error-soft);
+
+    &:focus-visible {
+      border-color: var(--c-error-text);
+      box-shadow: 0 0 0 4px var(--c-error-border);
+    }
   }
 }
 

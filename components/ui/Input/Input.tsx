@@ -1,18 +1,28 @@
 // components/ui/Input/Input.tsx
-import { InputHTMLAttributes, forwardRef } from 'react';
+import { InputHTMLAttributes, forwardRef, useId } from 'react';
 import styles from './Input.module.scss';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   isVolume?: boolean;
   label?: string;
   variant?: 'dark' | 'light';
+  error?: boolean | string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, isVolume, label, id, variant = 'dark', ...props }, ref) => {
+  ({ className, isVolume, label, id, variant = 'dark', error, ...props }, ref) => {
+    // Generate a unique ID for the error message if one isn't provided
+    const internalId = useId();
+    const inputId = id || internalId;
+
+    const hasError = Boolean(error);
+    const errorMessage = typeof error === 'string' ? error : null;
+    const errorId = errorMessage ? `${inputId}-error` : undefined;
+
     const containerClass = [
       styles.container,
-      styles[variant]
+      styles[variant],
+      hasError ? styles.hasError : ''
     ].filter(Boolean).join(' ');
 
     const inputClasses = [
@@ -23,27 +33,42 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       .filter(Boolean)
       .join(' ');
 
-    // Si no hay label, renderizamos solo el input (comportamiento átomo)
     const inputElement = (
       <input
         ref={ref}
-        id={id}
+        id={inputId}
         className={inputClasses}
+        aria-invalid={hasError}
+        aria-describedby={errorId}
         {...props}
       />
     );
 
-    if (!label) {
+    // Atom behavior (input only)
+    if (!label && !errorMessage) {
       return inputElement;
     }
 
-    // Si hay label, renderizamos la molécula completa (Layout + Label + Input)
+    // Molecule behavior (Layout + Label + Input + Error)
     return (
       <div className={containerClass}>
-        <label htmlFor={id} className={styles.label}>
-          {label}
-        </label>
+        {label && (
+          <label htmlFor={inputId} className={styles.label}>
+            {label}
+          </label>
+        )}
+
         {inputElement}
+
+        {errorMessage && (
+          <span
+            id={errorId}
+            className={styles.errorMessage}
+            role="alert"
+          >
+            {errorMessage}
+          </span>
+        )}
       </div>
     );
   }
