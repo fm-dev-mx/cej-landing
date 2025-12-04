@@ -1,4 +1,3 @@
-// components/Calculator/Calculator.module.scss
 @use "../../styles/primitives" as p;
 @use "../../styles/mixins" as *;
 
@@ -10,12 +9,14 @@ $ticket-text: #111827;
 
 .wrapper {
   position: relative;
+  width: 90%;
 
-  /* Mobile: Natural flow, no forced height constraints */
-  min-height: auto;
+  /* Mobile: Ensure full viewport coverage allowing scroll */
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  /* Align top on mobile to prevent clipping when content > viewport (e.g. keyboard open) */
+  justify-content: flex-start;
   align-items: center;
 
   padding-block: var(--sp-8);
@@ -29,6 +30,9 @@ $ticket-text: #111827;
     min-height: 85svh;
     display: grid;
     place-items: center;
+    padding-top: var(--sp-8);
+    /* Reset top padding as grid centers it */
+    justify-content: center;
   }
 }
 
@@ -41,7 +45,6 @@ $ticket-text: #111827;
 
   /* Mobile: Auto height to fit content without scroll traps */
   height: auto;
-  min-height: auto;
   display: flex;
   flex-direction: column;
 
@@ -51,11 +54,8 @@ $ticket-text: #111827;
   /* Critical: Add safe area padding for bottom buttons on mobile */
   padding-bottom: calc(var(--sp-6) + env(safe-area-inset-bottom));
 
-  /* SCROLL FIX:
-     Ensures that when scrollIntoView is triggered, the element stops
-     below the fixed header plus a little breathing room (1rem).
-  */
-  scroll-margin-top: calc(var(--header-h-stuck) + 1rem);
+  /* SCROLL FIX: Scroll margin for sticky header offset */
+  scroll-margin-top: var(--sp-6);
 
   border-radius: var(--radius-lg);
   background: linear-gradient(145deg, $glass-surface, rgba(2, 20, 40, 0.9));
@@ -131,9 +131,14 @@ $ticket-text: #111827;
   display: flex;
   flex-direction: column;
   flex: 1;
-  /* Occupy remaining space in shell */
   position: relative;
-  overflow: hidden;
+  /* Allow overflow on mobile for natural scroll, hidden only if specific animations require it */
+  overflow: visible;
+
+  @include respond-to('md') {
+    overflow: hidden;
+    /* Clean clip on desktop card */
+  }
 }
 
 /* Step Container: Flex to push controls to bottom */
@@ -386,14 +391,20 @@ $ticket-text: #111827;
   }
 }
 
+.hint {
+  font-size: var(--fs-xs);
+  color: var(--c-muted-on-dark);
+  opacity: 0.8;
+  margin-top: 0.25rem;
+}
+
 /* Compact Grid for Dimensions (Length x Width) */
 .compactGrid {
   display: grid;
-  /* KEY CHANGE: Use minmax(0, 1fr) instead of just 1fr to allow shrinking */
+  /* Use minmax to allow shrinking on small screens */
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--sp-2);
   align-items: start;
-  /* Ensure grid doesn't overflow parent */
   width: 100%;
 
   /* Ensure labels don't break awkwardly in tight spaces */
@@ -402,7 +413,6 @@ $ticket-text: #111827;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Ensure it takes available width for text-overflow ellipsis */
     display: block;
   }
 }
@@ -480,7 +490,6 @@ $ticket-text: #111827;
     white-space: nowrap;
     border: 0;
 
-    /* A11y: Show focus ring on the visible span when hidden input is focused */
     &:focus-visible+span {
       outline: 2px solid var(--c-accent);
       outline-offset: 2px;
@@ -512,7 +521,6 @@ $ticket-text: #111827;
 /* --- Feedback Elements --- */
 .note {
   margin-top: auto;
-  /* Push to bottom if space permits */
   margin-bottom: var(--sp-4);
   padding: 0.75rem;
   border-radius: var(--radius);
@@ -545,14 +553,12 @@ $ticket-text: #111827;
   }
 }
 
-/* Used in Step3 for warning text replacing inline styles */
 .warningFeedback {
   margin-top: 0.25rem;
   font-size: 0.85em;
   opacity: 0.9;
 }
 
-/* Used in AssistVolumeForm for coffer section margin */
 .cofferSection {
   margin-top: 0.75rem;
 }
@@ -560,15 +566,17 @@ $ticket-text: #111827;
 /* --- Controls (Sticky Footer effect) --- */
 .stepControls {
   margin-top: auto;
-  /* The Magic: Pushes buttons to the bottom of min-height shell (desktop) or just flows (mobile) */
-  display: grid;
+  padding-top: var(--sp-6);
+  display: flex;
+  flex-direction: column-reverse;
+  /* Stack vertically on mobile, primary action on top usually preferred, or standard reverse for "Back" at bottom */
   gap: var(--sp-3);
-  padding-top: var(--sp-4);
-  grid-template-columns: 1fr 2fr;
 
+  /* Tablet and up: Row layout */
   @include respond-to('sm') {
-    display: flex;
+    flex-direction: row;
     justify-content: space-between;
+    align-items: center;
 
     button:last-child {
       margin-left: auto;
