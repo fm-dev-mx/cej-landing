@@ -8,7 +8,9 @@ export type ConcreteType = 'direct' | 'pumped';
 
 export type CalculatorMode = 'knownM3' | 'assistM3';
 export type AssistVolumeMode = 'dimensions' | 'area';
-export type Step = 1 | 2 | 3 | 4;
+
+// UPDATED: Now supports 5 logical steps
+export type Step = 1 | 2 | 3 | 4 | 5;
 export type CofferedSize = '7' | '10';
 
 export type WorkTypeId =
@@ -23,7 +25,7 @@ export type WorkTypeConfig = {
     label: string;
     description: string;
     recommendedStrength: Strength;
-    icon?: string; // Added for UI enhancement in Step 1
+    icon?: string;
 };
 
 export type CalculatorState = {

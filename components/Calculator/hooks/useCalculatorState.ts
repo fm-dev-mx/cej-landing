@@ -23,7 +23,6 @@ export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
     strength: '200',
     type: 'direct',
     m3: '',
-    // CHANGED: Initialize as null so no option is pre-selected
     workType: null,
     length: '',
     width: '',
@@ -70,11 +69,15 @@ export function useCalculatorState() {
                 mode,
             };
             if (mode === 'knownM3') {
+                // If known volume, reset calc inputs and SKIP Step 2 (Work Type)
                 next.length = '';
                 next.width = '';
                 next.area = '';
+                next.step = 3;
             } else {
+                // If needs assistance, go to Step 2 (Work Type)
                 next.m3 = '';
+                next.step = 2;
             }
             return next;
         });
@@ -104,7 +107,9 @@ export function useCalculatorState() {
                 workType,
                 strength: cfg ? cfg.recommendedStrength : prev.strength,
                 hasCoffered: 'no',
-                cofferedSize: null, // Reset when changing work type
+                cofferedSize: null,
+                // Automatically advance to inputs when type is selected
+                step: 3
             };
         });
     }, []);
@@ -133,7 +138,6 @@ export function useCalculatorState() {
         setState((prev) => ({
             ...prev,
             hasCoffered,
-            // If coffered slab is enabled, default to 10 cm; if disabled, reset to null
             cofferedSize: hasCoffered === 'yes' ? '10' : null,
         }));
     }, []);
