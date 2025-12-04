@@ -22,6 +22,7 @@ function CalculatorContent() {
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
+        {/* Progress Bar */}
         <div
           className={styles.progressContainer}
           role="progressbar"
@@ -49,12 +50,11 @@ function CalculatorContent() {
 
         <div className={styles.headerText}>
           <h2 id="calculator-heading" className={styles.headerTitle}>
-            Calcula tu <span className={styles.headerTitleAccent}>concreto</span>{' '}
-            al instante.
+            Cotiza tu <span className={styles.headerTitleAccent}>concreto</span>{' '}
+            al instante
           </h2>
           <p className={styles.headerSubtitle}>
-            Obtén un presupuesto estimado en segundos.
-            <br />
+            Obtén un presupuesto estimado en segundos.<br className="hidden md:block" />
             La volumetría final se confirma en obra.
           </p>
         </div>

@@ -3,8 +3,8 @@
 @use "../../styles/mixins" as *;
 
 .section {
-  padding-block: var(--sp-10);
-  background-color: var(--c-surface);
+  padding-block: var(--section-py);
+  background-color: var(--c-surface-light);
   position: relative;
   border-bottom: 1px solid var(--c-border);
 }
@@ -15,7 +15,7 @@
 
 .header {
   text-align: center;
-  margin-bottom: var(--sp-8);
+  margin-bottom: var(--sp-10);
   max-width: 700px;
   margin-inline: auto;
 }
@@ -31,36 +31,18 @@
   color: var(--c-muted-strong);
 }
 
-/* Grid Layout: Cards with images need more width */
 .grid {
-  @include grid-ram($min-width: 220px, $gap: var(--sp-6));
-}
-
-/* Card Style */
-.card {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--c-bg);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  border: 1px solid var(--c-border);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  height: 100%; // Fill grid cell height
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
-    border-color: var(--c-border-strong);
-  }
+  @include grid-ram($min-width: 280px, $gap: var(--sp-6));
 }
 
 .imageWrapper {
   position: relative;
   width: 100%;
-  /* Fix aspect ratio prevents layout shift */
   aspect-ratio: 16/10;
   background-color: var(--c-border);
   overflow: hidden;
+  /* Ensure border radius top follows card */
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .image {
@@ -69,7 +51,8 @@
   width: 100%;
   height: 100%;
 
-  .card:hover & {
+  /* Target the parent card hover state from within */
+  :global(.card-root:hover) & {
     transform: scale(1.05);
   }
 }
@@ -78,7 +61,7 @@
   position: absolute;
   bottom: var(--sp-3);
   left: var(--sp-3);
-  background-color: rgba(2, 26, 54, 0.9);
+  background-color: rgba(2, 26, 54, 0.95);
   color: white;
   font-size: 0.75rem;
   font-weight: 700;
@@ -87,16 +70,6 @@
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   z-index: 2;
-}
-
-.content {
-  padding: var(--sp-5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
-  border-top: 1px solid var(--c-border);
-  background-color: white;
-  flex: 1; // Pushes content to fill height if needed
 }
 
 .workTitle {
@@ -114,5 +87,6 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  margin-top: auto; // Align to bottom of content area
+  margin-top: auto;
+  /* Aligns to bottom if body has flex:1 */
 }

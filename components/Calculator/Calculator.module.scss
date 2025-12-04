@@ -5,15 +5,16 @@
 /* Theme Variables & Glass Configuration */
 $glass-surface: rgba(2, 26, 54, 0.95);
 $glass-border: rgba(255, 255, 255, 0.1);
+$ticket-bg: #fff;
+$ticket-text: #111827;
 
 .wrapper {
   position: relative;
-  padding-block: var(--sp-8);
-  padding-inline: var(--sp-6);
+  padding-block: var(--sp-10) var(--sp-12);
+  padding-inline: var(--sp-4);
   background-color: var(--c-primary-dark);
-  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), transparent);
+  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
 
-  /* Center properly */
   display: grid;
   place-items: center;
   min-height: 80svh;
@@ -22,16 +23,17 @@ $glass-border: rgba(255, 255, 255, 0.1);
 .shell {
   position: relative;
   margin: 0 auto;
-  max-width: 800px;
+  width: 100%;
+  max-width: 680px;
+  /* Tighter width for better focus */
 
-  /* Container responsiveness */
   @include container;
-  padding: var(--sp-6) var(--sp-4) var(--sp-8);
+  padding: var(--sp-6) var(--sp-5);
 
   border-radius: var(--radius-lg);
-  background: linear-gradient(145deg, $glass-surface, rgba(2, 20, 40, 0.85));
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
+  background: linear-gradient(145deg, $glass-surface, rgba(2, 20, 40, 0.9));
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
   border: 1px solid $glass-border;
   box-shadow: var(--shadow-xl);
   color: var(--c-text-on-dark);
@@ -45,24 +47,23 @@ $glass-border: rgba(255, 255, 255, 0.1);
 .header {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-5);
-  margin-bottom: var(--sp-6);
-  border-bottom: 1px solid $glass-border;
-  padding-bottom: var(--sp-6);
+  gap: var(--sp-6);
+  margin-bottom: var(--sp-8);
 }
 
 .progressContainer {
   display: flex;
   gap: 0.5rem;
   width: 100%;
+  height: 4px;
 }
 
 .progressSegment {
   flex: 1;
-  height: 4px;
+  height: 100%;
   border-radius: 2px;
   background-color: rgba(255, 255, 255, 0.1);
-  transition: background-color 0.4s ease;
+  transition: background-color 0.4s ease, box-shadow 0.4s ease;
 
   &.active {
     background-color: var(--c-accent);
@@ -76,9 +77,9 @@ $glass-border: rgba(255, 255, 255, 0.1);
 
 .headerTitle {
   margin: 0;
-  font-size: clamp(1.25rem, 4vw, 2rem); // Fluid typography
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
   font-weight: 800;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   line-height: 1.1;
   color: white;
   text-wrap: balance;
@@ -86,32 +87,58 @@ $glass-border: rgba(255, 255, 255, 0.1);
 
 .headerTitleAccent {
   color: var(--c-accent);
+  position: relative;
+  display: inline-block;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: currentColor;
+    opacity: 0.3;
+    border-radius: 2px;
+  }
 }
 
 .headerSubtitle {
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base);
   color: var(--c-muted-on-dark);
   margin-top: var(--sp-3);
-  line-height: 1.5;
-
-  @include respond-to('md') {
-    font-size: var(--fs-base);
-  }
+  line-height: 1.6;
+  max-width: 48ch;
+  margin-inline: auto;
 }
 
 /* --- Form & Steps --- */
 .form {
   display: flex;
   flex-direction: column;
+  min-height: 300px;
+  /* Avoid layout shift on step change */
 }
 
 .stepAnimated {
-  animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .stepHeader {
   text-align: center;
-  margin-bottom: var(--sp-6);
+  margin-bottom: var(--sp-8);
 }
 
 .stepTitle {
@@ -125,78 +152,80 @@ $glass-border: rgba(255, 255, 255, 0.1);
 .stepSubtitle {
   font-size: var(--fs-sm);
   color: var(--c-muted-on-dark);
+  line-height: 1.5;
 }
 
-.subsection {
-  margin-top: var(--sp-8);
-  padding-top: var(--sp-6);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.subsectionTitle {
-  margin-bottom: var(--sp-4);
-  color: var(--c-muted-on-dark);
-  font-size: var(--fs-base);
-  font-weight: 600;
-}
-
-@keyframes fadeSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* --- Ticket / Summary Card --- */
+/* --- Ticket / Summary Card (Redesigned) --- */
 .ticketCard {
-  background-color: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: $ticket-bg;
+  color: $ticket-text;
+  /* Dark text on white paper */
   border-radius: var(--radius);
-  padding: var(--sp-5);
-  margin-bottom: var(--sp-6);
+  padding: 0;
+  margin-bottom: var(--sp-8);
   position: relative;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
 
-  @include respond-to('md') {
-    padding: var(--sp-6);
+  /* Top decorative accent */
+  &::before {
+    content: '';
+    display: block;
+    height: 6px;
+    width: 100%;
+    background: repeating-linear-gradient(45deg,
+        var(--c-primary),
+        var(--c-primary) 10px,
+        var(--c-primary-dark) 10px,
+        var(--c-primary-dark) 20px);
   }
+}
+
+.ticketContent {
+  padding: var(--sp-6) var(--sp-6) var(--sp-8);
 }
 
 .ticketHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--sp-4);
-  font-size: var(--fs-xs);
-  color: var(--c-muted-on-dark);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 700;
-  opacity: 0.8;
+  margin-bottom: var(--sp-6);
+  padding-bottom: var(--sp-4);
+  border-bottom: 2px dashed #e5e7eb;
 }
 
-.ticketSection {
-  margin-bottom: var(--sp-4);
+.ticketLabel {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: var(--c-muted);
+  text-transform: uppercase;
+}
+
+.ticketDate {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  color: var(--c-text);
+  background: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
 }
 
 .ticketSectionTitle {
-  font-size: var(--fs-xs);
-  color: var(--c-accent);
+  font-size: 0.75rem;
+  color: var(--c-muted);
   margin-bottom: var(--sp-3);
   font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-/* Spec Grid: Uses mini-RAM pattern for data points */
+/* Spec Grid - Clean and readable */
 .specGrid {
   display: grid;
-  gap: var(--sp-3);
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--sp-4);
+  grid-template-columns: repeat(2, 1fr);
+  margin-bottom: var(--sp-6);
 }
 
 .specItem {
@@ -206,74 +235,64 @@ $glass-border: rgba(255, 255, 255, 0.1);
 
 .specLabel {
   font-size: 0.75rem;
-  color: var(--c-muted-on-dark);
-  margin-bottom: 0.2rem;
+  color: var(--c-muted);
+  margin-bottom: 0.25rem;
 }
 
 .specValue {
-  font-size: var(--fs-base);
+  font-size: 1rem;
   font-weight: 600;
-  color: white;
-  word-break: break-word; // Prevent long values from breaking layout
+  color: var(--c-primary);
 }
 
-.ticketDivider {
-  border: 0;
-  height: 1px;
-  margin: var(--sp-4) 0;
-  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.3) 50%, transparent 0%);
-  background-size: 8px 1px;
-  background-repeat: repeat-x;
-}
-
+/* Financials */
 .ticketRows {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-4);
+  border-top: 2px dashed #e5e7eb;
 }
 
 .row {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  font-size: var(--fs-sm);
-
-  /* Ensure dots leader or spacing works */
-  gap: var(--sp-4);
+  align-items: center;
+  font-size: 0.9rem;
 }
 
 .rowLabel {
-  color: var(--c-muted-on-dark);
+  color: var(--c-muted-strong);
 }
 
 .rowValue {
   font-family: var(--font-mono, monospace);
-  color: white;
+  color: var(--c-text);
   font-weight: 500;
-  text-align: right;
 }
 
 .ticketTotal {
   margin-top: var(--sp-4);
   padding-top: var(--sp-4);
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 2px solid var(--c-text);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .totalLabel {
-  font-size: var(--fs-lg);
-  font-weight: 700;
-  color: white;
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--c-text);
+  text-transform: uppercase;
 }
 
 .totalValue {
-  font-size: clamp(1.5rem, 5vw, 2rem); // Scale total price
+  font-size: 1.75rem;
   font-weight: 800;
-  color: var(--c-accent);
+  color: var(--c-primary);
   line-height: 1;
-  letter-spacing: -0.02em;
 }
 
 /* --- Actions & Helpers --- */
@@ -288,15 +307,14 @@ $glass-border: rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
-  width: 90%;
-
-  @include respond-to('sm') {
-    flex-direction: row;
-  }
+  width: 100%;
 }
 
 .actionButton {
   width: 100%;
+  height: 3.25rem;
+  /* Touch target fix */
+  font-size: 1rem;
 }
 
 .textLink {
@@ -304,13 +322,17 @@ $glass-border: rgba(255, 255, 255, 0.1);
   border: none;
   color: var(--c-muted-on-dark);
   font-size: var(--fs-sm);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
   cursor: pointer;
   padding: 0.5rem;
+  transition: color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 
   &:hover {
-    color: white;
+    color: var(--c-accent);
+    text-decoration: underline;
   }
 }
 
@@ -318,59 +340,72 @@ $glass-border: rgba(255, 255, 255, 0.1);
   display: grid;
   gap: var(--sp-3);
   margin-top: var(--sp-8);
-  grid-template-columns: 1fr 2fr; // Back button smaller than Next
+  grid-template-columns: 1fr 2fr;
 
   @include respond-to('sm') {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
 
-    button {
-      width: auto;
-      min-width: 120px;
+    /* Push next button to the right */
+    button:last-child {
+      margin-left: auto;
+      min-width: 140px;
     }
   }
 }
 
 .note {
-  margin: var(--sp-2) 0;
-  padding: 0.75rem;
+  margin: var(--sp-4) 0;
+  padding: 1rem;
   border-radius: var(--radius);
-  font-size: var(--fs-xs);
-  color: var(--c-muted-on-dark);
-  text-align: right;
-  background: rgba(255, 255, 255, 0.03);
+  font-size: var(--fs-sm);
+  color: #93c5fd;
+  /* Soft blue text */
+  background: rgba(14, 165, 233, 0.1);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 
   strong {
     color: white;
+    font-weight: 600;
   }
 }
 
 .error {
   font-size: var(--fs-sm);
-  color: var(--c-error-text);
-  padding: 0.75rem;
+  color: #fca5a5;
+  padding: 1rem;
   border-radius: var(--radius);
-  background: var(--c-error-soft);
+  background: rgba(239, 68, 68, 0.1);
   margin-top: var(--sp-4);
-  border: 1px solid var(--c-error-border);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+
+  &::before {
+    content: '⚠️';
+  }
 }
 
 .disclaimer {
   margin-top: var(--sp-6);
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
   text-align: center;
-  line-height: 1.4;
+  line-height: 1.5;
   max-width: 50ch;
   margin-inline: auto;
 }
 
-/* --- Input Groups --- */
+/* --- Reusable Inputs Groups from existing styles --- */
 .field {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-bottom: var(--sp-4);
+  margin-bottom: var(--sp-5);
 
   label {
     font-size: var(--fs-base);
@@ -379,19 +414,14 @@ $glass-border: rgba(255, 255, 255, 0.1);
   }
 }
 
-/* Responsive Grid for inputs */
 .selectionGrid {
-  @include grid-ram($min-width: 220px, $gap: var(--sp-3));
+  @include grid-ram($min-width: 200px, $gap: var(--sp-3));
 }
 
 .radioRow {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--sp-3);
-}
-
-.radioRowCompact {
-  @extend .radioRow;
 }
 
 .radio {
@@ -405,25 +435,27 @@ $glass-border: rgba(255, 255, 255, 0.1);
   background-color: rgba(255, 255, 255, 0.03);
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 3.5rem;
 
-  /* Improved touch target */
-  min-height: 3rem;
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+  }
 
   &:has(input:checked) {
-    background-color: rgba(254, 201, 20, 0.08);
+    background-color: rgba(254, 201, 20, 0.15);
     border-color: var(--c-accent);
     box-shadow: inset 0 0 0 1px var(--c-accent);
 
     span {
       color: var(--c-accent);
-      font-weight: 600;
+      font-weight: 700;
     }
   }
 
   input {
     accent-color: var(--c-accent);
-    width: 1.1rem;
-    height: 1.1rem;
+    width: 1.25rem;
+    height: 1.25rem;
   }
 
   span {
@@ -432,47 +464,8 @@ $glass-border: rgba(255, 255, 255, 0.1);
   }
 }
 
-.pillGroup {
-  display: flex;
-  gap: var(--sp-3);
-  margin-top: 0.5rem;
-}
-
-.pill {
-  position: relative;
-  flex: 1;
-  cursor: pointer;
-
-  input {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-
-  span {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 99px;
-    color: var(--c-muted-on-dark);
-    font-weight: 500;
-    transition: all 0.2s ease;
-  }
-
-  &:has(input:checked) span {
-    background: var(--c-accent);
-    color: var(--c-primary-dark);
-    border-color: var(--c-accent);
-    font-weight: 700;
-  }
-}
-
 .hint {
-  font-size: var(--fs-xs);
-  color: rgba(148, 163, 184, 0.8);
-  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--c-muted-on-dark);
+  opacity: 0.8;
 }
