@@ -1,5 +1,11 @@
 // app/api/leads/route.ts
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client with admin permissions (Service Role)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 type LeadRequestBody = {
     name: string;
@@ -13,34 +19,45 @@ type LeadRequestBody = {
 
 export async function POST(request: Request) {
     try {
+        // Check critical configuration
+        if (!supabaseUrl || !supabaseKey) {
+            console.error('❌ Critical Error: Missing Supabase environment variables.');
+            return NextResponse.json(
+                { error: 'Server configuration error' },
+                { status: 500 }
+            );
+        }
+
         const body = (await request.json()) as LeadRequestBody;
         const { name, phone, quote } = body;
 
         // Basic Server-side Validation
         if (!name || !phone || !quote) {
             return NextResponse.json(
-                { error: 'Missing required fields: name, phone, or quote data.' },
+                { error: 'Faltan campos requeridos: name, phone o quote.' },
                 { status: 400 }
             );
         }
 
-        // --- DATA PERSISTENCE LAYER ---
-        // In a production environment, save to DB or CRM (HubSpot, Salesforce, etc.)
-        // For MVP, logging to server console to verify capture.
+        // --- REAL PERSISTENCE (Supabase) ---
+        const { data, error } = await supabase
+            .from('leads')
+            .insert([
+                {
+                    name,
+                    phone,
+                    quote_data: quote, // Save the full JSON object
+                    status: 'new'
+                }
+            ])
+            .select();
 
-        console.log('📝 [LEAD CAPTURED]', {
-            timestamp: new Date().toISOString(),
-            contact: { name, phone },
-            quoteSummary: {
-                total: quote.total,
-                volume: quote.volume,
-                product: quote.product
-            }
-        });
+        if (error) {
+            console.error('❌ Error inserting into Supabase:', error);
+            throw new Error(error.message);
+        }
 
-        // Simulate network delay for realism (optional)
-        // await new Promise(resolve => setTimeout(resolve, 500));
-
+        console.log('✅ Lead saved successfully:', data);
         return NextResponse.json({ success: true, message: 'Lead saved successfully' });
 
     } catch (error) {

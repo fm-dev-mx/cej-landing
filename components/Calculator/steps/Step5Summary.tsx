@@ -73,9 +73,9 @@ export function Step5Summary({ estimateLegend }: Props) {
         // B. Generate Personalized WhatsApp URL
         const message =
             `Hola soy ${userName}, me interesa esta cotización de CEJ:\n\n` +
-            `🔹 *Volumen:* ${billedM3.toFixed(2)} m³\n` +
-            `🔹 *Producto:* ${productLabel}\n` +
-            `🔹 *Total Estimado:* ${fmtMXN(quote.total)}\n\n` +
+            `• *Volumen:* ${billedM3.toFixed(2)} m³\n` +
+            `• *Producto:* ${productLabel}\n` +
+            `• *Total Estimado:* ${fmtMXN(quote.total)}\n\n` +
             `¿Me pueden ayudar a confirmar el pedido?`;
 
         const finalWaUrl = getWhatsAppUrl(waNumber, message);
