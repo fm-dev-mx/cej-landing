@@ -26,9 +26,24 @@ export default function Footer() {
           <p className={styles.tagline}>
             Calidad y resistencia para los cimientos de Ciudad Juárez.
           </p>
-          <p className={styles.copyright}>
-            © {year} {env.NEXT_PUBLIC_BRAND_NAME}. Todos los derechos reservados.
-          </p>
+
+          <div className={styles.legalBlock}>
+            <p className={styles.copyright}>
+              © {year} {env.NEXT_PUBLIC_BRAND_NAME}. Todos los derechos reservados.
+            </p>
+            <p className={styles.credits}>
+              Diseño y desarrollo por{' '}
+              <a
+                href="https://wa.me/5216681167477?text=Hola,%20vi%20tu%20trabajo%20en%20CEJ%20y%20me%20interesa%20un%20proyecto."
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.creditsLink}
+                aria-label="Contactar a FM Creativo"
+              >
+                FM Creativo - Francisco Mendoza
+              </a>
+            </p>
+          </div>
         </div>
 
         {/* Links Column */}
