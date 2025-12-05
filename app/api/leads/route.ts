@@ -1,6 +1,8 @@
-// path: app/api/leads/route.ts
+// app/api/leads/route.ts
 import { NextResponse } from 'next/server';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { z } from 'zod';
+import { cleanQuoteContext } from '@/lib/data-sanitizers';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -11,75 +13,81 @@ const supabase: SupabaseClient | null =
         ? createClient(supabaseUrl, supabaseServiceRoleKey)
         : null;
 
-type LeadRequestBody = {
-    name: string;
-    phone: string;
-    quote: unknown;
+// Validation Schema
+const leadSchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    phone: z.string().min(10, "Phone invalid"),
+    quote: z.object({
+        summary: z.any(),
+        // Enforce object structure for context to ensure sanitizer safety
+        context: z.record(z.string(), z.any()),
+    }),
+    visitor_id: z.string().nullable().optional(),
+    session_id: z.string().nullable().optional(),
 
-    // Visitor identity
-    visitor_id?: string;
+    // Tracking & Attribution
+    utm_source: z.string().optional(),
+    utm_medium: z.string().optional(),
+    utm_campaign: z.string().optional(),
+    utm_term: z.string().optional(),
+    utm_content: z.string().optional(),
+    fbclid: z.string().optional(),
+    fb_event_id: z.string().optional(),
 
-    // Attribution
-    utm_source?: string;
-    utm_medium?: string;
-    utm_campaign?: string;
-    utm_term?: string;
-    utm_content?: string;
-    fbclid?: string;
-
-    // Legal flags
-    privacy_accepted?: boolean;
-
-    // Pixel metadata
-    fb_event_id?: string;
-};
+    // Legal
+    privacy_accepted: z.literal(true, {
+        errorMap: () => ({ message: "Privacy must be accepted to process data" })
+    }),
+});
 
 export async function POST(request: Request) {
     if (!supabase) {
-        console.error('❌ Missing Supabase env vars for /api/leads');
-        return NextResponse.json(
-            { error: 'Server configuration error' },
-            { status: 500 },
-        );
+        console.error('❌ Missing Supabase env vars');
+        return NextResponse.json({ error: 'Server Config Error' }, { status: 500 });
     }
 
-    let body: LeadRequestBody;
+    let rawBody;
     try {
-        body = (await request.json()) as LeadRequestBody;
+        rawBody = await request.json();
     } catch {
-        console.error('❌ Invalid JSON body in /api/leads');
-        return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    }
+
+    // 1. Validate Input
+    const parseResult = leadSchema.safeParse(rawBody);
+    if (!parseResult.success) {
+        return NextResponse.json(
+            { error: 'Validation Error', details: parseResult.error.flatten() },
+            { status: 400 }
+        );
     }
 
     const {
-        name,
-        phone,
-        quote,
-        visitor_id,
-        utm_source,
-        utm_medium,
-        utm_campaign,
-        utm_term,
-        utm_content,
-        fbclid,
-        privacy_accepted,
-        fb_event_id,
-    } = body;
+        name, phone, quote,
+        visitor_id, session_id,
+        utm_source, utm_medium, utm_campaign, utm_term, utm_content, fbclid,
+        fb_event_id, privacy_accepted
+    } = parseResult.data;
 
-    // Basic required field validation
-    if (!name || !phone || typeof quote === 'undefined' || quote === null) {
-        return NextResponse.json(
-            { error: 'Missing required fields: name, phone, or quote.' },
-            { status: 400 },
-        );
-    }
+    // 2. Data Transformation & Cleaning
 
-    // Reasonable defaults for missing UTM values
+    // Normalize Quote Data: Avoid stringified JSON inside JSON.
+    // We restructure it to be query-friendly in Postgres (JSONB).
+    const cleanQuoteData = {
+        summary: quote.summary,
+        // Recursively clean empty strings from the context (dimensions, etc)
+        context: cleanQuoteContext(quote.context),
+        meta: {
+            calculated_at: new Date().toISOString(),
+            version: 'v2.0',
+            // Persist session_id in meta if no dedicated column exists
+            session_id: session_id || null
+        }
+    };
+
+    // Attribution Defaults
     const safeUtmSource = utm_source || 'direct';
     const safeUtmMedium = utm_medium || 'none';
-
-    const privacyAccepted = Boolean(privacy_accepted);
-    const privacyAcceptedAt = privacyAccepted ? new Date().toISOString() : null;
 
     try {
         const { data, error } = await supabase
@@ -88,10 +96,13 @@ export async function POST(request: Request) {
                 {
                     name,
                     phone,
-                    quote_data: quote,
+                    // Save as actual JSON object, Supabase handles stringifying for JSONB columns
+                    quote_data: cleanQuoteData,
 
+                    // Identity
                     visitor_id: visitor_id || null,
 
+                    // Attribution
                     utm_source: safeUtmSource,
                     utm_medium: safeUtmMedium,
                     utm_campaign: utm_campaign || null,
@@ -99,41 +110,28 @@ export async function POST(request: Request) {
                     utm_content: utm_content || null,
                     fbclid: fbclid || null,
 
-                    privacy_accepted: privacyAccepted,
-                    privacy_accepted_at: privacyAcceptedAt,
-
-                    fb_event_id: fb_event_id || null,
-
+                    // Legal & Status
+                    privacy_accepted,
+                    privacy_accepted_at: new Date().toISOString(),
                     status: 'new',
+
+                    // Tracking
+                    fb_event_id: fb_event_id || null,
                 },
             ])
-            // IMPORTANT: keep .select() only so existing Supabase mocks still work
-            .select();
+            .select()
+            .single();
 
-        if (error || !data) {
-            console.error('❌ Error inserting lead into Supabase:', error);
-            return NextResponse.json(
-                { error: 'Internal Server Error' },
-                { status: 500 },
-            );
+        if (error) {
+            console.error('❌ Supabase Insert Error:', error);
+            return NextResponse.json({ error: 'Database Error' }, { status: 500 });
         }
 
-        // Success log without PII (no phone or full quote payload)
-        console.log('✅ Lead saved successfully:', data);
+        console.log('✅ Lead saved:', { id: data.id, source: safeUtmSource });
 
-        // Keep the original contract expected by tests: 200 + simple payload
-        return NextResponse.json(
-            {
-                success: true,
-                message: 'Lead saved successfully',
-            },
-            { status: 200 },
-        );
+        return NextResponse.json({ success: true, id: data.id }, { status: 200 });
     } catch (error) {
-        console.error('❌ Unexpected error in /api/leads:', error);
-        return NextResponse.json(
-            { error: 'Internal Server Error' },
-            { status: 500 },
-        );
+        console.error('❌ Unexpected Error:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }

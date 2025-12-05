@@ -12,6 +12,7 @@ const mockFrom = vi.fn(() => ({
 
 // Chain select to insert return
 mockInsert.mockReturnValue({ select: mockSelect });
+mockSelect.mockReturnValue({ single: () => Promise.resolve({ data: { id: 1 }, error: null }) });
 
 // Mock @supabase/supabase-js module
 vi.mock('@supabase/supabase-js', () => ({
@@ -19,6 +20,12 @@ vi.mock('@supabase/supabase-js', () => ({
         from: mockFrom,
     })),
 }));
+
+// Mock Data Sanitizer
+vi.mock('@/lib/data-sanitizers', () => ({
+    cleanQuoteContext: vi.fn((context) => context),
+}));
+
 
 describe('API Route: POST /api/leads', () => {
     // Save original env
@@ -35,8 +42,19 @@ describe('API Route: POST /api/leads', () => {
             SUPABASE_SERVICE_ROLE_KEY: 'test-key',
         };
 
+        // Helper to mock the fetch response for select().single()
+        const createRequest = (body: any) => {
+            return new Request('http://localhost/api/leads', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+        };
+
         // Default successful behavior
-        mockSelect.mockResolvedValue({ data: [{ id: 1 }], error: null });
+        mockSelect.mockReturnValue({ single: () => Promise.resolve({ data: { id: 1 }, error: null }) });
     });
 
     afterEach(() => {
@@ -57,12 +75,16 @@ describe('API Route: POST /api/leads', () => {
     it('returns 400 if required fields are missing', async () => {
         const { POST } = await import('./route');
 
-        const req = createRequest({ name: 'Just Name' }); // Missing phone and quote
+        const req = createRequest({ name: 'Just Name' }); // Missing phone, quote, privacy
         const res = await POST(req);
 
         expect(res.status).toBe(400);
         const json = await res.json();
-        expect(json.error).toMatch(/Missing required fields/i);
+        // Zod returns "Validation Error" when schema doesn't match
+        expect(json.error).toBe('Validation Error');
+        // We can inspect details to see what's missing
+        expect(json.details.fieldErrors).toHaveProperty('phone');
+        expect(json.details.fieldErrors).toHaveProperty('privacy_accepted');
     });
 
     it('successfully saves a lead to Supabase', async () => {
@@ -71,7 +93,12 @@ describe('API Route: POST /api/leads', () => {
         const payload = {
             name: 'Test User',
             phone: '1234567890',
-            quote: { total: 1000 }
+            quote: {
+                summary: { total: 1000 },
+                context: { work_type: 'slab' }
+            },
+            privacy_accepted: true, // Required by Zod schema
+            fb_event_id: 'test-event'
         };
 
         const req = createRequest(payload);
@@ -83,8 +110,16 @@ describe('API Route: POST /api/leads', () => {
             expect.objectContaining({
                 name: 'Test User',
                 phone: '1234567890',
-                quote_data: { total: 1000 },
-                status: 'new'
+                status: 'new',
+                privacy_accepted: true,
+                // Ensure quote_data is transformed correctly (not stringified JSON inside JSON)
+                quote_data: expect.objectContaining({
+                    summary: { total: 1000 },
+                    context: { work_type: 'slab' },
+                    meta: expect.objectContaining({
+                        version: 'v2.0'
+                    })
+                })
             })
         ]);
 
@@ -97,9 +132,8 @@ describe('API Route: POST /api/leads', () => {
         const { POST } = await import('./route');
 
         // Simulate Supabase error
-        mockSelect.mockResolvedValue({
-            data: null,
-            error: { message: 'Database connection failed' }
+        mockSelect.mockReturnValue({
+            single: () => Promise.resolve({ data: null, error: { message: 'Database connection failed' } })
         });
 
         // Silence console.error for this test case to keep output clean
@@ -108,7 +142,8 @@ describe('API Route: POST /api/leads', () => {
         const payload = {
             name: 'Test User',
             phone: '1234567890',
-            quote: {}
+            quote: { summary: {}, context: {} },
+            privacy_accepted: true
         };
 
         const req = createRequest(payload);
@@ -116,7 +151,7 @@ describe('API Route: POST /api/leads', () => {
 
         expect(res.status).toBe(500);
         const json = await res.json();
-        expect(json.error).toBe('Internal Server Error');
+        expect(json.error).toBe('Database Error');
 
         consoleSpy.mockRestore();
     });

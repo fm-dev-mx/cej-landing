@@ -5,6 +5,7 @@ import { useState, FormEvent, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
+import { useIdentity } from '@/hooks/useIdentity';
 import styles from './LeadFormModal.module.scss';
 
 export type LeadQuoteDetails = {
@@ -26,8 +27,12 @@ type LeadFormModalProps = {
 export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: LeadFormModalProps) {
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
+    const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Tracking identity
+    const identity = useIdentity();
 
     // Ensure we only render the portal on the client side
     const [mounted, setMounted] = useState(false);
@@ -46,7 +51,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
         const cleanName = name.trim();
         const cleanPhone = phone.replace(/[^0-9]/g, '');
 
-        // Client Validation
+        // Validation
         if (cleanName.length < 3) {
             setError('Por favor ingresa tu nombre completo.');
             return;
@@ -55,13 +60,17 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
             setError('Ingresa un número de al menos 10 dígitos.');
             return;
         }
+        if (!privacyAccepted) {
+            setError('Debes aceptar el aviso de privacidad para continuar.');
+            return;
+        }
 
         setIsSubmitting(true);
 
+        // Generate CAPI Event ID
         const fbEventId = crypto.randomUUID();
 
         try {
-            // Send to Data Layer
             const response = await fetch('/api/leads', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -70,11 +79,17 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                     phone: cleanPhone,
                     quote: quoteDetails,
                     fb_event_id: fbEventId,
+                    // Identity & Consent Data
+                    visitor_id: identity?.visitorId || null,
+                    session_id: identity?.sessionId || null,
+                    privacy_accepted: true,
                 }),
             });
 
             if (!response.ok) {
-                throw new Error('Error saving lead data.');
+                // Try to parse error message from server
+                const resData = await response.json().catch(() => ({}));
+                throw new Error(resData.error || 'Error al guardar los datos.');
             }
 
             // Success: Trigger parent callback
@@ -82,8 +97,8 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
 
         } catch (err) {
             console.error(err);
-            // Fallback: Allow user to proceed to WhatsApp even if save fails
-            // to avoid blocking the sales flow.
+            // Fallback: Proceed to WhatsApp even if API fails (Critical for conversion)
+            // But log the error (in a real app, send to Sentry)
             onSuccess(cleanName, fbEventId);
         } finally {
             setIsSubmitting(false);
@@ -131,8 +146,23 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                         required
                     />
 
+                    {/* Privacy Checkbox */}
+                    <div className={styles.checkboxWrapper}>
+                        <label className={styles.checkboxLabel}>
+                            <input
+                                type="checkbox"
+                                checked={privacyAccepted}
+                                onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                                className={styles.checkbox}
+                            />
+                            <span>
+                                He leído y acepto el <a href="/aviso-de-privacidad" target="_blank" rel="noopener noreferrer" className={styles.link}>Aviso de Privacidad</a>.
+                            </span>
+                        </label>
+                    </div>
+
                     {error && (
-                        <p className={styles.errorMessage}>
+                        <p className={styles.errorMessage} role="alert">
                             {error}
                         </p>
                     )}
@@ -147,11 +177,6 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                         Continuar a WhatsApp
                     </Button>
                 </form>
-
-                <p className={styles.legalNotice}>
-                    Al continuar, aceptas nuestro <a href="/aviso-de-privacidad" target="_blank">Aviso de Privacidad</a>.
-                    Tus datos están protegidos.
-                </p>
             </div>
         </div>,
         document.body

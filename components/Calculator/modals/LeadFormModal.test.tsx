@@ -1,4 +1,4 @@
-// path: components/Calculator/modals/LeadFormModal.test.tsx
+// components/Calculator/modals/LeadFormModal.test.tsx
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import {
@@ -21,6 +21,14 @@ vi.mock('react-dom', async () => {
         createPortal: (node: React.ReactNode) => node,
     };
 });
+
+// Mock useIdentity hook
+vi.mock('@/hooks/useIdentity', () => ({
+    useIdentity: () => ({
+        visitorId: 'test-visitor-id',
+        sessionId: 'test-session-id'
+    }),
+}));
 
 let randomUUIDSpy: ReturnType<typeof vi.spyOn> | undefined;
 
@@ -80,7 +88,7 @@ describe('LeadFormModal', () => {
         expect(screen.queryByLabelText(/Teléfono/i)).not.toBeInTheDocument();
     });
 
-    it('renders form fields when open', () => {
+    it('renders form fields and privacy checkbox when open', () => {
         render(
             <LeadFormModal
                 isOpen
@@ -92,6 +100,7 @@ describe('LeadFormModal', () => {
 
         expect(screen.getByLabelText(/Nombre completo/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/Teléfono/i)).toBeInTheDocument();
+        expect(screen.getByText(/Aviso de Privacidad/i)).toBeInTheDocument();
         expect(
             screen.getByRole('button', { name: /Continuar a WhatsApp/i }),
         ).toBeInTheDocument();
@@ -112,6 +121,7 @@ describe('LeadFormModal', () => {
             />,
         );
 
+        // Fill inputs
         fireEvent.change(screen.getByLabelText(/Nombre completo/i), {
             target: { value: 'Juan Pérez' },
         });
@@ -119,6 +129,11 @@ describe('LeadFormModal', () => {
             target: { value: '6561234567' },
         });
 
+        // Accept Privacy Policy
+        const privacyCheckbox = screen.getByRole('checkbox');
+        fireEvent.click(privacyCheckbox);
+
+        // Submit
         fireEvent.click(
             screen.getByRole('button', { name: /Continuar a WhatsApp/i }),
         );
@@ -143,6 +158,9 @@ describe('LeadFormModal', () => {
             phone: '6561234567',
             quote: mockQuoteDetails,
             fb_event_id: 'test-event-id',
+            privacy_accepted: true,
+            visitor_id: 'test-visitor-id',
+            session_id: 'test-session-id', // New session ID assertion
         });
     });
 
@@ -150,6 +168,7 @@ describe('LeadFormModal', () => {
         (global.fetch as any).mockResolvedValue({
             ok: false,
             status: 500,
+            json: async () => ({ error: 'Internal Server Error' }),
         });
 
         const consoleSpy = vi
@@ -171,6 +190,10 @@ describe('LeadFormModal', () => {
         fireEvent.change(screen.getByLabelText(/Teléfono/i), {
             target: { value: '6561112233' },
         });
+
+        // Accept Privacy Policy
+        const privacyCheckbox = screen.getByRole('checkbox');
+        fireEvent.click(privacyCheckbox);
 
         fireEvent.click(
             screen.getByRole('button', { name: /Continuar a WhatsApp/i }),
