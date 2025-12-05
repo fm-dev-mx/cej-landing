@@ -39,14 +39,29 @@
     background-color: rgba(255, 255, 255, 0.05);
   }
 
-  /* Selected State */
+  .customIndicatorWrapper {
+    font-size: 1.5rem;
+    line-height: 1;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* FIX 1: Remove grayscale. Use opacity and scale only */
+    opacity: 0.5;
+    transform: scale(0.9);
+    filter: none;
+    /* Ensure no color filters */
+  }
+
+  /* --- Selected State --- */
   &.selected {
-    background-color: rgba(254, 201, 20, 0.1);
-    /* Brighter tint */
-    border-color: var(--c-accent);
-    box-shadow: 0 0 0 1px var(--c-accent), 0 4px 12px rgba(254, 201, 20, 0.15);
+    /* FIX 2: More visible background and thicker border */
+    background-color: rgba(254, 201, 20, 0.15);
+    /* Slightly more yellow tint */
+    border: 2px solid var(--c-accent);
+    /* Thickness increased to 2px */
+    box-shadow: 0 0 0 1px var(--c-accent), 0 4px 12px rgba(0, 0, 0, 0.3);
+    /* Reinforcement shadow */
+
     transform: none;
-    /* Reset lift on selected for stability */
     z-index: 1;
     /* Bring to front */
 
@@ -62,6 +77,14 @@
 
     .label {
       color: var(--c-accent);
+    }
+
+    .customIndicatorWrapper {
+      opacity: 1;
+      transform: scale(1.2) rotate(-10deg);
+      /* Slightly larger to stand out */
+      /* Remove text-shadow if it muddies the emoji, or keep subtle */
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
     }
   }
 }

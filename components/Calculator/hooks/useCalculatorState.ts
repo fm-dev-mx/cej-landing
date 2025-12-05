@@ -66,8 +66,14 @@ export function useCalculatorState() {
         setState((prev) => ({ ...prev, step }));
     }, []);
 
-    const setMode = useCallback((mode: CalculatorMode) => {
+    const setMode = useCallback((mode: CalculatorMode | null) => {
         setState((prev) => {
+            // If null (reset), just clear mode and DO NOT change 'step'
+            if (mode === null) {
+                return { ...prev, mode: null };
+            }
+
+            // Normal selection logic (advance step)
             const next: CalculatorState = { ...prev, mode };
             if (mode === 'knownM3') {
                 next.length = '';
@@ -98,8 +104,19 @@ export function useCalculatorState() {
         setState((prev) => ({ ...prev, m3 }));
     }, []);
 
-    const setWorkType = useCallback((workType: WorkTypeId) => {
+    const setWorkType = useCallback((workType: WorkTypeId | null) => {
         setState((prev) => {
+            // If resetting (null), save state and DO NOT advance step
+            if (workType === null) {
+                return {
+                    ...prev,
+                    workType: null,
+                    strength: '200', // Optional: reset strength to default
+                    // NOTE: Do not change 'step' here
+                };
+            }
+
+            // Normal selection logic (advance to step 3)
             const cfg = WORK_TYPES.find((w) => w.id === workType);
             return {
                 ...prev,
@@ -107,7 +124,7 @@ export function useCalculatorState() {
                 strength: cfg ? cfg.recommendedStrength : prev.strength,
                 hasCoffered: 'no',
                 cofferedSize: null,
-                step: 3
+                step: 3 // Advances here
             };
         });
     }, []);
@@ -132,12 +149,10 @@ export function useCalculatorState() {
         setState((prev) => ({ ...prev, thicknessByArea }));
     }, []);
 
-    // CAMBIO AQUÍ: Ahora pre-seleccionamos '7' en lugar de '10'
     const setHasCoffered = useCallback((hasCoffered: 'yes' | 'no') => {
         setState((prev) => ({
             ...prev,
             hasCoffered,
-            // Si el usuario elige "Sí", asignamos '7' por defecto
             cofferedSize: hasCoffered === 'yes' ? '7' : null,
         }));
     }, []);

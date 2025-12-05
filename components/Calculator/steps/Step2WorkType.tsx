@@ -7,7 +7,7 @@ import { WorkTypeSelector } from './forms/WorkTypeSelector';
 import styles from '../Calculator.module.scss';
 
 export function Step2WorkType() {
-  const { setStep } = useCalculatorContext();
+  const { setStep, setWorkType } = useCalculatorContext();
 
   return (
     <div className={`${styles.step} ${styles.stepAnimated}`}>
@@ -22,10 +22,13 @@ export function Step2WorkType() {
         <WorkTypeSelector />
 
         <div className={styles.stepControls}>
-          <Button variant="tertiary" onClick={() => setStep(1)}>
+          <Button
+            variant="tertiary"
+            onClick={() => setStep(1)}
+            style={{ marginLeft: 0 }}
+          >
             Atrás
           </Button>
-          {/* Note: Forward navigation happens automatically when selecting a card */}
         </div>
       </div>
     </div>

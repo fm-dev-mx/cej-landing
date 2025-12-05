@@ -23,7 +23,6 @@ function VolumeWarningMessage({ warning }: { warning: QuoteWarning }) {
       return (
         <>
           Se cotiza en múltiplos de <strong>0.5 m³</strong>.
-          Calculado sobre <strong>{warning.billedM3.toFixed(2)} m³</strong>.
         </>
       );
     case 'ROUNDING_ADJUSTMENT':
@@ -82,9 +81,6 @@ export function Step3Inputs() {
 
         {!volumeError && billedM3 > 0 && (
           <div className={styles.note}>
-            <p>
-              Volumen calculado: <strong>{billedM3.toFixed(2)} m³</strong>
-            </p>
             {volumeWarning && (
               <div className={styles.warningFeedback}>
                 <VolumeWarningMessage warning={volumeWarning} />

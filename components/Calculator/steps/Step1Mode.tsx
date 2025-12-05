@@ -35,7 +35,7 @@ export function Step1Mode() {
             value="assistM3"
             label="No, ayúdame a calcular"
             description="Calcula el volumen basado en medidas o tipo de obra."
-            icon="🛟"
+            customIndicator="🛟"
             isSelected={mode === 'assistM3'}
             onChange={() => setMode('assistM3')}
             onClick={() => setMode('assistM3')}

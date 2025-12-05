@@ -7,11 +7,12 @@ interface SelectionCardProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   description?: string;
   icon?: ReactNode;
+  customIndicator?: ReactNode; // NEW: Icon replacing the circle
   isSelected?: boolean;
 }
 
 export const SelectionCard = forwardRef<HTMLInputElement, SelectionCardProps>(
-  ({ className, label, description, icon, isSelected, id, ...props }, ref) => {
+  ({ className, label, description, icon, customIndicator, isSelected, id, ...props }, ref) => {
     return (
       <label
         className={`${styles.card} ${isSelected ? styles.selected : ''} ${className || ''}`}
@@ -26,7 +27,14 @@ export const SelectionCard = forwardRef<HTMLInputElement, SelectionCardProps>(
             checked={isSelected}
             {...props}
           />
-          <div className={styles.radioIndicator} aria-hidden="true" />
+          {/* LOGIC: If customIndicator exists, show it. Else, show standard circle */}
+          {customIndicator ? (
+            <div className={styles.customIndicatorWrapper} aria-hidden="true">
+              {customIndicator}
+            </div>
+          ) : (
+            <div className={styles.radioIndicator} aria-hidden="true" />
+          )}
         </div>
 
         <div className={styles.content}>
