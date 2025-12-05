@@ -33,6 +33,8 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
     area: state.area,
     thicknessByArea: state.thicknessByArea,
     hasCoffered: state.hasCoffered,
+    // FIX: Pass the cofferedSize state to the quote hook so it can calculate specs correctly
+    cofferedSize: state.cofferedSize,
     strength: state.strength,
     type: state.type,
   });
@@ -40,7 +42,7 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
   // 3. Simulation helper
   const simulateCalculation = useCallback((onComplete: () => void) => {
     setIsCalculating(true);
-    // Random delay between 600ms and 1000ms for realism
+    // Random delay between 900ms and 1300ms for realism
     const delay = Math.floor(Math.random() * 400) + 900;
 
     setTimeout(() => {

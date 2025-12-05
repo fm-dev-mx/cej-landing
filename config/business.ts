@@ -6,18 +6,14 @@ import type {
     WorkTypeConfig,
     PriceTable,
     VolumeTier,
+    CofferedSize
 } from '@/components/Calculator/types';
 
 // --- Global business configuration ---
 
-// 8% VAT (border rate)
-export const VAT_RATE = 0.08;
-
-// Volume increment (m³)
-export const M3_STEP = 0.5;
-
+export const VAT_RATE = 0.08; // 8% VAT (border rate)
+export const M3_STEP = 0.5; // Volume increment (m³)
 export const CURRENCY = 'MXN';
-
 export const STORAGE_KEY = 'cej_calculator_v1';
 
 export const ESTIMATE_LEGEND =
@@ -30,10 +26,39 @@ export const MIN_M3_BY_TYPE: Record<ConcreteType, number> = {
     pumped: 3,
 };
 
+// --- Slab Specifications (New Logic) ---
+
+type SlabSpec = {
+    label: string;
+    totalThicknessCm: number; // Grosor final (Casetón + Capa compresión)
+    coefficient: number;      // m3 de concreto por m2 de losa
+};
+
+/*
+  Standard Coefficients (Aporte):
+  - 7cm Casetón -> 12cm total -> ~0.085 m3/m2
+  - 10cm Casetón -> 15cm total -> ~0.108 m3/m2
+  - 15cm Casetón -> 20cm total -> ~0.135 m3/m2
+*/
+export const COFFERED_SPECS: Record<CofferedSize, SlabSpec> = {
+    '7': {
+        label: 'Casetón 7cm',
+        totalThicknessCm: 12,
+        coefficient: 0.085
+    },
+    '10': {
+        label: 'Casetón 10cm',
+        totalThicknessCm: 15,
+        coefficient: 0.108
+    },
+    '15': {
+        label: 'Casetón 15cm',
+        totalThicknessCm: 20,
+        coefficient: 0.135
+    }
+};
+
 export const CASETON_FACTORS = {
-    // Lightened slab (with coffers/blocks)
-    withCofferedSlab: 0.71,
-    // Solid slab (no coffers)
     solidSlab: 0.98,
 } as const;
 
@@ -81,7 +106,6 @@ export const WORK_TYPES: WorkTypeConfig[] = [
 
 // --- Pricing table ---
 
-// Local helpers to define price tiers in integer cents
 const pesos = (n: number): number => Math.round(n * 100);
 
 const tier = (
@@ -94,11 +118,6 @@ const tier = (
     pricePerM3Cents: pesos(unitPricePesos),
 });
 
-/*
-  Base prices (without VAT)
-  - Direct pour: Tier 1 (2–2.5 m³), Tier 2 (>= 3 m³)
-  - Pumped: Tier 1 (3–4.5 m³), Tier 2 (>= 5 m³)
-*/
 export const PRICE_TABLE: PriceTable = {
     base: {
         direct: {

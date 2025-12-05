@@ -1,17 +1,15 @@
 // components/Calculator/types.ts
 
-// Pure type definitions.
-// Constants and business values have been moved to @/config/business.
-
 export type Strength = '100' | '150' | '200' | '250' | '300';
 export type ConcreteType = 'direct' | 'pumped';
 
 export type CalculatorMode = 'knownM3' | 'assistM3';
 export type AssistVolumeMode = 'dimensions' | 'area';
 
-// UPDATED: Now supports 5 logical steps
 export type Step = 1 | 2 | 3 | 4 | 5;
-export type CofferedSize = '7' | '10';
+
+// UPDATED: Added '15' to standard sizes
+export type CofferedSize = '7' | '10' | '15';
 
 export type WorkTypeId =
     | 'slab'
@@ -76,4 +74,10 @@ export type QuoteBreakdown = {
     subtotal: number;       // MXN without VAT
     vat: number;            // MXN (IVA)
     total: number;          // MXN with VAT
+    // New metadata for transparency in UI
+    calculationDetails?: {
+        formula: string;
+        factorUsed?: number;
+        effectiveThickness?: number;
+    };
 };

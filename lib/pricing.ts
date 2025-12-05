@@ -1,21 +1,22 @@
 // lib/pricing.ts
 
 import {
-    CASETON_FACTORS,
     M3_STEP,
     MIN_M3_BY_TYPE,
     PRICE_TABLE,
-    VAT_RATE
+    VAT_RATE,
+    COFFERED_SPECS,
+    CASETON_FACTORS
 } from "@/config/business";
 import type {
     ConcreteType,
     NormalizedVolume,
     PriceTable,
     QuoteBreakdown,
-    Strength
+    Strength,
+    CofferedSize
 } from "@/components/Calculator/types";
 
-// Re-export empty quote for initial usage
 export const EMPTY_QUOTE: QuoteBreakdown = {
     volume: {
         requestedM3: 0,
@@ -31,8 +32,6 @@ export const EMPTY_QUOTE: QuoteBreakdown = {
     vat: 0,
     total: 0,
 };
-
-// ---------- Volume helpers ----------
 
 export function roundUpToStep(value: number, step: number): number {
     if (!Number.isFinite(value) || value <= 0) return 0;
@@ -51,8 +50,6 @@ export function normalizeVolume(
     const minM3ForType = MIN_M3_BY_TYPE[type];
     const roundedM3 = roundUpToStep(safeRequested, M3_STEP);
 
-    // FIX: Only apply minimum if the user is actually requesting concrete.
-    // If roundedM3 is 0, billed should be 0.
     const billedM3 = roundedM3 > 0
         ? Math.max(roundedM3, minM3ForType)
         : 0;
@@ -68,50 +65,62 @@ export function normalizeVolume(
     };
 }
 
-// ---------- Volume calculators for Flow B ----------
+// ---------- Volume calculators ----------
 
-export type SlabDimensionsInput = {
+export type SlabInputBase = {
+    hasCofferedSlab: boolean;
+    cofferedSize: CofferedSize | null;
+    manualThicknessCm?: number; // Used only if solid slab
+};
+
+export type SlabDimensionsInput = SlabInputBase & {
     lengthM: number;
     widthM: number;
-    thicknessCm: number;
-    hasCofferedSlab: boolean;
 };
 
-export type SlabAreaInput = {
+export type SlabAreaInput = SlabInputBase & {
     areaM2: number;
-    thicknessCm: number;
-    hasCofferedSlab: boolean;
 };
 
-export function calcVolumeFromDimensions(input: SlabDimensionsInput): number {
-    const { lengthM, widthM, thicknessCm, hasCofferedSlab } = input;
-
-    if (lengthM <= 0 || widthM <= 0 || thicknessCm <= 0) return 0;
-
-    const thicknessM = thicknessCm / 100;
-    const baseVolume = lengthM * widthM * thicknessM;
-    const factor = hasCofferedSlab
-        ? CASETON_FACTORS.withCofferedSlab
-        : CASETON_FACTORS.solidSlab;
-
-    return baseVolume * factor;
-}
-
+/**
+ * Calculates concrete volume based on area.
+ * Logic:
+ * - If Coffered: Use standardized coefficient (m3/m2).
+ * - If Solid: Use geometric volume (Area * Thickness).
+ */
 export function calcVolumeFromArea(input: SlabAreaInput): number {
-    const { areaM2, thicknessCm, hasCofferedSlab } = input;
+    const { areaM2, hasCofferedSlab, cofferedSize, manualThicknessCm } = input;
 
-    if (areaM2 <= 0 || thicknessCm <= 0) return 0;
+    if (areaM2 <= 0) return 0;
+
+    // Lógica 1: Losa Aligerada (Usa coeficientes)
+    if (hasCofferedSlab && cofferedSize) {
+        const spec = COFFERED_SPECS[cofferedSize];
+        if (spec) {
+            return areaM2 * spec.coefficient;
+        }
+    }
+
+    // Lógica 2: Losa Sólida (Usa grosor manual)
+    const thicknessCm = manualThicknessCm ?? 0;
+    if (thicknessCm <= 0) return 0;
 
     const thicknessM = thicknessCm / 100;
-    const baseVolume = areaM2 * thicknessM;
-    const factor = hasCofferedSlab
-        ? CASETON_FACTORS.withCofferedSlab
-        : CASETON_FACTORS.solidSlab;
-
-    return baseVolume * factor;
+    // Apply solid slab factor (e.g. 0.98 for minor adjustments/waste logic, or 1.0)
+    return areaM2 * thicknessM * CASETON_FACTORS.solidSlab;
 }
 
-// ---------- Quote engine ----------
+/**
+ * Calculates concrete volume based on dimensions (Length x Width).
+ * Wraps calcVolumeFromArea internally.
+ */
+export function calcVolumeFromDimensions(input: SlabDimensionsInput): number {
+    const { lengthM, widthM, ...rest } = input;
+    const areaM2 = lengthM * widthM;
+    return calcVolumeFromArea({ areaM2, ...rest });
+}
+
+// --- Quote Engine ---
 
 function resolveUnitPricePerM3Cents(
     billedM3: number,
@@ -163,7 +172,6 @@ export function calcQuote(
         table,
     );
 
-    // All monetary calculations in integer cents
     const subtotalCents = Math.round(volume.billedM3 * unitCents);
     const vatCents = Math.round(subtotalCents * VAT_RATE);
     const totalCents = subtotalCents + vatCents;

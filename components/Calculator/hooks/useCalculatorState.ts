@@ -60,7 +60,6 @@ export function useCalculatorState() {
 
     const resetCalculator = useCallback(() => {
         setState(DEFAULT_CALCULATOR_STATE);
-        // localStorage update is handled by the useEffect above
     }, []);
 
     const setStep = useCallback((step: Step) => {
@@ -69,18 +68,13 @@ export function useCalculatorState() {
 
     const setMode = useCallback((mode: CalculatorMode) => {
         setState((prev) => {
-            const next: CalculatorState = {
-                ...prev,
-                mode,
-            };
+            const next: CalculatorState = { ...prev, mode };
             if (mode === 'knownM3') {
-                // If known volume, reset calc inputs and SKIP Step 2 (Work Type)
                 next.length = '';
                 next.width = '';
                 next.area = '';
                 next.step = 3;
             } else {
-                // If needs assistance, go to Step 2 (Work Type)
                 next.m3 = '';
                 next.step = 2;
             }
@@ -113,7 +107,6 @@ export function useCalculatorState() {
                 strength: cfg ? cfg.recommendedStrength : prev.strength,
                 hasCoffered: 'no',
                 cofferedSize: null,
-                // Automatically advance to inputs when type is selected
                 step: 3
             };
         });
@@ -139,11 +132,13 @@ export function useCalculatorState() {
         setState((prev) => ({ ...prev, thicknessByArea }));
     }, []);
 
+    // CAMBIO AQUÍ: Ahora pre-seleccionamos '7' en lugar de '10'
     const setHasCoffered = useCallback((hasCoffered: 'yes' | 'no') => {
         setState((prev) => ({
             ...prev,
             hasCoffered,
-            cofferedSize: hasCoffered === 'yes' ? '10' : null,
+            // Si el usuario elige "Sí", asignamos '7' por defecto
+            cofferedSize: hasCoffered === 'yes' ? '7' : null,
         }));
     }, []);
 
@@ -153,7 +148,7 @@ export function useCalculatorState() {
 
     return {
         ...state,
-        resetCalculator, // New export
+        resetCalculator,
         setStep,
         setMode,
         setVolumeMode,

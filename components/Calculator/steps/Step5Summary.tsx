@@ -25,7 +25,6 @@ export function Step5Summary({ estimateLegend }: Props) {
         resetCalculator,
         strength,
         type,
-        // Nuevos campos de contexto
         workType,
         volumeMode,
         length,
@@ -55,7 +54,6 @@ export function Step5Summary({ estimateLegend }: Props) {
 
     const hasValidConfig = !!getWhatsAppUrl(waNumber, 'test');
 
-    // Payload enriquecido que se guarda en quote_data
     const enrichedQuoteData = useMemo<LeadQuoteDetails>(() => {
         const specs =
             volumeMode === 'dimensions'
@@ -72,10 +70,12 @@ export function Step5Summary({ estimateLegend }: Props) {
                 work_type: workTypeLabel,
                 calculation_method: volumeMode,
                 ...specs,
+                formula: quote.calculationDetails?.formula
             },
         };
     }, [
         quote.total,
+        quote.calculationDetails,
         billedM3,
         productLabel,
         workTypeLabel,
@@ -94,20 +94,16 @@ export function Step5Summary({ estimateLegend }: Props) {
                 return;
             }
 
-            // Contact intent inicial por WhatsApp
             trackContact('whatsapp');
-
             setShowLeadModal(true);
         },
         [quote.total],
     );
 
-    // Handler después de guardar el lead en la API
     const handleLeadSuccess = useCallback(
         (userName: string, fbEventId: string) => {
             setShowLeadModal(false);
 
-            // Evento Lead con event_id para poder hacer matching CAPI en backend
             trackLead({
                 value: quote.total,
                 currency: 'MXN',
@@ -149,7 +145,6 @@ export function Step5Summary({ estimateLegend }: Props) {
             </header>
 
             <div className={styles.stepBody}>
-                {/* Tarjeta de resumen tipo "ticket" */}
                 <article
                     className={styles.ticketCard}
                     aria-label="Desglose de cotización"
@@ -170,27 +165,38 @@ export function Step5Summary({ estimateLegend }: Props) {
                             <h3 className={styles.ticketSectionTitle}>Detalles del Pedido</h3>
                             <div className={styles.specGrid}>
                                 <div className={styles.specItem}>
-                                    <span className={styles.specLabel}>Resistencia</span>
-                                    <span className={styles.specValue}>f’c {strength}</span>
-                                </div>
-                                <div className={styles.specItem}>
-                                    <span className={styles.specLabel}>Tipo Servicio</span>
-                                    <span className={styles.specValue}>{serviceTypeLabel}</span>
-                                </div>
-                                <div className={styles.specItem}>
-                                    <span className={styles.specLabel}>Volumen</span>
-                                    <span className={styles.specValue}>
-                                        {billedM3.toFixed(2)} m³
-                                    </span>
+                                    <span className={styles.specLabel}>Producto</span>
+                                    <span className={styles.specValue}>f’c {strength} ({serviceTypeLabel})</span>
                                 </div>
                                 <div className={styles.specItem}>
                                     <span className={styles.specLabel}>Aplicación</span>
                                     <span className={styles.specValue}>{workTypeLabel}</span>
                                 </div>
                             </div>
+
+                            {/* New Calculation Transparency Section */}
+                            {quote.calculationDetails && (
+                                <div className={styles.note}>
+                                    <div className={styles.transparencyContent}>
+                                        <span className={styles.transparencyLabel}>Base de Cálculo:</span>
+                                        <div className={styles.transparencyBody}>
+                                            {quote.calculationDetails.formula}
+                                            {quote.calculationDetails.effectiveThickness && (
+                                                <span className={styles.transparencySub}>
+                                                    (Considerando grosor total de {quote.calculationDetails.effectiveThickness} cm)
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className={styles.ticketRows}>
+                            <div className={styles.row}>
+                                <span className={styles.rowLabel}>Volumen a facturar</span>
+                                <span className={styles.rowValue}>{billedM3.toFixed(2)} m³</span>
+                            </div>
                             <div className={styles.row}>
                                 <span className={styles.rowLabel}>Precio Unitario</span>
                                 <span className={styles.rowValue}>{unitPriceLabel}</span>

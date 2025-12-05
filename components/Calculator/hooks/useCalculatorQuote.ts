@@ -7,7 +7,11 @@ import {
     calcVolumeFromDimensions,
     EMPTY_QUOTE
 } from '@/lib/pricing';
-import { CONCRETE_TYPES } from '@/config/business';
+import {
+    CONCRETE_TYPES,
+    COFFERED_SPECS,
+    CASETON_FACTORS
+} from '@/config/business';
 import { fmtMXN } from '@/lib/utils';
 import { trackViewContent } from '@/lib/pixel';
 import {
@@ -18,6 +22,7 @@ import {
 import {
     type AssistVolumeMode,
     type CalculatorMode,
+    type CofferedSize,
     type ConcreteType,
     type QuoteBreakdown,
     type Strength,
@@ -33,6 +38,7 @@ type QuoteInput = {
     area: string;
     thicknessByArea: string;
     hasCoffered: 'yes' | 'no';
+    cofferedSize: CofferedSize | null;
     strength: Strength;
     type: ConcreteType;
 };
@@ -77,6 +83,7 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
         area,
         thicknessByArea,
         hasCoffered,
+        cofferedSize,
         strength,
         type,
     } = input;
@@ -96,6 +103,7 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
 
         let rawRequested = 0;
         let error: string | null = null;
+        let calculationMetadata: QuoteBreakdown['calculationDetails'];
 
         // 1. Validate & Parse Input using Zod Schemas
         if (mode === 'knownM3') {
@@ -103,63 +111,113 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
             const result = schema.safeParse({ m3 });
 
             if (!result.success) {
-                // Use the first validation error message
                 error = result.error.issues[0].message;
             } else {
                 rawRequested = result.data.m3;
+                calculationMetadata = { formula: 'Volumen conocido' };
             }
         } else {
             const hasCofferedSlab = hasCoffered === 'yes';
+            // 1. Obtener especificaciones si es aligerada
+            let effectiveThicknessCm = 0;
+            let coefficient = 0;
+
+            if (hasCofferedSlab && cofferedSize && COFFERED_SPECS[cofferedSize]) {
+                effectiveThicknessCm = COFFERED_SPECS[cofferedSize].totalThicknessCm;
+                coefficient = COFFERED_SPECS[cofferedSize].coefficient;
+            }
+
+            // 2. Definir valor de respaldo (Dummy) para Zod
+            // Usamos el grosor de la losa de 7cm (12cm total) como base segura
+            const defaultDummyThickness = String(COFFERED_SPECS['7'].totalThicknessCm);
 
             if (volumeMode === 'dimensions') {
+                // Inyectar valor dummy si es aligerada
+                const inputThickness = hasCofferedSlab
+                    ? (effectiveThicknessCm > 0 ? String(effectiveThicknessCm) : defaultDummyThickness)
+                    : thicknessByDims;
+
                 const result = DimensionsSchema.safeParse({
                     length,
                     width,
-                    thickness: thicknessByDims,
+                    thickness: inputThickness,
                 });
 
                 if (!result.success) {
-                    // If fields are empty/zero, we just show a generic prompt or the specific Zod error
-                    // For better UX, if simply empty, we might wait. But here we map Zod errors directly.
-                    // To avoid spamming errors on empty initial state, we can check if strings are empty manually
-                    // or just let Zod handle "min" messages.
-                    const firstIssue = result.error.issues[0];
-                    // Only show error if value is present but invalid, OR if we want strict guidance.
-                    // For this MVP, we return the error to block progress.
-                    if (length || width || thicknessByDims) {
-                        error = firstIssue.message;
+                    if (length || width || inputThickness) {
+                        error = result.error.issues[0].message;
                     } else {
                         error = 'Completa las medidas para calcular.';
                     }
                 } else {
                     const { length: l, width: w, thickness: t } = result.data;
+
                     rawRequested = calcVolumeFromDimensions({
                         lengthM: l,
                         widthM: w,
-                        thicknessCm: t,
+                        manualThicknessCm: hasCofferedSlab ? 0 : t,
                         hasCofferedSlab,
+                        cofferedSize
                     });
+
+                    // Metadata para mostrar al usuario
+                    const areaM2 = l * w;
+                    if (hasCofferedSlab) {
+                        calculationMetadata = {
+                            formula: `${areaM2.toFixed(2)} m² × ${coefficient.toFixed(3)} (Coeficiente)`,
+                            factorUsed: coefficient,
+                            effectiveThickness: effectiveThicknessCm
+                        };
+                    } else {
+                        const tM = t / 100;
+                        calculationMetadata = {
+                            formula: `${areaM2.toFixed(2)} m² × ${tM.toFixed(2)} m (Grosor)`,
+                            factorUsed: CASETON_FACTORS.solidSlab,
+                            effectiveThickness: t
+                        };
+                    }
                 }
             } else {
+                // Modo Área
+                const inputThickness = hasCofferedSlab
+                    ? (effectiveThicknessCm > 0 ? String(effectiveThicknessCm) : defaultDummyThickness)
+                    : thicknessByArea;
+
                 const result = AreaSchema.safeParse({
                     area,
-                    thickness: thicknessByArea,
+                    thickness: inputThickness,
                 });
 
                 if (!result.success) {
-                    const firstIssue = result.error.issues[0];
-                    if (area || thicknessByArea) {
-                        error = firstIssue.message;
+                    if (area || inputThickness) {
+                        error = result.error.issues[0].message;
                     } else {
                         error = 'Completa área y grosor para calcular.';
                     }
                 } else {
                     const { area: a, thickness: t } = result.data;
+
                     rawRequested = calcVolumeFromArea({
                         areaM2: a,
-                        thicknessCm: t,
+                        manualThicknessCm: hasCofferedSlab ? 0 : t,
                         hasCofferedSlab,
+                        cofferedSize
                     });
+
+                    if (hasCofferedSlab) {
+                        calculationMetadata = {
+                            formula: `${a.toFixed(2)} m² × ${coefficient.toFixed(3)} (Coeficiente)`,
+                            factorUsed: coefficient,
+                            effectiveThickness: effectiveThicknessCm
+                        };
+                    } else {
+                        const tM = t / 100;
+                        calculationMetadata = {
+                            formula: `${a.toFixed(2)} m² × ${tM.toFixed(2)} m (Grosor)`,
+                            factorUsed: CASETON_FACTORS.solidSlab,
+                            effectiveThickness: t
+                        };
+                    }
                 }
             }
         }
@@ -174,6 +232,8 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
 
         // 2. Calculate Quote (Business Logic)
         const q = calcQuote(rawRequested, strength, type);
+        q.calculationDetails = calculationMetadata;
+
         const {
             requestedM3: normalizedRequested,
             billedM3: normalizedBilled,
@@ -223,6 +283,7 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
         area,
         thicknessByArea,
         hasCoffered,
+        cofferedSize,
         strength,
         type,
     ]);

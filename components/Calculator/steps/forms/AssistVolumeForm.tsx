@@ -28,7 +28,6 @@ export function AssistVolumeForm() {
         volumeError
     } = useCalculatorContext();
 
-    // Helper: cast volumeError to boolean (!!) to prevent returning 'null' which Input props reject
     const hasError = (value: string) => !!volumeError && (!value || parseFloat(value) <= 0);
 
     const handleNumericInput = useCallback(
@@ -39,6 +38,9 @@ export function AssistVolumeForm() {
         },
         []
     );
+
+    // UX Logic: Hide manual thickness input if coffered is selected
+    const showManualThickness = hasCoffered !== 'yes';
 
     return (
         <>
@@ -69,83 +71,72 @@ export function AssistVolumeForm() {
             </div>
 
             {volumeMode === 'dimensions' && (
-                <>
-                    <div className={styles.compactGrid}>
-                        <Input
-                            id="length"
-                            label="Largo (m)"
-                            type="number"
-                            min={0}
-                            step={0.5}
-                            value={length}
-                            onChange={handleNumericInput(setLength)}
-                            inputMode="decimal"
-                            placeholder="0.00"
-                            error={hasError(length)}
-                        />
-                        <Input
-                            id="width"
-                            label="Ancho (m)"
-                            type="number"
-                            min={0}
-                            step={0.5}
-                            value={width}
-                            onChange={handleNumericInput(setWidth)}
-                            inputMode="decimal"
-                            placeholder="0.00"
-                            error={hasError(width)}
-                        />
-                    </div>
-
+                <div className={styles.compactGrid}>
                     <Input
-                        id="thickness-dims"
-                        label="Grosor (cm)"
+                        id="length"
+                        label="Largo (m)"
                         type="number"
                         min={0}
-                        step={1}
-                        value={thicknessByDims}
-                        onChange={handleNumericInput(setThicknessByDims)}
+                        step={0.5}
+                        value={length}
+                        onChange={handleNumericInput(setLength)}
                         inputMode="decimal"
-                        placeholder="10"
-                        error={hasError(thicknessByDims)}
+                        placeholder="0.00"
+                        error={hasError(length)}
                     />
-                </>
+                    <Input
+                        id="width"
+                        label="Ancho (m)"
+                        type="number"
+                        min={0}
+                        step={0.5}
+                        value={width}
+                        onChange={handleNumericInput(setWidth)}
+                        inputMode="decimal"
+                        placeholder="0.00"
+                        error={hasError(width)}
+                    />
+                </div>
             )}
 
             {volumeMode === 'area' && (
-                <>
-                    <Input
-                        id="area"
-                        label="Área total (m²)"
-                        type="number"
-                        min={0}
-                        step={0.1}
-                        value={area}
-                        onChange={handleNumericInput(setArea)}
-                        inputMode="decimal"
-                        placeholder="0.00"
-                        error={hasError(area)}
-                    />
-                    <Input
-                        id="thickness-area"
-                        label="Grosor (cm)"
-                        type="number"
-                        min={0}
-                        step={1}
-                        value={thicknessByArea}
-                        onChange={handleNumericInput(setThicknessByArea)}
-                        inputMode="decimal"
-                        placeholder="10"
-                        error={hasError(thicknessByArea)}
-                    />
-                </>
+                <Input
+                    id="area"
+                    label="Área total (m²)"
+                    type="number"
+                    min={0}
+                    step={0.1}
+                    value={area}
+                    onChange={handleNumericInput(setArea)}
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    error={hasError(area)}
+                />
             )}
 
-            {/* Lightened Slab (Coffered) Block */}
+            {/* Thickness Logic for Solid Slab */}
+            {showManualThickness && (
+                <Input
+                    id={volumeMode === 'dimensions' ? "thickness-dims" : "thickness-area"}
+                    label="Grosor (cm)"
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={volumeMode === 'dimensions' ? thicknessByDims : thicknessByArea}
+                    onChange={handleNumericInput(
+                        volumeMode === 'dimensions' ? setThicknessByDims : setThicknessByArea
+                    )}
+                    inputMode="decimal"
+                    placeholder="10"
+                    error={hasError(volumeMode === 'dimensions' ? thicknessByDims : thicknessByArea)}
+                />
+            )}
+
+            {/* Special Section for Slab Type */}
             {workType === 'slab' && (
                 <>
                     <div className={styles.field}>
-                        <label>¿La losa lleva casetón?</label>
+                        <label>Tipo de Losa</label>
                         <div className={styles.radioRow}>
                             <label className={styles.radio}>
                                 <input
@@ -155,7 +146,7 @@ export function AssistVolumeForm() {
                                     checked={hasCoffered === 'no'}
                                     onChange={() => setHasCoffered('no')}
                                 />
-                                <span>No (Sólida)</span>
+                                <span>Sólida (Maciza)</span>
                             </label>
                             <label className={styles.radio}>
                                 <input
@@ -165,7 +156,7 @@ export function AssistVolumeForm() {
                                     checked={hasCoffered === 'yes'}
                                     onChange={() => setHasCoffered('yes')}
                                 />
-                                <span>Sí (Aligerada)</span>
+                                <span>Aligerada (Casetón)</span>
                             </label>
                         </div>
                     </div>
@@ -173,10 +164,22 @@ export function AssistVolumeForm() {
                     {hasCoffered === 'yes' && (
                         <div className={`${styles.stepAnimated} ${styles.cofferSection}`}>
                             <label className={styles.cofferLabel}>
-                                Altura del casetón:
+                                Medida del Casetón (Poliestireno):
                             </label>
 
+
                             <div className={styles.pillGroup}>
+                                <label className={styles.pill}>
+                                    <input
+                                        type="radio"
+                                        name="coffered-size"
+                                        value="7"
+                                        checked={cofferedSize === '7'}
+                                        onChange={() => setCofferedSize('7')}
+                                    />
+                                    <span>7 cm</span>
+                                </label>
+
                                 <label className={styles.pill}>
                                     <input
                                         type="radio"
@@ -192,13 +195,16 @@ export function AssistVolumeForm() {
                                     <input
                                         type="radio"
                                         name="coffered-size"
-                                        value="7"
-                                        checked={cofferedSize === '7'}
-                                        onChange={() => setCofferedSize('7')}
+                                        value="15"
+                                        checked={cofferedSize === '15'}
+                                        onChange={() => setCofferedSize('15')}
                                     />
-                                    <span>7 cm</span>
+                                    <span>15 cm</span>
                                 </label>
                             </div>
+                            <p className={styles.hint}>
+                                Calculamos el espesor total añadiendo 5 cm adicionales al casetón, tal como se recomienda en la construcción de losas.
+                            </p>
                         </div>
                     )}
                 </>

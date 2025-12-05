@@ -59,7 +59,6 @@ $ticket-text: #111827;
 
   /* SCROLL FIX: Scroll margin for sticky header offset */
   scroll-margin-top: var(--sp-6);
-
   border-radius: var(--radius-lg);
   background: linear-gradient(145deg, $glass-surface, rgba(2, 20, 40, 0.9));
   -webkit-backdrop-filter: blur(24px);
@@ -191,7 +190,7 @@ $ticket-text: #111827;
   margin-inline: auto;
 }
 
-/* --- Ticket / Summary Card (Redesigned) --- */
+/* --- Ticket / Summary Card --- */
 .ticketCard {
   background-color: $ticket-bg;
   color: $ticket-text;
@@ -416,7 +415,9 @@ $ticket-text: #111827;
   font-size: var(--fs-xs);
   color: var(--c-muted-on-dark);
   opacity: 0.8;
-  margin-top: 0.25rem;
+  margin-top: 1.5rem;
+  max-width: 70ch;
+  text-align: right;
 }
 
 /* Compact Grid for Dimensions (Length x Width) */
@@ -549,10 +550,36 @@ $ticket-text: #111827;
   border: 1px solid rgba(var(--c-accent), 0.2);
   text-align: right;
 
-
   strong {
     color: white;
   }
+}
+
+/* --- Transparency / Calculation Details --- */
+.transparencyContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.transparencyLabel {
+  font-size: 0.75rem;
+  color: var(--c-muted-strong);
+  margin-bottom: 0.25rem;
+}
+
+.transparencyBody {
+  font-size: 0.9rem;
+  color: var(--c-muted);
+}
+
+.transparencySub {
+  display: block;
+  opacity: 0.7;
+  font-size: 0.8em;
+  margin-top: 2px;
+  color: var(--c-muted);
 }
 
 .error {
