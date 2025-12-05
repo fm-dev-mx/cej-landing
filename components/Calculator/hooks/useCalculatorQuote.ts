@@ -215,7 +215,7 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
                     } else {
                         const tM = t / 100;
                         calculationMetadata = {
-                            formula: `${a.toFixed(2)} m² × ${tM.toFixed(2)} m (Espesor)`,
+                            formula: `${a.toFixed(2)} m² × ${tM.toFixed(2)} m`,
                             factorUsed: CASETON_FACTORS.solidSlab,
                             effectiveThickness: t
                         };

@@ -23,6 +23,7 @@ type Props = {
 
 export function Step5Summary({ estimateLegend }: Props) {
     const {
+        mode, // Destructured mode to allow conditional logic
         billedM3,
         requestedM3, // Access raw calculated volume
         quote,
@@ -63,7 +64,11 @@ export function Step5Summary({ estimateLegend }: Props) {
     // UX: More descriptive product labels
     const serviceTypeLabel = CONCRETE_TYPES.find(t => t.value === type)?.label ?? type;
     const productLabel = `Concreto f’c ${strength} kg/cm²`;
-    const workTypeLabel = WORK_TYPES.find((w) => w.id === workType)?.label ?? 'Otro';
+
+    // FIX: Handle "Known Volume" mode where workType is null/skipped
+    const workTypeLabel = mode === 'knownM3'
+        ? 'Por definir'
+        : (WORK_TYPES.find((w) => w.id === workType)?.label ?? 'Otro');
 
     const hasValidConfig = !!getWhatsAppUrl(waNumber, 'test');
 
@@ -136,6 +141,7 @@ export function Step5Summary({ estimateLegend }: Props) {
                 `Hola soy ${userName}, me interesa esta pre-cotización (Folio: ${folio}):\n\n` +
                 `• *Producto:* ${productLabel}\n` +
                 `• *Servicio:* ${serviceTypeLabel}\n` +
+                `• *Aplicación:* ${workTypeLabel}\n` +
                 `• *Volumen:* ${billedM3.toFixed(2)} m³\n` +
                 `• *Total Estimado:* ${fmtMXN(quote.total)}\n\n` +
                 `¿Me pueden ayudar a confirmar el pedido?`;
@@ -146,7 +152,7 @@ export function Step5Summary({ estimateLegend }: Props) {
                 window.open(finalWaUrl, '_blank', 'noopener,noreferrer');
             }
         },
-        [quote.total, billedM3, waNumber, productLabel, serviceTypeLabel, folio],
+        [quote.total, billedM3, waNumber, productLabel, serviceTypeLabel, workTypeLabel, folio],
     );
 
     const handlePhoneClick = useCallback(() => {
@@ -346,6 +352,7 @@ export function Step5Summary({ estimateLegend }: Props) {
                         </button>
                     </div>
                 </div>
+
             </div>
 
             <LeadFormModal

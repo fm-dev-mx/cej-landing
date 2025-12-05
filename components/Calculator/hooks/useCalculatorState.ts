@@ -79,6 +79,13 @@ export function useCalculatorState() {
                 next.length = '';
                 next.width = '';
                 next.area = '';
+
+                // FIX: Reset assist-mode specific fields to prevent "zombie state"
+                // when switching from Assist -> Known mode
+                next.workType = null;
+                next.hasCoffered = 'no';
+                next.cofferedSize = null;
+
                 next.step = 3;
             } else {
                 next.m3 = '';
