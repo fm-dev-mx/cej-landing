@@ -8,6 +8,7 @@ import type {
     VolumeTier,
     CofferedSize
 } from '@/components/Calculator/types';
+import { env } from '@/config/env';
 
 // --- Global business configuration ---
 
@@ -16,8 +17,14 @@ export const M3_STEP = 0.5; // Volume increment (m³)
 export const CURRENCY = 'MXN';
 export const STORAGE_KEY = 'cej_calculator_v1';
 
+// NEW: Quote specific constants
+export const QUOTE_VALIDITY_DAYS = 7;
+export const SUPPORT_PHONE_LABEL = env.NEXT_PUBLIC_PHONE;
+export const WEBSITE_URL_LABEL = env.NEXT_PUBLIC_SITE_URL;
+
+// Modified disclaimer to be more specific
 export const ESTIMATE_LEGEND =
-    'Los resultados son estimados. Para confirmar el volumen y el precio final realizamos una visita de volumetría sin costo, una vez programado el pedido y con la obra lista para colar.';
+    'Precios sujetos a cambio sin previo aviso. La volumetría final se valida con visita técnica gratuita.';
 
 // --- Volume rules ---
 
@@ -68,7 +75,7 @@ export const STRENGTHS: Strength[] = ['100', '150', '200', '250', '300'];
 
 export const CONCRETE_TYPES: { value: ConcreteType; label: string }[] = [
     { value: 'direct', label: 'Tiro directo' },
-    { value: 'pumped', label: 'Bombeado' },
+    { value: 'pumped', label: 'Servicio de Bomba' },
 ];
 
 export const WORK_TYPES: WorkTypeConfig[] = [

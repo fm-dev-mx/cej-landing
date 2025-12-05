@@ -17,6 +17,17 @@ export const parseNum = (s: string) => {
 };
 
 /**
+ * Generates a simple, human-readable Quote ID (Folio).
+ * Format: WEB-YYYYMMDD-XXXX (where XXXX is a random suffix)
+ */
+export function generateQuoteId(): string {
+    const now = new Date();
+    const datePart = now.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
+    const randomPart = Math.floor(1000 + Math.random() * 9000); // 4 digit random
+    return `WEB-${datePart}-${randomPart}`;
+}
+
+/**
  * Generates a sanitized WhatsApp URL with the MX country code (52).
  * @param phone Raw phone number from env vars
  * @param text Optional pre-filled message

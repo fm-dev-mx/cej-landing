@@ -8,7 +8,8 @@ import { z } from 'zod';
  */
 const envSchema = z.object({
     // Meta Pixel
-    NEXT_PUBLIC_PIXEL_ID: z.string().min(1, "Pixel ID is required"),
+    // Optional for development / test. We will warn in production if missing.
+    NEXT_PUBLIC_PIXEL_ID: z.string().optional().default(''),
 
     // Contact Information
     // We expect numbers in string format (e.g., "521656...")
@@ -43,7 +44,7 @@ const processEnv = {
 // Parse and validate
 const parsed = envSchema.safeParse(processEnv);
 
-if (!parsed.success) {
+if (!parsed.success && process.env.NODE_ENV !== 'test') {
     console.error(
         '❌ Invalid environment variables:',
         JSON.stringify(parsed.error.format(), null, 4)
@@ -56,3 +57,13 @@ if (!parsed.success) {
 export const env = parsed.success
     ? parsed.data
     : (processEnv as unknown as z.infer<typeof envSchema>); // Fallback to raw (unsafe) if validation fails to prevent full crash during partial dev setup
+
+// Extra safety: warn in production if Pixel ID is missing
+if (process.env.NODE_ENV === 'production' && !env.NEXT_PUBLIC_PIXEL_ID) {
+    // Do not throw, but make it very visible in logs.
+    // Meta Pixel will simply not be initialized.
+    // eslint-disable-next-line no-console
+    console.warn(
+        '⚠️ NEXT_PUBLIC_PIXEL_ID is empty. Meta Pixel will not be initialized in production.'
+    );
+}

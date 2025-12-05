@@ -146,7 +146,7 @@ export function AssistVolumeForm() {
                                     checked={hasCoffered === 'no'}
                                     onChange={() => setHasCoffered('no')}
                                 />
-                                <span>Sólida (Maciza)</span>
+                                <span>Sólida</span>
                             </label>
                             <label className={styles.radio}>
                                 <input

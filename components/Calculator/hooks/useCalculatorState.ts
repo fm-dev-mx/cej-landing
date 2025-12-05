@@ -29,8 +29,8 @@ export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
     thicknessByDims: '12',
     area: '',
     thicknessByArea: '12',
-    hasCoffered: 'no',
-    cofferedSize: null,
+    hasCoffered: 'yes',
+    cofferedSize: '7',
 };
 
 export function useCalculatorState() {
@@ -122,8 +122,8 @@ export function useCalculatorState() {
                 ...prev,
                 workType,
                 strength: cfg ? cfg.recommendedStrength : prev.strength,
-                hasCoffered: 'no',
-                cofferedSize: null,
+                hasCoffered: workType === 'slab' ? 'yes' : 'no',
+                cofferedSize: workType === 'slab' ? '7' : null,
                 step: 3 // Advances here
             };
         });

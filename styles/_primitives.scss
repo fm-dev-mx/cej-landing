@@ -1,29 +1,62 @@
 /* styles/_primitives.scss */
 @mixin btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  gap: .5rem; padding: .75rem 1rem; border-radius: var(--radius);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .75rem 1rem;
+  border-radius: var(--radius);
   border: 1px solid var(--c-border);
-  background: var(--c-text); color: #fff; font-weight: 600;
+  background: var(--c-text);
+  color: #fff;
+  font-weight: 600;
   transition: transform .04s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
-  &:hover { background: color-mix(in oklab, var(--c-text) 92%, #fff 8%); }
-  &:active { transform: translateY(1px); }
-  &:disabled { opacity: .5; cursor: not-allowed; }
+
+  &:hover {
+    background: color-mix(in oklab, var(--c-text) 92%, #fff 8%);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+  }
 }
 
 @mixin btn-outline {
-  background: #fff; color: var(--c-text);
-  &:hover { background: var(--c-surface); }
+  background: #fff;
+  color: var(--c-text);
+
+  &:hover {
+    background: var(--c-surface);
+  }
 }
 
 @mixin container {
   width: 100%;
   margin-inline: auto;
   padding-inline: var(--sp-4);
-  max-width: 72rem; /* 1152px */
+  max-width: 72rem;
+  /* 1152px */
 }
 
 /* Tipografías utilitarias */
-@mixin h1 { font-size: var(--fs-3xl); line-height: var(--lh-tight); font-weight: 700; }
-@mixin h2 { font-size: var(--fs-2xl); line-height: var(--lh-tight); font-weight: 700; }
-@mixin lead { font-size: var(--fs-lg); color: var(--c-muted); }
+@mixin h1 {
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-tight);
+  font-weight: 700;
+}
 
+@mixin h2 {
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-tight);
+  font-weight: 700;
+}
+
+@mixin lead {
+  font-size: var(--fs-lg);
+  color: var(--c-muted);
+}

@@ -164,14 +164,16 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
                     const areaM2 = l * w;
                     if (hasCofferedSlab) {
                         calculationMetadata = {
-                            formula: `${areaM2.toFixed(2)} m² × ${coefficient.toFixed(3)} (Coeficiente)`,
+                            // Hacemos la fórmula más legible
+                            formula: `${areaM2.toFixed(2)} m² × ${coefficient} (Coef. Aporte)`,
                             factorUsed: coefficient,
                             effectiveThickness: effectiveThicknessCm
                         };
                     } else {
+                        // Losa sólida
                         const tM = t / 100;
                         calculationMetadata = {
-                            formula: `${areaM2.toFixed(2)} m² × ${tM.toFixed(2)} m (Grosor)`,
+                            formula: `${areaM2.toFixed(2)} m² × ${tM.toFixed(2)} m`,
                             factorUsed: CASETON_FACTORS.solidSlab,
                             effectiveThickness: t
                         };
@@ -206,14 +208,14 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
 
                     if (hasCofferedSlab) {
                         calculationMetadata = {
-                            formula: `${a.toFixed(2)} m² × ${coefficient.toFixed(3)} (Coeficiente)`,
+                            formula: `${a.toFixed(2)} m² × ${coefficient} (Coef. Aporte)`,
                             factorUsed: coefficient,
                             effectiveThickness: effectiveThicknessCm
                         };
                     } else {
                         const tM = t / 100;
                         calculationMetadata = {
-                            formula: `${a.toFixed(2)} m² × ${tM.toFixed(2)} m (Grosor)`,
+                            formula: `${a.toFixed(2)} m² × ${tM.toFixed(2)} m (Espesor)`,
                             factorUsed: CASETON_FACTORS.solidSlab,
                             effectiveThickness: t
                         };

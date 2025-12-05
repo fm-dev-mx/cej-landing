@@ -10,12 +10,30 @@ import Layout from "@/components/layout/Layout";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#ffffff", // Adjust to your brand color if necessary
+  themeColor: "#ffffff",
 };
+
+const isProduction = process.env.NODE_ENV === "production";
+const resolveSiteUrl = (): string => {
+  // 1) Prefer explicit public env
+  if (env.NEXT_PUBLIC_SITE_URL) {
+    return env.NEXT_PUBLIC_SITE_URL;
+  }
+
+  // 2) Fallback a dominio de Vercel si existe
+  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+  }
+
+  // 3) Fallback local dev
+  return "http://localhost:3000";
+};
+
+const siteUrl = resolveSiteUrl();
 
 export const metadata: Metadata = {
   // metadataBase is CRITICAL for relative images (e.g. /og-image.jpg) to work
-  metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
+  metadataBase: new URL(siteUrl),
 
   title: {
     default: SEO_CONTENT.title,
@@ -28,7 +46,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: SEO_CONTENT.title,
     description: SEO_CONTENT.description,
-    url: env.NEXT_PUBLIC_SITE_URL,
+    url: siteUrl,
     siteName: SEO_CONTENT.siteName,
     locale: "es_MX",
     type: "website",
@@ -52,7 +70,6 @@ export const metadata: Metadata = {
 
   icons: {
     icon: "/favicon.ico",
-    // Add Apple touch icons here if needed
     // apple: '/apple-touch-icon.png',
   },
 };
@@ -61,16 +78,11 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const pixelId = env.NEXT_PUBLIC_PIXEL_ID;
-  // Optimize production check
-  const isProduction = process.env.NODE_ENV === "production";
 
   return (
     <html lang="es-MX">
       <body className="app-root">
-        {/* Meta Pixel Code
-          Strategy: 'afterInteractive' ensures the script loads after the page becomes interactive,
-          improving Initial Page Load speed.
-        */}
+        {/* Meta Pixel Code */}
         {isProduction && pixelId && (
           <>
             <Script id="fb-pixel" strategy="afterInteractive">
@@ -94,7 +106,7 @@ export default function RootLayout({
                 height="1"
                 width="1"
                 className="fb-noscript-pixel"
-                style={{ display: 'none' }}
+                style={{ display: "none" }}
                 src={`https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1`}
                 alt=""
               />

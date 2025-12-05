@@ -1,14 +1,20 @@
-// path: components/Calculator/steps/Step5Summary.tsx
+// components/Calculator/steps/Step5Summary.tsx
 'use client';
 
-import { useCallback, useState, useMemo, type MouseEvent } from 'react';
+import { useCallback, useState, useMemo, useEffect, type MouseEvent } from 'react';
 import { useCalculatorContext } from '../context/CalculatorContext';
-import { fmtMXN, getWhatsAppUrl, getPhoneUrl } from '@/lib/utils';
+import { fmtMXN, getWhatsAppUrl, getPhoneUrl, generateQuoteId } from '@/lib/utils';
 import { trackLead, trackContact } from '@/lib/pixel';
 import { env } from '@/config/env';
+import {
+    QUOTE_VALIDITY_DAYS,
+    SUPPORT_PHONE_LABEL,
+    WEBSITE_URL_LABEL,
+    WORK_TYPES,
+    CONCRETE_TYPES
+} from '@/config/business';
 import { Button } from '@/components/ui/Button/Button';
 import { LeadFormModal, type LeadQuoteDetails } from '../modals/LeadFormModal';
-import { WORK_TYPES } from '@/config/business';
 import styles from '../Calculator.module.scss';
 
 type Props = {
@@ -18,6 +24,7 @@ type Props = {
 export function Step5Summary({ estimateLegend }: Props) {
     const {
         billedM3,
+        requestedM3, // Access raw calculated volume
         quote,
         unitPriceLabel,
         volumeError,
@@ -35,6 +42,13 @@ export function Step5Summary({ estimateLegend }: Props) {
     } = useCalculatorContext();
 
     const [showLeadModal, setShowLeadModal] = useState(false);
+    const [folio, setFolio] = useState<string>('');
+    const [showMath, setShowMath] = useState(false);
+
+    // Generate Folio once on mount to simulate a persistent transaction ID
+    useEffect(() => {
+        setFolio(generateQuoteId());
+    }, []);
 
     const today = new Date().toLocaleDateString('es-MX', {
         day: 'numeric',
@@ -46,13 +60,15 @@ export function Step5Summary({ estimateLegend }: Props) {
     const phone = env.NEXT_PUBLIC_PHONE;
     const phoneHref = getPhoneUrl(phone);
 
-    const serviceTypeLabel = type === 'direct' ? 'Tiro directo' : 'Bombeado';
-    const productLabel = `Concreto f’c ${strength} (${serviceTypeLabel})`;
-
-    const workTypeLabel =
-        WORK_TYPES.find((w) => w.id === workType)?.label ?? 'Otro';
+    // UX: More descriptive product labels
+    const serviceTypeLabel = CONCRETE_TYPES.find(t => t.value === type)?.label ?? type;
+    const productLabel = `Concreto f’c ${strength} kg/cm²`;
+    const workTypeLabel = WORK_TYPES.find((w) => w.id === workType)?.label ?? 'Otro';
 
     const hasValidConfig = !!getWhatsAppUrl(waNumber, 'test');
+
+    // UX: Detect if we are billing minimum or rounding up significantly
+    const isBillingAdjusted = billedM3 !== requestedM3;
 
     const enrichedQuoteData = useMemo<LeadQuoteDetails>(() => {
         const specs =
@@ -64,11 +80,13 @@ export function Step5Summary({ estimateLegend }: Props) {
             summary: {
                 total: quote.total,
                 volume: billedM3,
-                product: productLabel,
+                product: `${productLabel} - ${serviceTypeLabel}`,
             },
             context: {
+                folio,
                 work_type: workTypeLabel,
                 calculation_method: volumeMode,
+                raw_volume: requestedM3,
                 ...specs,
                 formula: quote.calculationDetails?.formula
             },
@@ -77,7 +95,9 @@ export function Step5Summary({ estimateLegend }: Props) {
         quote.total,
         quote.calculationDetails,
         billedM3,
+        requestedM3,
         productLabel,
+        serviceTypeLabel,
         workTypeLabel,
         volumeMode,
         length,
@@ -85,6 +105,7 @@ export function Step5Summary({ estimateLegend }: Props) {
         thicknessByDims,
         area,
         thicknessByArea,
+        folio
     ]);
 
     const handleWhatsAppClick = useCallback(
@@ -93,7 +114,6 @@ export function Step5Summary({ estimateLegend }: Props) {
                 e?.preventDefault();
                 return;
             }
-
             trackContact('whatsapp');
             setShowLeadModal(true);
         },
@@ -113,10 +133,10 @@ export function Step5Summary({ estimateLegend }: Props) {
             });
 
             const message =
-                `Hola soy ${userName}, me interesa esta cotización de CEJ:\n\n` +
-                `• *Volumen:* ${billedM3.toFixed(2)} m³\n` +
+                `Hola soy ${userName}, me interesa esta pre-cotización (Folio: ${folio}):\n\n` +
                 `• *Producto:* ${productLabel}\n` +
-                `• *Uso:* ${workTypeLabel}\n` +
+                `• *Servicio:* ${serviceTypeLabel}\n` +
+                `• *Volumen:* ${billedM3.toFixed(2)} m³\n` +
                 `• *Total Estimado:* ${fmtMXN(quote.total)}\n\n` +
                 `¿Me pueden ayudar a confirmar el pedido?`;
 
@@ -126,7 +146,7 @@ export function Step5Summary({ estimateLegend }: Props) {
                 window.open(finalWaUrl, '_blank', 'noopener,noreferrer');
             }
         },
-        [quote.total, billedM3, waNumber, productLabel, workTypeLabel],
+        [quote.total, billedM3, waNumber, productLabel, serviceTypeLabel, folio],
     );
 
     const handlePhoneClick = useCallback(() => {
@@ -140,63 +160,95 @@ export function Step5Summary({ estimateLegend }: Props) {
             <header className={styles.stepHeader}>
                 <h2 className={styles.stepTitle}>Cotización Lista</h2>
                 <p className={styles.stepSubtitle}>
-                    Revisa el detalle y contáctanos para agendar tu pedido.
+                    Este es un estimado preliminar. Confirma tu pedido con un asesor.
                 </p>
             </header>
 
             <div className={styles.stepBody}>
+                {/* TICKET CONTAINER */}
                 <article
                     className={styles.ticketCard}
                     aria-label="Desglose de cotización"
                 >
+                    {/* Branding Watermark */}
+                    <div className={styles.ticketWatermark} aria-hidden="true" />
+
                     <div className={styles.ticketContent}>
+                        {/* Header: Brand & Meta */}
                         <div className={styles.ticketHeader}>
-                            <span className={styles.ticketLabel}>Presupuesto Web</span>
-                            <time
-                                className={styles.ticketDate}
-                                dateTime={new Date().toISOString().split('T')[0]}
-                                suppressHydrationWarning
-                            >
-                                {today}
-                            </time>
+                            <div className={styles.ticketBrand}>
+                                <span className={styles.ticketLabel}>Pre-Cotización</span>
+                                <span className={styles.ticketFolio}>#{folio || '...'}</span>
+                            </div>
+                            <div className={styles.ticketMeta}>
+                                <time className={styles.ticketDate}>{today}</time>
+                                <span className={styles.ticketValidity}>
+                                    Vigencia: {QUOTE_VALIDITY_DAYS} días
+                                </span>
+                            </div>
                         </div>
 
+                        {/* Product Specs */}
                         <div className={styles.ticketSection}>
-                            <h3 className={styles.ticketSectionTitle}>Detalles del Pedido</h3>
+                            <h3 className={styles.ticketSectionTitle}>Detalles del Producto</h3>
                             <div className={styles.specGrid}>
                                 <div className={styles.specItem}>
                                     <span className={styles.specLabel}>Producto</span>
-                                    <span className={styles.specValue}>f’c {strength} ({serviceTypeLabel})</span>
+                                    <span className={styles.specValue}>{productLabel}</span>
+                                </div>
+                                <div className={styles.specItem}>
+                                    <span className={styles.specLabel}>Tipo de Servicio</span>
+                                    <span className={styles.specValue}>{serviceTypeLabel}</span>
                                 </div>
                                 <div className={styles.specItem}>
                                     <span className={styles.specLabel}>Aplicación</span>
                                     <span className={styles.specValue}>{workTypeLabel}</span>
                                 </div>
+
+                                {/* Volume Logic Display */}
+                                <div className={styles.specItem}>
+                                    <span className={styles.specLabel}>Volumen a Facturar</span>
+                                    <span className={styles.specValue}>{billedM3.toFixed(2)} m³</span>
+                                    {isBillingAdjusted && (
+                                        <span className={styles.volumeWarning}>
+                                            (Cálculo estimado: {requestedM3.toFixed(2)} m³)
+                                        </span>
+                                    )}
+                                </div>
                             </div>
 
-                            {/* New Calculation Transparency Section */}
+                            {/* Transparency Accordion */}
                             {quote.calculationDetails && (
-                                <div className={styles.note}>
-                                    <div className={styles.transparencyContent}>
-                                        <span className={styles.transparencyLabel}>Base de Cálculo:</span>
-                                        <div className={styles.transparencyBody}>
-                                            {quote.calculationDetails.formula}
-                                            {quote.calculationDetails.effectiveThickness && (
-                                                <span className={styles.transparencySub}>
-                                                    (Considerando grosor total de {quote.calculationDetails.effectiveThickness} cm)
-                                                </span>
-                                            )}
+                                <div className={styles.accordion}>
+                                    <button
+                                        type="button"
+                                        className={styles.accordionTrigger}
+                                        onClick={() => setShowMath(!showMath)}
+                                    >
+                                        {showMath ? '▼ Ocultar cálculo' : '▶ Ver detalles de cálculo'}
+                                    </button>
+
+                                    {showMath && (
+                                        <div className={styles.accordionContent}>
+                                            <div className={styles.transparencyContent}>
+                                                <span className={styles.transparencyLabel}>Fórmula empleada:</span>
+                                                <div className={styles.transparencyBody}>
+                                                    {quote.calculationDetails.formula}
+                                                    {quote.calculationDetails.effectiveThickness && (
+                                                        <span className={styles.transparencySub}>
+                                                            (Grosor calculado: {quote.calculationDetails.effectiveThickness} cm)
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             )}
                         </div>
 
+                        {/* Financials */}
                         <div className={styles.ticketRows}>
-                            <div className={styles.row}>
-                                <span className={styles.rowLabel}>Volumen a facturar</span>
-                                <span className={styles.rowValue}>{billedM3.toFixed(2)} m³</span>
-                            </div>
                             <div className={styles.row}>
                                 <span className={styles.rowLabel}>Precio Unitario</span>
                                 <span className={styles.rowValue}>{unitPriceLabel}</span>
@@ -214,18 +266,36 @@ export function Step5Summary({ estimateLegend }: Props) {
                         </div>
 
                         <div className={styles.ticketTotal}>
-                            <span className={styles.totalLabel}>Total</span>
+                            <span className={styles.totalLabel}>Total Estimado</span>
                             <span className={styles.totalValue}>{fmtMXN(quote.total)}</span>
+                        </div>
+
+                        {/* Fixed Footer for Screenshots */}
+                        <div className={styles.ticketFooter}>
+                            <span className={styles.footerInfoPhone}>
+                                {SUPPORT_PHONE_LABEL}
+                            </span>
+                            <span className={styles.footerInfoWebsite}>
+                                🌐 {WEBSITE_URL_LABEL}
+                            </span>
                         </div>
                     </div>
                 </article>
 
+                {/* Error Fallback */}
                 {billedM3 === 0 && !volumeError && (
                     <div className={styles.error} role="alert">
                         Faltan datos para completar el cálculo.
                     </div>
                 )}
 
+                {/* Disclaimer / Warnings */}
+                <p className={styles.disclaimer}>
+                    <strong>Nota importante:</strong> {estimateLegend}
+                    {type === 'pumped' && ' Incluye servicio de bomba pluma en el precio unitario.'}
+                </p>
+
+                {/* Actions */}
                 <div className={styles.actionsGroup}>
                     <div className={styles.primaryActions}>
                         <Button
@@ -276,8 +346,6 @@ export function Step5Summary({ estimateLegend }: Props) {
                         </button>
                     </div>
                 </div>
-
-                <p className={styles.disclaimer}>{estimateLegend}</p>
             </div>
 
             <LeadFormModal
