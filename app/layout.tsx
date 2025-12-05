@@ -1,21 +1,67 @@
 // app/layout.tsx
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { env } from "@/config/env";
+import { SEO_CONTENT } from "@/config/content";
 import "../styles/globals.scss";
 import Layout from "@/components/layout/Layout";
 
+// Separate Viewport configuration (Next.js 14+ recommendation)
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#ffffff", // Adjust to your brand color if necessary
+};
+
 export const metadata: Metadata = {
-  title: env.NEXT_PUBLIC_BRAND_NAME,
-  description:
-    "No te compliques, concreto premezclado y equipos de construcción en Juárez al mejor precio.",
+  // metadataBase is CRITICAL for relative images (e.g. /og-image.jpg) to work
   metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
+
+  title: {
+    default: SEO_CONTENT.title,
+    template: `%s | ${env.NEXT_PUBLIC_BRAND_NAME}`,
+  },
+  description: SEO_CONTENT.description,
+  keywords: SEO_CONTENT.keywords,
+
+  // Configuration for Facebook, LinkedIn, Discord, etc.
+  openGraph: {
+    title: SEO_CONTENT.title,
+    description: SEO_CONTENT.description,
+    url: env.NEXT_PUBLIC_SITE_URL,
+    siteName: SEO_CONTENT.siteName,
+    locale: "es_MX",
+    type: "website",
+    images: [
+      {
+        url: SEO_CONTENT.ogImage,
+        width: 1200,
+        height: 630,
+        alt: SEO_CONTENT.title,
+      },
+    ],
+  },
+
+  // Configuration for Twitter/X
+  twitter: {
+    card: "summary_large_image",
+    title: SEO_CONTENT.title,
+    description: SEO_CONTENT.description,
+    images: [SEO_CONTENT.ogImage],
+  },
+
+  icons: {
+    icon: "/favicon.ico",
+    // Add Apple touch icons here if needed
+    // apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const pixelId = env.NEXT_PUBLIC_PIXEL_ID;
+  // Optimize production check
   const isProduction = process.env.NODE_ENV === "production";
 
   return (
@@ -48,6 +94,7 @@ export default function RootLayout({
                 height="1"
                 width="1"
                 className="fb-noscript-pixel"
+                style={{ display: 'none' }}
                 src={`https://www.facebook.com/tr?id=${pixelId}&ev=PageView&noscript=1`}
                 alt=""
               />

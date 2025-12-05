@@ -27,7 +27,6 @@ export interface FaqItem {
     answer: string;
 }
 
-// NEW: Interface for Social Proof / Works
 export interface WorkItem {
     id: string;
     title: string;
@@ -37,13 +36,12 @@ export interface WorkItem {
     imageUrl: string;
 }
 
-// NEW: Testimonial & Stat Interfaces
 export interface TestimonialItem {
     id: string;
     quote: string;
     author: string;
     role: string;
-    type: 'contractor' | 'individual'; // To optionally style differently
+    type: 'contractor' | 'individual';
 }
 
 export interface StatItem {
@@ -51,6 +49,16 @@ export interface StatItem {
     value: string;
     label: string;
 }
+
+// --- NEW: SEO Configuration ---
+export const SEO_CONTENT = {
+    title: "Concreto y Equipos de Juárez | Calidad y Tiempo",
+    description: "Suministro de concreto premezclado y equipos de construcción en Ciudad Juárez. Cálculo de volumetría gratis, entregas puntuales y asesoría experta.",
+    siteName: "Concreto y Equipos de Juárez",
+    keywords: ["concreto juarez", "concreto premezclado", "bombeo de concreto", "construcción juarez", "cemento"],
+    // Asegúrate de colocar esta imagen en tu carpeta public/
+    ogImage: "/og-image.jpg",
+};
 
 export const LANDING_CONTENT = {
     hero: {
@@ -105,7 +113,6 @@ export const LANDING_CONTENT = {
     socialProof: {
         title: "Nuestra huella en Juárez",
         subtitle: "La confianza se construye metro a metro. Resultados reales en obras de toda la ciudad.",
-        // UPDATED: Stats more realistic for a 3-4 year old company focusing on results/quality
         stats: [
             { id: "s1", value: "+4,500", label: "Obras Suministradas" },
             { id: "s2", value: "95%", label: "Puntualidad en Entrega" },

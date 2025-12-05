@@ -16,7 +16,13 @@ const envSchema = z.object({
     NEXT_PUBLIC_PHONE: z.string().optional().default(''),
 
     // Site Metadata
-    NEXT_PUBLIC_SITE_URL: z.string().url().optional().default('https://concretodejuarez.com'),
+    // Transform URL to remove trailing '/' if user accidentally adds it
+    NEXT_PUBLIC_SITE_URL: z
+        .string()
+        .url()
+        .optional()
+        .default('https://concretodejuarez.com')
+        .transform((url) => (url?.endsWith('/') ? url.slice(0, -1) : url)),
     NEXT_PUBLIC_BRAND_NAME: z.string().optional().default('Concreto y Equipos de Juárez'),
     NEXT_PUBLIC_CURRENCY: z.string().optional().default('MXN'),
 });
@@ -49,4 +55,4 @@ if (!parsed.success) {
 
 export const env = parsed.success
     ? parsed.data
-    : (processEnv as z.infer<typeof envSchema>); // Fallback to raw (unsafe) if validation fails to prevent full crash during partial dev setup
+    : (processEnv as unknown as z.infer<typeof envSchema>); // Fallback to raw (unsafe) if validation fails to prevent full crash during partial dev setup
