@@ -74,7 +74,6 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
             });
 
             if (!response.ok) {
-                // Optional: Read actual server error if needed
                 throw new Error('Error saving lead data.');
             }
 
@@ -84,14 +83,13 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
         } catch (err) {
             console.error(err);
             // Fallback: Allow user to proceed to WhatsApp even if save fails
-            // to avoid losing the sale due to technical issues.
+            // to avoid blocking the sales flow.
             onSuccess(cleanName, fbEventId);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    // Use Portal to break out of the parent form DOM hierarchy
     return createPortal(
         <div className={styles.backdrop} onClick={onClose}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -134,7 +132,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                     />
 
                     {error && (
-                        <p style={{ color: 'var(--c-error-text)', fontSize: '0.875rem' }}>
+                        <p className={styles.errorMessage}>
                             {error}
                         </p>
                     )}

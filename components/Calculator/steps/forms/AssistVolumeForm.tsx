@@ -28,9 +28,7 @@ export function AssistVolumeForm() {
         volumeError
     } = useCalculatorContext();
 
-    // Helper to determine if a specific field has an error based on global volumeError
-    // Simple logic: if there is a global error and the field is empty/invalid, mark it.
-    // FIXED: Cast volumeError to boolean (!!) to prevent returning 'null' which Input props reject
+    // Helper: cast volumeError to boolean (!!) to prevent returning 'null' which Input props reject
     const hasError = (value: string) => !!volumeError && (!value || parseFloat(value) <= 0);
 
     const handleNumericInput = useCallback(
@@ -174,7 +172,7 @@ export function AssistVolumeForm() {
 
                     {hasCoffered === 'yes' && (
                         <div className={`${styles.stepAnimated} ${styles.cofferSection}`}>
-                            <label style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>
+                            <label className={styles.cofferLabel}>
                                 Altura del casetón:
                             </label>
 
