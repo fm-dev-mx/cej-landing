@@ -1,4 +1,4 @@
-// components/layout/HeroSection.tsx
+// components/layouts/HeroSection.tsx
 
 import { env } from "@/config/env";
 import { LANDING_CONTENT } from "@/config/content";

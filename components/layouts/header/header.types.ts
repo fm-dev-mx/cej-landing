@@ -1,4 +1,4 @@
-// components/layout/header/header.types.ts
+// components/layouts/header/header.types.ts
 
 export type NavItem = {
     href: string;

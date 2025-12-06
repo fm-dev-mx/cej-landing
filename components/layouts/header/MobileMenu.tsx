@@ -1,4 +1,4 @@
-// components/layout/header/MobileMenu.tsx
+// components/layouts/header/MobileMenu.tsx
 import { type NavItem, type PhoneMeta } from "./header.types";
 import styles from "../Header.module.scss";
 

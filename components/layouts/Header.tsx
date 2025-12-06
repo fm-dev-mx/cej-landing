@@ -1,4 +1,4 @@
-// components/layout/Header.tsx
+// components/layouts/Header.tsx
 "use client";
 
 import Link from "next/link";

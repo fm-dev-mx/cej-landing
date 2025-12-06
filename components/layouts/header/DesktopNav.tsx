@@ -1,4 +1,4 @@
-// components/layout/header/DesktopNav.tsx
+// components/layouts/header/DesktopNav.tsx
 import { type NavItem } from "./header.types";
 import styles from "../Header.module.scss";
 

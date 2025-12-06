@@ -1,6 +1,6 @@
 import Calculator from '@/components/Calculator/Calculator';
 import CTAButtons from "@/components/CTAButtons/CTAButtons";
-import HeroSection from "@/components/layout/HeroSection";
+import HeroSection from "@/components/layouts/HeroSection";
 import TrustSection from "@/components/TrustSection/TrustSection";
 import ProcessSection from "@/components/ProcessSection/ProcessSection";
 import SocialProofSection from "@/components/SocialProofSection/SocialProofSection";

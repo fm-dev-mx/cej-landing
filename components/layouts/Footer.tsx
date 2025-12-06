@@ -1,4 +1,4 @@
-// components/layout/Footer.tsx
+// components/layouts/Footer.tsx
 
 import Link from "next/link";
 import Image from "next/image";

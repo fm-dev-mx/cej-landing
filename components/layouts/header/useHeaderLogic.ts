@@ -1,4 +1,4 @@
-// components/layout/header/useHeaderLogic.ts
+// components/layouts/header/useHeaderLogic.ts
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
 import { useLockBodyScroll } from "@/hooks/useLockBodyScroll";
