@@ -1,0 +1,56 @@
+// components/layouts/ToolShell/ToolShell.module.scss
+@use "../../../styles/tokens" as t;
+@use "../../../styles/mixins" as *;
+
+.shell {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    /* Dynamic Viewport Height for Mobile */
+    background-color: var(--c-bg);
+    color: var(--c-text);
+    overflow: hidden;
+    /* Prevent body scroll, handle internally */
+}
+
+.header {
+    height: var(--header-h-stuck);
+    border-bottom: 1px solid var(--c-border);
+    background-color: var(--c-primary-dark);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: var(--sp-4);
+    flex-shrink: 0;
+    z-index: 20;
+}
+
+.brand {
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+    color: white;
+    text-decoration: none;
+}
+
+.main {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: var(--sp-4);
+    padding-bottom: calc(var(--bottom-bar-h) + var(--sp-8));
+    /* Space for SmartBar */
+
+    @include respond-to('md') {
+        padding: var(--sp-8);
+        max-width: 1000px;
+        margin-inline: auto;
+        width: 100%;
+    }
+}
+
+.actions {
+    display: flex;
+    gap: var(--sp-2);
+}
