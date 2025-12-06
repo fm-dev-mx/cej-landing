@@ -6,6 +6,7 @@ import { SEO_CONTENT } from "@/config/content";
 import { generateLocalBusinessSchema } from "@/lib/seo";
 import "../styles/globals.scss";
 import Layout from "@/components/layout/Layout";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -83,6 +84,7 @@ export default function RootLayout({
   return (
     <html lang="es-MX">
       <head>
+        <SpeedInsights />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
