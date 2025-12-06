@@ -17,7 +17,8 @@ import {
 } from '@/config/business';
 import { Button } from '@/components/ui/Button/Button';
 import { LeadFormModal, type LeadQuoteDetails } from '../modals/LeadFormModal';
-import styles from '../Calculator.module.scss';
+import styles from './Step5Summary.module.scss';
+import stepStyles from '../CalculatorSteps.module.scss';
 
 type Props = {
     estimateLegend: string;
@@ -196,21 +197,21 @@ export function Step5Summary({ estimateLegend }: Props) {
     }, [phone, quote.total]);
 
     return (
-        <div className={`${styles.step} ${styles.stepAnimated}`}>
-            {/* Inyección de Schema para Rich Snippets */}
+        <div className={`${stepStyles.step} ${stepStyles.stepAnimated}`}>
+            {/* Rich Snippets Schema Inject */}
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
             />
 
-            <header className={styles.stepHeader}>
-                <h2 className={styles.stepTitle}>Cotización Lista</h2>
-                <p className={styles.stepSubtitle}>
+            <header className={stepStyles.stepHeader}>
+                <h2 className={stepStyles.stepTitle}>Cotización Lista</h2>
+                <p className={stepStyles.stepSubtitle}>
                     Este es un estimado preliminar. Confirma tu pedido con un asesor.
                 </p>
             </header>
 
-            <div className={styles.stepBody}>
+            <div className={stepStyles.stepBody}>
                 {/* TICKET CONTAINER */}
                 <article
                     className={styles.ticketCard}
@@ -392,7 +393,7 @@ export function Step5Summary({ estimateLegend }: Props) {
                             <span className={styles.linkIcon}>←</span> Editar
                         </button>
 
-                        <span className={styles.linkSeparator}>•</span>
+                        <span className={stepStyles.linkSeparator}>•</span>
 
                         <button
                             type="button"

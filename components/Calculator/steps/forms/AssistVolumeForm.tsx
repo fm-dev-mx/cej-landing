@@ -4,7 +4,7 @@
 import { type ChangeEvent, useCallback } from 'react';
 import { useCalculatorContext } from '../../context/CalculatorContext';
 import { Input } from '@/components/ui/Input/Input';
-import styles from '../../Calculator.module.scss';
+import styles from '../../CalculatorSteps.module.scss';
 
 export function AssistVolumeForm() {
     const {

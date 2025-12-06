@@ -4,7 +4,7 @@
 import { useCalculatorContext } from "../context/CalculatorContext";
 import { Button } from "@/components/ui/Button/Button";
 import { SpecsForm } from "./forms/SpecsForm";
-import styles from "../Calculator.module.scss";
+import styles from "../CalculatorSteps.module.scss";
 
 export function Step4Specs() {
   const {

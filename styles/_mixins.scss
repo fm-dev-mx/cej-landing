@@ -1,15 +1,15 @@
 // styles/_mixins.scss
 @use "sass:map";
-@use "breakpoints" as b;
+// FIX: Use explicit relative path to ensure resolution from any depth
+@use "@/styles/breakpoints" as b;
 
 // Forward breakpoints so they are available when importing mixins
-@forward "breakpoints";
+@forward "@/styles/breakpoints";
 
 @mixin container {
   width: min(90%, 1200px);
   margin-inline: auto;
   margin-bottom: var(--sp-6);
-
 }
 
 @mixin container-wide {
@@ -60,7 +60,7 @@
 }
 
 @mixin respond-to-height($type) {
-  @if $type =='short' {
+  @if $type =="short" {
     @media screen and (max-height: 667px) {
       @content;
     }

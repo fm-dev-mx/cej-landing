@@ -6,7 +6,7 @@ import type { QuoteWarning } from '../types';
 import { Button } from '@/components/ui/Button/Button';
 import { KnownVolumeForm } from './forms/KnownVolumeForm';
 import { AssistVolumeForm } from './forms/AssistVolumeForm';
-import styles from '../Calculator.module.scss';
+import styles from '../CalculatorSteps.module.scss';
 
 function VolumeWarningMessage({ warning }: { warning: QuoteWarning }) {
   if (!warning) return null;

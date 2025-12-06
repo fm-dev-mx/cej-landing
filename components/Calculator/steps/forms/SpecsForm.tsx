@@ -7,7 +7,7 @@ import { type Strength } from '../../types';
 import { STRENGTHS, CONCRETE_TYPES } from '@/config/business';
 import { Select } from '@/components/ui/Select/Select';
 import { SelectionCard } from '@/components/ui/SelectionCard/SelectionCard';
-import styles from '../../Calculator.module.scss';
+import styles from '../../CalculatorSteps.module.scss';
 
 export function SpecsForm() {
     const { strength, type, mode, setStrength, setType } = useCalculatorContext();

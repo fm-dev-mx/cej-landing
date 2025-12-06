@@ -3,7 +3,7 @@
 
 import { useCalculatorContext } from '../context/CalculatorContext';
 import { SelectionCard } from '@/components/ui/SelectionCard/SelectionCard';
-import styles from '../Calculator.module.scss';
+import styles from '../CalculatorSteps.module.scss';
 
 export function Step1Mode() {
   const { mode, setMode } = useCalculatorContext();

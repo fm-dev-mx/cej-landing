@@ -4,10 +4,10 @@
 import { useCalculatorContext } from '../context/CalculatorContext';
 import { Button } from '@/components/ui/Button/Button';
 import { WorkTypeSelector } from './forms/WorkTypeSelector';
-import styles from '../Calculator.module.scss';
+import styles from '../CalculatorSteps.module.scss';
 
 export function Step2WorkType() {
-  const { setStep, setWorkType } = useCalculatorContext();
+  const { setStep } = useCalculatorContext();
 
   return (
     <div className={`${styles.step} ${styles.stepAnimated}`}>
