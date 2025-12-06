@@ -21,13 +21,6 @@ vi.mock('@supabase/supabase-js', () => ({
     })),
 }));
 
-// Mock Data Sanitizer - important to mock so we test only the route logic
-vi.mock('@/lib/data-sanitizers', () => ({
-    // Mock the sanitizer to return the context structure plus the key 'sanitized'
-    cleanQuoteContext: vi.fn((context) => ({ ...context, sanitized: true })),
-}));
-
-
 describe('API Route: POST /api/leads', () => {
     // Save original env
     const originalEnv = process.env;
@@ -113,10 +106,9 @@ describe('API Route: POST /api/leads', () => {
                 utm_medium: 'cpc',
                 quote_data: expect.objectContaining({
                     summary: { total: 1000 },
-                    // Verify cleanQuoteContext mock ran and content is merged
-                    context: { work_type: 'slab', length: '10', sanitized: true },
+                    context: { work_type: 'slab', length: '10' },
                     meta: expect.objectContaining({
-                        version: 'v2.0',
+                        version: 'v2.1',
                         session_id: 's-id-456'
                     })
                 })

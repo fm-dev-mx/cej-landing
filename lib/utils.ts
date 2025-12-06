@@ -22,8 +22,8 @@ export const parseNum = (s: string) => {
  */
 export function generateQuoteId(): string {
     const now = new Date();
-    const datePart = now.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
-    const randomPart = Math.floor(1000 + Math.random() * 9000); // 4 digit random
+    const datePart = now.toISOString().slice(0, 10).replace(/-/g, '');
+    const randomPart = Math.floor(1000 + Math.random() * 9000);
     return `WEB-${datePart}-${randomPart}`;
 }
 
@@ -60,8 +60,26 @@ export function getPhoneUrl(phone: string | undefined): string | undefined {
 
     // Allow digits and '+' sign only for international calls
     const cleanPhone = phone.replace(/[^\d+]/g, "");
-
     if (!cleanPhone) return undefined;
-
     return `tel:${cleanPhone}`;
+}
+
+// NEW: Helper to format cart for WhatsApp
+export function generateCartMessage(cart: any[], name: string, folio: string): string {
+    let message = `👋 Hola soy *${name}*, me interesa confirmar este pedido (Folio: ${folio}):\n\n`;
+
+    cart.forEach((item, index) => {
+        const { results, config } = item;
+        const specs = results.strength ? `f'c ${results.strength}` : '';
+        message += `*Ítem ${index + 1}:* ${config.label || 'Concreto'} ${specs}\n`;
+        message += `   • Volumen: ${results.volume.billedM3.toFixed(2)} m³\n`;
+        message += `   • Servicio: ${results.concreteType === 'pumped' ? 'Bomba' : 'Tiro Directo'}\n`;
+        message += `   • Subtotal: ${fmtMXN(results.total)}\n\n`;
+    });
+
+    const grandTotal = cart.reduce((acc, item) => acc + item.results.total, 0);
+    message += `💰 *TOTAL ESTIMADO: ${fmtMXN(grandTotal)}*\n\n`;
+    message += `📍 *Ubicación de entrega:* (Por favor comparte tu ubicación)`;
+
+    return message;
 }

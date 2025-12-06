@@ -1,0 +1,85 @@
+// components/Checkout/CheckoutModal.module.scss
+@use "../../styles/tokens" as t;
+@use "../../styles/mixins" as *;
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-4);
+}
+
+.modal {
+    background: var(--c-surface);
+    width: 100%;
+    max-width: 400px;
+    padding: var(--sp-6);
+    border-radius: var(--radius-lg);
+    position: relative;
+    box-shadow: var(--shadow-xl);
+    animation: popUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.closeBtn {
+    position: absolute;
+    top: var(--sp-2);
+    right: var(--sp-4);
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--c-muted);
+    cursor: pointer;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: var(--sp-2);
+    color: var(--c-text);
+}
+
+.text {
+    font-size: 0.9rem;
+    color: var(--c-muted-strong);
+    margin-bottom: var(--sp-6);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+}
+
+.legal {
+    font-size: 0.75rem;
+    color: var(--c-muted);
+    display: flex;
+    gap: 0.5rem;
+
+    input {
+        accent-color: var(--c-primary);
+    }
+}
+
+.error {
+    color: var(--c-error-text);
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+@keyframes popUp {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

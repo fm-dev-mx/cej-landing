@@ -39,9 +39,6 @@ window.IntersectionObserver = mockIntersectionObserver;
 
 // Helper to reset store
 const resetStore = () => {
-  // CRITICAL FIX: Removed 'true' argument.
-  // 'setState(..., true)' replaces the ENTIRE state object, including actions (functions).
-  // Without 'true', it performs a shallow merge, resetting data but keeping actions.
   useCejStore.setState({
     viewMode: 'wizard',
     isDrawerOpen: false,
@@ -87,6 +84,7 @@ describe('Calculator UI Integration', () => {
     const strengthSelect = screen.getByLabelText(/Resistencia/i);
     fireEvent.change(strengthSelect, { target: { value: '250' } });
 
+    // Simulate Calculation (Async simulation)
     const summaryBtn = screen.getByRole('button', { name: /Ver Cotización Final/i });
     fireEvent.click(summaryBtn);
 
@@ -161,7 +159,8 @@ describe('Calculator UI Integration', () => {
     const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
     expect(nextBtn).toBeDisabled();
 
-    expect(screen.getByText(/El volumen debe ser mayor a 0/i)).toBeInTheDocument();
+    // UPDATED: The new context logic maps !isValid to this generic message
+    expect(screen.getByText(/Revisa los datos/i)).toBeInTheDocument();
   });
 
   it('persists state to localStorage and rehydrates on reload', () => {
@@ -187,6 +186,7 @@ describe('Calculator UI Integration', () => {
     fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
     fireEvent.change(screen.getByLabelText(/Volumen \(m³\)/i), { target: { value: '5' } });
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/i }));
+
     fireEvent.click(screen.getByRole('button', { name: /Ver Cotización Final/i }));
 
     await waitFor(() => {
