@@ -2,7 +2,7 @@
 'use client';
 
 import { useCalculatorContext } from '../context/CalculatorContext';
-import type { QuoteWarning } from '../hooks/useCalculatorQuote';
+import type { QuoteWarning } from '../types';
 import { Button } from '@/components/ui/Button/Button';
 import { KnownVolumeForm } from './forms/KnownVolumeForm';
 import { AssistVolumeForm } from './forms/AssistVolumeForm';

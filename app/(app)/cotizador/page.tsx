@@ -1,57 +1,52 @@
-// app/(app)/cotizador/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
-import ToolShell from '@/components/layout/ToolShell/ToolShell';
+import ToolShell from '@/components/layouts/ToolShell/ToolShell';
 import { useCejStore } from '@/store/useCejStore';
-import { Button } from '@/components/ui/Button/Button';
+import ExpertToggle from '@/components/ui/ExpertToggle/ExpertToggle';
+import WizardAdapter from '@/components/Calculator/modes/WizardAdapter';
+import ExpertForm from '@/components/Calculator/modes/ExpertForm';
+import FeedbackToast from '@/components/ui/FeedbackToast/FeedbackToast';
 
 export default function CotizadorPage() {
-    // Hydration fix for persisted Zustand store
     const [isHydrated, setIsHydrated] = useState(false);
-
     const viewMode = useCejStore(s => s.viewMode);
     const cart = useCejStore(s => s.cart);
-    const toggleViewMode = useCejStore(s => s.toggleViewMode);
 
     useEffect(() => {
         setIsHydrated(true);
     }, []);
 
-    if (!isHydrated) return null; // Or a loading spinner
+    if (!isHydrated) return null;
 
     return (
-        <ToolShell
-            actions={
-                <Button
-                    variant="secondary"
-                    onClick={toggleViewMode}
-                    style={{ fontSize: '0.8rem', padding: '0.25rem 0.75rem', height: 'auto' }}
-                >
-                    {viewMode === 'wizard' ? 'Modo Experto' : 'Modo Guiado'}
-                </Button>
-            }
-        >
-            <div style={{ textAlign: 'center', marginTop: '2rem', color: 'var(--c-muted-strong)' }}>
-                <h2>Bienvenido a CEJ Pro</h2>
-                <p>Modo Actual: <strong>{viewMode === 'wizard' ? 'Paso a Paso' : 'Experto (Grid)'}</strong></p>
-
-                <div style={{
-                    marginTop: '2rem',
-                    padding: '1rem',
-                    border: '1px dashed var(--c-border)',
-                    borderRadius: 'var(--radius)'
-                }}>
-                    <p>Ítems en pedido: {cart.length}</p>
-                    {cart.length === 0 && <small>El carrito está vacío.</small>}
+        <ToolShell actions={<ExpertToggle />}>
+            <div style={{ paddingBottom: '80px' }}>
+                <div style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--c-muted-strong)' }}>
+                    <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                        Modo: <strong>{viewMode === 'wizard' ? 'Guiado' : 'Experto'}</strong>
+                    </p>
+                    {/* Debug visual del carrito */}
+                    {cart.length > 0 && (
+                        <span
+                            style={{
+                                fontSize: '0.75rem',
+                                background: 'var(--c-accent)',
+                                color: 'var(--c-primary-dark)',
+                                padding: '2px 8px',
+                                borderRadius: '12px',
+                                fontWeight: 'bold',
+                            }}
+                        >
+                            {cart.length} en pedido
+                        </span>
+                    )}
                 </div>
 
-                <p style={{ marginTop: '2rem', fontSize: '0.9rem', opacity: 0.7 }}>
-                    Fase 1 completada. <br />
-                    La lógica de cálculo está conectada en background. <br />
-                    Esperando componentes UI en Fase 2.
-                </p>
+                {viewMode === 'wizard' ? <WizardAdapter /> : <ExpertForm />}
             </div>
+
+            <FeedbackToast />
         </ToolShell>
     );
 }

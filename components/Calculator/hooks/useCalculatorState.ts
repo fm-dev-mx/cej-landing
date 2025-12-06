@@ -1,6 +1,7 @@
 // components/Calculator/hooks/useCalculatorState.ts
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
+import { useCejStore } from '@/store/useCejStore';
 import {
     type AssistVolumeMode,
     type CalculatorMode,
@@ -11,166 +12,78 @@ import {
     type Strength,
     type WorkTypeId,
 } from '../types';
-import {
-    STORAGE_KEY,
-    WORK_TYPES
-} from '@/config/business';
-
-export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
-    step: 1,
-    mode: null,
-    volumeMode: 'dimensions',
-    strength: '200',
-    type: 'direct',
-    m3: '',
-    workType: null,
-    length: '',
-    width: '',
-    thicknessByDims: '12',
-    area: '',
-    thicknessByArea: '12',
-    hasCoffered: 'yes',
-    cofferedSize: '7',
-};
+import { WORK_TYPES } from '@/config/business';
 
 export function useCalculatorState() {
-    const [state, setState] = useState<CalculatorState>(
-        DEFAULT_CALCULATOR_STATE,
-    );
-
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-        try {
-            const raw = window.localStorage.getItem(STORAGE_KEY);
-            if (!raw) return;
-            const saved = JSON.parse(raw);
-            setState((prev) => ({
-                ...prev,
-                ...saved,
-            }));
-        } catch {
-            // Ignore parsing/storage errors
-        }
-    }, []);
-
-    useEffect(() => {
-        if (typeof window === 'undefined') return;
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }, [state]);
-
-    const resetCalculator = useCallback(() => {
-        setState(DEFAULT_CALCULATOR_STATE);
-    }, []);
+    // Read directly from Global Store Staging Area
+    const state = useCejStore((s) => s.currentDraft);
+    const update = useCejStore((s) => s.updateDraft);
+    const reset = useCejStore((s) => s.resetDraft);
 
     const setStep = useCallback((step: Step) => {
-        setState((prev) => ({ ...prev, step }));
-    }, []);
+        update({ step });
+    }, [update]);
 
     const setMode = useCallback((mode: CalculatorMode | null) => {
-        setState((prev) => {
-            // If null (reset), just clear mode and DO NOT change 'step'
-            if (mode === null) {
-                return { ...prev, mode: null };
-            }
+        if (mode === null) {
+            update({ mode: null });
+            return;
+        }
 
-            // Normal selection logic (advance step)
-            const next: CalculatorState = { ...prev, mode };
-            if (mode === 'knownM3') {
-                next.length = '';
-                next.width = '';
-                next.area = '';
+        const nextUpdates: Partial<CalculatorState> = { mode };
+        if (mode === 'knownM3') {
+            nextUpdates.length = '';
+            nextUpdates.width = '';
+            nextUpdates.area = '';
+            // Reset assist-mode specific fields
+            nextUpdates.workType = null;
+            nextUpdates.hasCoffered = 'no';
+            nextUpdates.cofferedSize = null;
+            nextUpdates.step = 3;
+        } else {
+            nextUpdates.m3 = '';
+            nextUpdates.step = 2;
+        }
+        update(nextUpdates);
+    }, [update]);
 
-                // FIX: Reset assist-mode specific fields to prevent "zombie state"
-                // when switching from Assist -> Known mode
-                next.workType = null;
-                next.hasCoffered = 'no';
-                next.cofferedSize = null;
-
-                next.step = 3;
-            } else {
-                next.m3 = '';
-                next.step = 2;
-            }
-            return next;
-        });
-    }, []);
-
-    const setVolumeMode = useCallback((volumeMode: AssistVolumeMode) => {
-        setState((prev) => ({ ...prev, volumeMode }));
-    }, []);
-
-    const setStrength = useCallback((strength: Strength) => {
-        setState((prev) => ({ ...prev, strength }));
-    }, []);
-
-    const setType = useCallback((type: ConcreteType) => {
-        setState((prev) => ({ ...prev, type }));
-    }, []);
-
-    const setM3 = useCallback((m3: string) => {
-        setState((prev) => ({ ...prev, m3 }));
-    }, []);
+    const setVolumeMode = useCallback((volumeMode: AssistVolumeMode) => update({ volumeMode }), [update]);
+    const setStrength = useCallback((strength: Strength) => update({ strength }), [update]);
+    const setType = useCallback((type: ConcreteType) => update({ type }), [update]);
+    const setM3 = useCallback((m3: string) => update({ m3 }), [update]);
 
     const setWorkType = useCallback((workType: WorkTypeId | null) => {
-        setState((prev) => {
-            // If resetting (null), save state and DO NOT advance step
-            if (workType === null) {
-                return {
-                    ...prev,
-                    workType: null,
-                    strength: '200', // Optional: reset strength to default
-                    // NOTE: Do not change 'step' here
-                };
-            }
+        if (workType === null) {
+            update({ workType: null, strength: '200' });
+            return;
+        }
 
-            // Normal selection logic (advance to step 3)
-            const cfg = WORK_TYPES.find((w) => w.id === workType);
-            return {
-                ...prev,
-                workType,
-                strength: cfg ? cfg.recommendedStrength : prev.strength,
-                hasCoffered: workType === 'slab' ? 'yes' : 'no',
-                cofferedSize: workType === 'slab' ? '7' : null,
-                step: 3 // Advances here
-            };
+        const cfg = WORK_TYPES.find((w) => w.id === workType);
+        update({
+            workType,
+            strength: cfg ? cfg.recommendedStrength : state.strength,
+            hasCoffered: workType === 'slab' ? 'yes' : 'no',
+            cofferedSize: workType === 'slab' ? '7' : null,
+            step: 3
         });
-    }, []);
+    }, [update, state.strength]);
 
-    const setLength = useCallback((length: string) => {
-        setState((prev) => ({ ...prev, length }));
-    }, []);
+    const setLength = useCallback((length: string) => update({ length }), [update]);
+    const setWidth = useCallback((width: string) => update({ width }), [update]);
+    const setThicknessByDims = useCallback((thicknessByDims: string) => update({ thicknessByDims }), [update]);
+    const setArea = useCallback((area: string) => update({ area }), [update]);
+    const setThicknessByArea = useCallback((thicknessByArea: string) => update({ thicknessByArea }), [update]);
 
-    const setWidth = useCallback((width: string) => {
-        setState((prev) => ({ ...prev, width }));
-    }, []);
+    const setHasCoffered = useCallback((hasCoffered: 'yes' | 'no') => update({
+        hasCoffered,
+        cofferedSize: hasCoffered === 'yes' ? '7' : null,
+    }), [update]);
 
-    const setThicknessByDims = useCallback((thicknessByDims: string) => {
-        setState((prev) => ({ ...prev, thicknessByDims }));
-    }, []);
-
-    const setArea = useCallback((area: string) => {
-        setState((prev) => ({ ...prev, area }));
-    }, []);
-
-    const setThicknessByArea = useCallback((thicknessByArea: string) => {
-        setState((prev) => ({ ...prev, thicknessByArea }));
-    }, []);
-
-    const setHasCoffered = useCallback((hasCoffered: 'yes' | 'no') => {
-        setState((prev) => ({
-            ...prev,
-            hasCoffered,
-            cofferedSize: hasCoffered === 'yes' ? '7' : null,
-        }));
-    }, []);
-
-    const setCofferedSize = useCallback((cofferedSize: CofferedSize) => {
-        setState((prev) => ({ ...prev, cofferedSize }));
-    }, []);
+    const setCofferedSize = useCallback((cofferedSize: CofferedSize) => update({ cofferedSize }), [update]);
 
     return {
         ...state,
-        resetCalculator,
+        resetCalculator: reset,
         setStep,
         setMode,
         setVolumeMode,

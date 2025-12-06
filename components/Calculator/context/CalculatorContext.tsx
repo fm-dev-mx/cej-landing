@@ -1,63 +1,90 @@
-// components/Calculator/context/CalculatorContext.tsx
 'use client';
 
 import { createContext, useContext, useMemo, useState, useCallback, type ReactNode } from 'react';
 import { useCalculatorState } from '../hooks/useCalculatorState';
-import { useCalculatorQuote } from '../hooks/useCalculatorQuote';
+import { useQuoteCalculator } from '../../../hooks/useQuoteCalculator'; // Use the new Phase 1 hook
+import { CONCRETE_TYPES } from '@/config/business';
+import type { QuoteWarning } from '../types';
 
-// Infer return types to avoid duplication
+// Helper types to infer return values
 type StateHook = ReturnType<typeof useCalculatorState>;
-type QuoteHook = ReturnType<typeof useCalculatorQuote>;
+type QuoteData = ReturnType<typeof useQuoteCalculator>;
 
-// Context exposes everything: state, setters, calculated quote, and UI states
-export type CalculatorContextType = StateHook & QuoteHook & {
+export type CalculatorContextType = StateHook & QuoteData & {
   isCalculating: boolean;
   simulateCalculation: (onComplete: () => void) => void;
+  billedM3: number;
+  requestedM3: number;
+  volumeError: string | null;
+  volumeWarning: QuoteWarning;
 };
 
 const CalculatorContext = createContext<CalculatorContextType | null>(null);
 
 export function CalculatorProvider({ children }: { children: ReactNode }) {
-  // 1. Initialize state
+  // 1. Get State (Now synced with Zustand)
   const state = useCalculatorState();
+
+  // 2. Get Calculation (Using the pure hook created in Phase 1)
+  const quoteData = useQuoteCalculator();
+
   const [isCalculating, setIsCalculating] = useState(false);
 
-  // 2. Calculate quote based on current state
-  const quoteData = useCalculatorQuote({
-    mode: state.mode,
-    m3: state.m3,
-    volumeMode: state.volumeMode,
-    length: state.length,
-    width: state.width,
-    thicknessByDims: state.thicknessByDims,
-    area: state.area,
-    thicknessByArea: state.thicknessByArea,
-    hasCoffered: state.hasCoffered,
-    // FIX: Pass the cofferedSize state to the quote hook so it can calculate specs correctly
-    cofferedSize: state.cofferedSize,
-    strength: state.strength,
-    type: state.type,
-  });
-
-  // 3. Simulation helper
+  // 3. Simulation helper (Keep UI feel)
   const simulateCalculation = useCallback((onComplete: () => void) => {
     setIsCalculating(true);
-    // Random delay between 900ms and 1300ms for realism
-    const delay = Math.floor(Math.random() * 400) + 900;
-
+    const delay = Math.floor(Math.random() * 400) + 600; // Slightly faster for App
     setTimeout(() => {
       setIsCalculating(false);
       onComplete();
     }, delay);
   }, []);
 
-  // 4. Combine everything into a single memoized object
-  const value = useMemo(() => ({
-    ...state,
-    ...quoteData,
-    isCalculating,
-    simulateCalculation,
-  }), [state, quoteData, isCalculating, simulateCalculation]);
+  const value = useMemo(() => {
+    // Extract volume properties
+    const {
+      requestedM3: normalizedRequested,
+      billedM3: normalizedBilled,
+      minM3ForType,
+      roundedM3,
+      isBelowMinimum,
+    } = quoteData.quote.volume;
+
+    // Determine Warnings
+    let warning: QuoteWarning = null;
+    const typeLabel = CONCRETE_TYPES.find((t) => t.value === state.type)?.label ?? state.type;
+
+    if (isBelowMinimum) {
+      warning = {
+        code: 'BELOW_MINIMUM',
+        minM3: minM3ForType,
+        billedM3: normalizedBilled,
+        typeLabel,
+      };
+    } else if (normalizedBilled !== normalizedRequested) {
+      warning = {
+        code: 'ROUNDING_POLICY',
+        requestedM3: normalizedRequested,
+        billedM3: normalizedBilled,
+      };
+    } else if (roundedM3 !== normalizedRequested) {
+      warning = {
+        code: 'ROUNDING_ADJUSTMENT',
+        billedM3: normalizedBilled,
+      };
+    }
+
+    return {
+      ...state,
+      ...quoteData,
+      billedM3: normalizedBilled,
+      requestedM3: normalizedRequested,
+      volumeError: quoteData.isValid ? null : 'Revisa los datos', // Simplified error mapping
+      volumeWarning: warning,
+      isCalculating,
+      simulateCalculation,
+    };
+  }, [state, quoteData, isCalculating, simulateCalculation]);
 
   return (
     <CalculatorContext.Provider value={value}>
@@ -66,7 +93,6 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Custom hook to consume the context
 export function useCalculatorContext() {
   const context = useContext(CalculatorContext);
   if (!context) {

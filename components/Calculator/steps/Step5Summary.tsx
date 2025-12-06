@@ -2,10 +2,12 @@
 'use client';
 
 import { useCallback, useState, useMemo, useEffect, type MouseEvent } from 'react';
+import { usePathname } from 'next/navigation';
 import { useCalculatorContext } from '../context/CalculatorContext';
 import { fmtMXN, getWhatsAppUrl, getPhoneUrl, generateQuoteId } from '@/lib/utils';
 import { trackLead, trackContact } from '@/lib/pixel';
 import { env } from '@/config/env';
+import { useCejStore } from '@/store/useCejStore';
 import {
     QUOTE_VALIDITY_DAYS,
     SUPPORT_PHONE_LABEL,
@@ -22,12 +24,17 @@ type Props = {
 };
 
 export function Step5Summary({ estimateLegend }: Props) {
+    // Use hook to determine context safely (avoids hydration mismatch)
+    const pathname = usePathname();
+    const isAppMode = pathname?.includes('/cotizador') ?? false;
+
+    const addToCart = useCejStore(s => s.addToCart);
+
     const {
         mode,
         billedM3,
         requestedM3,
         quote,
-        unitPriceLabel,
         volumeError,
         setStep,
         resetCalculator,
@@ -41,6 +48,8 @@ export function Step5Summary({ estimateLegend }: Props) {
         area,
         thicknessByArea,
     } = useCalculatorContext();
+
+    const unitPriceLabel = fmtMXN(quote.unitPricePerM3);
 
     const [showLeadModal, setShowLeadModal] = useState(false);
     const [folio, setFolio] = useState<string>('');
@@ -133,6 +142,10 @@ export function Step5Summary({ estimateLegend }: Props) {
         thicknessByArea,
         folio
     ]);
+
+    const handleAddToCart = () => {
+        addToCart(quote);
+    };
 
     const handleWhatsAppClick = useCallback(
         (e?: MouseEvent<HTMLElement>) => {
@@ -330,27 +343,42 @@ export function Step5Summary({ estimateLegend }: Props) {
                 {/* Actions */}
                 <div className={styles.actionsGroup}>
                     <div className={styles.primaryActions}>
-                        <Button
-                            type="button"
-                            variant="whatsapp"
-                            onClick={handleWhatsAppClick}
-                            disabled={!hasValidConfig || quote.total <= 0}
-                            fullWidth
-                            className={styles.actionButton}
-                        >
-                            Agendar por WhatsApp
-                        </Button>
-
-                        {phoneHref && (
+                        {isAppMode ? (
                             <Button
-                                variant="secondary"
-                                href={phoneHref}
-                                onClick={handlePhoneClick}
+                                type="button"
+                                variant="primary"
+                                onClick={handleAddToCart}
+                                disabled={quote.total <= 0}
                                 fullWidth
                                 className={styles.actionButton}
                             >
-                                Llamar ahora
+                                Agregar al Pedido <span>+</span>
                             </Button>
+                        ) : (
+                            <>
+                                <Button
+                                    type="button"
+                                    variant="whatsapp"
+                                    onClick={handleWhatsAppClick}
+                                    disabled={!hasValidConfig || quote.total <= 0}
+                                    fullWidth
+                                    className={styles.actionButton}
+                                >
+                                    Agendar por WhatsApp
+                                </Button>
+
+                                {phoneHref && (
+                                    <Button
+                                        variant="secondary"
+                                        href={phoneHref}
+                                        onClick={handlePhoneClick}
+                                        fullWidth
+                                        className={styles.actionButton}
+                                    >
+                                        Llamar ahora
+                                    </Button>
+                                )}
+                            </>
                         )}
                     </div>
 
@@ -361,12 +389,10 @@ export function Step5Summary({ estimateLegend }: Props) {
                             onClick={() => setStep(4)}
                             aria-label="Volver a editar especificaciones"
                         >
-                            <span className={styles.linkIcon}>←</span> Regresar
+                            <span className={styles.linkIcon}>←</span> Editar
                         </button>
 
-                        <span className={styles.linkSeparator} aria-hidden="true">
-                            •
-                        </span>
+                        <span className={styles.linkSeparator}>•</span>
 
                         <button
                             type="button"

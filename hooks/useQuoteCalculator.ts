@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useCejStore } from '@/store/useCejStore';
-import { calcQuote } from '@/lib/pricing';
-import { calcVolumeFromDimensions, calcVolumeFromArea } from '@/lib/pricing';
+import { calcQuote, calcVolumeFromDimensions, calcVolumeFromArea } from '@/lib/pricing';
 
 export function useQuoteCalculator() {
     const draft = useCejStore((s) => s.currentDraft);

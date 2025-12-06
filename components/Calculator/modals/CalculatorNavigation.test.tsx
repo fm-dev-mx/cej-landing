@@ -2,6 +2,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Calculator from '../Calculator';
+import { useCejStore } from '@/store/useCejStore';
+import { DEFAULT_CALCULATOR_STATE } from '../types';
 
 // --- Mocks ---
 vi.mock('@/config/env', () => ({
@@ -28,9 +30,24 @@ window.IntersectionObserver = vi.fn().mockReturnValue({
   disconnect: () => null
 });
 
+// Helper to reset store
+const resetStore = () => {
+  // CRITICAL FIX: No passing 'true' to setState to prevent wiping out actions
+  useCejStore.setState({
+    viewMode: 'wizard',
+    isDrawerOpen: false,
+    activeTab: 'order',
+    currentDraft: { ...DEFAULT_CALCULATOR_STATE },
+    cart: [],
+    history: [],
+    user: { visitorId: 'test-id' }
+  });
+};
+
 describe('Calculator Navigation & Button Logic', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    resetStore(); // Reset state properly
     vi.clearAllMocks();
   });
 
@@ -72,15 +89,12 @@ describe('Calculator Navigation & Button Logic', () => {
     const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
     expect(nextBtn).toBeDisabled();
 
-    // Use specific exact match to avoid matching radio labels
     fireEvent.change(screen.getByLabelText('Largo (m)'), { target: { value: '10' } });
     fireEvent.change(screen.getByLabelText('Ancho (m)'), { target: { value: '5' } });
 
     // --- ESCENARIO A: Losa Sólida ---
     fireEvent.click(screen.getByRole('radio', { name: /Sólida/i }));
 
-    // Check Thickness Input
-    // Use regex with start/end anchor or exact string to be safe
     const thicknessInput = screen.getByLabelText(/^Grosor \(cm\)$/);
     expect(thicknessInput).toBeVisible();
 
@@ -95,7 +109,6 @@ describe('Calculator Navigation & Button Logic', () => {
 
     expect(screen.queryByLabelText(/^Grosor \(cm\)$/)).not.toBeInTheDocument();
 
-    // Casetón 7cm is default now (from useCalculatorState fix)
     const radio7cm = screen.getByRole('radio', { name: /7 cm/i });
     expect(radio7cm).toBeChecked();
 

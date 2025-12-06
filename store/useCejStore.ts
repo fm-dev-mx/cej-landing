@@ -4,9 +4,9 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import {
     type CalculatorState,
-    type QuoteBreakdown
+    type QuoteBreakdown,
+    DEFAULT_CALCULATOR_STATE
 } from '@/components/Calculator/types';
-import { DEFAULT_CALCULATOR_STATE } from '@/components/Calculator/hooks/useCalculatorState';
 
 export type QuoteItem = {
     id: string;

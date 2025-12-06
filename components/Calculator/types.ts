@@ -81,3 +81,39 @@ export type QuoteBreakdown = {
         effectiveThickness?: number;
     };
 };
+
+// Moved here to prevent circular dependencies
+export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
+    step: 1,
+    mode: null,
+    volumeMode: 'dimensions',
+    strength: '200',
+    type: 'direct',
+    m3: '',
+    workType: null,
+    length: '',
+    width: '',
+    thicknessByDims: '12',
+    area: '',
+    thicknessByArea: '12',
+    hasCoffered: 'yes',
+    cofferedSize: '7',
+};
+
+export type QuoteWarning =
+    | {
+        code: 'BELOW_MINIMUM';
+        minM3: number;
+        billedM3: number;
+        typeLabel: string;
+    }
+    | {
+        code: 'ROUNDING_POLICY';
+        requestedM3: number;
+        billedM3: number;
+    }
+    | {
+        code: 'ROUNDING_ADJUSTMENT';
+        billedM3: number;
+    }
+    | null;

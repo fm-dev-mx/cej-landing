@@ -2,6 +2,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Calculator from './Calculator';
+import { useCejStore } from '@/store/useCejStore';
+import { DEFAULT_CALCULATOR_STATE } from './types';
 
 // 1. Mock Environment & Utils
 vi.mock('@/config/env', () => ({
@@ -35,10 +37,27 @@ mockIntersectionObserver.mockReturnValue({
 });
 window.IntersectionObserver = mockIntersectionObserver;
 
+// Helper to reset store
+const resetStore = () => {
+  // CRITICAL FIX: Removed 'true' argument.
+  // 'setState(..., true)' replaces the ENTIRE state object, including actions (functions).
+  // Without 'true', it performs a shallow merge, resetting data but keeping actions.
+  useCejStore.setState({
+    viewMode: 'wizard',
+    isDrawerOpen: false,
+    activeTab: 'order',
+    currentDraft: { ...DEFAULT_CALCULATOR_STATE },
+    cart: [],
+    history: [],
+    user: { visitorId: 'test-id' }
+  });
+};
+
 describe('Calculator UI Integration', () => {
 
   beforeEach(() => {
     window.localStorage.clear();
+    resetStore();
     vi.clearAllMocks();
   });
 
@@ -46,16 +65,12 @@ describe('Calculator UI Integration', () => {
     render(<Calculator />);
 
     // 1. Step 1: Mode Selection
-    // Usamos regex flexible para coincidir con "Cotiza tu..." o "Calcula tu..."
     expect(screen.getByText(/(Cotiza|Calcula) tu/i)).toBeInTheDocument();
 
-    // Select "Sí" (Known Volume)
-    // FIX: Usamos getByRole('radio', { name: ... }) que es más robusto para etiquetas compuestas.
-    // La regex busca "Sí" o "Si" al inicio del nombre accesible.
     const radioKnown = screen.getByRole('radio', { name: /^S[íi]/i });
     fireEvent.click(radioKnown);
 
-    // 2. Step 3: Inputs (Known Mode skips Step 2)
+    // 2. Step 3: Inputs
     const volInput = screen.getByLabelText(/Volumen \(m³\)/i);
     expect(volInput).toBeInTheDocument();
 
@@ -72,20 +87,17 @@ describe('Calculator UI Integration', () => {
     const strengthSelect = screen.getByLabelText(/Resistencia/i);
     fireEvent.change(strengthSelect, { target: { value: '250' } });
 
-    // Simulate Calculation (Async simulation)
     const summaryBtn = screen.getByRole('button', { name: /Ver Cotización Final/i });
     fireEvent.click(summaryBtn);
 
-    // 4. Step 5: Summary (Wait for calculation delay)
+    // 4. Step 5: Summary
     await waitFor(() => {
       expect(screen.getByText(/Cotización Lista/i)).toBeInTheDocument();
     }, { timeout: 3000 });
 
-    // Verify Ticket Details
     expect(screen.getByText('5.00 m³')).toBeInTheDocument();
     expect(screen.getByText(/f’c 250/i)).toBeInTheDocument();
 
-    // Verify WhatsApp Button is enabled
     const waBtn = screen.getByRole('button', { name: /Agendar por WhatsApp/i });
     expect(waBtn).toBeEnabled();
   });
@@ -93,22 +105,14 @@ describe('Calculator UI Integration', () => {
   it('completes the flow using Assist Mode (Dimensions)', () => {
     render(<Calculator />);
 
-    // 1. Step 1: Select Assist Mode
-    // Busca "No, ayúdame..." siendo flexible con acentos y texto posterior.
     fireEvent.click(screen.getByRole('radio', { name: /No, ay.dame a/i }));
 
-    // 2. Step 2: Work Type
-    // Select "Losa" - Usamos radio role también para consistencia si es un SelectionCard,
-    // o text match si es solo visual. En WorkTypeSelector son radios.
     const slabRadio = screen.getByRole('radio', { name: /Losa/i });
     fireEvent.click(slabRadio);
 
-    // Explicitly select "Sólida" to ensure Thickness input is visible
     const solidRadio = screen.getByRole('radio', { name: /Sólida/i });
     fireEvent.click(solidRadio);
 
-    // 3. Step 3: Dimensions Form
-    // FIX: Usamos "Largo (m)" exacto o regex más específico para evitar conflicto con radio "Largo × Ancho"
     const lengthInput = screen.getByLabelText(/Largo \(m\)/i);
     const widthInput = screen.getByLabelText(/Ancho \(m\)/i);
     const thickInput = screen.getByLabelText(/Grosor/i);
@@ -118,10 +122,9 @@ describe('Calculator UI Integration', () => {
     fireEvent.change(thickInput, { target: { value: '10' } });
 
     const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
-    expect(nextBtn).toBeEnabled(); // Verify button enables
+    expect(nextBtn).toBeEnabled();
     fireEvent.click(nextBtn);
 
-    // 4. Step 4 reached
     expect(screen.getByText(/Especificaciones del Concreto/i)).toBeInTheDocument();
   });
 
@@ -131,10 +134,7 @@ describe('Calculator UI Integration', () => {
     fireEvent.click(screen.getByRole('radio', { name: /No, ay.dame a/i }));
     fireEvent.click(screen.getByRole('radio', { name: /Losa/i }));
 
-    // Switch to Area Mode
     fireEvent.click(screen.getByLabelText(/Por .rea/i));
-
-    // Explicitly select "Sólida" to ensure Thickness input is visible
     fireEvent.click(screen.getByRole('radio', { name: /Sólida/i }));
 
     const areaInput = screen.getByLabelText(/Área total/i);
@@ -143,7 +143,6 @@ describe('Calculator UI Integration', () => {
     fireEvent.change(areaInput, { target: { value: '50' } });
     fireEvent.change(thickInput, { target: { value: '10' } });
 
-    // Verify button enables
     const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
     expect(nextBtn).toBeEnabled();
 
@@ -168,18 +167,15 @@ describe('Calculator UI Integration', () => {
   it('persists state to localStorage and rehydrates on reload', () => {
     const { unmount } = render(<Calculator />);
 
-    // 1. Enter some data
     fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
     const volInput = screen.getByLabelText(/Volumen \(m³\)/i);
     fireEvent.change(volInput, { target: { value: '7.5' } });
 
-    // 2. Unmount (simulating refresh/close)
     unmount();
 
-    // 3. Render again
+    // Re-render: Zustand + LocalStorage should persist this
     render(<Calculator />);
 
-    // 4. Verify we are still on Step 3 (Inputs) and value is preserved
     const volInputRestored = screen.getByLabelText(/Volumen \(m³\)/i);
     expect(volInputRestored).toBeInTheDocument();
     expect(volInputRestored).toHaveValue(7.5);
@@ -188,27 +184,20 @@ describe('Calculator UI Integration', () => {
   it('resets the calculator to initial state when requested', async () => {
     render(<Calculator />);
 
-    // 1. Advance deep into the flow
     fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
     fireEvent.change(screen.getByLabelText(/Volumen \(m³\)/i), { target: { value: '5' } });
     fireEvent.click(screen.getByRole('button', { name: /Siguiente/i }));
-
-    // Calculate to get to Summary
     fireEvent.click(screen.getByRole('button', { name: /Ver Cotización Final/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/Cotización Lista/i)).toBeInTheDocument();
     }, { timeout: 3000 });
 
-    // 2. Click "Nueva cotización" (Reset)
     const resetBtn = screen.getByRole('button', { name: /Nueva cotización/i });
     fireEvent.click(resetBtn);
 
-    // 3. Verify we are back at Step 1
     expect(screen.getByText(/(Cotiza|Calcula) tu/i)).toBeInTheDocument();
 
-    // "Sí" radio should not be checked (state reset)
-    // FIX: Re-query element because DOM has been reset
     const radioKnown = screen.getByRole('radio', { name: /^S[íi]/i }) as HTMLInputElement;
     expect(radioKnown.checked).toBe(false);
   });
@@ -216,23 +205,16 @@ describe('Calculator UI Integration', () => {
   it('navigates correctly when re-clicking an active mode', () => {
     render(<Calculator />);
 
-    // Click "Sí" -> Go to Step 3 (Known Input)
     const radioKnownInitial = screen.getByRole('radio', { name: /^S[íi]/i });
     fireEvent.click(radioKnownInitial);
     expect(screen.getByText(/Volumen \(m³\)/i)).toBeInTheDocument();
 
-    // Click "Back" -> Go to Step 1
     fireEvent.click(screen.getByRole('button', { name: /Atrás/i }));
     expect(screen.getByText(/(Cotiza|Calcula) tu/i)).toBeInTheDocument();
 
-    // FIX: Re-query the radio button. The previous 'radioKnown' reference is stale
-    // because the component Step1Mode was unmounted and remounted.
     const radioKnownRestored = screen.getByRole('radio', { name: /^S[íi]/i });
-
-    // Verify "Sí" is still checked (state persistence)
     expect(radioKnownRestored).toBeChecked();
 
-    // Click "Sí" AGAIN -> Should force navigation to Step 3
     fireEvent.click(radioKnownRestored);
     expect(screen.getByText(/Volumen \(m³\)/i)).toBeInTheDocument();
   });

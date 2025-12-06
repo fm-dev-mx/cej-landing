@@ -26,6 +26,7 @@ import {
     type ConcreteType,
     type QuoteBreakdown,
     type Strength,
+    type QuoteWarning,
 } from '../types';
 
 type QuoteInput = {
@@ -43,23 +44,7 @@ type QuoteInput = {
     type: ConcreteType;
 };
 
-export type QuoteWarning =
-    | {
-        code: 'BELOW_MINIMUM';
-        minM3: number;
-        billedM3: number;
-        typeLabel: string;
-    }
-    | {
-        code: 'ROUNDING_POLICY';
-        requestedM3: number;
-        billedM3: number;
-    }
-    | {
-        code: 'ROUNDING_ADJUSTMENT';
-        billedM3: number;
-    }
-    | null;
+
 
 export type QuoteState = {
     quote: QuoteBreakdown;
