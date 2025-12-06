@@ -19,8 +19,6 @@ export const createKnownVolumeSchema = () => {
             z
                 .number()
                 .positive({ message: 'El volumen debe ser mayor a 0.' })
-                // Note: We allow values below the business minimum to show a Warning instead of an Error,
-                // but we block 0 or negative numbers.
                 .max(500, { message: 'El volumen máximo por pedido web es de 500 m³.' })
         ),
     });
@@ -52,3 +50,38 @@ export const AreaSchema = z.object({
             .max(200, { message: 'Verifica el grosor (máx 200 cm).' })
     ),
 });
+
+// --- Lead & Checkout Schemas ---
+
+export const LeadSchema = z.object({
+    name: z.string().min(1, "El nombre es requerido"),
+    phone: z.string().min(10, "El teléfono debe tener al menos 10 dígitos"),
+
+    // Flexible quote object to handle single quote OR cart payload
+    quote: z.object({
+        // Single mode props
+        summary: z.any().optional(),
+        context: z.any().optional(),
+
+        // Cart mode props
+        items: z.array(z.any()).optional(),
+        total: z.number().optional(),
+    }),
+
+    // Identity & Tracking
+    visitor_id: z.string().nullable().optional(),
+    session_id: z.string().nullable().optional(),
+    utm_source: z.string().optional(),
+    utm_medium: z.string().optional(),
+    utm_campaign: z.string().nullable().optional(),
+    utm_term: z.string().nullable().optional(),
+    utm_content: z.string().nullable().optional(),
+    fbclid: z.string().nullable().optional(),
+    fb_event_id: z.string().optional(),
+
+    privacy_accepted: z.literal(true, {
+        errorMap: () => ({ message: "Debes aceptar el aviso de privacidad" })
+    }),
+});
+
+export type LeadData = z.infer<typeof LeadSchema>;

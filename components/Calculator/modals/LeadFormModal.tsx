@@ -1,11 +1,13 @@
 // components/Calculator/modals/LeadFormModal.tsx
 'use client';
 
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent, useEffect, useTransition } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { useIdentity } from '@/hooks/useIdentity';
+import { submitLead } from '@/app/actions/submitLead';
+import type { LeadData } from '@/lib/schemas';
 import styles from './LeadFormModal.module.scss';
 
 export type LeadQuoteDetails = {
@@ -28,14 +30,15 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    // Error is now an object to differentiate API vs Validation errors
+
+    // State for local validation feedback
     const [error, setError] = useState<{ message: string; isApiError: boolean } | null>(null);
 
-    // Tracking identity (includes visitorId, sessionId, and UTMs)
-    const identity = useIdentity();
+    // useTransition for Server Action loading state
+    const [isPending, startTransition] = useTransition();
 
-    // Ensure we only render the portal on the client side
+    // Tracking identity
+    const identity = useIdentity();
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -52,7 +55,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
         const cleanName = name.trim();
         const cleanPhone = phone.replace(/[^0-9]/g, '');
 
-        // Validation
+        // 1. Client-side quick validation
         if (cleanName.length < 3) {
             setError({ message: 'Por favor ingresa tu nombre completo.', isApiError: false });
             return;
@@ -66,22 +69,17 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
             return;
         }
 
-        setIsSubmitting(true);
-
-        // Generate CAPI Event ID
         const fbEventId = crypto.randomUUID();
 
-        // 1. Build Payload including all identity and tracking data
-        const payload = {
+        // 2. Prepare Payload
+        const payload: LeadData = {
             name: cleanName,
             phone: cleanPhone,
             quote: quoteDetails,
             fb_event_id: fbEventId,
             privacy_accepted: true,
-            // Identity
-            visitor_id: identity?.visitorId || null,
-            session_id: identity?.sessionId || null,
-            // UTMs
+            visitor_id: identity?.visitorId,
+            session_id: identity?.sessionId,
             utm_source: identity?.utm_source,
             utm_medium: identity?.utm_medium,
             utm_campaign: identity?.utm_campaign,
@@ -90,34 +88,18 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
             fbclid: identity?.fbclid,
         };
 
-        try {
-            // 2. Send to Data Layer (Supabase API Route)
-            const response = await fetch('/api/leads', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
+        // 3. Call Server Action within Transition
+        startTransition(async () => {
+            const result = await submitLead(payload);
 
-            if (!response.ok) {
-                // Try to parse error message from server
-                const resData = await response.json().catch(() => ({}));
-                throw new Error(resData.error || 'Error al guardar los datos.');
+            if (result.success) {
+                onSuccess(cleanName, fbEventId);
+            } else {
+                console.error('Lead Submission Failed:', result.error);
+                // Fallback: Proceed to WhatsApp to avoid losing the conversion
+                onSuccess(cleanName, fbEventId);
             }
-
-            // Success: Trigger parent callback and proceed to WhatsApp
-            onSuccess(cleanName, fbEventId);
-
-        } catch (err) {
-            console.error('API Lead Submission Error:', err);
-            // Fallback: Proceed to WhatsApp anyway (Critical for conversion)
-            onSuccess(cleanName, fbEventId);
-            setError({
-                message: 'Error al registrar tu cotización. Te redirigiremos a WhatsApp para finalizar.',
-                isApiError: true
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
+        });
     };
 
     return createPortal(
@@ -128,7 +110,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                     onClick={onClose}
                     aria-label="Cerrar modal"
                     type="button"
-                    disabled={isSubmitting}
+                    disabled={isPending}
                 >
                     &times;
                 </button>
@@ -149,7 +131,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                         onChange={(e) => setName(e.target.value)}
                         variant="light"
                         required
-                        disabled={isSubmitting}
+                        disabled={isPending}
                     />
 
                     <Input
@@ -161,10 +143,9 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                         maxLength={10}
                         variant="light"
                         required
-                        disabled={isSubmitting}
+                        disabled={isPending}
                     />
 
-                    {/* Privacy Checkbox */}
                     <div className={styles.checkboxWrapper}>
                         <label className={styles.checkboxLabel}>
                             <input
@@ -172,7 +153,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                                 checked={privacyAccepted}
                                 onChange={(e) => setPrivacyAccepted(e.target.checked)}
                                 className={styles.checkbox}
-                                disabled={isSubmitting}
+                                disabled={isPending}
                             />
                             <span>
                                 He leído y acepto el <a href="/aviso-de-privacidad" target="_blank" rel="noopener noreferrer" className={styles.link}>Aviso de Privacidad</a>.
@@ -190,10 +171,9 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                         type="submit"
                         variant="whatsapp"
                         fullWidth
-                        isLoading={isSubmitting}
+                        isLoading={isPending}
                         loadingText="Procesando..."
-                        // Fix: Don't disable button on !privacyAccepted to allow validation message to show
-                        disabled={isSubmitting}
+                        disabled={isPending}
                     >
                         Continuar a WhatsApp
                     </Button>

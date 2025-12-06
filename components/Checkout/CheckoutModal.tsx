@@ -1,7 +1,7 @@
 // components/Checkout/CheckoutModal.tsx
 'use client';
 
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent, useEffect, useTransition } from 'react';
 import { createPortal } from 'react-dom';
 import { useCejStore } from '@/store/useCejStore';
 import { Button } from '@/components/ui/Button/Button';
@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/Input/Input';
 import { getWhatsAppUrl, generateCartMessage, generateQuoteId } from '@/lib/utils';
 import { trackLead } from '@/lib/pixel';
 import { env } from '@/config/env';
+import { submitLead } from '@/app/actions/submitLead';
+import type { LeadData } from '@/lib/schemas';
 import styles from './CheckoutModal.module.scss';
 
 type Props = {
@@ -19,8 +21,10 @@ type Props = {
 export default function CheckoutModal({ isOpen, onClose }: Props) {
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
+
+    // Server Action state
+    const [isPending, startTransition] = useTransition();
 
     const cart = useCejStore(s => s.cart);
     const user = useCejStore(s => s.user);
@@ -35,14 +39,12 @@ export default function CheckoutModal({ isOpen, onClose }: Props) {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setError('');
-        setIsSubmitting(true);
 
         const cleanName = name.trim();
         const cleanPhone = phone.replace(/[^0-9]/g, '');
 
         if (cleanName.length < 3 || cleanPhone.length < 10) {
             setError('Por favor revisa tu nombre y teléfono.');
-            setIsSubmitting(false);
             return;
         }
 
@@ -50,22 +52,20 @@ export default function CheckoutModal({ isOpen, onClose }: Props) {
         const fbEventId = crypto.randomUUID();
         const folio = generateQuoteId();
 
-        try {
-            // 1. Save to DB
-            const response = await fetch('/api/leads', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: cleanName,
-                    phone: cleanPhone,
-                    quote: { items: cart, total: totalValue }, // Cart Payload
-                    fb_event_id: fbEventId,
-                    visitor_id: user.visitorId,
-                    privacy_accepted: true,
-                }),
-            });
+        // Prepare Payload
+        const payload: LeadData = {
+            name: cleanName,
+            phone: cleanPhone,
+            quote: { items: cart, total: totalValue }, // Cart Payload
+            fb_event_id: fbEventId,
+            visitor_id: user.visitorId,
+            privacy_accepted: true,
+        };
 
-            if (!response.ok) throw new Error('Error saving lead');
+        startTransition(async () => {
+            // 1. Save to DB via Server Action
+            // We don't block the UI flow on DB error (conversion priority)
+            await submitLead(payload);
 
             // 2. Track Event
             trackLead({
@@ -86,17 +86,7 @@ export default function CheckoutModal({ isOpen, onClose }: Props) {
             clearCart();
             setDrawerOpen(false);
             onClose();
-
-        } catch (err) {
-            console.error(err);
-            // Fallback: Open WhatsApp anyway
-            const message = generateCartMessage(cart, cleanName, folio);
-            const waUrl = getWhatsAppUrl(env.NEXT_PUBLIC_WHATSAPP_NUMBER, message);
-            if (waUrl) window.open(waUrl, '_blank');
-            onClose();
-        } finally {
-            setIsSubmitting(false);
-        }
+        });
     };
 
     return createPortal(
@@ -114,6 +104,7 @@ export default function CheckoutModal({ isOpen, onClose }: Props) {
                         value={name}
                         onChange={e => setName(e.target.value)}
                         required
+                        disabled={isPending}
                     />
                     <Input
                         label="Teléfono"
@@ -122,13 +113,14 @@ export default function CheckoutModal({ isOpen, onClose }: Props) {
                         value={phone}
                         onChange={e => setPhone(e.target.value)}
                         required
+                        disabled={isPending}
                     />
 
                     {error && <p className={styles.error}>{error}</p>}
 
                     <div className={styles.legal}>
                         <label>
-                            <input type="checkbox" required defaultChecked />
+                            <input type="checkbox" required defaultChecked disabled={isPending} />
                             <span>Acepto el aviso de privacidad</span>
                         </label>
                     </div>
@@ -137,8 +129,9 @@ export default function CheckoutModal({ isOpen, onClose }: Props) {
                         type="submit"
                         variant="whatsapp"
                         fullWidth
-                        isLoading={isSubmitting}
+                        isLoading={isPending}
                         loadingText="Procesando..."
+                        disabled={isPending}
                     >
                         Enviar Pedido
                     </Button>
