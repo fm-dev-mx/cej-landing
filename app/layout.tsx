@@ -6,7 +6,8 @@ import { SEO_CONTENT } from "@/config/content";
 import { generateLocalBusinessSchema } from "@/lib/seo";
 import "../styles/globals.scss";
 import Layout from "@/components/layout/Layout";
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -143,6 +144,7 @@ export default function RootLayout({
         )}
 
         <Layout>{children}</Layout>
+        <Analytics />
       </body>
     </html>
   );
