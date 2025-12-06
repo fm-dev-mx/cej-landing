@@ -160,7 +160,7 @@ describe('LeadFormModal', () => {
             fb_event_id: 'test-event-id',
             privacy_accepted: true,
             visitor_id: 'test-visitor-id',
-            session_id: 'test-session-id', // New session ID assertion
+            session_id: 'test-session-id',
         });
     });
 
@@ -208,5 +208,40 @@ describe('LeadFormModal', () => {
         });
 
         consoleSpy.mockRestore();
+    });
+
+    it('shows validation error if privacy is not accepted', async () => {
+        // Mock successful fetch to isolate client-side validation
+        (global.fetch as any).mockResolvedValue({
+            ok: true,
+            json: async () => ({ success: true }),
+        });
+
+        render(
+            <LeadFormModal
+                isOpen
+                onClose={mockOnClose}
+                onSuccess={mockOnSuccess}
+                quoteDetails={mockQuoteDetails}
+            />,
+        );
+
+        fireEvent.change(screen.getByLabelText(/Nombre completo/i), {
+            target: { value: 'Juan V.' },
+        });
+        fireEvent.change(screen.getByLabelText(/Teléfono/i), {
+            target: { value: '6561234567' },
+        });
+
+        // Privacy checkbox is NOT clicked here
+        fireEvent.click(
+            screen.getByRole('button', { name: /Continuar a WhatsApp/i }),
+        );
+
+        // Expect fetch NOT to be called, and error message to be visible
+        await waitFor(() => {
+            expect(global.fetch).not.toHaveBeenCalled();
+            expect(screen.getByText(/Debes aceptar el aviso de privacidad para continuar./i)).toBeInTheDocument();
+        });
     });
 });

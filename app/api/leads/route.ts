@@ -22,16 +22,18 @@ const leadSchema = z.object({
         // Enforce object structure for context to ensure sanitizer safety
         context: z.record(z.string(), z.any()),
     }),
+
+    // Identity & Tracking IDs
     visitor_id: z.string().nullable().optional(),
     session_id: z.string().nullable().optional(),
 
-    // Tracking & Attribution
+    // UTMs (optional strings, null if missing)
     utm_source: z.string().optional(),
     utm_medium: z.string().optional(),
-    utm_campaign: z.string().optional(),
-    utm_term: z.string().optional(),
-    utm_content: z.string().optional(),
-    fbclid: z.string().optional(),
+    utm_campaign: z.string().nullable().optional(),
+    utm_term: z.string().nullable().optional(),
+    utm_content: z.string().nullable().optional(),
+    fbclid: z.string().nullable().optional(),
     fb_event_id: z.string().optional(),
 
     // Legal
@@ -39,6 +41,9 @@ const leadSchema = z.object({
         errorMap: () => ({ message: "Privacy must be accepted to process data" })
     }),
 });
+
+// Infer the validated type for clean code access
+type LeadData = z.infer<typeof leadSchema>;
 
 export async function POST(request: Request) {
     if (!supabase) {
@@ -62,74 +67,68 @@ export async function POST(request: Request) {
         );
     }
 
-    const {
-        name, phone, quote,
-        visitor_id, session_id,
-        utm_source, utm_medium, utm_campaign, utm_term, utm_content, fbclid,
-        fb_event_id, privacy_accepted
-    } = parseResult.data;
+    const data: LeadData = parseResult.data;
 
     // 2. Data Transformation & Cleaning
 
     // Normalize Quote Data: Avoid stringified JSON inside JSON.
-    // We restructure it to be query-friendly in Postgres (JSONB).
     const cleanQuoteData = {
-        summary: quote.summary,
+        summary: data.quote.summary,
         // Recursively clean empty strings from the context (dimensions, etc)
-        context: cleanQuoteContext(quote.context),
+        context: cleanQuoteContext(data.quote.context),
         meta: {
             calculated_at: new Date().toISOString(),
             version: 'v2.0',
             // Persist session_id in meta if no dedicated column exists
-            session_id: session_id || null
+            session_id: data.session_id || null
         }
     };
 
     // Attribution Defaults
-    const safeUtmSource = utm_source || 'direct';
-    const safeUtmMedium = utm_medium || 'none';
+    const safeUtmSource = data.utm_source || 'direct';
+    const safeUtmMedium = data.utm_medium || 'none';
 
     try {
-        const { data, error } = await supabase
+        const { data: dbData, error } = await supabase
             .from('leads')
             .insert([
                 {
-                    name,
-                    phone,
+                    name: data.name,
+                    phone: data.phone,
                     // Save as actual JSON object, Supabase handles stringifying for JSONB columns
                     quote_data: cleanQuoteData,
 
                     // Identity
-                    visitor_id: visitor_id || null,
+                    visitor_id: data.visitor_id || null,
 
                     // Attribution
                     utm_source: safeUtmSource,
                     utm_medium: safeUtmMedium,
-                    utm_campaign: utm_campaign || null,
-                    utm_term: utm_term || null,
-                    utm_content: utm_content || null,
-                    fbclid: fbclid || null,
+                    utm_campaign: data.utm_campaign || null,
+                    utm_term: data.utm_term || null,
+                    utm_content: data.utm_content || null,
+                    fbclid: data.fbclid || null,
 
                     // Legal & Status
-                    privacy_accepted,
+                    privacy_accepted: data.privacy_accepted,
                     privacy_accepted_at: new Date().toISOString(),
                     status: 'new',
 
                     // Tracking
-                    fb_event_id: fb_event_id || null,
+                    fb_event_id: data.fb_event_id || null,
                 },
             ])
             .select()
             .single();
 
-        if (error) {
-            console.error('❌ Supabase Insert Error:', error);
+        if (error || !dbData) {
+            console.error('❌ Supabase Insert Error:', error || 'No data returned.');
             return NextResponse.json({ error: 'Database Error' }, { status: 500 });
         }
 
-        console.log('✅ Lead saved:', { id: data.id, source: safeUtmSource });
+        console.log('✅ Lead saved:', { id: dbData.id, source: safeUtmSource });
 
-        return NextResponse.json({ success: true, id: data.id }, { status: 200 });
+        return NextResponse.json({ success: true, id: dbData.id }, { status: 200 });
     } catch (error) {
         console.error('❌ Unexpected Error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

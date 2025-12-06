@@ -29,8 +29,9 @@ const parseFromLocation = (): UTMParams => {
     try {
         const params = new URLSearchParams(window.location.search);
 
-        const utm_source = params.get('utm_source') ?? DEFAULT_UTM.utm_source;
-        const utm_medium = params.get('utm_medium') ?? DEFAULT_UTM.utm_medium;
+        // All UTMs are optionally stored if present, otherwise default to 'direct/none'.
+        const utm_source = params.get('utm_source')?.toLowerCase() ?? DEFAULT_UTM.utm_source;
+        const utm_medium = params.get('utm_medium')?.toLowerCase() ?? DEFAULT_UTM.utm_medium;
         const utm_campaign = params.get('utm_campaign') ?? undefined;
         const utm_term = params.get('utm_term') ?? undefined;
         const utm_content = params.get('utm_content') ?? undefined;
@@ -60,8 +61,10 @@ export const getOrInitUtmParams = (): UTMParams => {
 
     try {
         const stored = window.localStorage.getItem(UTM_STORAGE_KEY);
+        // Only return stored if it's valid JSON
         if (stored) {
-            return JSON.parse(stored) as UTMParams;
+            const parsed = JSON.parse(stored);
+            if (parsed.utm_source) return parsed as UTMParams;
         }
 
         const fresh = parseFromLocation();

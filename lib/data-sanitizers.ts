@@ -21,9 +21,13 @@ export const cleanQuoteContext = (context: Record<string, any>) => {
         // Skip internal UI keys if necessary
         if (key === 'step' || key === 'isCalculating') continue;
 
-        // Sanitize dimensions specific keys
-        if (['width', 'length', 'thickness', 'area'].includes(key)) {
-            clean[key] = sanitizeNumericInput(value);
+        // Sanitize dimensions specific keys (assuming metric units)
+        if (['width', 'length', 'thickness', 'area', 'm3', 'cofferedSize'].includes(key)) {
+            const cleanedValue = sanitizeNumericInput(value);
+            // We save the cleaned value, which will be null if it was invalid or empty
+            if (cleanedValue !== null) {
+                clean[key] = cleanedValue;
+            }
         } else {
             // Keep other values if they have content
             if (value !== '' && value !== null && value !== undefined) {

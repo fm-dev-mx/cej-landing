@@ -29,9 +29,10 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
     const [phone, setPhone] = useState('');
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    // Error is now an object to differentiate API vs Validation errors
+    const [error, setError] = useState<{ message: string; isApiError: boolean } | null>(null);
 
-    // Tracking identity
+    // Tracking identity (includes visitorId, sessionId, and UTMs)
     const identity = useIdentity();
 
     // Ensure we only render the portal on the client side
@@ -53,15 +54,15 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
 
         // Validation
         if (cleanName.length < 3) {
-            setError('Por favor ingresa tu nombre completo.');
+            setError({ message: 'Por favor ingresa tu nombre completo.', isApiError: false });
             return;
         }
         if (cleanPhone.length < 10) {
-            setError('Ingresa un número de al menos 10 dígitos.');
+            setError({ message: 'Ingresa un número de al menos 10 dígitos.', isApiError: false });
             return;
         }
         if (!privacyAccepted) {
-            setError('Debes aceptar el aviso de privacidad para continuar.');
+            setError({ message: 'Debes aceptar el aviso de privacidad para continuar.', isApiError: false });
             return;
         }
 
@@ -70,20 +71,31 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
         // Generate CAPI Event ID
         const fbEventId = crypto.randomUUID();
 
+        // 1. Build Payload including all identity and tracking data
+        const payload = {
+            name: cleanName,
+            phone: cleanPhone,
+            quote: quoteDetails,
+            fb_event_id: fbEventId,
+            privacy_accepted: true,
+            // Identity
+            visitor_id: identity?.visitorId || null,
+            session_id: identity?.sessionId || null,
+            // UTMs
+            utm_source: identity?.utm_source,
+            utm_medium: identity?.utm_medium,
+            utm_campaign: identity?.utm_campaign,
+            utm_term: identity?.utm_term,
+            utm_content: identity?.utm_content,
+            fbclid: identity?.fbclid,
+        };
+
         try {
+            // 2. Send to Data Layer (Supabase API Route)
             const response = await fetch('/api/leads', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: cleanName,
-                    phone: cleanPhone,
-                    quote: quoteDetails,
-                    fb_event_id: fbEventId,
-                    // Identity & Consent Data
-                    visitor_id: identity?.visitorId || null,
-                    session_id: identity?.sessionId || null,
-                    privacy_accepted: true,
-                }),
+                body: JSON.stringify(payload),
             });
 
             if (!response.ok) {
@@ -92,14 +104,17 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                 throw new Error(resData.error || 'Error al guardar los datos.');
             }
 
-            // Success: Trigger parent callback
+            // Success: Trigger parent callback and proceed to WhatsApp
             onSuccess(cleanName, fbEventId);
 
         } catch (err) {
-            console.error(err);
-            // Fallback: Proceed to WhatsApp even if API fails (Critical for conversion)
-            // But log the error (in a real app, send to Sentry)
+            console.error('API Lead Submission Error:', err);
+            // Fallback: Proceed to WhatsApp anyway (Critical for conversion)
             onSuccess(cleanName, fbEventId);
+            setError({
+                message: 'Error al registrar tu cotización. Te redirigiremos a WhatsApp para finalizar.',
+                isApiError: true
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -113,6 +128,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                     onClick={onClose}
                     aria-label="Cerrar modal"
                     type="button"
+                    disabled={isSubmitting}
                 >
                     &times;
                 </button>
@@ -133,6 +149,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                         onChange={(e) => setName(e.target.value)}
                         variant="light"
                         required
+                        disabled={isSubmitting}
                     />
 
                     <Input
@@ -144,6 +161,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                         maxLength={10}
                         variant="light"
                         required
+                        disabled={isSubmitting}
                     />
 
                     {/* Privacy Checkbox */}
@@ -154,6 +172,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                                 checked={privacyAccepted}
                                 onChange={(e) => setPrivacyAccepted(e.target.checked)}
                                 className={styles.checkbox}
+                                disabled={isSubmitting}
                             />
                             <span>
                                 He leído y acepto el <a href="/aviso-de-privacidad" target="_blank" rel="noopener noreferrer" className={styles.link}>Aviso de Privacidad</a>.
@@ -162,8 +181,8 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                     </div>
 
                     {error && (
-                        <p className={styles.errorMessage} role="alert">
-                            {error}
+                        <p className={`${styles.errorMessage} ${error.isApiError ? styles.apiError : ''}`} role="alert">
+                            {error.message}
                         </p>
                     )}
 
@@ -173,6 +192,8 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                         fullWidth
                         isLoading={isSubmitting}
                         loadingText="Procesando..."
+                        // Fix: Don't disable button on !privacyAccepted to allow validation message to show
+                        disabled={isSubmitting}
                     >
                         Continuar a WhatsApp
                     </Button>

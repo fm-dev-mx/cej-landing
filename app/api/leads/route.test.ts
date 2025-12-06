@@ -21,9 +21,10 @@ vi.mock('@supabase/supabase-js', () => ({
     })),
 }));
 
-// Mock Data Sanitizer
+// Mock Data Sanitizer - important to mock so we test only the route logic
 vi.mock('@/lib/data-sanitizers', () => ({
-    cleanQuoteContext: vi.fn((context) => context),
+    // Mock the sanitizer to return the context structure plus the key 'sanitized'
+    cleanQuoteContext: vi.fn((context) => ({ ...context, sanitized: true })),
 }));
 
 
@@ -40,17 +41,6 @@ describe('API Route: POST /api/leads', () => {
             ...originalEnv,
             NEXT_PUBLIC_SUPABASE_URL: 'https://test.supabase.co',
             SUPABASE_SERVICE_ROLE_KEY: 'test-key',
-        };
-
-        // Helper to mock the fetch response for select().single()
-        const createRequest = (body: any) => {
-            return new Request('http://localhost/api/leads', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(body),
-            });
         };
 
         // Default successful behavior
@@ -75,7 +65,8 @@ describe('API Route: POST /api/leads', () => {
     it('returns 400 if required fields are missing', async () => {
         const { POST } = await import('./route');
 
-        const req = createRequest({ name: 'Just Name' }); // Missing phone, quote, privacy
+        // Missing phone, quote, privacy, etc.
+        const req = createRequest({ name: 'Just Name' });
         const res = await POST(req);
 
         expect(res.status).toBe(400);
@@ -85,9 +76,10 @@ describe('API Route: POST /api/leads', () => {
         // We can inspect details to see what's missing
         expect(json.details.fieldErrors).toHaveProperty('phone');
         expect(json.details.fieldErrors).toHaveProperty('privacy_accepted');
+        expect(json.details.fieldErrors).toHaveProperty('quote');
     });
 
-    it('successfully saves a lead to Supabase', async () => {
+    it('successfully saves a lead to Supabase with full data', async () => {
         const { POST } = await import('./route');
 
         const payload = {
@@ -95,10 +87,14 @@ describe('API Route: POST /api/leads', () => {
             phone: '1234567890',
             quote: {
                 summary: { total: 1000 },
-                context: { work_type: 'slab' }
+                context: { work_type: 'slab', length: '10' }
             },
-            privacy_accepted: true, // Required by Zod schema
-            fb_event_id: 'test-event'
+            privacy_accepted: true,
+            fb_event_id: 'test-event-id',
+            visitor_id: 'v-id-123',
+            session_id: 's-id-456',
+            utm_source: 'facebook',
+            utm_medium: 'cpc',
         };
 
         const req = createRequest(payload);
@@ -112,12 +108,16 @@ describe('API Route: POST /api/leads', () => {
                 phone: '1234567890',
                 status: 'new',
                 privacy_accepted: true,
-                // Ensure quote_data is transformed correctly (not stringified JSON inside JSON)
+                visitor_id: 'v-id-123',
+                utm_source: 'facebook',
+                utm_medium: 'cpc',
                 quote_data: expect.objectContaining({
                     summary: { total: 1000 },
-                    context: { work_type: 'slab' },
+                    // Verify cleanQuoteContext mock ran and content is merged
+                    context: { work_type: 'slab', length: '10', sanitized: true },
                     meta: expect.objectContaining({
-                        version: 'v2.0'
+                        version: 'v2.0',
+                        session_id: 's-id-456'
                     })
                 })
             })
@@ -127,6 +127,37 @@ describe('API Route: POST /api/leads', () => {
         const json = await res.json();
         expect(json.success).toBe(true);
     });
+
+    it('uses default UTM values if not provided', async () => {
+        const { POST } = await import('./route');
+
+        const payload = {
+            name: 'Test User 2',
+            phone: '1234567890',
+            quote: {
+                summary: { total: 1000 },
+                context: { work_type: 'slab' }
+            },
+            privacy_accepted: true,
+            fb_event_id: 'test-event-id',
+        };
+
+        const req = createRequest(payload);
+        const res = await POST(req);
+
+        // Verify Supabase call uses defaults
+        expect(mockInsert).toHaveBeenCalledWith([
+            expect.objectContaining({
+                name: 'Test User 2',
+                utm_source: 'direct', // Default
+                utm_medium: 'none',   // Default
+                visitor_id: null,
+            })
+        ]);
+
+        expect(res.status).toBe(200);
+    });
+
 
     it('returns 500 if Supabase fails', async () => {
         const { POST } = await import('./route');

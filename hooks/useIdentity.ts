@@ -1,13 +1,22 @@
 // hooks/useIdentity.ts
 import { useEffect, useState } from 'react';
 import { getIdentityParams, type IdentityData } from '@/lib/tracking/identity';
+import { getOrInitUtmParams, type UTMParams } from '@/lib/tracking/utm';
+
+export type FullIdentityData = IdentityData & UTMParams;
 
 export function useIdentity() {
-    const [identity, setIdentity] = useState<IdentityData | null>(null);
+    const [identity, setIdentity] = useState<FullIdentityData | null>(null);
 
     useEffect(() => {
-        // Initialize identity on client mount
-        setIdentity(getIdentityParams());
+        // This runs only on the client side
+        const trackingIds = getIdentityParams();
+        const utmParams = getOrInitUtmParams();
+
+        setIdentity({
+            ...trackingIds,
+            ...utmParams
+        });
     }, []);
 
     return identity;
