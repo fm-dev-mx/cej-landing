@@ -21,23 +21,29 @@ export default function ServiceArea() {
     whatsapp: getWhatsAppUrl(whatsapp)
   }), [phone, whatsapp]);
 
+  // Local SEO Coverage Zones for indexation
+  const coverageZones = [
+    "Valle del Sol", "Campos Elíseos", "Zona Pronaf", "San Lorenzo",
+    "Partido Raza", "Salvarcar", "Parque Industrial Gema", "Parque Industrial Omega",
+    "Satélite", "Las Torres", "Ejército Nacional", "Gómez Morín"
+  ];
+
   return (
     <section id="service-area" className={styles.section}>
       <div className={styles.container}>
         <div className={styles.grid}>
           <div className={styles.content}>
-            <h2 className={styles.title}>Ubicación y Contacto</h2>
-            <p className={styles.description}>
-              Visítanos, llámanos o escríbenos. Tu obra no espera y nosotros
-              tampoco.
-            </p>
+            <header>
+              <h2 className={styles.title}>Ubicación y Cobertura</h2>
+              <p className={styles.description}>
+                Abastecemos obras en todo Ciudad Juárez. Desde el centro hasta los nuevos desarrollos industriales.
+              </p>
+            </header>
 
             <ul className={styles.contactList}>
               {/* 1. OFFICES */}
               <li className={styles.contactItem}>
-                <div className={styles.iconBox} aria-hidden="true">
-                  🏢
-                </div>
+                <div className={styles.iconBox} aria-hidden="true">🏢</div>
                 <div className={styles.itemText}>
                   <strong>Oficinas Centrales</strong>
                   <address className={styles.address}>
@@ -47,18 +53,15 @@ export default function ServiceArea() {
                 </div>
               </li>
 
-              {/* 2. DIRECT CONTACT */}
+              {/* 2. CONTACT */}
               <li className={styles.contactItem}>
-                <div className={styles.iconBox} aria-hidden="true">
-                  📞
-                </div>
+                <div className={styles.iconBox} aria-hidden="true">📞</div>
                 <div className={styles.itemText}>
-                  <strong>Canales Directos</strong>
+                  <strong>Atención Inmediata</strong>
                   <div className={styles.linksStack}>
                     {phone && links.phone && (
                       <a href={links.phone} className={styles.textLink}>
-                        {phone}{" "}
-                        <span className={styles.linkLabel}>(Llamadas)</span>
+                        {phone} <span className={styles.linkLabel}>(Llamadas)</span>
                       </a>
                     )}
                     {whatsapp && links.whatsapp && (
@@ -68,8 +71,7 @@ export default function ServiceArea() {
                         rel="noopener noreferrer"
                         className={styles.textLink}
                       >
-                        {whatsapp}{" "}
-                        <span className={styles.linkLabel}>(WhatsApp)</span>
+                        {whatsapp} <span className={styles.linkLabel}>(WhatsApp)</span>
                       </a>
                     )}
                     <a href={`mailto:${email}`} className={styles.textLink}>
@@ -79,25 +81,24 @@ export default function ServiceArea() {
                 </div>
               </li>
 
-              {/* 3. SERVICE AREA */}
+              {/* 3. ZONES */}
               <li className={styles.contactItem}>
-                <div className={styles.iconBox} aria-hidden="true">
-                  📍
-                </div>
+                <div className={styles.iconBox} aria-hidden="true">📍</div>
                 <div className={styles.itemText}>
-                  <strong>Zona de Servicio</strong>
-                  Cubrimos el área gris mostrada en el mapa.
+                  <strong>Zonas de Entrega Frecuente</strong>
+                  <p className={styles.zoneList}>
+                    {coverageZones.join(" • ")} y más.
+                  </p>
                   <span className={styles.linkLabel}>
-                    Para obras fuera del área (Samalayuca, Anapra, etc.), <br />
-                    contáctanos para verificar viabilidad por volumen.
+                    ¿Tu obra está en Samalayuca o Anapra? Contáctanos para cotizar flete especial.
                   </span>
                 </div>
               </li>
             </ul>
 
-            {/* SCHEDULE */}
+            {/* 4. SCHEDULE */}
             <div className={styles.scheduleCard}>
-              <h3 className={styles.scheduleTitle}>Horario de Atención</h3>
+              <h3 className={styles.scheduleTitle}>Horario de Planta</h3>
               <div className={styles.scheduleRow}>
                 <span>Lunes a Viernes</span>
                 <strong>8:00 AM — 5:00 PM</strong>
@@ -109,32 +110,24 @@ export default function ServiceArea() {
             </div>
           </div>
 
-          {/* MAP WRAPPER */}
-          <div
-            className={`${styles.mapWrapper} ${isMapActive ? styles.active : ""
-              }`}
-          >
+
+          <div className={`${styles.mapWrapper} ${isMapActive ? styles.active : ""}`}>
             {!isMapActive && (
               <button
                 type="button"
                 className={styles.mapOverlay}
                 onClick={() => setIsMapActive(true)}
-                aria-label="Activar mapa interactivo"
+                aria-label="Ver mapa interactivo"
               >
                 <div className={styles.overlayContent}>
-                  <span className={styles.overlayIcon} aria-hidden="true">
-                    🗺️
-                  </span>
-                  <span className={styles.overlayText}>
-                    Ver mapa interactivo
-                  </span>
-                  <span className={styles.overlayHint}>(Clic para activar)</span>
+                  <span className={styles.overlayIcon} aria-hidden="true">🗺️</span>
+                  <span className={styles.overlayText}>Ver ubicación en mapa</span>
                 </div>
               </button>
             )}
             <iframe
               src={mapSrc}
-              title="Zona de cobertura CEJ"
+              title="Ubicación CEJ Concreto"
               className={styles.mapFrame}
               loading="lazy"
               allowFullScreen

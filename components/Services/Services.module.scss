@@ -4,7 +4,7 @@
 
 .section {
   background-color: var(--c-primary-dark);
-  background-image: linear-gradient(to bottom, rgba(1, 11, 24, 0.5), var(--c-primary-dark));
+  background-image: linear-gradient(to bottom, rgba(1, 11, 24, 0.8), var(--c-primary-dark));
   position: relative;
   overflow: hidden;
   padding-block: var(--section-py);
@@ -15,7 +15,7 @@
 }
 
 .header {
-  max-width: 600px;
+  max-width: 650px; // Slightly wider for better text wrapping
   margin-bottom: var(--sp-12);
   padding-right: var(--sp-4);
 }
@@ -33,16 +33,18 @@
 .subtitle {
   @include p.lead;
   color: var(--c-muted-on-dark);
+  max-width: 50ch;
 }
 
 .grid {
-  @include grid-ram($min-width: 300px, $gap: var(--sp-6));
+  // Uses RAM pattern: min-width increased to 320px to accommodate longer text comfortably
+  @include grid-ram($min-width: 320px, $gap: var(--sp-6));
 }
 
 /* Card Specifics */
 .cardHover {
+  height: 100%; // Ensure equal height cards
 
-  /* Specific hover effect for services (icon rotation) */
   &:hover .icon {
     transform: scale(1.15) rotate(5deg);
   }
@@ -72,14 +74,17 @@
 .cardTitle {
   font-size: var(--fs-xl);
   color: white;
-  margin: 0;
+  margin: 0 0 var(--sp-3) 0; // Added explicit bottom margin
   font-weight: 700;
   letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 
 .cardDesc {
   color: var(--c-muted-on-dark);
-  font-size: var(--fs-base);
+  font-size: 0.9375rem; // ~15px, slightly smaller than base for density
   line-height: 1.6;
   margin: 0;
+  opacity: 0.9;
+  text-wrap: pretty; // Better typography for long text
 }

@@ -11,6 +11,9 @@ const envSchema = z.object({
     // Optional for development / test. We will warn in production if missing.
     NEXT_PUBLIC_PIXEL_ID: z.string().optional().default(''),
 
+    // NEW: Google Analytics 4
+    NEXT_PUBLIC_GA_ID: z.string().optional().default(''),
+
     // Contact Information
     // We expect numbers in string format (e.g., "521656...")
     NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().optional().default(''),
@@ -34,6 +37,7 @@ const envSchema = z.object({
  */
 const processEnv = {
     NEXT_PUBLIC_PIXEL_ID: process.env.NEXT_PUBLIC_PIXEL_ID,
+    NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
     NEXT_PUBLIC_WHATSAPP_NUMBER: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER,
     NEXT_PUBLIC_PHONE: process.env.NEXT_PUBLIC_PHONE,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,

@@ -17,12 +17,33 @@ export const M3_STEP = 0.5; // Volume increment (m³)
 export const CURRENCY = 'MXN';
 export const STORAGE_KEY = 'cej_calculator_v1';
 
-// NEW: Quote specific constants
+// Quote specific constants
 export const QUOTE_VALIDITY_DAYS = 7;
 export const SUPPORT_PHONE_LABEL = env.NEXT_PUBLIC_PHONE;
 export const WEBSITE_URL_LABEL = env.NEXT_PUBLIC_SITE_URL;
 
-// Modified disclaimer to be more specific
+// --- NUEVO: Datos Maestros del Negocio (Single Source of Truth) ---
+export const BUSINESS_INFO = {
+    name: env.NEXT_PUBLIC_BRAND_NAME,
+    email: 'contacto@concretodejuarez.com',
+    address: {
+        street: 'Av. Ejército Nacional 6225, Local 27',
+        colony: 'Centro Comercial San José',
+        city: 'Ciudad Juárez',
+        region: 'CHIH',
+        postalCode: '32528',
+        country: 'MX'
+    },
+    geo: {
+        lat: 31.7138,
+        lng: -106.4447
+    },
+    openingHours: [
+        { dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], opens: '08:00', closes: '17:00' },
+        { dayOfWeek: ['Saturday'], opens: '08:00', closes: '13:00' }
+    ]
+};
+
 export const ESTIMATE_LEGEND =
     'Precios sujetos a cambio sin previo aviso. La volumetría final se valida con visita técnica gratuita.';
 
@@ -33,20 +54,14 @@ export const MIN_M3_BY_TYPE: Record<ConcreteType, number> = {
     pumped: 3,
 };
 
-// --- Slab Specifications (New Logic) ---
+// --- Slab Specifications ---
 
 type SlabSpec = {
     label: string;
-    totalThicknessCm: number; // Grosor final (Casetón + Capa compresión)
-    coefficient: number;      // m3 de concreto por m2 de losa
+    totalThicknessCm: number;
+    coefficient: number;
 };
 
-/*
-  Standard Coefficients (Aporte):
-  - 7cm Casetón -> 12cm total -> ~0.085 m3/m2
-  - 10cm Casetón -> 15cm total -> ~0.108 m3/m2
-  - 15cm Casetón -> 20cm total -> ~0.135 m3/m2
-*/
 export const COFFERED_SPECS: Record<CofferedSize, SlabSpec> = {
     '7': {
         label: 'Casetón 7cm',

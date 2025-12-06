@@ -7,7 +7,7 @@ export default function Services() {
   const { title, titleHighlight, subtitle, items } = LANDING_CONTENT.services;
 
   return (
-    <section id="services" className={styles.section}>
+    <section id="services" className={styles.section} aria-label="Nuestros Servicios">
       <div className={styles.container}>
         <header className={styles.header}>
           <h2 className={styles.title}>

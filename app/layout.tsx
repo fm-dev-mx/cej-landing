@@ -3,46 +3,38 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { env } from "@/config/env";
 import { SEO_CONTENT } from "@/config/content";
+import { generateLocalBusinessSchema } from "@/lib/seo";
 import "../styles/globals.scss";
 import Layout from "@/components/layout/Layout";
 
-// Separate Viewport configuration (Next.js 14+ recommendation)
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: "#ffffff",
 };
 
-const isProduction = process.env.NODE_ENV === "production";
+// Use the validated env variable instead of process.env directly
+const GA_MEASUREMENT_ID = env.NEXT_PUBLIC_GA_ID;
+
 const resolveSiteUrl = (): string => {
-  // 1) Prefer explicit public env
-  if (env.NEXT_PUBLIC_SITE_URL) {
-    return env.NEXT_PUBLIC_SITE_URL;
-  }
-
-  // 2) Fallback a dominio de Vercel si existe
-  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
-    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
-  }
-
-  // 3) Fallback local dev
+  if (env.NEXT_PUBLIC_SITE_URL) return env.NEXT_PUBLIC_SITE_URL;
+  if (process.env.NEXT_PUBLIC_VERCEL_URL) return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
   return "http://localhost:3000";
 };
 
 const siteUrl = resolveSiteUrl();
 
 export const metadata: Metadata = {
-  // metadataBase is CRITICAL for relative images (e.g. /og-image.jpg) to work
   metadataBase: new URL(siteUrl),
-
+  alternates: {
+    canonical: siteUrl,
+  },
   title: {
     default: SEO_CONTENT.title,
     template: `%s | ${env.NEXT_PUBLIC_BRAND_NAME}`,
   },
   description: SEO_CONTENT.description,
   keywords: SEO_CONTENT.keywords,
-
-  // Configuration for Facebook, LinkedIn, Discord, etc.
   openGraph: {
     title: SEO_CONTENT.title,
     description: SEO_CONTENT.description,
@@ -59,18 +51,25 @@ export const metadata: Metadata = {
       },
     ],
   },
-
-  // Configuration for Twitter/X
   twitter: {
     card: "summary_large_image",
     title: SEO_CONTENT.title,
     description: SEO_CONTENT.description,
     images: [SEO_CONTENT.ogImage],
   },
-
   icons: {
     icon: "/favicon.ico",
-    // apple: '/apple-touch-icon.png',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 
@@ -78,10 +77,38 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const pixelId = env.NEXT_PUBLIC_PIXEL_ID;
+  const isProduction = process.env.NODE_ENV === "production";
+  const jsonLd = generateLocalBusinessSchema();
 
   return (
     <html lang="es-MX">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="app-root">
+        {/* Google Analytics 4 */}
+        {isProduction && GA_MEASUREMENT_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_MEASUREMENT_ID}', {
+                  page_path: window.location.pathname,
+                });
+              `}
+            </Script>
+          </>
+        )}
+
         {/* Meta Pixel Code */}
         {isProduction && pixelId && (
           <>
@@ -99,7 +126,6 @@ export default function RootLayout({
                 fbq('track', 'PageView');
               `}
             </Script>
-
             <noscript>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

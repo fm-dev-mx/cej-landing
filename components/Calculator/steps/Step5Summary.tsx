@@ -23,9 +23,9 @@ type Props = {
 
 export function Step5Summary({ estimateLegend }: Props) {
     const {
-        mode, // Destructured mode to allow conditional logic
+        mode,
         billedM3,
-        requestedM3, // Access raw calculated volume
+        requestedM3,
         quote,
         unitPriceLabel,
         volumeError,
@@ -65,7 +65,6 @@ export function Step5Summary({ estimateLegend }: Props) {
     const serviceTypeLabel = CONCRETE_TYPES.find(t => t.value === type)?.label ?? type;
     const productLabel = `Concreto f’c ${strength} kg/cm²`;
 
-    // FIX: Handle "Known Volume" mode where workType is null/skipped
     const workTypeLabel = mode === 'knownM3'
         ? 'Por definir'
         : (WORK_TYPES.find((w) => w.id === workType)?.label ?? 'Otro');
@@ -74,6 +73,28 @@ export function Step5Summary({ estimateLegend }: Props) {
 
     // UX: Detect if we are billing minimum or rounding up significantly
     const isBillingAdjusted = billedM3 !== requestedM3;
+
+    // RICH SNIPPETS: Generar Schema de Producto Dinámico
+    const productSchema = useMemo(() => {
+        return {
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: `${productLabel} - ${serviceTypeLabel}`,
+            description: `Suministro de concreto premezclado resistencia ${strength}, tipo ${serviceTypeLabel}. Ideal para ${workTypeLabel}.`,
+            brand: {
+                '@type': 'Brand',
+                name: env.NEXT_PUBLIC_BRAND_NAME
+            },
+            offers: {
+                '@type': 'Offer',
+                price: quote.total.toFixed(2),
+                priceCurrency: 'MXN',
+                availability: 'https://schema.org/InStock',
+                validFrom: new Date().toISOString(),
+                priceValidUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // +7 días
+            }
+        };
+    }, [productLabel, serviceTypeLabel, strength, workTypeLabel, quote.total]);
 
     const enrichedQuoteData = useMemo<LeadQuoteDetails>(() => {
         const specs =
@@ -163,6 +184,12 @@ export function Step5Summary({ estimateLegend }: Props) {
 
     return (
         <div className={`${styles.step} ${styles.stepAnimated}`}>
+            {/* Inyección de Schema para Rich Snippets */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+            />
+
             <header className={styles.stepHeader}>
                 <h2 className={styles.stepTitle}>Cotización Lista</h2>
                 <p className={styles.stepSubtitle}>
@@ -176,7 +203,6 @@ export function Step5Summary({ estimateLegend }: Props) {
                     className={styles.ticketCard}
                     aria-label="Desglose de cotización"
                 >
-                    {/* Branding Watermark */}
                     <div className={styles.ticketWatermark} aria-hidden="true" />
 
                     <div className={styles.ticketContent}>
@@ -346,13 +372,12 @@ export function Step5Summary({ estimateLegend }: Props) {
                             type="button"
                             className={styles.textLink}
                             onClick={resetCalculator}
-                            aria-label="Iniciar una nueva cotización desde cero"
+                            aria-label="Iniciar una nueva cotización"
                         >
                             <span>↺</span> Nueva cotización
                         </button>
                     </div>
                 </div>
-
             </div>
 
             <LeadFormModal

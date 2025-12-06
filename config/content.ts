@@ -50,89 +50,96 @@ export interface StatItem {
     label: string;
 }
 
-// --- NEW: SEO Configuration ---
+// --- SEO Configuration ---
 export const SEO_CONTENT = {
-    title: "Concreto y Equipos de Juárez | Calidad y Tiempo",
-    description: "Suministro de concreto premezclado y equipos de construcción en Ciudad Juárez. Cálculo de volumetría gratis, entregas puntuales y asesoría experta.",
+    title: "Concreto en Ciudad Juárez | Venta y Suministro Inmediato",
+    description: "Cotiza concreto premezclado en Ciudad Juárez al mejor precio. Suministro puntual, renta de bombas y cálculo de material gratis. Resistencias f'c 150 a 300.",
     siteName: "Concreto y Equipos de Juárez",
-    keywords: ["concreto juarez", "concreto premezclado", "bombeo de concreto", "construcción juarez", "cemento"],
-    // Asegúrate de colocar esta imagen en tu carpeta public/
+    keywords: [
+        "concreto juarez",
+        "concreto premezclado precio",
+        "renta de bomba de concreto",
+        "cementera ciudad juarez",
+        "colado de losas juarez",
+        "concreto f'c 200"
+    ],
     ogImage: "/og-image.jpg",
 };
 
 export const LANDING_CONTENT = {
     hero: {
-        badge: "Calidad y Tiempo en Ciudad Juárez",
+        badge: "Servicio en todo Ciudad Juárez y zonas aledañas",
         title: {
-            line1: "Tu obra no se detiene,",
-            highlight: "nosotros tampoco."
+            line1: "Concreto premezclado",
+            highlight: "con entrega puntual."
         },
-        lead: "Suministro de concreto premezclado con <strong>acompañamiento experto</strong> desde el inicio. Evita desperdicios y retrasos.",
+        // SEO: Include main keywords naturally in the lead text (H2 or p context)
+        lead: "Suministro confiable de <strong>concreto y servicio de bombeo</strong> para contratistas y particulares. Evita desperdicios con nuestro cálculo de volumetría exacto.",
         features: [
             {
-                text: "Cálculo de volumetría",
+                text: "Cotización inmediata",
                 highlight: "GRATIS"
             },
             {
-                text: "Entregas puntuales garantizadas",
-                highlight: null
+                text: "Resistencias certificadas",
+                highlight: "(f’c)"
             },
             {
-                text: "Asesoría técnica incluida",
+                text: "Flotilla moderna",
                 highlight: null
             }
         ],
         cta: {
-            primary: "Cotizar ahora",
+            primary: "Cotizar Concreto Ahora",
             secondary: "Hablar con un experto"
         }
     },
     trust: {
-        title: "Más que concreto, entregamos certidumbre",
+        title: "Tu obra segura con CEJ",
         items: [
             {
                 id: "time",
-                title: "Puntualidad Inglesa",
-                desc: "Respetamos el tiempo de tu cuadrilla. Si decimos a las 8:00 AM, el camión está ahí.",
+                title: "Tiempo es Dinero",
+                desc: "Entendemos que una cuadrilla parada cuesta. Nuestra logística en Juárez garantiza que el camión llegue cuando se programó.",
                 icon: "⏱️"
             },
             {
                 id: "quality",
-                title: "Resistencia Certificada",
-                desc: "Garantía de f’c real. Lo que pides es exactamente lo que colamos en tu obra.",
+                title: "Calidad Normativa",
+                desc: "Mezclas diseñadas bajo norma. Si pides f’c 200 para una losa, recibes exactamente esa resistencia garantizada.",
                 icon: "🛡️"
             },
             {
                 id: "local",
-                title: "ADN Juarense",
-                desc: "Conocemos los retos de la ciudad, el tráfico y los agregados locales mejor que nadie.",
+                title: "Expertos Locales",
+                desc: "Conocemos los agregados de la región y las condiciones climáticas de Juárez para ajustar la mezcla ideal.",
                 icon: "📍"
             }
         ] as TrustItem[]
     },
     socialProof: {
-        title: "Nuestra huella en Juárez",
-        subtitle: "La confianza se construye metro a metro. Resultados reales en obras de toda la ciudad.",
+        title: "Proyectos en Ciudad Juárez",
+        subtitle: "Desde ampliaciones residenciales hasta naves industriales. Resultados reales en obras locales.",
         stats: [
             { id: "s1", value: "+4,500", label: "Obras Suministradas" },
-            { id: "s2", value: "95%", label: "Puntualidad en Entrega" },
-            { id: "s3", value: "100%", label: "Empresa Juarense" }
+            { id: "s2", value: "95%", label: "Puntualidad Record" },
+            { id: "s3", value: "100%", label: "Juarenses" }
         ] as StatItem[],
         works: [
             {
                 id: "work1",
-                title: "Nave Industrial Eje Juan Gabriel",
+                title: "Piso Industrial - Eje Juan Gabriel",
                 location: "Zona Industrial",
-                category: "Piso Industrial",
-                imageAlt: "Interior de nave industrial mostrando el colado de piso de concreto con bomba pluma bajo estructura metálica",
+                category: "Piso Pulido",
+                imageAlt: "Colado de piso de concreto industrial con bomba pluma en nave maquiladora",
                 imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/maquila_culguq.jpg"
             },
             {
                 id: "work2",
-                title: "Complejo Residencial Sendero",
+                title: "Cimentación Residencial",
                 location: "Valle del Sol",
-                category: "Cimentación y Zapatas",
-                imageAlt: "Bomba de concreto vertiendo mezcla sobre zapatas corridas y cimentación en terreno de obra residencial",
+                category: "Zapatas y Losas",
+                imageAlt: "Camión revolvedora vertiendo concreto en cimentación de casa habitación",
                 imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673427/complejo_residencial_q3dxfu.jpg"
             },
             {
@@ -140,95 +147,96 @@ export const LANDING_CONTENT = {
                 title: "Estacionamiento Comercial",
                 location: "Av. Las Torres",
                 category: "Concreto Estampado",
-                imageAlt: "Armado de acero con silletas y cimbra de madera listos para recibir el colado de concreto en estacionamiento",
+                imageAlt: "Preparación de armado para colado de estacionamiento comercial en Ciudad Juárez",
                 imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/zona_industrial_gu16sr.jpg"
             }
         ] as WorkItem[],
         testimonials: [
             {
                 id: "t1",
-                quote: "El servicio de bombeo nos ahorró días de trabajo en una losa de difícil acceso. La puntualidad es su fuerte, llegaron justo a la hora programada.",
+                quote: "Necesitaba una bomba para una losa en un segundo piso de difícil acceso en la Col. Melchor Ocampo. Llegaron a tiempo y el operador fue muy hábil.",
                 author: "Arq. Luis Morales",
                 role: "Constructora LM",
                 type: "contractor"
             },
             {
                 id: "t2",
-                quote: "No sabía cuánto concreto pedir para mi cochera. Su técnico vino, midió y me explicó todo. No me sobró nada, excelente servicio.",
+                quote: "Soy particular y no sabía qué resistencia pedir para mi cochera. Me asesoraron por WhatsApp y el cálculo fue exacto, no desperdicié nada.",
                 author: "Sr. Roberto Méndez",
                 role: "Cliente Particular",
                 type: "individual"
             },
             {
                 id: "t3",
-                quote: "Para colados críticos en naves industriales, CEJ ha demostrado tener la capacidad de respuesta y la calidad de mezcla que exigimos.",
+                quote: "Proveedores serios. La consistencia del concreto f'c 250 siempre es la misma, lo que nos ayuda a mantener la calidad en nuestros acabados.",
                 author: "Ing. Sofía Durán",
-                role: "Supervisora de Obra, Park V",
+                role: "Supervisora de Obra",
                 type: "contractor"
             }
         ] as TestimonialItem[]
     },
     process: {
-        title: "¿Cómo trabajamos?",
-        subtitle: "Tu concreto en obra, sin errores y sin riesgos.",
+        title: "Tu colado en 4 pasos",
+        subtitle: "Simplificamos la logística para que tú solo te preocupes por construir.",
         steps: [
             {
                 id: "calc",
-                title: "Cotiza",
-                desc: "Usa la calculadora o contáctanos para obtener tu presupuesto al instante.",
-                icon: "📲"
+                title: "1. Cotiza y Calcula",
+                desc: "Usa nuestra calculadora online para estimar el volumen y precio al instante, o mándanos tus medidas.",
+                icon: "Tp" // Tp maps to calculator/phone conceptually
             },
             {
                 id: "book",
-                title: "Aparta",
-                desc: "Bloquea tu horario con un anticipo de solo $1,000 MXN.",
-                icon: "📅"
+                title: "2. Programa tu Pedido",
+                desc: "Aparta fecha y hora con un anticipo mínimo ($1,000 MXN). Asegura tu lugar en la agenda.",
+                icon: "Cal"
             },
             {
                 id: "verify",
-                title: "Verificamos",
-                desc: "Visitamos tu obra para confirmar la cantidad exacta y accesos.",
-                icon: "👷"
+                title: "3. Visita Técnica",
+                desc: "Un experto va a tu obra (sin costo) para verificar accesos y rectificar medidas para evitar errores.",
+                icon: "Eng"
             },
             {
                 id: "pay",
-                title: "Recibe y Liquida",
-                desc: "Llegamos puntuales. Pagas el resto al recibir tu concreto.",
-                icon: "🤝"
+                title: "4. Recibe y Construye",
+                desc: "La olla llega puntual. Liquidación contra entrega y soporte durante el vaciado.",
+                icon: "Truck"
             }
         ] as ProcessStep[]
     },
+    // SEO STRATEGY: Expanded descriptions for semantic ranking
     services: {
-        title: "Todo lo que necesitas,",
-        titleHighlight: "en un solo lugar.",
-        subtitle: "Soluciones integrales de concreto para contratistas y constructores en Ciudad Juárez.",
+        title: "Soluciones en Concreto",
+        titleHighlight: "para toda necesidad.",
+        subtitle: "Desde pequeñas ampliaciones hasta grandes desarrollos en Ciudad Juárez. Tenemos el equipo y la mezcla correcta.",
         items: [
             {
                 id: "concreto",
-                title: "Concreto Premezclado",
-                desc: "Desde f’c 100 hasta 350 kg/cm². Calidad controlada y mezclas especiales para losas, pisos y estructuras.",
+                title: "Venta de Concreto Premezclado",
+                desc: "Suministro de concreto convencional y estructural (f’c 150, 200, 250, 300 kg/cm²). Ideal para losas, firmes, banquetas, cimentaciones y muros. Garantizamos la resistencia y trabajabilidad que tu obra exige.",
                 icon: "🏗️",
-                ariaLabel: "Grúa de construcción",
+                ariaLabel: "Camión revolvedora de concreto",
             },
             {
                 id: "bomba",
-                title: "Servicio de Bombeo",
-                desc: "Bombas pluma y estacionarias para llegar a cualquier rincón de tu obra. Eficiencia y limpieza garantizada.",
+                title: "Servicio de Bombeo (Pluma y Estacionaria)",
+                desc: "Renta de bombas de concreto para alcanzar cualquier distancia o altura. Contamos con bombas pluma (telescópicas) para losas altas y bombas estacionarias (tubería) para interiores o patios traseros de difícil acceso.",
                 icon: "🚛",
-                ariaLabel: "Camión de transporte",
+                ariaLabel: "Bomba de concreto",
             },
             {
                 id: "asesoria",
-                title: "Asesoría Técnica",
-                desc: "No adivines. Nuestros expertos te ayudan a calcular volúmenes y elegir la resistencia adecuada sin costo.",
+                title: "Asesoría Técnica y Volumetría",
+                desc: "No arriesgues tu dinero. Nuestros técnicos realizan visitas a obra para calcular los metros cúbicos exactos y recomendarte la resistencia (f'c) adecuada según el uso final de tu construcción.",
                 icon: "👷",
-                ariaLabel: "Trabajador de construcción",
+                ariaLabel: "Ingeniero civil asesorando",
             },
         ] as ServiceItem[]
     },
     faq: {
         title: "Preguntas Frecuentes",
-        subtitle: "Resolvemos tus dudas sobre tiempos de entrega, pagos y logística.",
+        subtitle: "Dudas comunes sobre el suministro de concreto en Juárez.",
         items: [
             {
                 question: "¿Cuál es el pedido mínimo de concreto?",
@@ -236,19 +244,19 @@ export const LANDING_CONTENT = {
                     "Para tiro directo el mínimo es de 2 m³, y para servicio con bomba es de 3 m³. Si requieres menos cantidad, contáctanos para evaluar la disponibilidad y el cargo por 'falso flete' correspondiente.",
             },
             {
-                question: "¿Con cuánto tiempo de anticipación debo hacer mi pedido?",
+                question: "¿Con cuánto tiempo debo pedir el concreto?",
                 answer:
-                    "Recomendamos realizar tu pedido con 24 a 48 horas de anticipación para asegurar el horario de colado que prefieras. Para fines de semana, sugerimos reservar con 3 días de antelación.",
+                    "Recomendamos realizar tu pedido con 24 a 48 horas de anticipación para asegurar el horario de colado que prefieras, especialmente para colados en sábado por la mañana.",
             },
             {
-                question: "¿Qué formas de pago aceptan?",
+                question: "¿Qué resistencia (f'c) necesito para una losa de casa?",
                 answer:
-                    "Aceptamos transferencias bancarias (SPEI), depósitos en efectivo y pago con tarjeta (crédito/débito). Recuerda que puedes apartar con $1,000 y liquidar contra entrega.",
+                    "Lo estándar para una losa de entrepiso o azotea residencial es f'c 200 kg/cm² o f'c 250 kg/cm². Si tienes dudas, usa nuestra calculadora o llámanos para asesorarte gratis.",
             },
             {
-                question: "¿Hacen visitas técnicas?",
+                question: "¿Aceptan pagos con tarjeta?",
                 answer:
-                    "Sí, es parte de nuestro proceso estándar. Una vez apartado el pedido, un técnico visita tu obra para validar accesos y volumetría final para evitar que te falte o sobre material.",
+                    "Sí, aceptamos transferencias (SPEI), efectivo y tarjetas de crédito/débito. Puedes apartar con un anticipo y liquidar el resto al llegar la unidad a tu obra.",
             },
         ] as FaqItem[]
     }
