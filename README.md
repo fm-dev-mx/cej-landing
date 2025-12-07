@@ -1,58 +1,106 @@
 # 🏗️ CEJ Platform (Landing + SaaS)
 
-**A hybrid Next.js platform combining a high-conversion landing page with a progressive web application (PWA) for construction order management.**
+**A hybrid Next.js platform combining a high-performance landing page with a scalable SaaS OS for concrete order management.**
 
-![Status](https://img.shields.io/badge/Status-Active_Development-green)
-![Stack](https://img.shields.io/badge/Stack-Next.js_15_|_Supabase_|_Zustand-blue)
-
----
-
-## 1. Project Overview
-
-### Product Description
-This platform serves as the digital storefront and operational operating system for **Concreto y Equipos de Juárez**. It solves the friction between capturing anonymous traffic and retaining professional customers through a dual-context architecture:
-
-1.  **Public Context (Conversion Engine):** A friction-free landing page allowing users to calculate volumes, estimate costs, and generate leads via WhatsApp without forced registration.
-2.  **Private Context (Productivity SaaS):** A restricted dashboard for recurring customers (Contractors/Architects) to manage project history, generate formal PDF quotes, and clone previous orders.
-
-### Current Scope (MVP)
-* **Calculators:** Real-time volume estimation for slabs, footings, and walls.
-* **Session Cart:** Local persistence of multiple quote items.
-* **Lead Gen:** WhatsApp integration with formatted order summaries.
-* **Out of Scope:** Payment gateway (Stripe/MercadoPago), real-time GPS truck tracking.
+![Status](https://img.shields.io/badge/Status-Phase_2_Active-green)
+![Stack](https://img.shields.io/badge/Stack-Next.js_16_|_Supabase_|_Zustand-blue)
+![Coverage](https://img.shields.io/badge/Tests-Vitest-yellow)
 
 ---
 
-## 2. Architecture & Structure
+## 1. Project Vision
 
-The project uses **Next.js App Router** with a modular architecture that strictly separates marketing concerns from application logic.
+**Concreto y Equipos de Juárez (CEJ)** is evolving from manual sales processes to a digital-first platform solving two critical problems:
 
-### Directory Structure
-```bash
-├── app/
-│   ├── (marketing)/      # Public routes (Landing, Services, Contact) - Optimized for SEO/LCP
-│   ├── (app)/            # Authenticated routes (/cotizador, /admin) - Protected by Middleware
-│   ├── actions/          # Server Actions (Data mutations, Lead submission)
-│   ├── api/              # Route Handlers (Webhooks)
-│   └── layout.tsx        # Root layout (Fonts, Providers)
-├── components/
-│   ├── Calculator/       # Complex business logic components (Forms, Summary)
-│   ├── ui/               # Reusable UI primitives (Buttons, Inputs, Modals)
-│   └── layouts/          # Structural components (Header, Footer, Shells)
-├── config/               # Static configuration (Business constants, Nav links)
-├── hooks/                # Custom React Hooks (Logic separation)
-├── lib/                  # Utilities, Domain Logic, Pricing Engine, Schemas
-├── store/                # Zustand Stores (Client-side state & Local Persistence)
-└── styles/               # Global SCSS, Mixins, Design Tokens
-````
+1.  **Lead Generation (Public):** A friction-free calculator to capture anonymous traffic, precise volume estimation (Slabs/Footings), and immediate lead conversion via WhatsApp.
+2.  **Order Management (Private SaaS):** A "CEJ Pro" portal for recurring contractors to manage order history, fiscal data, and repeat purchases.
 
------
+---
 
-## 3\. Tech Stack
+## 2. Current Status (Phase 2: Data Integration)
 
-| Category | Technology | Justification |
-| :--- | :--- | :--- |
-| **Framework** | **Next.js 15+** | App Router for layouts, Server Components, and Server Actions. |
+The project currently operates as a robust marketing site with local persistence and a database-backed lead capture system.
+
+### ✅ Operational Modules
+
+- **Landing Page (`app/(marketing)`):** Fully responsive, SEO-optimized, and instrumented with Meta Pixel & Vercel Analytics.
+- **Calculation Engine (`useQuoteCalculator`):** Business logic validated for Slabs (Solid/Coffered), Footings, and Walls. Unit tested via Vitest.
+- **Lead Database:** Anonymous lead ingestion into Supabase (`public.leads`) using Server Actions with a "Fail-Open" strategy.
+- **Local Persistence:** Guest cart state persists across reloads using `localStorage` + Zustand.
+
+### ⚠️ Critical Known Issues (WIP)
+
+- **Fragmented UX:** The cart visual feedback components (`QuoteDrawer`, `SmartBottomBar`) are fully functional in the `/cotizador` route but are **not currently mounted** on the Landing Page. Users adding items from the Home page calculate blindly. **(Priority Fix for Sprint 1)**.
+- **Static Pricing:** Prices are currently hardcoded in `config/business.ts`. The migration to the dynamic `price_config` database table is pending.
+- **Hidden Expert Mode:** Logic for additives (accelerants, fiber) exists in the store but is hidden in the UI.
+
+---
+
+## 3. Quick Start
+
+### Prerequisites
+
+- Node.js 20+
+- pnpm (`npm install -g pnpm`)
+- A Supabase Project (See `docs/DB_SCHEMA.md` for setup).
+
+### Installation
+
+1. **Clone the repository:**Bash
+
+    #
+
+    `git clone <repo-url>
+    cd cej-landing
+    pnpm install`
+
+2. Environment Configuration:Bash
+
+    Duplicate .env.example to .env.local. Ensure you configure the Supabase Service Role key for Server Actions to work.
+
+    #
+
+    `# Supabase (Required for Lead Capture)
+    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key # SERVER-SIDE ONLY
+
+    # Marketing & Contact
+    NEXT_PUBLIC_WHATSAPP_NUMBER=521656XXXXXXX
+    NEXT_PUBLIC_PIXEL_ID=your-pixel-id`
+
+3. **Run Development Server:**Bash
+
+    #
+
+    `pnpm dev`
+
+4. Run Tests:Bash
+
+    Ensure business logic integrity before pushing.
+
+    #
+
+    `pnpm test        # Run Unit Tests (Single Pass)
+    pnpm test:watch  # Run Unit Tests (Watch Mode)`
+
+
+---
+
+## 4. Documentation
+
+For detailed architecture, database schemas, and the development roadmap, please refer to the `/docs` directory:
+
+- [🗺️ **Roadmap & Sprints**](https://www.google.com/search?q=./docs/ROADMAP.md): Project phases, user roles, and execution plan.
+- [🏗️ **Architecture**](https://www.google.com/search?q=./docs/ARCHITECTURE.md): Data flow diagrams, state management, and code conventions.
+- [🗄️ **Database Schema**](https://www.google.com/search?q=./docs/DB_SCHEMA.md): Table definitions, JSONB snapshots, and RLS security policies.
+
+---
+
+## 5. Tech Stack
+
+| **Category** | **Technology** | **Justification** |
+| --- | --- | --- |
+| **Framework** | **Next.js 16** | App Router for layouts, Server Components, and Server Actions. |
 | **Language** | **TypeScript** | Strict typing is mandatory for financial/pricing logic. |
 | **Backend** | **Supabase** | Managed PostgreSQL, Auth (Magic Link), and Real-time capabilities. |
 | **State** | **Zustand** | Lightweight state management with built-in `localStorage` persistence. |
@@ -60,175 +108,6 @@ The project uses **Next.js App Router** with a modular architecture that strictl
 | **Validation** | **Zod** | Runtime schema validation for forms and API inputs to ensure data integrity. |
 | **Testing** | **Vitest** | High-performance unit testing for the pricing engine. |
 
------
+---
 
-## 4\. Database & Data Model
-
-We utilize **PostgreSQL** via Supabase. The schema is designed to support the transition from anonymous leads to registered orders.
-
-### Core Entities
-
-  * **`profiles`**: Extends `auth.users` with commercial data (RFC, Billing Address).
-  * **`orders`**: The header of a quote/order.
-      * `status`: State machine (`draft`, `submitted`, `approved`, `paid`, `delivered`, `cancelled`).
-      * `total_amount_snapshot`: The final price at the time of creation (prevents historical price drift).
-  * **`order_items`**: Line items (Concrete type, pump service, etc.).
-      * `quote_data`: **JSONB** column. Stores the *exact* inputs used for calculation (dimensions, specific formulas) to allow auditing without complex schema migrations.
-  * **`price_config`**: Global configuration table for base prices per m³ and service fees.
-
-### Security
-
-  * **RLS (Row Level Security):** Strictly enforced.
-      * Users can only `SELECT/UPDATE` their own orders.
-      * `service_role` (Admin) has full access to all records.
-
------
-
-## 5\. User Roles & Permissions
-
-| Feature | Visitor (Public) | Registered (Contractor) | Internal (Admin) |
-| :--- | :---: | :---: | :---: |
-| **Quote Calculator** | ✅ | ✅ | ✅ |
-| **View Estimates** | ✅ | ✅ | ✅ |
-| **Cart Persistence** | Local (Session) | Cloud (Synced) | Cloud |
-| **Submit Order** | WhatsApp | WhatsApp / System | - |
-| **History** | ❌ | ✅ (Saved in DB) | ✅ (View All) |
-| **PDF Generation** | Simple Ticket | Branded PDF | Official PDF |
-| **Price Override** | ❌ | ❌ | ✅ (Manual Adjustment) |
-| **Status Management** | ❌ | ❌ (Cancel only) | ✅ (Full Workflow) |
-
------
-
-## 6\. Current Implementation Status
-
-### ✅ Implemented Modules
-
-1.  **Landing Page (`/`)**: Fully responsive, SEO-optimized marketing page.
-2.  **Calculator Core**: `useQuoteCalculator` hook handling volume logic for Slabs, Footings, and Walls.
-3.  **Cart System**: `useCejStore` implementing persistent local storage for multiple items.
-4.  **Lead Capture**: `LeadFormModal` requesting minimum viable data (Name/Phone) at the end of the funnel.
-5.  **WhatsApp Integration**: Generates pre-formatted text messages for immediate ordering.
-
------
-
-## 7\. Pending Features & Roadmap
-
-This roadmap is designed to pay down technical debt first, then scale into a SaaS product.
-
-### PHASE 1: Core Refactor & Domain Hardening
-
-*Goal: Decouple business logic from UI and establish a "Single Source of Truth" for types.*
-
-  * [x] **Type Unification**: Centralized all domain definitions in `types/domain.ts`. Removed legacy type files.
-  * [x] **Logic Decoupling**: Verified `useQuoteCalculator` purity and removed redundant Context API layers.
-  * [x] **Validation Hardening**: Implemented strict Zod schemas for all calculator inputs.
-  * [x] **Store Optimization**: Implemented strict `PersistedState` typing and removed redundant re-renders.
-  * [x] **Testing**: Unified pricing logic tests covering MOQs, rounding rules, and math integrity.
-
-### PHASE 2: Backend Foundation & Data Modeling
-
-*Goal: Establish the database infrastructure and security policies.*
-
-  * [x] **Schema Design V1**: Implemented `leads` table with JSONB `quote_data` snapshot for immutable audit trails (optimized for anonymous traffic).
-  * [x] **RLS Policies**: Configured Service Role access for secure Server Actions (bypassing public RLS for ingestion).
-  * [x] **Audit Trail**: Full calculation payload stored in `quote_data` column.
-  * [x] **Server Action Audit**: Implemented "Fail-Open" strategy in `submitLead` to guarantee WhatsApp conversion even during DB outages.
-
-### PHASE 3: Authentication & The "Bridge"
-
-*Goal: Convert anonymous traffic into registered users without data loss.*
-
-  * [ ] **Supabase Auth**: Implement Magic Link and Google Login.
-  * [ ] **Protected Routes**: Create HOC/Middleware for `/cotizador/*`.
-  * [ ] **The Sync Engine**: Create `useSyncCart` hook. On login, it detects local items, pushes them to Supabase `orders`, and clears localStorage.
-  * [ ] **User Profile**: Form to collect billing/fiscal data.
-
-### PHASE 4: Private SaaS Dashboard
-
-*Goal: Provide value to the recurring customer.*
-
-  * [ ] **Dashboard UI**: Data table with filters (Date, Status, Project Name).
-  * [ ] **Detail View**: Dynamic `/cotizador/[id]` page to view historical order details.
-  * [ ] **Actions**: Implement "Clone Order" and "Download Simple PDF".
-  * [ ] **PDF Engine**: Integrate `@react-pdf/renderer` for server-side generation of branded quotes.
-
-### PHASE 5: Internal Admin & Advanced Logic
-
-*Goal: Empower the sales team.*
-
-  * [ ] **Admin Dashboard**: Kanban/Pipeline view of all global leads at `/admin`.
-  * [ ] **Price Override Engine**: UI for Admins to manually adjust line-item prices in specific orders.
-  * [ ] **Global Config UI**: Interface to update base prices (`price_config`) without code deployments.
-  * [ ] **Metrics**: Basic KPIs (Total quoted volume, Conversion rate).
-
------
-
-## 8\. Installation & Setup
-
-### Prerequisites
-
-  * Node.js 20+
-  * pnpm (`npm install -g pnpm`)
-
-### Quick Start
-
-1.  **Clone the repository:**
-
-    ```bash
-    git clone <repo-url>
-    cd cej-landing
-    ```
-
-2.  **Install dependencies:**
-
-    ```bash
-    pnpm install
-    ```
-
-3.  **Environment Setup:**
-    Duplicate `.env.example` to `.env.local` and configure:
-
-    ```bash
-    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-    NEXT_PUBLIC_SITE_URL=http://localhost:3000
-    ```
-
-4.  **Run Development Server:**
-
-    ```bash
-    pnpm dev
-    ```
-
------
-
-## 9\. Testing & Quality
-
-We prioritize testing **business logic** (money/volume) over UI snapshots.
-
-  * **Unit Tests (`*.test.ts`)**: Mandatory for `lib/pricing.ts` and `hooks/useQuoteCalculator`.
-  * **Component Tests (`*.test.tsx`)**: Use React Testing Library for critical forms.
-
-**Commands:**
-
-```bash
-pnpm test        # Run tests in watch mode
-pnpm test:ui     # Open Vitest UI
-pnpm lint        # Run ESLint check
-```
-
------
-
-## 10\. Conventions & Best Practices
-
-  * **Strict Typing**: Do not use `any`. Define interfaces in `types/domain.ts` or co-locate if component-specific.
-  * **Mobile First**: All styles must be written for mobile first, using mixins for larger breakpoints (`@include respond-to('md')`).
-  * **Clean Code**:
-      * Extract complex logic to custom hooks (`hooks/`).
-      * Use Zod for *all* user input validation.
-      * Avoid magic numbers; use constants from `config/business.ts`.
-  * **Commits**: Follow [Conventional Commits](https://www.conventionalcommits.org/) (e.g., `feat: add auth`, `fix: pricing rounding`).
-
------
-
-*Documentation maintained by the Engineering Team.*
+*Documentation maintained by the FM Creativo Engineering Team.*
