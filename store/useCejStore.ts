@@ -7,6 +7,7 @@ import {
     type QuoteBreakdown,
     DEFAULT_CALCULATOR_STATE
 } from '@/components/Calculator/types';
+import { WORK_TYPES } from '@/config/business';
 
 export type QuoteItem = {
     id: string;
@@ -15,6 +16,13 @@ export type QuoteItem = {
     results: QuoteBreakdown;
     config: { mode: 'expert' | 'wizard'; label: string };
 };
+
+interface UserState {
+    visitorId: string;
+    name?: string;
+    phone?: string;
+    hasConsentedPersistence: boolean;
+}
 
 interface CejState {
     // --- UI Configuration ---
@@ -30,11 +38,7 @@ interface CejState {
     history: QuoteItem[];
 
     // --- Identity (Lazy Auth) ---
-    user: {
-        name?: string;
-        phone?: string;
-        visitorId: string;
-    };
+    user: UserState;
 
     // --- Actions ---
     toggleViewMode: () => void;
@@ -44,11 +48,16 @@ interface CejState {
     // Draft Actions
     updateDraft: (updates: Partial<CalculatorState>) => void;
     resetDraft: () => void;
+    // Feature: Clone/Repeat Order
+    loadHistoryItemAsDraft: (item: QuoteItem) => void;
 
     // Cart Actions
     addToCart: (quote: QuoteBreakdown) => void;
     removeFromCart: (id: string) => void;
     clearCart: () => void;
+
+    // User Actions
+    updateUserContact: (contact: { name: string; phone: string; save: boolean }) => void;
 }
 
 export const useCejStore = create<CejState>()(
@@ -63,6 +72,7 @@ export const useCejStore = create<CejState>()(
             history: [],
             user: {
                 visitorId: uuidv4(), // Generate generic ID on init
+                hasConsentedPersistence: true, // Default to true for UX, user can opt-out
             },
 
             // Actions
@@ -81,8 +91,26 @@ export const useCejStore = create<CejState>()(
                 currentDraft: { ...DEFAULT_CALCULATOR_STATE }
             }),
 
+            loadHistoryItemAsDraft: (item) => {
+                set({
+                    currentDraft: { ...item.inputs, step: 3 }, // Jump to inputs step to verify volumes
+                    isDrawerOpen: false, // Close drawer to show calculator
+                    viewMode: item.config.mode // Switch to the mode used in that quote
+                });
+            },
+
             addToCart: (results) => {
                 const state = get();
+
+                // Smart Naming: Resolve label from config or fallback
+                let workTypeLabel = 'Concreto';
+                if (state.currentDraft.workType) {
+                    const match = WORK_TYPES.find(w => w.id === state.currentDraft.workType);
+                    if (match) workTypeLabel = match.label;
+                }
+
+                const label = `${workTypeLabel} f'c ${state.currentDraft.strength}`;
+
                 const newItem: QuoteItem = {
                     id: uuidv4(),
                     timestamp: Date.now(),
@@ -90,15 +118,15 @@ export const useCejStore = create<CejState>()(
                     results,
                     config: {
                         mode: state.viewMode,
-                        label: `Cálculo ${state.cart.length + 1}` // TODO: Use smart naming based on WorkType
+                        label
                     }
                 };
 
                 set((state) => ({
                     cart: [...state.cart, newItem],
-                    history: [newItem, ...state.history].slice(0, 50), // Keep last 50 in history
-                    currentDraft: { ...DEFAULT_CALCULATOR_STATE }, // Reset draft after adding
-                    isDrawerOpen: true, // Open drawer to show feedback
+                    history: [newItem, ...state.history].slice(0, 50), // Keep last 50
+                    currentDraft: { ...DEFAULT_CALCULATOR_STATE },
+                    isDrawerOpen: true,
                     activeTab: 'order'
                 }));
             },
@@ -108,11 +136,21 @@ export const useCejStore = create<CejState>()(
             })),
 
             clearCart: () => set({ cart: [] }),
+
+            updateUserContact: ({ name, phone, save }) => set((state) => ({
+                user: {
+                    ...state.user,
+                    name: save ? name : undefined,
+                    phone: save ? phone : undefined,
+                    hasConsentedPersistence: save
+                }
+            })),
         }),
         {
             name: 'cej-pro-storage',
             storage: createJSONStorage(() => localStorage),
-            // Only persist critical data, avoid persisting transient UI state like isDrawerOpen if undesired
+            // Persist everything critical.
+            // We intentionally persist 'cart' and 'user' to survive browser closes.
             partialize: (state) => ({
                 cart: state.cart,
                 history: state.history,

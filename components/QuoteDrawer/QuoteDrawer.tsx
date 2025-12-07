@@ -1,3 +1,4 @@
+// components/QuoteDrawer/QuoteDrawer.tsx
 'use client';
 
 import { useState } from 'react';
@@ -11,7 +12,8 @@ export default function QuoteDrawer() {
     const {
         isDrawerOpen, setDrawerOpen,
         activeTab, setActiveTab,
-        cart, history, removeFromCart
+        cart, history, removeFromCart,
+        loadHistoryItemAsDraft // New action
     } = useCejStore();
 
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -23,6 +25,19 @@ export default function QuoteDrawer() {
 
     const handleCheckoutClick = () => {
         setIsCheckoutOpen(true);
+    };
+
+    const handleClone = (item: any) => {
+        if (confirm('¿Quieres cargar esta cotización en el calculador? Se perderán los datos actuales no guardados.')) {
+            loadHistoryItemAsDraft(item);
+        }
+    };
+
+    // Helper to format date relative
+    const formatDate = (ts: number) => {
+        return new Date(ts).toLocaleDateString('es-MX', {
+            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
     };
 
     return (
@@ -42,13 +57,13 @@ export default function QuoteDrawer() {
                             className={`${styles.tab} ${activeTab === 'order' ? styles.active : ''}`}
                             onClick={() => setActiveTab('order')}
                         >
-                            Pedido ({cart.length})
+                            Pedido Actual ({cart.length})
                         </button>
                         <button
                             className={`${styles.tab} ${activeTab === 'history' ? styles.active : ''}`}
                             onClick={() => setActiveTab('history')}
                         >
-                            Historial
+                            Mis Obras 📂
                         </button>
                     </div>
                     <button className={styles.closeBtn} onClick={() => setDrawerOpen(false)}>×</button>
@@ -57,7 +72,11 @@ export default function QuoteDrawer() {
                 <div className={styles.body}>
                     {listData.length === 0 ? (
                         <div className={styles.emptyState}>
-                            <p>No hay ítems aquí.</p>
+                            <p>
+                                {activeTab === 'order'
+                                    ? 'Aún no has agregado nada al pedido.'
+                                    : 'Aquí aparecerán tus cotizaciones pasadas.'}
+                            </p>
                             {activeTab === 'order' && (
                                 <button onClick={() => setDrawerOpen(false)} className={styles.linkBtn}>
                                     Volver a cotizar
@@ -70,28 +89,42 @@ export default function QuoteDrawer() {
                                 <li key={item.id} className={styles.item}>
                                     <div className={styles.itemHeader}>
                                         <span className={styles.itemTitle}>
-                                            {/* Logic to create a title like "Losa - f'c 200" */}
-                                            {/* Assuming workType is available in item.inputs.workType or similar */}
-                                            {item.config.mode === 'wizard' ? 'Cálculo Guiado' : 'Cálculo Experto'}
+                                            {item.config.label || (item.config.mode === 'wizard' ? 'Cálculo Guiado' : 'Cálculo Experto')}
                                         </span>
                                         <span className={styles.itemDate}>
-                                            {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {formatDate(item.timestamp)}
                                         </span>
                                     </div>
+
                                     <div className={styles.itemDetails}>
-                                        <span>Vol: <strong>{item.results.volume.billedM3} m³</strong></span>
-                                        <span>Res: <strong>{item.results.strength}</strong></span>
+                                        <div className={styles.detailBadge}>
+                                            {item.results.volume.billedM3.toFixed(1)} m³
+                                        </div>
+                                        <div className={styles.detailBadge}>
+                                            {item.results.concreteType === 'pumped' ? 'Bomba' : 'Directo'}
+                                        </div>
                                     </div>
+
                                     <div className={styles.itemFooter}>
                                         <span className={styles.itemPrice}>{fmtMXN(item.results.total)}</span>
-                                        {activeTab === 'order' && (
-                                            <button
-                                                className={styles.removeBtn}
-                                                onClick={() => removeFromCart(item.id)}
-                                            >
-                                                Eliminar
-                                            </button>
-                                        )}
+
+                                        <div className={styles.itemActions}>
+                                            {activeTab === 'order' ? (
+                                                <button
+                                                    className={styles.textBtnDanger}
+                                                    onClick={() => removeFromCart(item.id)}
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    className={styles.textBtnPrimary}
+                                                    onClick={() => handleClone(item)}
+                                                >
+                                                    ↺ Cotizar de nuevo
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </li>
                             ))}

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { useIdentity } from '@/hooks/useIdentity';
 import { submitLead } from '@/app/actions/submitLead';
+import { useCejStore } from '@/store/useCejStore';
 import type { LeadData } from '@/lib/schemas';
 import styles from './LeadFormModal.module.scss';
 
@@ -27,24 +28,34 @@ type LeadFormModalProps = {
 };
 
 export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: LeadFormModalProps) {
+    // Local state
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
-
-    // State for local validation feedback
+    const [saveMyData, setSaveMyData] = useState(true); // Default to true (Guest-First strategy)
     const [error, setError] = useState<{ message: string; isApiError: boolean } | null>(null);
-
-    // useTransition for Server Action loading state
-    const [isPending, startTransition] = useTransition();
-
-    // Tracking identity
-    const identity = useIdentity();
     const [mounted, setMounted] = useState(false);
+
+    // Store & Hooks
+    const user = useCejStore(s => s.user);
+    const updateUserContact = useCejStore(s => s.updateUserContact);
+    const [isPending, startTransition] = useTransition();
+    const identity = useIdentity();
 
     useEffect(() => {
         setMounted(true);
         return () => setMounted(false);
     }, []);
+
+    // Effect: Pre-fill data from store when modal opens
+    useEffect(() => {
+        if (isOpen && user.name && user.phone) {
+            setName(user.name);
+            setPhone(user.phone);
+            // If we have data, we assume they accepted privacy previously or allow quick check
+            setPrivacyAccepted(true);
+        }
+    }, [isOpen, user.name, user.phone]);
 
     if (!isOpen || !mounted) return null;
 
@@ -55,7 +66,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
         const cleanName = name.trim();
         const cleanPhone = phone.replace(/[^0-9]/g, '');
 
-        // 1. Client-side quick validation
+        // Validation
         if (cleanName.length < 3) {
             setError({ message: 'Por favor ingresa tu nombre completo.', isApiError: false });
             return;
@@ -71,7 +82,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
 
         const fbEventId = crypto.randomUUID();
 
-        // 2. Prepare Payload
+        // Prepare Payload
         const payload: LeadData = {
             name: cleanName,
             phone: cleanPhone,
@@ -88,15 +99,22 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
             fbclid: identity?.fbclid,
         };
 
-        // 3. Call Server Action within Transition
         startTransition(async () => {
+            // 1. Update Local Store (Persistence logic)
+            updateUserContact({
+                name: cleanName,
+                phone: cleanPhone,
+                save: saveMyData
+            });
+
+            // 2. Submit to Server
             const result = await submitLead(payload);
 
             if (result.success) {
                 onSuccess(cleanName, fbEventId);
             } else {
                 console.error('Lead Submission Failed:', result.error);
-                // Fallback: Proceed to WhatsApp to avoid losing the conversion
+                // Fallback: Proceed to WhatsApp anyway to capture the sale
                 onSuccess(cleanName, fbEventId);
             }
         });
@@ -116,10 +134,13 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                 </button>
 
                 <header className={styles.header}>
-                    <h3 className={styles.title}>Casi listo 🚀</h3>
+                    <h3 className={styles.title}>
+                        {user.name ? `Hola de nuevo, ${user.name.split(' ')[0]} 👋` : 'Casi listo 🚀'}
+                    </h3>
                     <p className={styles.subtitle}>
-                        Compártenos tus datos para enviarte la cotización formal y
-                        confirmar disponibilidad en tu zona.
+                        {user.name
+                            ? 'Confirma tus datos para enviar la cotización.'
+                            : 'Compártenos tus datos para enviarte la cotización formal y confirmar disponibilidad.'}
                     </p>
                 </header>
 
@@ -134,18 +155,46 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                         disabled={isPending}
                     />
 
-                    <Input
-                        label="Teléfono / WhatsApp"
-                        type="tel"
-                        placeholder="656 123 4567"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        maxLength={10}
-                        variant="light"
-                        required
-                        disabled={isPending}
-                    />
+                    {/* Phone Group with inline styles fallback for missing SCSS */}
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <Input
+                            label="Teléfono / WhatsApp"
+                            type="tel"
+                            placeholder="656 123 4567"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                            maxLength={10}
+                            variant="light"
+                            required
+                            disabled={isPending}
+                        />
+                        <p style={{
+                            fontSize: '0.75rem',
+                            color: 'var(--c-muted)',
+                            marginTop: '0.25rem',
+                            textAlign: 'right'
+                        }}>
+                            Sin spam. Solo para coordinar la entrega.
+                        </p>
+                    </div>
 
+                    {/* Persistence Checkbox */}
+                    <div className={styles.checkboxWrapper} style={{ marginTop: '0.5rem', marginBottom: '0' }}>
+                        <label className={styles.checkboxLabel}>
+                            <input
+                                type="checkbox"
+                                checked={saveMyData}
+                                onChange={(e) => setSaveMyData(e.target.checked)}
+                                className={styles.checkbox}
+                                disabled={isPending}
+                            />
+                            <span>
+                                Guardar mis datos en este dispositivo para futuros pedidos.
+                            </span>
+                        </label>
+                    </div>
+
+                    {/* Legal Checkbox */}
                     <div className={styles.checkboxWrapper}>
                         <label className={styles.checkboxLabel}>
                             <input
@@ -175,7 +224,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                         loadingText="Procesando..."
                         disabled={isPending}
                     >
-                        Continuar a WhatsApp
+                        {user.name ? 'Enviar Pedido' : 'Continuar a WhatsApp'}
                     </Button>
                 </form>
             </div>
