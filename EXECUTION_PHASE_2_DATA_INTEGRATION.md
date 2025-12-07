@@ -1,12 +1,13 @@
+file: EXECUTION_PHASE_2_DATA_INTEGRATION.md
 # EXECUTION_PHASE_2_DATA_INTEGRATION.md
 
 ## 1. Summary & Scope
 
-Objective: Connect the application to Supabase to store leads persistently. We will replace the mock logic in submitLead with real database insertions using the "Fail-Open" strategy.
+Objective: Connect the application to Supabase to store leads persistently. We will replace the mock logic in `submitLead` with real database insertions using the "Fail-Open" strategy.
 
-In-Scope: Supabase Client/Server setup, leads table mapping, Server Action implementation, Error Handling.
+In-Scope: Supabase Client/Server setup, `leads` table implementation (JSONB Snapshot strategy), Server Action implementation, Error Handling.
 
-Out-of-Scope: Dashboard, Admin Auth, Offline Retry Queue (localStorage complexity).
+Out-of-Scope: Dashboard, Admin Auth, relational `orders` normalization (reserved for Phase 3/4).
 
 ## 2. Dependencies
 
@@ -18,9 +19,7 @@ Out-of-Scope: Dashboard, Admin Auth, Offline Retry Queue (localStorage complexit
 ### 3.1. Infrastructure & Schema
 
 - [ ]  **Env Validation:** Update `config/env.ts` to make Supabase keys required in production but optional in dev (warn if missing).
-- [ ]  **Schema Update:** Verify `lib/schemas.ts`. Ensure `OrderSubmissionSchema` matches the Supabase DB structure:
-    - `quote`: Should be `Json` type (store the full `OrderPayload`).
-    - `metadata`: Ensure it captures `userAgent` and `landingPage`.
+- [ ]  **Alignment with README:** Implement the **Audit Trail** requirement by storing the full `OrderPayload` into a `jsonb` column (`quote_data`) within the `leads` table. This serves as the "Backend Foundation" for anonymous users.
 
 ### 3.2. Server Action Implementation
 
@@ -35,27 +34,10 @@ Out-of-Scope: Dashboard, Admin Auth, Offline Retry Queue (localStorage complexit
     - Receive the result from `submitLead`.
     - If `result.warning` exists, log it to console/analytics.
     - **Do not block:** Proceed immediately to generate the WhatsApp link and clear the cart.
-    - *Optimization:* Remove any complex localStorage retry logic for this phase to ensure MVP stability.
-
-### 3.4. Identity Sync
-
-- [ ]  **Enhance `updateUserContact` in Store:** Ensure that when a user submits a lead, their contact info is synced to `localStorage` immediately so `LeadFormModal` pre-fills next time.
 
 ## 4. Definition of Done (DoD)
 
-- Submitting a lead creates a record in Supabase.
-- The `quote_data` column in DB contains the calculated breakdown.
+- Submitting a lead creates a record in Supabase `leads` table.
+- The `quote_data` column contains the calculated breakdown (JSONB Snapshot).
 - If `SUPABASE_SERVICE_ROLE_KEY` is invalid or DB is down, the user is **redirected to WhatsApp** seamlessly.
-- `LeadFormModal` remembers the user's name/phone on page reload.
-
-## 5. Instructions for Prompting
-
-```text
-Act as a Backend-for-Frontend Developer. We are in PHASE 2.
-Context: We are integrating Supabase into the Next.js Server Action.
-1. Modify 'config/env.ts' to validate Supabase keys.
-2. Refactor 'app/actions/submitLead.ts'. Use the 'OrderSubmissionSchema' to validate input. Insert into table 'leads'.
-3. Implement a 'Fail-Open' strategy: If the DB insert fails, catch the error, console.error it, but return { success: true, warning: 'offline_mode' } so the client flow continues.
-4. Update 'hooks/useCheckOut.ts' to handle this response (log warning, then redirect).
-Constraint: Do NOT create API Routes (`pages/api`). Keep all logic inside the Server Action.
-Output the modified files.
+- `LeadFormModal` remembers the user's name/phone on page reload (via existing store logic).

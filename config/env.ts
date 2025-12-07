@@ -29,6 +29,10 @@ const envSchema = z.object({
         .transform((url) => (url?.endsWith('/') ? url.slice(0, -1) : url)),
     NEXT_PUBLIC_BRAND_NAME: z.string().optional().default('Concreto y Equipos de Juárez'),
     NEXT_PUBLIC_CURRENCY: z.string().optional().default('MXN'),
+
+    // --- PHASE 2: Supabase Config ---
+    NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
 });
 
 /**
@@ -43,6 +47,9 @@ const processEnv = {
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_BRAND_NAME: process.env.NEXT_PUBLIC_BRAND_NAME,
     NEXT_PUBLIC_CURRENCY: process.env.NEXT_PUBLIC_CURRENCY,
+    // Phase 2 vars
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
 };
 
 // Parse and validate
@@ -53,21 +60,18 @@ if (!parsed.success && process.env.NODE_ENV !== 'test') {
         '❌ Invalid environment variables:',
         JSON.stringify(parsed.error.format(), null, 4)
     );
-    // In production, we might want to throw to stop the build.
-    // For dev/robustness, we'll return the default empty values if parsing fails,
-    // but the error log above is critical.
 }
 
 export const env = parsed.success
     ? parsed.data
-    : (processEnv as unknown as z.infer<typeof envSchema>); // Fallback to raw (unsafe) if validation fails to prevent full crash during partial dev setup
+    : (processEnv as unknown as z.infer<typeof envSchema>); // Fallback to raw (unsafe) if validation fails
 
-// Extra safety: warn in production if Pixel ID is missing
-if (process.env.NODE_ENV === 'production' && !env.NEXT_PUBLIC_PIXEL_ID) {
-    // Do not throw, but make it very visible in logs.
-    // Meta Pixel will simply not be initialized.
-    // eslint-disable-next-line no-console
-    console.warn(
-        '⚠️ NEXT_PUBLIC_PIXEL_ID is empty. Meta Pixel will not be initialized in production.'
-    );
+// Extra safety: warnings in production
+if (process.env.NODE_ENV === 'production') {
+    if (!env.NEXT_PUBLIC_PIXEL_ID) {
+        console.warn('⚠️ NEXT_PUBLIC_PIXEL_ID is empty.');
+    }
+    if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
+        console.warn('⚠️ Supabase credentials missing. Leads will NOT be saved to DB.');
+    }
 }

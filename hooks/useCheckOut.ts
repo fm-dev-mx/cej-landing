@@ -60,17 +60,25 @@ export function useCheckout() {
                 save: saveContact
             });
 
-            // 3. Submit to Server
-            await submitLead({
+            // 3. Submit to Server (Fail-Open Strategy)
+            const result = await submitLead({
                 name: customer.name,
                 phone: customer.phone,
-                quote: orderPayload as any, // Cast to match Zod schema expectation structure if slightly different
+                quote: orderPayload as any,
                 visitor_id: identity?.visitorId,
                 utm_source: identity?.utm_source,
                 utm_medium: identity?.utm_medium,
                 fb_event_id: fbEventId,
                 privacy_accepted: true
             });
+
+            // Log any warnings (e.g. DB down) but proceed
+            if (result.success && result.warning) {
+                console.warn(`[Checkout] Completed with warning: ${result.warning}`);
+            } else if (!result.success) {
+                // Should only happen on validation errors
+                throw new Error(result.error || 'Error al procesar el pedido.');
+            }
 
             // 4. Tracking
             trackLead({
@@ -88,14 +96,20 @@ export function useCheckout() {
             const waUrl = getWhatsAppUrl(env.NEXT_PUBLIC_WHATSAPP_NUMBER, message);
 
             if (waUrl) {
-                window.open(waUrl, '_blank');
+                // Short delay to allow UI to update
+                setTimeout(() => {
+                    window.open(waUrl, '_blank');
+                }, 100);
             }
 
             return true;
 
         } catch (err) {
             console.error(err);
-            setState({ isProcessing: false, error: 'Hubo un problema. Intenta de nuevo.' });
+            setState({
+                isProcessing: false,
+                error: 'Hubo un problema. Por favor intenta de nuevo.'
+            });
             return false;
         } finally {
             setState(prev => ({ ...prev, isProcessing: false }));

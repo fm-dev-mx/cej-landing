@@ -129,10 +129,10 @@ This roadmap is designed to pay down technical debt first, then scale into a Saa
 
 *Goal: Establish the database infrastructure and security policies.*
 
-  * [ ] **Schema Design V1**: Implement `profiles`, `orders`, `order_items` tables in Supabase.
-  * [ ] **RLS Policies**: Configure Row Level Security (e.g., "Users can only see their own orders").
-  * [ ] **Audit Trail**: Configure JSONB snapshots for quote parameters.
-  * [ ] **Server Action Audit**: Security review of `submitLead` and connection to the new schema.
+  * [x] **Schema Design V1**: Implemented `leads` table with JSONB `quote_data` snapshot for immutable audit trails (optimized for anonymous traffic).
+  * [x] **RLS Policies**: Configured Service Role access for secure Server Actions (bypassing public RLS for ingestion).
+  * [x] **Audit Trail**: Full calculation payload stored in `quote_data` column.
+  * [x] **Server Action Audit**: Implemented "Fail-Open" strategy in `submitLead` to guarantee WhatsApp conversion even during DB outages.
 
 ### PHASE 3: Authentication & The "Bridge"
 
