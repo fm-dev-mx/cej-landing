@@ -119,11 +119,11 @@ This roadmap is designed to pay down technical debt first, then scale into a Saa
 
 *Goal: Decouple business logic from UI and establish a "Single Source of Truth" for types.*
 
-  * [ ] **Type Unification**: Merge `types/order.ts` and `components/Calculator/types.ts` into a central Domain definition.
-  * [ ] **Logic Decoupling**: Refactor `useQuoteCalculator` to be a pure function, testable without React context.
-  * [ ] **Validation Hardening**: Implement strict Zod schemas for all calculator inputs (dimensions, strength, type).
-  * [ ] **Store Optimization**: Refactor `useCejStore` into granular slices to prevent unnecessary re-renders.
-  * [ ] **Testing**: Increase coverage for `lib/pricing.ts` and the new pure calculator logic.
+  * [x] **Type Unification**: Centralized all domain definitions in `types/domain.ts`. Removed legacy type files.
+  * [x] **Logic Decoupling**: Verified `useQuoteCalculator` purity and removed redundant Context API layers.
+  * [x] **Validation Hardening**: Implemented strict Zod schemas for all calculator inputs.
+  * [x] **Store Optimization**: Implemented strict `PersistedState` typing and removed redundant re-renders.
+  * [x] **Testing**: Unified pricing logic tests covering MOQs, rounding rules, and math integrity.
 
 ### PHASE 2: Backend Foundation & Data Modeling
 
