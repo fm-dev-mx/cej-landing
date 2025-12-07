@@ -34,7 +34,7 @@ describe('Zod Schemas Validation', () => {
             const result = schema.safeParse({ m3: '1000' }); // Limit is 500 in schema
             expect(result.success).toBe(false);
             if (!result.success) {
-                expect(result.error.issues[0].message).toContain('máximo');
+                expect(result.error.issues[0].message).toContain('Máximo');
             }
         });
     });

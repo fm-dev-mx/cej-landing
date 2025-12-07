@@ -42,7 +42,7 @@ const resetStore = () => {
       visitorId: 'test-id',
       hasConsentedPersistence: true
     }
-  } as any); // Cast as any to bypass strict type check if store shape changed partially
+  } as any);
 };
 
 describe('Calculator Navigation & Button Logic', () => {
@@ -101,13 +101,12 @@ describe('Calculator Navigation & Button Logic', () => {
     fireEvent.click(screen.getByRole('radio', { name: /Ayúdame a calcular/i }));
 
     // Select Slab (Losa) to trigger thickness logic
-    // Using combobox for Work Type now (Accessible thanks to htmlFor/id fix in CalculatorForm)
     const workTypeSelect = screen.getByRole('combobox', { name: /Tipo de Obra/i });
     fireEvent.change(workTypeSelect, { target: { value: 'slab' } });
 
-    // Inputs
-    const lengthInput = screen.getByLabelText(/^Largo/i);
-    const widthInput = screen.getByLabelText(/^Ancho/i);
+    // Inputs (FIX: Selectors updated to avoid ambiguity)
+    const lengthInput = screen.getByLabelText('Largo (m)');
+    const widthInput = screen.getByLabelText('Ancho (m)');
 
     // Initially button hidden
     expect(screen.queryByRole('button', { name: /Agregar al Pedido/i })).not.toBeInTheDocument();
@@ -119,7 +118,7 @@ describe('Calculator Navigation & Button Logic', () => {
     fireEvent.click(screen.getByRole('radio', { name: /Sólida/i }));
 
     // El input de grosor debe aparecer
-    const thicknessInput = screen.getByLabelText(/^Grosor \(cm\)$/);
+    const thicknessInput = screen.getByLabelText('Grosor (cm)');
     expect(thicknessInput).toBeVisible();
 
     // Vacío -> Button hidden
@@ -134,7 +133,7 @@ describe('Calculator Navigation & Button Logic', () => {
     fireEvent.click(screen.getByRole('radio', { name: /Aligerada/i }));
 
     // El input de grosor manual NO debe estar
-    expect(screen.queryByLabelText(/^Grosor \(cm\)$/)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Grosor (cm)')).not.toBeInTheDocument();
 
     // Select a size (e.g., 7 cm default or clicked)
     const radio7cm = screen.getByRole('radio', { name: /7 cm/i });

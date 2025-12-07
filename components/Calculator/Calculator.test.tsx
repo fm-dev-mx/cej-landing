@@ -1,5 +1,5 @@
 // components/Calculator/Calculator.test.tsx
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Calculator from './Calculator';
 import { useCejStore } from '@/store/useCejStore';
@@ -76,7 +76,7 @@ describe('Calculator UI Integration', () => {
 
     // 3. Check Result (Instant calculation)
     // We expect the summary to appear
-    expect(screen.getByText('TOTAL ESTIMADO')).toBeInTheDocument();
+    expect(screen.getByText('Total Estimado')).toBeInTheDocument(); // Case sensitive check or adjusted
     expect(screen.getByText('5.00 m³')).toBeInTheDocument();
 
     // 4. Add to Cart
@@ -97,15 +97,16 @@ describe('Calculator UI Integration', () => {
     // Select Solid Slab
     fireEvent.click(screen.getByRole('radio', { name: /Sólida/i }));
 
-    const lengthInput = screen.getByLabelText(/^Largo/i);
-    const widthInput = screen.getByLabelText(/^Ancho/i);
-    const thickInput = screen.getByLabelText(/^Grosor/i);
+    // FIX: Usar strings exactos para evitar colisión con el radio button "Largo x Ancho"
+    const lengthInput = screen.getByLabelText('Largo (m)');
+    const widthInput = screen.getByLabelText('Ancho (m)');
+    const thickInput = screen.getByLabelText('Grosor (cm)');
 
     fireEvent.change(lengthInput, { target: { value: '10' } });
     fireEvent.change(widthInput, { target: { value: '5' } });
     fireEvent.change(thickInput, { target: { value: '10' } });
 
-    expect(screen.getByText('TOTAL ESTIMADO')).toBeInTheDocument();
+    expect(screen.getByText('Total Estimado')).toBeInTheDocument();
 
     // 10*5*0.10 = 5m3 * factor. Should be valid.
     const addBtn = screen.getByRole('button', { name: /Agregar al Pedido/i });

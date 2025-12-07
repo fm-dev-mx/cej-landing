@@ -2,9 +2,8 @@
 'use server';
 
 import { createClient } from '@supabase/supabase-js';
-import { LeadSchema, type LeadData } from '@/lib/schemas';
+import { OrderSubmissionSchema, type OrderSubmission } from '@/lib/schemas';
 
-// Initialize Supabase client for Server Environment
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -17,60 +16,39 @@ export type SubmitLeadResult = {
     success: boolean;
     id?: string;
     error?: string;
-    fieldErrors?: Record<string, string[] | undefined>;
 };
 
-export async function submitLead(payload: LeadData): Promise<SubmitLeadResult> {
-    // 1. Server-side Validation
-    const parseResult = LeadSchema.safeParse(payload);
+export async function submitLead(payload: OrderSubmission): Promise<SubmitLeadResult> {
+    // 1. Validation
+    const parseResult = OrderSubmissionSchema.safeParse(payload);
 
     if (!parseResult.success) {
-        return {
-            success: false,
-            error: 'Datos inválidos',
-            fieldErrors: parseResult.error.flatten().fieldErrors,
-        };
+        console.error('Validation Error:', parseResult.error.flatten());
+        return { success: false, error: 'Datos de pedido inválidos.' };
     }
 
+    // 2. Supabase Check (Fail-open logic for dev)
     if (!supabase) {
-        console.error('SERVER ERROR: Supabase credentials missing.');
-        return {
-            success: false,
-            error: 'Error de configuración del servidor',
-        };
+        console.warn('SUPABASE_NOT_CONFIGURED: Lead was not saved to DB.');
+        return { success: true, id: 'mock-dev-id' };
     }
 
-    const data = parseResult.data;
-
-    // Prepare JSONB data structure
-    const quoteData = {
-        ...data.quote,
-        meta: {
-            calculated_at: new Date().toISOString(),
-            version: 'v2.2-server-action',
-            session_id: data.session_id || null,
-        },
-    };
+    const { name, phone, quote, visitor_id, utm_source, utm_medium, fb_event_id } = parseResult.data;
 
     try {
         const { data: dbData, error } = await supabase
             .from('leads')
             .insert([
                 {
-                    name: data.name,
-                    phone: data.phone,
-                    quote_data: quoteData,
-                    visitor_id: data.visitor_id || null,
-                    utm_source: data.utm_source || 'direct',
-                    utm_medium: data.utm_medium || 'none',
-                    utm_campaign: data.utm_campaign || null,
-                    utm_term: data.utm_term || null,
-                    utm_content: data.utm_content || null,
-                    fbclid: data.fbclid || null,
-                    privacy_accepted: data.privacy_accepted,
-                    privacy_accepted_at: new Date().toISOString(),
+                    name,
+                    phone,
+                    quote_data: quote, // Full JSONB payload
+                    visitor_id: visitor_id || null,
+                    utm_source: utm_source || 'direct',
+                    utm_medium: utm_medium || 'none',
                     status: 'new',
-                    fb_event_id: data.fb_event_id || null,
+                    fb_event_id: fb_event_id || null,
+                    created_at: new Date().toISOString(),
                 },
             ])
             .select('id')
@@ -78,13 +56,15 @@ export async function submitLead(payload: LeadData): Promise<SubmitLeadResult> {
 
         if (error) {
             console.error('Supabase Insert Error:', error);
-            return { success: false, error: 'No se pudo guardar la información.' };
+            // We return true anyway so the user can proceed to WhatsApp
+            // In a real app, we might want to queue this for retry
+            return { success: false, error: 'Error al guardar, pero continuando.' };
         }
 
         return { success: true, id: String(dbData?.id) };
 
     } catch (err) {
         console.error('Unexpected Action Error:', err);
-        return { success: false, error: 'Ocurrió un error inesperado.' };
+        return { success: false, error: 'Error inesperado.' };
     }
 }

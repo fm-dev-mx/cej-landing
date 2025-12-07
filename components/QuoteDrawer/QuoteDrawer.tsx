@@ -1,8 +1,8 @@
-// components/QuoteDrawer/QuoteDrawer.tsx
 'use client';
 
 import { useState } from 'react';
-import { useCejStore, type QuoteItem } from '@/store/useCejStore';
+import { useCejStore } from '@/store/useCejStore';
+import { type CartItem } from '@/types/order';
 import { fmtMXN } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
 import { LeadFormModal } from '@/components/Calculator/modals/LeadFormModal';
@@ -24,11 +24,10 @@ export default function QuoteDrawer() {
     const cartTotal = cart.reduce((sum, item) => sum + item.results.total, 0);
 
     const handleEdit = (id: string) => {
-        // UX: Confirm implies "Moving back to draft"
         editCartItem(id);
     };
 
-    const handleClone = (item: QuoteItem) => {
+    const handleClone = (item: CartItem) => {
         cloneCartItem(item);
     };
 
@@ -81,7 +80,7 @@ export default function QuoteDrawer() {
                                 <li key={item.id} className={styles.item}>
                                     <div className={styles.itemHeader}>
                                         <span className={styles.itemTitle}>
-                                            {item.config.label || 'Cotización'}
+                                            {item.config.label}
                                         </span>
                                         <span className={styles.itemDate}>
                                             {formatDate(item.timestamp)}
@@ -104,18 +103,16 @@ export default function QuoteDrawer() {
                                             {activeTab === 'order' ? (
                                                 <>
                                                     <button
-                                                        className={styles.textBtnSecondary}
+                                                        className={styles.textBtnPrimary}
                                                         onClick={() => handleEdit(item.id)}
-                                                        title="Editar (Mueve al formulario)"
                                                     >
-                                                        ✏️ Editar
+                                                        Editar
                                                     </button>
                                                     <button
                                                         className={styles.textBtnDanger}
                                                         onClick={() => removeFromCart(item.id)}
-                                                        title="Quitar del pedido"
                                                     >
-                                                        ✕
+                                                        Borrar
                                                     </button>
                                                 </>
                                             ) : (
@@ -154,7 +151,6 @@ export default function QuoteDrawer() {
             <LeadFormModal
                 isOpen={isLeadModalOpen}
                 onClose={() => setIsLeadModalOpen(false)}
-                mode="checkout"
             />
         </>
     );

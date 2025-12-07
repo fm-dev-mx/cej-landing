@@ -10,16 +10,9 @@ import {
     type CalculatorMode,
 } from '@/components/Calculator/types';
 import { WORK_TYPES } from '@/config/business';
+import type { CartItem } from '@/types/order';
 
 // --- Types ---
-
-export type QuoteItem = {
-    id: string;
-    timestamp: number;
-    inputs: CalculatorState;
-    results: QuoteBreakdown;
-    config: { label: string };
-};
 
 interface UserState {
     visitorId: string;
@@ -32,23 +25,21 @@ interface UserState {
 
 interface CalculatorSlice {
     draft: CalculatorState;
-    // Actions
     resetDraft: () => void;
     updateDraft: (updates: Partial<CalculatorState>) => void;
-
-    // Convenience Setters
     setMode: (mode: CalculatorMode) => void;
     setWorkType: (id: WorkTypeId | null) => void;
 }
 
 interface OrderSlice {
-    cart: QuoteItem[];
-    history: QuoteItem[];
+    cart: CartItem[];
+    history: CartItem[]; // "Mis Pedidos" (Local History)
     addToCart: (quote: QuoteBreakdown) => void;
     removeFromCart: (id: string) => void;
     editCartItem: (id: string) => void;
-    cloneCartItem: (item: QuoteItem) => void;
+    cloneCartItem: (item: CartItem) => void;
     clearCart: () => void;
+    moveToHistory: () => void; // New: On successful checkout
 }
 
 interface UISlice {
@@ -70,9 +61,7 @@ type CejStore = CalculatorSlice & OrderSlice & UISlice & IdentitySlice;
 export const useCejStore = create<CejStore>()(
     persist(
         (set, get) => ({
-            // ---------------------------------------------------------
             // 1. Calculator Slice
-            // ---------------------------------------------------------
             draft: { ...DEFAULT_CALCULATOR_STATE },
 
             resetDraft: () => set({ draft: { ...DEFAULT_CALCULATOR_STATE } }),
@@ -84,7 +73,6 @@ export const useCejStore = create<CejStore>()(
             setMode: (mode) => {
                 set((state) => {
                     const nextDraft = { ...state.draft, mode };
-                    // Reset irrelevant fields on mode switch for cleaner UX
                     if (mode === 'knownM3') {
                         nextDraft.workType = null;
                         nextDraft.hasCoffered = 'no';
@@ -98,9 +86,7 @@ export const useCejStore = create<CejStore>()(
             setWorkType: (workType) => {
                 set((state) => {
                     if (!workType) return { draft: { ...state.draft, workType: null } };
-
                     const config = WORK_TYPES.find(w => w.id === workType);
-                    // Business Rule: Slab usually requires Pumped service
                     const recommendedType: ConcreteType = workType === 'slab' ? 'pumped' : state.draft.type;
 
                     return {
@@ -109,7 +95,6 @@ export const useCejStore = create<CejStore>()(
                             workType,
                             strength: config ? config.recommendedStrength : state.draft.strength,
                             type: recommendedType,
-                            // Auto-select coffered logic if slab, but let user change it
                             hasCoffered: workType === 'slab' ? 'yes' : 'no',
                             cofferedSize: workType === 'slab' ? '7' : null,
                         }
@@ -117,9 +102,7 @@ export const useCejStore = create<CejStore>()(
                 });
             },
 
-            // ---------------------------------------------------------
-            // 2. Order Slice (Cart)
-            // ---------------------------------------------------------
+            // 2. Order Slice
             cart: [],
             history: [],
 
@@ -135,7 +118,7 @@ export const useCejStore = create<CejStore>()(
 
                 const label = `${workTypeLabel} - f'c ${state.draft.strength}`;
 
-                const newItem: QuoteItem = {
+                const newItem: CartItem = {
                     id: uuidv4(),
                     timestamp: Date.now(),
                     inputs: { ...state.draft },
@@ -145,8 +128,8 @@ export const useCejStore = create<CejStore>()(
 
                 set((s) => ({
                     cart: [...s.cart, newItem],
-                    history: [newItem, ...s.history].slice(0, 50),
-                    draft: { ...DEFAULT_CALCULATOR_STATE }, // Reset form after add
+                    // We don't add to history yet, only on checkout
+                    draft: { ...DEFAULT_CALCULATOR_STATE },
                     isDrawerOpen: true,
                     activeTab: 'order'
                 }));
@@ -162,16 +145,11 @@ export const useCejStore = create<CejStore>()(
                 if (item) {
                     set({
                         draft: { ...item.inputs },
-                        cart: state.cart.filter((i) => i.id !== id), // Remove from cart to prevent duplicate on save
-                        isDrawerOpen: false, // Close drawer to focus on form
+                        cart: state.cart.filter((i) => i.id !== id),
+                        isDrawerOpen: false,
                     });
-
-                    // Scroll to top of calculator
                     if (typeof document !== 'undefined') {
-                        const calculatorElement = document.getElementById('calculator-section');
-                        if (calculatorElement) {
-                            calculatorElement.scrollIntoView({ behavior: 'smooth' });
-                        }
+                        document.getElementById('calculator-section')?.scrollIntoView({ behavior: 'smooth' });
                     }
                 }
             },
@@ -181,39 +159,34 @@ export const useCejStore = create<CejStore>()(
                     draft: { ...item.inputs },
                     isDrawerOpen: false,
                 });
-                // Scroll to top of calculator
                 if (typeof document !== 'undefined') {
-                    const calculatorElement = document.getElementById('calculator-section');
-                    if (calculatorElement) {
-                        calculatorElement.scrollIntoView({ behavior: 'smooth' });
-                    }
+                    document.getElementById('calculator-section')?.scrollIntoView({ behavior: 'smooth' });
                 }
             },
 
             clearCart: () => set({ cart: [] }),
 
-            // ---------------------------------------------------------
+            moveToHistory: () => set((state) => ({
+                history: [...state.cart, ...state.history].slice(0, 50),
+                cart: []
+            })),
+
             // 3. UI Slice
-            // ---------------------------------------------------------
             isDrawerOpen: false,
             activeTab: 'order',
-
             setDrawerOpen: (isOpen) => set({ isDrawerOpen: isOpen }),
             setActiveTab: (tab) => set({ activeTab: tab }),
 
-            // ---------------------------------------------------------
             // 4. Identity Slice
-            // ---------------------------------------------------------
             user: {
                 visitorId: uuidv4(),
                 hasConsentedPersistence: true,
             },
-
             updateUserContact: ({ name, phone, save }) => set((state) => ({
                 user: {
                     ...state.user,
-                    name: save ? name : undefined,
-                    phone: save ? phone : undefined,
+                    name: save ? name : state.user.name, // Keep existing if not saving new
+                    phone: save ? phone : state.user.phone,
                     hasConsentedPersistence: save
                 }
             })),
@@ -225,7 +198,6 @@ export const useCejStore = create<CejStore>()(
                 cart: state.cart,
                 history: state.history,
                 user: state.user,
-                // Persist draft for better UX on refresh
                 draft: state.draft
             }),
         }
