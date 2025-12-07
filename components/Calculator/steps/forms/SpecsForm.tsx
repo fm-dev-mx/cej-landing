@@ -1,58 +1,61 @@
-// components/Calculator/steps/forms/SpecsForm.tsx
 'use client';
 
-import { useCallback, type ChangeEvent } from 'react';
-import { useCalculatorContext } from '../../context/CalculatorContext';
-import { type Strength } from '../../types';
-import { STRENGTHS, CONCRETE_TYPES } from '@/config/business';
+import { type ChangeEvent } from 'react';
+import { useCejStore } from '@/store/useCejStore';
 import { Select } from '@/components/ui/Select/Select';
-import { SelectionCard } from '@/components/ui/SelectionCard/SelectionCard';
-import styles from '../../CalculatorSteps.module.scss';
+import { STRENGTHS, CONCRETE_TYPES } from '@/config/business';
+import { type Strength, type ConcreteType } from '@/components/Calculator/types';
+import styles from '../../CalculatorForm.module.scss';
 
 export function SpecsForm() {
-    const { strength, type, mode, setStrength, setType } = useCalculatorContext();
+    const strength = useCejStore((s) => s.draft.strength);
+    const type = useCejStore((s) => s.draft.type);
+    const update = useCejStore((s) => s.updateDraft);
 
-    const handleStrengthChange = useCallback(
-        (e: ChangeEvent<HTMLSelectElement>) => {
-            setStrength(e.target.value as Strength);
-        },
-        [setStrength]
-    );
+    const handleStrength = (e: ChangeEvent<HTMLSelectElement>) => {
+        update({ strength: e.target.value as Strength });
+    };
+
+    const handleType = (e: ChangeEvent<HTMLSelectElement>) => {
+        update({ type: e.target.value as ConcreteType });
+    };
 
     return (
-        <>
-            <div className={styles.field}>
-                <label htmlFor="fck">Resistencia (f’c)</label>
-                <Select id="fck" value={strength} onChange={handleStrengthChange}>
+        <div className={styles.compactGrid}>
+            <div>
+                <label htmlFor="strength-select" className={styles.label}>
+                    Resistencia (f'c)
+                </label>
+                <Select
+                    id="strength-select"
+                    value={strength}
+                    onChange={handleStrength}
+                    variant="dark"
+                >
                     {STRENGTHS.map((s) => (
                         <option key={s} value={s}>
                             {s} kg/cm²
                         </option>
                     ))}
                 </Select>
-                {mode === 'assistM3' && (
-                    <p className={styles.hint}>
-                        Sugerida según el tipo de obra que seleccionaste previamente.
-                    </p>
-                )}
             </div>
-
-            <div className={styles.field}>
-                <label>Tipo de servicio</label>
-                <div className={styles.selectionGrid}>
+            <div>
+                <label htmlFor="service-select" className={styles.label}>
+                    Servicio
+                </label>
+                <Select
+                    id="service-select"
+                    value={type}
+                    onChange={handleType}
+                    variant="dark"
+                >
                     {CONCRETE_TYPES.map((t) => (
-                        <SelectionCard
-                            key={t.value}
-                            id={`type-${t.value}`}
-                            name="service-type"
-                            value={t.value}
-                            label={t.label}
-                            isSelected={type === t.value}
-                            onChange={() => setType(t.value)}
-                        />
+                        <option key={t.value} value={t.value}>
+                            {t.label}
+                        </option>
                     ))}
-                </div>
+                </Select>
             </div>
-        </>
+        </div>
     );
 }

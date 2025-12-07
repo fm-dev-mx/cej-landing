@@ -1,3 +1,4 @@
+// components/Calculator/modals/LeadFormModal.tsx
 'use client';
 
 import { useState, FormEvent, useEffect, useTransition } from 'react';
@@ -63,7 +64,7 @@ export function LeadFormModal({
         return () => setMounted(false);
     }, []);
 
-    // Pre-fill
+    // Pre-fill from Store
     useEffect(() => {
         if (isOpen && user.name && user.phone) {
             setName(user.name);
@@ -99,9 +100,17 @@ export function LeadFormModal({
 
         if (mode === 'checkout') {
             totalValue = cart.reduce((acc, item) => acc + item.results.total, 0);
-            payloadQuoteData = { items: cart, total: totalValue, type: 'full_order' };
+            payloadQuoteData = {
+                items: cart.map(i => ({
+                    id: i.id,
+                    label: i.config.label,
+                    total: i.results.total,
+                    volume: i.results.volume.billedM3
+                })),
+                total: totalValue,
+                type: 'full_order'
+            };
         } else {
-            // Single Lead
             payloadQuoteData = quoteDetails;
             totalValue = quoteDetails?.summary.total || 0;
         }
@@ -126,7 +135,7 @@ export function LeadFormModal({
             // 1. Persistence
             updateUserContact({ name: cleanName, phone: cleanPhone, save: saveMyData });
 
-            // 2. Submit API
+            // 2. Submit API (Server Action)
             await submitLead(payload);
 
             // 3. Tracking
@@ -143,6 +152,7 @@ export function LeadFormModal({
             if (mode === 'checkout') {
                 const message = generateCartMessage(cart, cleanName, folio);
                 const waUrl = getWhatsAppUrl(env.NEXT_PUBLIC_WHATSAPP_NUMBER, message);
+
                 if (waUrl) window.open(waUrl, '_blank');
 
                 clearCart();
@@ -156,9 +166,9 @@ export function LeadFormModal({
 
     const title = mode === 'checkout' ? 'Confirmar Pedido' : (user.name ? `Hola de nuevo, ${user.name.split(' ')[0]}` : 'Casi listo');
     const subtitle = mode === 'checkout'
-        ? 'Tus datos para enviarte la orden de compra.'
-        : 'Para enviarte la cotización formal y verificar disponibilidad.';
-    const buttonText = mode === 'checkout' ? 'Enviar Pedido' : 'Continuar a WhatsApp';
+        ? 'Tus datos para generar la orden de compra.'
+        : 'Para enviarte la cotización formal.';
+    const buttonText = mode === 'checkout' ? 'Enviar Pedido por WhatsApp' : 'Continuar a WhatsApp';
 
     return createPortal(
         <div className={styles.backdrop} onClick={onClose}>

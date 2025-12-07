@@ -1,11 +1,12 @@
 // components/Calculator/CalculatorSummary.tsx
 'use client';
 
+import { useState } from 'react';
 import { useCejStore } from '@/store/useCejStore';
 import { Button } from '@/components/ui/Button/Button';
 import { fmtMXN } from '@/lib/utils';
 import { type QuoteBreakdown } from '@/components/Calculator/types';
-import styles from './CalculatorSteps.module.scss'; // Reusing styling
+import styles from './CalculatorForm.module.scss';
 
 interface Props {
     quote: QuoteBreakdown;
@@ -14,10 +15,15 @@ interface Props {
 
 export function CalculatorSummary({ quote, isValid }: Props) {
     const addToCart = useCejStore((s) => s.addToCart);
+    const [isAdded, setIsAdded] = useState(false);
 
     const handleAdd = () => {
         if (!isValid) return;
         addToCart(quote);
+
+        // Trigger micro-interaction
+        setIsAdded(true);
+        setTimeout(() => setIsAdded(false), 1500);
     };
 
     if (quote.total <= 0) {
@@ -28,24 +34,24 @@ export function CalculatorSummary({ quote, isValid }: Props) {
         );
     }
 
+    const summaryClass = `${styles.summary} ${isAdded ? styles.summarySuccess : ''}`;
+
     return (
-        <div style={{
-            backgroundColor: 'rgba(255,255,255,0.05)',
-            padding: '1.5rem',
-            borderRadius: '1rem',
-            marginTop: '1.5rem',
-            border: '1px solid rgba(255,255,255,0.1)'
-        }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', marginBottom: '1rem' }}>
+        <div className={summaryClass}>
+            <div className={styles.summaryRow}>
                 <div>
-                    <span style={{ display: 'block', fontSize: '0.8rem', color: '#cbd5e1' }}>VOLUMEN</span>
-                    <span style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>
+                    <span className={styles.summaryLabel}>
+                        Volumen Facturable
+                    </span>
+                    <span className={styles.summaryValue}>
                         {quote.volume.billedM3.toFixed(2)} m³
                     </span>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                    <span style={{ display: 'block', fontSize: '0.8rem', color: '#cbd5e1' }}>TOTAL ESTIMADO</span>
-                    <span style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fec914' }}>
+                    <span className={styles.summaryLabel}>
+                        Total Estimado
+                    </span>
+                    <span className={styles.summaryValueHighlight}>
                         {fmtMXN(quote.total)}
                     </span>
                 </div>
@@ -53,16 +59,30 @@ export function CalculatorSummary({ quote, isValid }: Props) {
 
             <Button
                 fullWidth
-                variant="primary"
+                variant={isAdded ? 'secondary' : 'primary'}
                 onClick={handleAdd}
-                disabled={!isValid}
+                disabled={!isValid || isAdded}
+                style={{
+                    backgroundColor: isAdded ? 'var(--c-success)' : undefined,
+                    borderColor: isAdded ? 'var(--c-success)' : undefined,
+                    color: isAdded ? 'white' : undefined,
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
             >
-                Agregar al Pedido <span>+</span>
+                {isAdded ? (
+                    <>
+                        <span aria-hidden="true">✓</span> Agregado
+                    </>
+                ) : (
+                    <>
+                        Agregar al Pedido <span aria-hidden="true">+</span>
+                    </>
+                )}
             </Button>
 
             {quote.calculationDetails && (
-                <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.5rem', textAlign: 'center' }}>
-                    Cálculo: {quote.calculationDetails.formula}
+                <p className={styles.summaryFooter}>
+                    Base de cálculo: {quote.calculationDetails.formula}
                 </p>
             )}
         </div>

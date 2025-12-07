@@ -1,4 +1,3 @@
-// store/useCejStore.ts
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,10 +7,7 @@ import {
     DEFAULT_CALCULATOR_STATE,
     type WorkTypeId,
     type ConcreteType,
-    type Strength,
     type CalculatorMode,
-    type AssistVolumeMode,
-    type CofferedSize
 } from '@/components/Calculator/types';
 import { WORK_TYPES } from '@/config/business';
 
@@ -40,18 +36,19 @@ interface CalculatorSlice {
     resetDraft: () => void;
     updateDraft: (updates: Partial<CalculatorState>) => void;
 
-    // Convenience Setters (Keep logic close to data)
+    // Convenience Setters
     setMode: (mode: CalculatorMode) => void;
     setWorkType: (id: WorkTypeId | null) => void;
 }
 
 interface OrderSlice {
     cart: QuoteItem[];
-    history: QuoteItem[]; // Kept for compatibility with QuoteDrawer
+    history: QuoteItem[];
     addToCart: (quote: QuoteBreakdown) => void;
     removeFromCart: (id: string) => void;
+    editCartItem: (id: string) => void;
+    cloneCartItem: (item: QuoteItem) => void;
     clearCart: () => void;
-    loadItemAsDraft: (item: QuoteItem) => void;
 }
 
 interface UISlice {
@@ -149,8 +146,8 @@ export const useCejStore = create<CejStore>()(
                 set((s) => ({
                     cart: [...s.cart, newItem],
                     history: [newItem, ...s.history].slice(0, 50),
-                    draft: { ...DEFAULT_CALCULATOR_STATE }, // Auto-reset for next item
-                    isDrawerOpen: true, // Show cart feedback
+                    draft: { ...DEFAULT_CALCULATOR_STATE }, // Reset form after add
+                    isDrawerOpen: true,
                     activeTab: 'order'
                 }));
             },
@@ -159,14 +156,41 @@ export const useCejStore = create<CejStore>()(
                 cart: state.cart.filter((item) => item.id !== id)
             })),
 
-            clearCart: () => set({ cart: [] }),
+            editCartItem: (id) => {
+                const state = get();
+                const item = state.cart.find((i) => i.id === id);
+                if (item) {
+                    set({
+                        draft: { ...item.inputs },
+                        cart: state.cart.filter((i) => i.id !== id), // Remove from cart to prevent duplicate on save
+                        isDrawerOpen: false, // Close drawer to focus on form
+                    });
 
-            loadItemAsDraft: (item) => {
+                    // Scroll to top of calculator
+                    if (typeof document !== 'undefined') {
+                        const calculatorElement = document.getElementById('calculator-section');
+                        if (calculatorElement) {
+                            calculatorElement.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
+                }
+            },
+
+            cloneCartItem: (item) => {
                 set({
                     draft: { ...item.inputs },
                     isDrawerOpen: false,
                 });
+                // Scroll to top of calculator
+                if (typeof document !== 'undefined') {
+                    const calculatorElement = document.getElementById('calculator-section');
+                    if (calculatorElement) {
+                        calculatorElement.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
             },
+
+            clearCart: () => set({ cart: [] }),
 
             // ---------------------------------------------------------
             // 3. UI Slice
@@ -201,9 +225,7 @@ export const useCejStore = create<CejStore>()(
                 cart: state.cart,
                 history: state.history,
                 user: state.user,
-                // We don't persist draft indefinitely to avoid stale state on return,
-                // or we can persist it if we want "resume" functionality.
-                // For "Phase 1 cleanup", let's persist everything for safety.
+                // Persist draft for better UX on refresh
                 draft: state.draft
             }),
         }

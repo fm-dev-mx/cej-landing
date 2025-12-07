@@ -1,3 +1,4 @@
+// components/SmartBottomBar/SmartBottomBar.tsx
 'use client';
 
 import { useCejStore } from '@/store/useCejStore';
@@ -19,7 +20,7 @@ export default function SmartBottomBar() {
             <div className={styles.info}>
                 <span className={styles.countBadge}>{count}</span>
                 <div className={styles.textColumn}>
-                    <span className={styles.label}>Total Pedido</span>
+                    <span className={styles.label}>Tu Pedido</span>
                     <span className={styles.total}>{fmtMXN(total)}</span>
                 </div>
             </div>

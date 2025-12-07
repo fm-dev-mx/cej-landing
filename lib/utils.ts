@@ -64,21 +64,33 @@ export function getPhoneUrl(phone: string | undefined): string | undefined {
     return `tel:${cleanPhone}`;
 }
 
+// Helper type for cart item structure without importing full Store types
+type MinimalCartItem = {
+    results: { total: number };
+    config?: { label?: string };
+    [key: string]: unknown;
+};
+
 // NEW: Helper to format cart for WhatsApp
-export function generateCartMessage(cart: any[], name: string, folio: string): string {
+export function generateCartMessage(cart: MinimalCartItem[], name: string, folio: string): string {
     let message = `👋 Hola soy *${name}*, me interesa confirmar este pedido (Folio: ${folio}):\n\n`;
 
     cart.forEach((item, index) => {
         const { results, config } = item;
-        const specs = results.strength ? `f'c ${results.strength}` : '';
-        message += `*Ítem ${index + 1}:* ${config.label || 'Concreto'} ${specs}\n`;
-        message += `   • Volumen: ${results.volume.billedM3.toFixed(2)} m³\n`;
-        message += `   • Servicio: ${results.concreteType === 'pumped' ? 'Bomba' : 'Tiro Directo'}\n`;
+        // Type assertion for safer access if strict mode is on, or optional chaining
+        const concreteType = (results as any).concreteType;
+        const volume = (results as any).volume?.billedM3;
+        const strength = (results as any).strength;
+
+        const specs = strength ? `f'c ${strength}` : '';
+        message += `🔹 *Ítem ${index + 1}:* ${config?.label || 'Concreto'} ${specs}\n`;
+        if (volume) message += `   • Volumen: ${Number(volume).toFixed(2)} m³\n`;
+        if (concreteType) message += `   • Servicio: ${concreteType === 'pumped' ? 'Bomba' : 'Tiro Directo'}\n`;
         message += `   • Subtotal: ${fmtMXN(results.total)}\n\n`;
     });
 
     const grandTotal = cart.reduce((acc, item) => acc + item.results.total, 0);
-    message += `💰 *TOTAL ESTIMADO: ${fmtMXN(grandTotal)}*\n\n`;
+    message += `💰 *TOTAL ESTIMADO: ${fmtMXN(grandTotal)}*\n`;
     message += `📍 *Ubicación de entrega:* (Por favor comparte tu ubicación)`;
 
     return message;

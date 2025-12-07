@@ -1,7 +1,8 @@
+// components/QuoteDrawer/QuoteDrawer.tsx
 'use client';
 
 import { useState } from 'react';
-import { useCejStore } from '@/store/useCejStore';
+import { useCejStore, type QuoteItem } from '@/store/useCejStore';
 import { fmtMXN } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
 import { LeadFormModal } from '@/components/Calculator/modals/LeadFormModal';
@@ -11,8 +12,8 @@ export default function QuoteDrawer() {
     const {
         isDrawerOpen, setDrawerOpen,
         activeTab, setActiveTab,
-        cart, history, removeFromCart,
-        loadItemAsDraft
+        cart, history,
+        removeFromCart, editCartItem, cloneCartItem
     } = useCejStore();
 
     const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
@@ -22,10 +23,13 @@ export default function QuoteDrawer() {
     const listData = activeTab === 'order' ? cart : history;
     const cartTotal = cart.reduce((sum, item) => sum + item.results.total, 0);
 
-    const handleClone = (item: any) => {
-        if (confirm('¿Cargar esta cotización? Se perderán los datos actuales no guardados.')) {
-            loadItemAsDraft(item);
-        }
+    const handleEdit = (id: string) => {
+        // UX: Confirm implies "Moving back to draft"
+        editCartItem(id);
+    };
+
+    const handleClone = (item: QuoteItem) => {
+        cloneCartItem(item);
     };
 
     const formatDate = (ts: number) => {
@@ -62,8 +66,8 @@ export default function QuoteDrawer() {
                         <div className={styles.emptyState}>
                             <p>
                                 {activeTab === 'order'
-                                    ? 'Aún no has agregado nada al pedido.'
-                                    : 'Aquí aparecerán tus cotizaciones pasadas.'}
+                                    ? 'Tu pedido está vacío.'
+                                    : 'Aquí aparecerán tus cálculos recientes.'}
                             </p>
                             {activeTab === 'order' && (
                                 <button onClick={() => setDrawerOpen(false)} className={styles.linkBtn}>
@@ -86,7 +90,7 @@ export default function QuoteDrawer() {
 
                                     <div className={styles.itemDetails}>
                                         <div className={styles.detailBadge}>
-                                            {item.results.volume.billedM3.toFixed(1)} m³
+                                            {item.results.volume.billedM3.toFixed(2)} m³
                                         </div>
                                         <div className={styles.detailBadge}>
                                             {item.results.concreteType === 'pumped' ? 'Bomba' : 'Directo'}
@@ -98,18 +102,28 @@ export default function QuoteDrawer() {
 
                                         <div className={styles.itemActions}>
                                             {activeTab === 'order' ? (
-                                                <button
-                                                    className={styles.textBtnDanger}
-                                                    onClick={() => removeFromCart(item.id)}
-                                                >
-                                                    Eliminar
-                                                </button>
+                                                <>
+                                                    <button
+                                                        className={styles.textBtnSecondary}
+                                                        onClick={() => handleEdit(item.id)}
+                                                        title="Editar (Mueve al formulario)"
+                                                    >
+                                                        ✏️ Editar
+                                                    </button>
+                                                    <button
+                                                        className={styles.textBtnDanger}
+                                                        onClick={() => removeFromCart(item.id)}
+                                                        title="Quitar del pedido"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </>
                                             ) : (
                                                 <button
                                                     className={styles.textBtnPrimary}
                                                     onClick={() => handleClone(item)}
                                                 >
-                                                    ↺ Usar medidas
+                                                    ↺ Reutilizar
                                                 </button>
                                             )}
                                         </div>

@@ -1,74 +1,11 @@
 @use "../../styles/mixins" as *;
 
-/* --- Layout & Animation --- */
-.step {
+/* --- Layout --- */
+.container {
     display: flex;
     flex-direction: column;
     flex: 1;
-    height: 100%;
-}
-
-.stepAnimated {
-    animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes fadeSlideUp {
-    from {
-        opacity: 0;
-        transform: translateY(12px) scale(0.99);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.stepHeader {
-    text-align: center;
-    margin-bottom: var(--sp-6);
-    flex-shrink: 0;
-}
-
-.stepTitle {
-    font-size: var(--fs-xl);
-    font-weight: 700;
-    color: white;
-    margin: 0 0 0.5rem 0;
-    text-wrap: balance;
-}
-
-.stepSubtitle {
-    font-size: var(--fs-sm);
-    color: var(--c-muted-on-dark);
-    line-height: 1.4;
-    max-width: 45ch;
-    margin-inline: auto;
-}
-
-.stepBody {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-}
-
-.stepControls {
-    margin-top: auto;
-    padding-top: var(--sp-6);
-    display: flex;
-    flex-direction: column-reverse;
-    gap: var(--sp-3);
-
-    @include respond-to('sm') {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-
-        button:last-child {
-            margin-left: auto;
-            min-width: 140px;
-        }
-    }
+    position: relative;
 }
 
 /* --- Form Elements --- */
@@ -89,12 +26,12 @@
     font-size: var(--fs-xs);
     color: var(--c-muted-on-dark);
     opacity: 0.8;
-    margin-top: 1.5rem;
+    margin-top: 0.5rem;
     max-width: 70ch;
     text-align: right;
 }
 
-/* Compact Grid for Dimensions (Length x Width) */
+/* --- Grids --- */
 .compactGrid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -111,7 +48,7 @@
     }
 }
 
-/* Selection Grids */
+/* Selection Grids (RAM pattern) */
 .selectionGrid {
     @include grid-ram($min-width: 150px, $gap: var(--sp-3));
 }
@@ -122,6 +59,7 @@
     gap: var(--sp-3);
 }
 
+/* --- Radio & Pills Custom UI --- */
 .radio {
     position: relative;
     display: flex;
@@ -162,7 +100,6 @@
     }
 }
 
-/* Pills & Coffered Section */
 .pillGroup {
     display: flex;
     gap: var(--sp-3);
@@ -217,6 +154,7 @@
     margin-top: var(--sp-4);
     padding-top: var(--sp-4);
     border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    animation: fadeIn 0.3s ease-out;
 }
 
 .cofferLabel {
@@ -228,40 +166,89 @@
 }
 
 /* --- Feedback Elements --- */
-.note {
-    margin-bottom: var(--sp-4);
-    padding: 0 1rem;
-    border-radius: var(--radius-lg);
-    font-size: var(--fs-xs);
-    color: #93c5fd;
-    border: 1px solid rgba(var(--c-accent), 0.2);
-    text-align: right;
-
-    strong {
-        color: white;
-    }
-}
-
 .error {
     font-size: var(--fs-sm);
-    color: rgba(#fca5a5, 0.8);
-    padding: 0.3rem;
-    border-radius: var(--radius-lg);
-    background: rgba(239, 68, 68, 0.05);
+    color: rgba(#fca5a5, 0.9);
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    background: rgba(239, 68, 68, 0.1);
     margin-top: var(--sp-4);
-    border: 1px solid rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
     display: flex;
     align-items: center;
     gap: 0.5rem;
     justify-content: center;
+    font-weight: 500;
 
     &::before {
         content: '⚠️';
     }
 }
 
-.warningFeedback {
+.note {
+    font-size: var(--fs-xs);
+    color: #93c5fd;
     text-align: right;
-    font-size: 0.85em;
+    margin-top: 0.5rem;
     opacity: 0.9;
+}
+
+/* --- Summary Card (Refactored from inline styles) --- */
+.summary {
+    background-color: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    margin-top: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: border-color 0.3s ease;
+
+    &.summarySuccess {
+        border-color: var(--c-success);
+    }
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+}
+
+.summaryLabel {
+    display: block;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.summaryValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.summaryValueHighlight {
+    @extend .summaryValue;
+    color: #fec914;
+}
+
+.summaryFooter {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 0.75rem;
+    text-align: center;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
