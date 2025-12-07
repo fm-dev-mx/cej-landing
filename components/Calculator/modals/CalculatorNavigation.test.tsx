@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Calculator from '../Calculator';
 import { useCejStore } from '@/store/useCejStore';
-import { DEFAULT_CALCULATOR_STATE } from '../types';
+import { DEFAULT_CALCULATOR_STATE } from '@/types/domain';
 
 // --- Mocks ---
 vi.mock('@/config/env', () => ({

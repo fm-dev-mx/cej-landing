@@ -6,7 +6,7 @@ import { submitLead } from '@/app/actions/submitLead';
 import { trackLead, trackContact } from '@/lib/pixel';
 import { generateQuoteId, generateCartMessage, getWhatsAppUrl } from '@/lib/utils';
 import { env } from '@/config/env';
-import type { CustomerInfo, OrderPayload } from '@/types/order';
+import type { CustomerInfo, OrderPayload } from '@/types/domain';
 
 type CheckoutState = {
     isProcessing: boolean;

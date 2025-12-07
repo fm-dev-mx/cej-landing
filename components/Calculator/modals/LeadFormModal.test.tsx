@@ -4,7 +4,7 @@ import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/re
 import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest';
 import { LeadFormModal } from './LeadFormModal';
 import { useCejStore } from '@/store/useCejStore';
-import { DEFAULT_CALCULATOR_STATE } from '@/components/Calculator/types';
+import { DEFAULT_CALCULATOR_STATE } from '@/types/domain';
 import { submitLead } from '@/app/actions/submitLead';
 
 // 1. Mock de Portal (para que se renderice en el DOM de prueba)

@@ -1,3 +1,4 @@
+// store/useCejStore.ts
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,9 +9,9 @@ import {
     type WorkTypeId,
     type ConcreteType,
     type CalculatorMode,
-} from '@/components/Calculator/types';
+    type CartItem,
+} from '@/types/domain';
 import { WORK_TYPES } from '@/config/business';
-import type { CartItem } from '@/types/order';
 
 // --- Types ---
 
@@ -39,7 +40,7 @@ interface OrderSlice {
     editCartItem: (id: string) => void;
     cloneCartItem: (item: CartItem) => void;
     clearCart: () => void;
-    moveToHistory: () => void; // New: On successful checkout
+    moveToHistory: () => void;
 }
 
 interface UISlice {
@@ -55,6 +56,9 @@ interface IdentitySlice {
 }
 
 type CejStore = CalculatorSlice & OrderSlice & UISlice & IdentitySlice;
+
+// Define exactly what we persist to avoid circular dependencies or hydrating UI state
+type PersistedState = Pick<CejStore, 'cart' | 'history' | 'user' | 'draft'>;
 
 // --- Store Implementation ---
 
@@ -128,7 +132,6 @@ export const useCejStore = create<CejStore>()(
 
                 set((s) => ({
                     cart: [...s.cart, newItem],
-                    // We don't add to history yet, only on checkout
                     draft: { ...DEFAULT_CALCULATOR_STATE },
                     isDrawerOpen: true,
                     activeTab: 'order'
@@ -185,7 +188,7 @@ export const useCejStore = create<CejStore>()(
             updateUserContact: ({ name, phone, save }) => set((state) => ({
                 user: {
                     ...state.user,
-                    name: save ? name : state.user.name, // Keep existing if not saving new
+                    name: save ? name : state.user.name,
                     phone: save ? phone : state.user.phone,
                     hasConsentedPersistence: save
                 }
@@ -194,7 +197,8 @@ export const useCejStore = create<CejStore>()(
         {
             name: 'cej-pro-storage',
             storage: createJSONStorage(() => localStorage),
-            partialize: (state) => ({
+            // Explicitly typed partializer
+            partialize: (state): PersistedState => ({
                 cart: state.cart,
                 history: state.history,
                 user: state.user,

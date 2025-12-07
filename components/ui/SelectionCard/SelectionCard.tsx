@@ -1,5 +1,4 @@
 // components/ui/SelectionCard/SelectionCard.tsx
-
 import { forwardRef, InputHTMLAttributes, ReactNode } from 'react';
 import styles from './SelectionCard.module.scss';
 
@@ -7,7 +6,7 @@ interface SelectionCardProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   description?: string;
   icon?: ReactNode;
-  customIndicator?: ReactNode; // NEW: Icon replacing the circle
+  customIndicator?: ReactNode; // Icon replacing the circle
   isSelected?: boolean;
 }
 
@@ -19,6 +18,10 @@ export const SelectionCard = forwardRef<HTMLInputElement, SelectionCardProps>(
         htmlFor={id}
       >
         <div className={styles.inputWrapper}>
+          {/* ACCESSIBILITY NOTE:
+            The input is visually hidden via SCSS mixins (clip-path) but remains
+            in the DOM to handle focus and keyboard interaction.
+          */}
           <input
             ref={ref}
             id={id}
@@ -27,7 +30,8 @@ export const SelectionCard = forwardRef<HTMLInputElement, SelectionCardProps>(
             checked={isSelected}
             {...props}
           />
-          {/* LOGIC: If customIndicator exists, show it. Else, show standard circle */}
+
+          {/* Visual Indicator (Decorative) */}
           {customIndicator ? (
             <div className={styles.customIndicatorWrapper} aria-hidden="true">
               {customIndicator}

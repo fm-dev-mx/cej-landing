@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useCejStore } from '@/store/useCejStore';
-import { type CartItem } from '@/types/order';
+import { type CartItem } from '@/types/domain';
 import { fmtMXN } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
 import { LeadFormModal } from '@/components/Calculator/modals/LeadFormModal';

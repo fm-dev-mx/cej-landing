@@ -19,7 +19,7 @@ import {
     type CalculatorState,
     type QuoteBreakdown,
     type QuoteWarning,
-} from '@/components/Calculator/types';
+} from '@/types/domain';
 
 /**
  * Pure calculation logic.
