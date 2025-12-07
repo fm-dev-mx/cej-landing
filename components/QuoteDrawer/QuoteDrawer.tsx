@@ -1,11 +1,10 @@
-// components/QuoteDrawer/QuoteDrawer.tsx
 'use client';
 
 import { useState } from 'react';
 import { useCejStore } from '@/store/useCejStore';
 import { fmtMXN } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
-import CheckoutModal from '@/components/Checkout/CheckoutModal';
+import { LeadFormModal } from '@/components/Calculator/modals/LeadFormModal';
 import styles from './QuoteDrawer.module.scss';
 
 export default function QuoteDrawer() {
@@ -13,27 +12,22 @@ export default function QuoteDrawer() {
         isDrawerOpen, setDrawerOpen,
         activeTab, setActiveTab,
         cart, history, removeFromCart,
-        loadHistoryItemAsDraft // New action
+        loadItemAsDraft
     } = useCejStore();
 
-    const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+    const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
 
     if (!isDrawerOpen) return null;
 
     const listData = activeTab === 'order' ? cart : history;
     const cartTotal = cart.reduce((sum, item) => sum + item.results.total, 0);
 
-    const handleCheckoutClick = () => {
-        setIsCheckoutOpen(true);
-    };
-
     const handleClone = (item: any) => {
-        if (confirm('¿Quieres cargar esta cotización en el calculador? Se perderán los datos actuales no guardados.')) {
-            loadHistoryItemAsDraft(item);
+        if (confirm('¿Cargar esta cotización? Se perderán los datos actuales no guardados.')) {
+            loadItemAsDraft(item);
         }
     };
 
-    // Helper to format date relative
     const formatDate = (ts: number) => {
         return new Date(ts).toLocaleDateString('es-MX', {
             month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -42,14 +36,8 @@ export default function QuoteDrawer() {
 
     return (
         <>
-            {/* Backdrop */}
-            <div
-                className={styles.backdrop}
-                onClick={() => setDrawerOpen(false)}
-                aria-hidden="true"
-            />
+            <div className={styles.backdrop} onClick={() => setDrawerOpen(false)} aria-hidden="true" />
 
-            {/* Panel */}
             <aside className={styles.drawer}>
                 <header className={styles.header}>
                     <div className={styles.tabs}>
@@ -57,13 +45,13 @@ export default function QuoteDrawer() {
                             className={`${styles.tab} ${activeTab === 'order' ? styles.active : ''}`}
                             onClick={() => setActiveTab('order')}
                         >
-                            Pedido Actual ({cart.length})
+                            Pedido ({cart.length})
                         </button>
                         <button
                             className={`${styles.tab} ${activeTab === 'history' ? styles.active : ''}`}
                             onClick={() => setActiveTab('history')}
                         >
-                            Mis Obras 📂
+                            Historial
                         </button>
                     </div>
                     <button className={styles.closeBtn} onClick={() => setDrawerOpen(false)}>×</button>
@@ -89,7 +77,7 @@ export default function QuoteDrawer() {
                                 <li key={item.id} className={styles.item}>
                                     <div className={styles.itemHeader}>
                                         <span className={styles.itemTitle}>
-                                            {item.config.label || (item.config.mode === 'wizard' ? 'Cálculo Guiado' : 'Cálculo Experto')}
+                                            {item.config.label || 'Cotización'}
                                         </span>
                                         <span className={styles.itemDate}>
                                             {formatDate(item.timestamp)}
@@ -121,7 +109,7 @@ export default function QuoteDrawer() {
                                                     className={styles.textBtnPrimary}
                                                     onClick={() => handleClone(item)}
                                                 >
-                                                    ↺ Cotizar de nuevo
+                                                    ↺ Usar medidas
                                                 </button>
                                             )}
                                         </div>
@@ -141,17 +129,18 @@ export default function QuoteDrawer() {
                         <Button
                             fullWidth
                             variant="whatsapp"
-                            onClick={handleCheckoutClick}
+                            onClick={() => setIsLeadModalOpen(true)}
                         >
-                            Finalizar Pedido por WhatsApp
+                            Finalizar Pedido
                         </Button>
                     </footer>
                 )}
             </aside>
 
-            <CheckoutModal
-                isOpen={isCheckoutOpen}
-                onClose={() => setIsCheckoutOpen(false)}
+            <LeadFormModal
+                isOpen={isLeadModalOpen}
+                onClose={() => setIsLeadModalOpen(false)}
+                mode="checkout"
             />
         </>
     );

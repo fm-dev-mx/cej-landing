@@ -4,6 +4,7 @@
 import { useMemo, useCallback } from "react";
 import { getWhatsAppUrl, getPhoneUrl } from "@/lib/utils";
 import { trackContact } from "@/lib/pixel";
+import { useCejStore } from "@/store/useCejStore";
 import styles from "./CTAButtons.module.scss";
 
 type Props = {
@@ -23,6 +24,10 @@ export default function CTAButtons({
   onContact,
   sticky = true,
 }: Props) {
+  // Store: Hide this bar if cart has items (SmartBar takes priority)
+  const cartLength = useCejStore(s => s.cart.length);
+  const shouldHide = cartLength > 0 && sticky;
+
   const links = useMemo(() => {
     return {
       wa: getWhatsAppUrl(whatsappNumber, quoteText),
@@ -40,7 +45,7 @@ export default function CTAButtons({
     if (onContact) onContact();
   }, [onContact]);
 
-  if (!links.wa && !links.tel) return null;
+  if ((!links.wa && !links.tel) || shouldHide) return null;
 
   return (
     <div

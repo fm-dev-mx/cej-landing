@@ -1,9 +1,8 @@
 // components/Calculator/modes/ExpertForm.tsx
 'use client';
 
-import { useCalculatorState } from '../hooks/useCalculatorState';
-import { useQuoteCalculator } from '../../../hooks/useQuoteCalculator';
 import { useCejStore } from '@/store/useCejStore';
+import { useQuoteCalculator } from '@/hooks/useQuoteCalculator'; // Usamos el hook raíz unificado
 import { Input } from '@/components/ui/Input/Input';
 import { Select } from '@/components/ui/Select/Select';
 import { Button } from '@/components/ui/Button/Button';
@@ -13,23 +12,34 @@ import { fmtMXN } from '@/lib/utils';
 import styles from './ExpertForm.module.scss';
 
 export default function ExpertForm() {
-    // 1. Hooks for State & Logic
-    const {
-        length, setLength,
-        width, setWidth,
-        thicknessByDims, setThicknessByDims,
-        strength, setStrength,
-        type, setType,
-        resetCalculator
-    } = useCalculatorState();
-
-    const { quote, isValid } = useQuoteCalculator();
+    // 1. Conectar con el Store Global Unificado
+    // Ya no usamos el hook eliminado, leemos directamente del 'draft' del store
+    const draft = useCejStore(s => s.draft);
+    const update = useCejStore(s => s.updateDraft);
+    const reset = useCejStore(s => s.resetDraft);
     const addToCart = useCejStore(s => s.addToCart);
+    const viewMode = useCejStore(s => s.viewMode);
 
-    // 2. Handlers
+    // 2. Calcular en tiempo real usando el hook unificado de lógica de negocio
+    const { quote, isValid } = useQuoteCalculator(draft);
+
+    // Helpers locales para actualizar el store de forma limpia
+    const handleLength = (e: React.ChangeEvent<HTMLInputElement>) => update({ length: e.target.value });
+    const handleWidth = (e: React.ChangeEvent<HTMLInputElement>) => update({ width: e.target.value });
+
+    // En modo experto asumimos cálculo por dimensiones por defecto
+    const handleThickness = (e: React.ChangeEvent<HTMLInputElement>) =>
+        update({ thicknessByDims: e.target.value, volumeMode: 'dimensions' });
+
+    const handleStrength = (e: React.ChangeEvent<HTMLSelectElement>) =>
+        update({ strength: e.target.value as Strength });
+
+    const handleType = (e: React.ChangeEvent<HTMLSelectElement>) =>
+        update({ type: e.target.value as ConcreteType });
+
     const handleAdd = () => {
         if (isValid) {
-            addToCart(quote);
+            addToCart(quote, viewMode);
         }
     };
 
@@ -37,7 +47,7 @@ export default function ExpertForm() {
         <div className={styles.expertContainer}>
             <header className={styles.header}>
                 <h2 className={styles.title}>Cálculo Rápido</h2>
-                <button type="button" onClick={resetCalculator} className={styles.resetBtn}>
+                <button type="button" onClick={reset} className={styles.resetBtn}>
                     Limpiar
                 </button>
             </header>
@@ -50,22 +60,22 @@ export default function ExpertForm() {
                         <Input
                             placeholder="Largo"
                             type="number"
-                            value={length}
-                            onChange={(e) => setLength(e.target.value)}
+                            value={draft.length}
+                            onChange={handleLength}
                             variant="light"
                         />
                         <Input
                             placeholder="Ancho"
                             type="number"
-                            value={width}
-                            onChange={(e) => setWidth(e.target.value)}
+                            value={draft.width}
+                            onChange={handleWidth}
                             variant="light"
                         />
                         <Input
                             placeholder="Grosor (cm)"
                             type="number"
-                            value={thicknessByDims}
-                            onChange={(e) => setThicknessByDims(e.target.value)}
+                            value={draft.thicknessByDims}
+                            onChange={handleThickness}
                             variant="light"
                         />
                     </div>
@@ -76,8 +86,8 @@ export default function ExpertForm() {
                     <label className={styles.label}>Especificaciones</label>
                     <div className={styles.row2}>
                         <Select
-                            value={strength}
-                            onChange={(e) => setStrength(e.target.value as Strength)}
+                            value={draft.strength}
+                            onChange={handleStrength}
                             variant="light"
                         >
                             {STRENGTHS.map(s => (
@@ -85,8 +95,8 @@ export default function ExpertForm() {
                             ))}
                         </Select>
                         <Select
-                            value={type}
-                            onChange={(e) => setType(e.target.value as ConcreteType)}
+                            value={draft.type}
+                            onChange={handleType}
                             variant="light"
                         >
                             {CONCRETE_TYPES.map(t => (

@@ -1,4 +1,3 @@
-// components/Calculator/modals/LeadFormModal.tsx
 'use client';
 
 import { useState, FormEvent, useEffect, useTransition } from 'react';
@@ -9,7 +8,12 @@ import { useIdentity } from '@/hooks/useIdentity';
 import { submitLead } from '@/app/actions/submitLead';
 import { useCejStore } from '@/store/useCejStore';
 import type { LeadData } from '@/lib/schemas';
+import { generateQuoteId, getWhatsAppUrl, generateCartMessage } from '@/lib/utils';
+import { trackLead, trackContact } from '@/lib/pixel';
+import { env } from '@/config/env';
 import styles from './LeadFormModal.module.scss';
+
+export type ModalMode = 'lead' | 'checkout';
 
 export type LeadQuoteDetails = {
     summary: {
@@ -23,22 +27,34 @@ export type LeadQuoteDetails = {
 type LeadFormModalProps = {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess: (name: string, fbEventId: string) => void;
-    quoteDetails: LeadQuoteDetails;
+    mode: ModalMode;
+    // For Single Lead Mode
+    quoteDetails?: LeadQuoteDetails;
+    onSuccessLead?: (name: string, fbEventId: string) => void;
 };
 
-export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: LeadFormModalProps) {
-    // Local state
+export function LeadFormModal({
+    isOpen,
+    onClose,
+    mode,
+    quoteDetails,
+    onSuccessLead
+}: LeadFormModalProps) {
+    // Local State
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
-    const [saveMyData, setSaveMyData] = useState(true); // Default to true (Guest-First strategy)
+    const [saveMyData, setSaveMyData] = useState(true);
     const [error, setError] = useState<{ message: string; isApiError: boolean } | null>(null);
     const [mounted, setMounted] = useState(false);
 
     // Store & Hooks
     const user = useCejStore(s => s.user);
     const updateUserContact = useCejStore(s => s.updateUserContact);
+    const cart = useCejStore(s => s.cart);
+    const clearCart = useCejStore(s => s.clearCart);
+    const setDrawerOpen = useCejStore(s => s.setDrawerOpen);
+
     const [isPending, startTransition] = useTransition();
     const identity = useIdentity();
 
@@ -47,12 +63,11 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
         return () => setMounted(false);
     }, []);
 
-    // Effect: Pre-fill data from store when modal opens
+    // Pre-fill
     useEffect(() => {
         if (isOpen && user.name && user.phone) {
             setName(user.name);
             setPhone(user.phone);
-            // If we have data, we assume they accepted privacy previously or allow quick check
             setPrivacyAccepted(true);
         }
     }, [isOpen, user.name, user.phone]);
@@ -66,27 +81,35 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
         const cleanName = name.trim();
         const cleanPhone = phone.replace(/[^0-9]/g, '');
 
-        // Validation
-        if (cleanName.length < 3) {
-            setError({ message: 'Por favor ingresa tu nombre completo.', isApiError: false });
-            return;
-        }
-        if (cleanPhone.length < 10) {
-            setError({ message: 'Ingresa un número de al menos 10 dígitos.', isApiError: false });
+        if (cleanName.length < 3 || cleanPhone.length < 10) {
+            setError({ message: 'Verifica tu nombre y teléfono (10 dígitos).', isApiError: false });
             return;
         }
         if (!privacyAccepted) {
-            setError({ message: 'Debes aceptar el aviso de privacidad para continuar.', isApiError: false });
+            setError({ message: 'Acepta el aviso de privacidad.', isApiError: false });
             return;
         }
 
         const fbEventId = crypto.randomUUID();
+        const folio = generateQuoteId();
 
-        // Prepare Payload
+        // Determine Payload based on Mode
+        let payloadQuoteData: any = {};
+        let totalValue = 0;
+
+        if (mode === 'checkout') {
+            totalValue = cart.reduce((acc, item) => acc + item.results.total, 0);
+            payloadQuoteData = { items: cart, total: totalValue, type: 'full_order' };
+        } else {
+            // Single Lead
+            payloadQuoteData = quoteDetails;
+            totalValue = quoteDetails?.summary.total || 0;
+        }
+
         const payload: LeadData = {
             name: cleanName,
             phone: cleanPhone,
-            quote: quoteDetails,
+            quote: payloadQuoteData,
             fb_event_id: fbEventId,
             privacy_accepted: true,
             visitor_id: identity?.visitorId,
@@ -100,48 +123,51 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
         };
 
         startTransition(async () => {
-            // 1. Update Local Store (Persistence logic)
-            updateUserContact({
-                name: cleanName,
-                phone: cleanPhone,
-                save: saveMyData
+            // 1. Persistence
+            updateUserContact({ name: cleanName, phone: cleanPhone, save: saveMyData });
+
+            // 2. Submit API
+            await submitLead(payload);
+
+            // 3. Tracking
+            trackLead({
+                value: totalValue,
+                currency: 'MXN',
+                content_name: mode === 'checkout' ? 'Order Checkout' : quoteDetails?.summary.product || 'Quote',
+                content_category: mode === 'checkout' ? 'Order' : 'Quote',
+                event_id: fbEventId
             });
+            trackContact('whatsapp');
 
-            // 2. Submit to Server
-            const result = await submitLead(payload);
+            // 4. Handle Success / Redirection
+            if (mode === 'checkout') {
+                const message = generateCartMessage(cart, cleanName, folio);
+                const waUrl = getWhatsAppUrl(env.NEXT_PUBLIC_WHATSAPP_NUMBER, message);
+                if (waUrl) window.open(waUrl, '_blank');
 
-            if (result.success) {
-                onSuccess(cleanName, fbEventId);
+                clearCart();
+                setDrawerOpen(false);
+                onClose();
             } else {
-                console.error('Lead Submission Failed:', result.error);
-                // Fallback: Proceed to WhatsApp anyway to capture the sale
-                onSuccess(cleanName, fbEventId);
+                if (onSuccessLead) onSuccessLead(cleanName, fbEventId);
             }
         });
     };
 
+    const title = mode === 'checkout' ? 'Confirmar Pedido' : (user.name ? `Hola de nuevo, ${user.name.split(' ')[0]}` : 'Casi listo');
+    const subtitle = mode === 'checkout'
+        ? 'Tus datos para enviarte la orden de compra.'
+        : 'Para enviarte la cotización formal y verificar disponibilidad.';
+    const buttonText = mode === 'checkout' ? 'Enviar Pedido' : 'Continuar a WhatsApp';
+
     return createPortal(
         <div className={styles.backdrop} onClick={onClose}>
             <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                <button
-                    className={styles.closeBtn}
-                    onClick={onClose}
-                    aria-label="Cerrar modal"
-                    type="button"
-                    disabled={isPending}
-                >
-                    &times;
-                </button>
+                <button className={styles.closeBtn} onClick={onClose} type="button" disabled={isPending}>&times;</button>
 
                 <header className={styles.header}>
-                    <h3 className={styles.title}>
-                        {user.name ? `Hola de nuevo, ${user.name.split(' ')[0]} 👋` : 'Casi listo 🚀'}
-                    </h3>
-                    <p className={styles.subtitle}>
-                        {user.name
-                            ? 'Confirma tus datos para enviar la cotización.'
-                            : 'Compártenos tus datos para enviarte la cotización formal y confirmar disponibilidad.'}
-                    </p>
+                    <h3 className={styles.title}>{title}</h3>
+                    <p className={styles.subtitle}>{subtitle}</p>
                 </header>
 
                 <form className={styles.form} onSubmit={handleSubmit}>
@@ -155,31 +181,19 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                         disabled={isPending}
                     />
 
-                    {/* Phone Group with inline styles fallback for missing SCSS */}
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <Input
-                            label="Teléfono / WhatsApp"
-                            type="tel"
-                            placeholder="656 123 4567"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            maxLength={10}
-                            variant="light"
-                            required
-                            disabled={isPending}
-                        />
-                        <p style={{
-                            fontSize: '0.75rem',
-                            color: 'var(--c-muted)',
-                            marginTop: '0.25rem',
-                            textAlign: 'right'
-                        }}>
-                            Sin spam. Solo para coordinar la entrega.
-                        </p>
-                    </div>
+                    <Input
+                        label="Teléfono / WhatsApp"
+                        type="tel"
+                        placeholder="656 123 4567"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        maxLength={10}
+                        variant="light"
+                        required
+                        disabled={isPending}
+                    />
 
-                    {/* Persistence Checkbox */}
-                    <div className={styles.checkboxWrapper} style={{ marginTop: '0.5rem', marginBottom: '0' }}>
+                    <div className={styles.checkboxWrapper}>
                         <label className={styles.checkboxLabel}>
                             <input
                                 type="checkbox"
@@ -188,13 +202,10 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                                 className={styles.checkbox}
                                 disabled={isPending}
                             />
-                            <span>
-                                Guardar mis datos en este dispositivo para futuros pedidos.
-                            </span>
+                            <span>Guardar mis datos para futuros pedidos.</span>
                         </label>
                     </div>
 
-                    {/* Legal Checkbox */}
                     <div className={styles.checkboxWrapper}>
                         <label className={styles.checkboxLabel}>
                             <input
@@ -204,9 +215,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                                 className={styles.checkbox}
                                 disabled={isPending}
                             />
-                            <span>
-                                He leído y acepto el <a href="/aviso-de-privacidad" target="_blank" rel="noopener noreferrer" className={styles.link}>Aviso de Privacidad</a>.
-                            </span>
+                            <span>He leído y acepto el <a href="/aviso-de-privacidad" className={styles.link}>Aviso de Privacidad</a>.</span>
                         </label>
                     </div>
 
@@ -224,7 +233,7 @@ export function LeadFormModal({ isOpen, onClose, onSuccess, quoteDetails }: Lead
                         loadingText="Procesando..."
                         disabled={isPending}
                     >
-                        {user.name ? 'Enviar Pedido' : 'Continuar a WhatsApp'}
+                        {buttonText}
                     </Button>
                 </form>
             </div>
