@@ -6,8 +6,6 @@ export type ConcreteType = 'direct' | 'pumped';
 export type CalculatorMode = 'knownM3' | 'assistM3';
 export type AssistVolumeMode = 'dimensions' | 'area';
 
-export type Step = 1 | 2 | 3 | 4 | 5;
-
 // UPDATED: Added '15' to standard sizes
 export type CofferedSize = '7' | '10' | '15';
 
@@ -26,9 +24,9 @@ export type WorkTypeConfig = {
     icon?: string;
 };
 
+// SIMPLIFIED: Removed 'step'
 export type CalculatorState = {
-    step: Step;
-    mode: CalculatorMode | null;
+    mode: CalculatorMode;
     volumeMode: AssistVolumeMode;
     strength: Strength;
     type: ConcreteType;
@@ -74,7 +72,6 @@ export type QuoteBreakdown = {
     subtotal: number;       // MXN without VAT
     vat: number;            // MXN (IVA)
     total: number;          // MXN with VAT
-    // New metadata for transparency in UI
     calculationDetails?: {
         formula: string;
         factorUsed?: number;
@@ -82,10 +79,8 @@ export type QuoteBreakdown = {
     };
 };
 
-// Moved here to prevent circular dependencies
 export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
-    step: 1,
-    mode: null,
+    mode: 'knownM3', // Default to simple mode
     volumeMode: 'dimensions',
     strength: '200',
     type: 'direct',
@@ -96,7 +91,7 @@ export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
     thicknessByDims: '12',
     area: '',
     thicknessByArea: '12',
-    hasCoffered: 'yes',
+    hasCoffered: 'no', // Default to solid for simplicity
     cofferedSize: '7',
 };
 

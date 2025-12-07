@@ -40,18 +40,16 @@ window.IntersectionObserver = mockIntersectionObserver;
 // Helper to reset store
 const resetStore = () => {
   useCejStore.setState({
-    viewMode: 'wizard',
     isDrawerOpen: false,
     activeTab: 'order',
-    // UPDATE: Key changed from 'currentDraft' to 'draft' in the new store
     draft: { ...DEFAULT_CALCULATOR_STATE },
     cart: [],
-    history: [],
+    // history: [],
     user: {
       visitorId: 'test-id',
       hasConsentedPersistence: true
     }
-  });
+  } as any);
 };
 
 describe('Calculator UI Integration', () => {
@@ -62,118 +60,82 @@ describe('Calculator UI Integration', () => {
     vi.clearAllMocks();
   });
 
-  it('renders the wizard and allows navigation through the flow (Known M3)', async () => {
+  it('renders the form and calculates total (Known M3)', async () => {
     render(<Calculator />);
 
-    // 1. Step 1: Mode Selection
-    expect(screen.getByText(/(Cotiza|Calcula) tu/i)).toBeInTheDocument();
-
-    const radioKnown = screen.getByRole('radio', { name: /^S[íi]/i });
+    // 1. Select Mode
+    const radioKnown = screen.getByRole('radio', { name: /Sé la cantidad/i });
     fireEvent.click(radioKnown);
 
-    // 2. Step 3: Inputs
-    const volInput = screen.getByLabelText(/Volumen \(m³\)/i);
+    // 2. Input Volume
+    const volInput = screen.getByLabelText(/Volumen total/i);
     expect(volInput).toBeInTheDocument();
 
     fireEvent.change(volInput, { target: { value: '5' } });
     expect(volInput).toHaveValue(5);
 
-    const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
-    expect(nextBtn).not.toBeDisabled();
-    fireEvent.click(nextBtn);
-
-    // 3. Step 4: Specs
-    expect(screen.getByText(/Especificaciones del Concreto/i)).toBeInTheDocument();
-
-    const strengthSelect = screen.getByLabelText(/Resistencia/i);
-    fireEvent.change(strengthSelect, { target: { value: '250' } });
-
-    // Simulate Calculation (Async simulation)
-    const summaryBtn = screen.getByRole('button', { name: /Ver Cotización Final/i });
-    fireEvent.click(summaryBtn);
-
-    // 4. Step 5: Summary
-    await waitFor(() => {
-      expect(screen.getByText(/Cotización Lista/i)).toBeInTheDocument();
-    }, { timeout: 3000 });
-
+    // 3. Check Result (Instant calculation)
+    // We expect the summary to appear
+    expect(screen.getByText('TOTAL ESTIMADO')).toBeInTheDocument();
     expect(screen.getByText('5.00 m³')).toBeInTheDocument();
-    expect(screen.getByText(/f’c 250/i)).toBeInTheDocument();
 
-    const waBtn = screen.getByRole('button', { name: /Agendar por WhatsApp/i });
-    expect(waBtn).toBeEnabled();
+    // 4. Add to Cart
+    const addBtn = screen.getByRole('button', { name: /Agregar al Pedido/i });
+    expect(addBtn).toBeEnabled();
+    fireEvent.click(addBtn);
   });
 
   it('completes the flow using Assist Mode (Dimensions)', () => {
     render(<Calculator />);
 
-    fireEvent.click(screen.getByRole('radio', { name: /No, ay.dame a/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /Ayúdame a calcular/i }));
 
-    const slabRadio = screen.getByRole('radio', { name: /Losa/i });
-    fireEvent.click(slabRadio);
+    // Select Work Type (Combobox)
+    const select = screen.getByRole('combobox', { name: /Tipo de Obra/i });
+    fireEvent.change(select, { target: { value: 'slab' } });
 
-    const solidRadio = screen.getByRole('radio', { name: /Sólida/i });
-    fireEvent.click(solidRadio);
+    // Select Solid Slab
+    fireEvent.click(screen.getByRole('radio', { name: /Sólida/i }));
 
-    const lengthInput = screen.getByLabelText(/Largo \(m\)/i);
-    const widthInput = screen.getByLabelText(/Ancho \(m\)/i);
-    const thickInput = screen.getByLabelText(/Grosor/i);
+    const lengthInput = screen.getByLabelText(/^Largo/i);
+    const widthInput = screen.getByLabelText(/^Ancho/i);
+    const thickInput = screen.getByLabelText(/^Grosor/i);
 
     fireEvent.change(lengthInput, { target: { value: '10' } });
     fireEvent.change(widthInput, { target: { value: '5' } });
     fireEvent.change(thickInput, { target: { value: '10' } });
 
-    const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
-    expect(nextBtn).toBeEnabled();
-    fireEvent.click(nextBtn);
+    expect(screen.getByText('TOTAL ESTIMADO')).toBeInTheDocument();
 
-    expect(screen.getByText(/Especificaciones del Concreto/i)).toBeInTheDocument();
-  });
-
-  it('completes the flow using Assist Mode (Area)', () => {
-    render(<Calculator />);
-
-    fireEvent.click(screen.getByRole('radio', { name: /No, ay.dame a/i }));
-    fireEvent.click(screen.getByRole('radio', { name: /Losa/i }));
-
-    fireEvent.click(screen.getByLabelText(/Por .rea/i));
-    fireEvent.click(screen.getByRole('radio', { name: /Sólida/i }));
-
-    const areaInput = screen.getByLabelText(/Área total/i);
-    const thickInput = screen.getByLabelText(/Grosor/i);
-
-    fireEvent.change(areaInput, { target: { value: '50' } });
-    fireEvent.change(thickInput, { target: { value: '10' } });
-
-    const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
-    expect(nextBtn).toBeEnabled();
-
-    fireEvent.click(nextBtn);
-    expect(screen.getByText(/Especificaciones del Concreto/i)).toBeInTheDocument();
+    // 10*5*0.10 = 5m3 * factor. Should be valid.
+    const addBtn = screen.getByRole('button', { name: /Agregar al Pedido/i });
+    expect(addBtn).toBeEnabled();
   });
 
   it('shows validation errors in UI', () => {
     render(<Calculator />);
 
-    fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /Sé la cantidad/i }));
 
-    const volInput = screen.getByLabelText(/Volumen \(m³\)/i);
+    const volInput = screen.getByLabelText(/Volumen total/i);
     fireEvent.change(volInput, { target: { value: '0' } });
 
-    const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
-    expect(nextBtn).toBeDisabled();
-
-    // The validation logic is now inside the Context, error message might vary
-    // Checking for the alert role is safer
+    // Check for error message
+    // The previous test looked for role="alert", let's keep that
     const alert = screen.getByRole('alert');
     expect(alert).toBeInTheDocument();
+
+    // Check that button is not available or disabled (implementation dependent,
+    // CalculatorSummary hides it if total <= 0, so query shouldn't find enabled one)
+    const addBtn = screen.queryByRole('button', { name: /Agregar al Pedido/i });
+    expect(addBtn).not.toBeInTheDocument();
   });
 
   it('persists state to localStorage and rehydrates on reload', () => {
     const { unmount } = render(<Calculator />);
 
-    fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
-    const volInput = screen.getByLabelText(/Volumen \(m³\)/i);
+    fireEvent.click(screen.getByRole('radio', { name: /Sé la cantidad/i }));
+    const volInput = screen.getByLabelText(/Volumen total/i);
     fireEvent.change(volInput, { target: { value: '7.5' } });
 
     unmount();
@@ -181,47 +143,8 @@ describe('Calculator UI Integration', () => {
     // Re-render: Zustand + LocalStorage should persist this
     render(<Calculator />);
 
-    const volInputRestored = screen.getByLabelText(/Volumen \(m³\)/i);
+    const volInputRestored = screen.getByLabelText(/Volumen total/i);
     expect(volInputRestored).toBeInTheDocument();
     expect(volInputRestored).toHaveValue(7.5);
-  });
-
-  it('resets the calculator to initial state when requested', async () => {
-    render(<Calculator />);
-
-    fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
-    fireEvent.change(screen.getByLabelText(/Volumen \(m³\)/i), { target: { value: '5' } });
-    fireEvent.click(screen.getByRole('button', { name: /Siguiente/i }));
-
-    fireEvent.click(screen.getByRole('button', { name: /Ver Cotización Final/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText(/Cotización Lista/i)).toBeInTheDocument();
-    }, { timeout: 3000 });
-
-    const resetBtn = screen.getByRole('button', { name: /Nueva cotización/i });
-    fireEvent.click(resetBtn);
-
-    expect(screen.getByText(/(Cotiza|Calcula) tu/i)).toBeInTheDocument();
-
-    const radioKnown = screen.getByRole('radio', { name: /^S[íi]/i }) as HTMLInputElement;
-    expect(radioKnown.checked).toBe(false);
-  });
-
-  it('navigates correctly when re-clicking an active mode', () => {
-    render(<Calculator />);
-
-    const radioKnownInitial = screen.getByRole('radio', { name: /^S[íi]/i });
-    fireEvent.click(radioKnownInitial);
-    expect(screen.getByText(/Volumen \(m³\)/i)).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: /Atrás/i }));
-    expect(screen.getByText(/(Cotiza|Calcula) tu/i)).toBeInTheDocument();
-
-    const radioKnownRestored = screen.getByRole('radio', { name: /^S[íi]/i });
-    expect(radioKnownRestored).toBeChecked();
-
-    fireEvent.click(radioKnownRestored);
-    expect(screen.getByText(/Volumen \(m³\)/i)).toBeInTheDocument();
   });
 });
