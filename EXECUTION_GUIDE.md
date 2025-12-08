@@ -1,54 +1,78 @@
-# EXECUTION_GUIDE.md
+# Execution Guide: CEJ Platform
 
-## 1. Project Vision
+**Status:** Living Document
+**Version:** 2.0 (Post-Audit)
 
-Product: High-performance Lead Generation Landing Page & Calculator for "Concreto y Equipos de Juárez" (CEJ).
+## 1. Vision & Core Philosophy
 
-Core Problem: Contractors struggle with concrete volume estimation and require immediate, friction-less ordering via WhatsApp.
+**Product:** From `cej-landing` (Lead Gen) $\rightarrow$ `CEJ Pro` (SaaS).
+**Goal:** Transform a high-performance landing page into a robust SaaS platform for concrete contractors in Ciudad Juárez.
 
-Technical Goal: Create a robust, "offline-first" feeling web app that captures leads reliably, calculates prices with high precision, and integrates seamlessly with Meta's marketing ecosystem (Pixel + CAPI).
+### The "Fail-Open" Philosophy
 
-## 2. Architectural Audit & Stack
+We prioritize the user's ability to complete a quote and contact sales above all else.
 
-Based on the code analysis, the project utilizes a modern, type-safe stack optimized for Vercel deployment:
+- **Principle:** Technical failures (Database down, API timeout) must **never** block the primary conversion path (WhatsApp redirect).
+- **Implementation:** All critical mutations (Lead Submission) must have graceful degradation paths.
 
-- **Framework:** **Next.js 16.0.7** (App Router).
-- **Language:** TypeScript 5.9 (Strict Mode).
-- **Styling:** **SCSS Modules** (`.module.scss`) with a custom Token System (`_tokens.scss`) & Mixins. *Note: No Tailwind detected.*
-- **State Management:** **Zustand** v5 (with `persist` middleware for LocalStorage hydration).
-- **Validation:** **Zod** for schema validation (forms & env vars).
-- **Testing:** **Vitest** + React Testing Library.
-- **Backend:** **Supabase** (PostgreSQL) integrated via Next.js Server Actions.
-- **Analytics:** Meta Pixel (Client) + Vercel Analytics/Speed Insights.
+## 2. Technical Stack & Standards
 
-## 3. Phase Map
+- **Framework:** Next.js 16 (App Router).
+- **Language:** TypeScript 5.9 (Strict Mode). No `any`.
+- **Styling:** **SCSS Modules** only.
+    - **Constraint:** **No Tailwind CSS**. Adhere to `_tokens.scss` and `_mixins.scss`.
+- **State:** Zustand v5 (with Persistence Middleware).
+- **Backend:** Supabase (PostgreSQL) via **Server Actions**.
+- **Validation:** Zod (Runtime schema validation for ALL inputs).
 
-The Execution Plan is divided into 4 strategic phases to align with the roadmap while ensuring stability:
+## 3. Architecture Overview
 
-1. **PHASE 1: QA & INFRASTRUCTURE HARDENING.**
-    - *Goal:* Solidify the calculator core (`lib/pricing.ts`) and ensure type safety before adding database logic.
-    - *Gap Addressed:* The current calculator works but lacks edge-case testing for "Minimum Order" rules impacting the cart.
-2. **PHASE 2: DATA PERSISTENCE & INTEGRATION.**
-    - *Goal:* Implement the Supabase connection for `leads`.
-    - *Strategy:* Use **Server Actions** instead of API Routes (modern approach) while maintaining the "Fail-open" logic (redirect to WhatsApp even if DB fails).
-3. **PHASE 3: CALCULATOR EVOLUTION (Expert Mode).**
-    - *Goal:* Activate the `ExpertToggle` functionality hinted in the code but not fully implemented.
-    - *Gap Addressed:* The store has `viewMode`, but the UI doesn't fully support granular inputs (Slump, Additives) yet.
-4. **PHASE 4: MARKETING OPS & SEO (CAPI).**
-    - *Goal:* Implement Server-Side Event tracking to match the client-side Pixel.
-    - *Alignment:* Integration with Facebook Conversions API (CAPI).
+```mermaid
+graph TD
+    User[Visitor] -->|Interacts| CalculatorUI[Calculator Component]
+    CalculatorUI -->|Local Logic| PricingEngine[lib/pricing.ts]
 
-## 4. Golden Rules
+    subgraph Client Side
+        Store[Zustand Store]
+        Local[LocalStorage]
+    end
 
-1. **SCSS Modules Only:** Do not introduce Tailwind. Adhere to `styles/_mixins.scss` for responsiveness and `_tokens.scss` for variables.
-2. **Server Actions First:** Mutations must use `use server` actions in `app/actions/`. Do not create `pages/api` routes.
-3. **Fail-Open UX:** Critical paths (Calculator -> WhatsApp) must work even if the database is down.
-4. **Zod Validation:** All inputs entering the system (Client or Server) must be validated against `lib/schemas.ts`.
-5. **Strict Types:** No `any`. Use the types defined in `types/order.ts` and `components/Calculator/types.ts`.
+    PricingEngine --> Store
+    Store <--> Local
 
-## 5. Prompt Engineering Guide
+    User -->|Submit Order| ServerAction[submitLead.ts]
 
-To execute these phases via AI, copy the content of the specific `EXECUTION_PHASE_X` file.
+    subgraph Server Side
+        Supabase[(Supabase DB)]
+        CAPI[Meta CAPI]
+    end
 
-- **Context:** "You are a Senior React Developer working on the CEJ Landing project (Next.js 16 + SCSS Modules)."
-- **Constraint:** "Respect the existing BEM naming convention in SCSS and the Zustand store structure."
+    ServerAction -->|Service Role Key| Supabase
+    ServerAction -.->|Async / Non-blocking| CAPI
+
+    ServerAction -->|Response| CalculatorUI
+
+    CalculatorUI -->|Redirect| WhatsApp[WhatsApp API]
+```
+
+## 4. Execution Roadmap
+
+We follow a strict, serialized playbook approach. Do not proceed to the next phase until the Exit Criteria of the current phase are met.
+
+| **Phase** | **Playbook** | **Goal** | **Critical Dependency** |
+| --- | --- | --- | --- |
+| **0. Hardening** | `PLAYBOOK_00_QA_HARDENING.md` | Ensure math accuracy & A11y. | Existing Codebase |
+| **1. Data Core** | `PLAYBOOK_01_DATA_CORE.md` | Zero-loss data capture (DB). | Supabase Keys |
+| **2. Engine** | `PLAYBOOK_02_CALC_ENGINE.md` | Expert features (Additives). | Phase 1 Data Structure |
+| **3. Marketing** | `PLAYBOOK_03_MARKETING_OPS.md` | Server-side Tracking (CAPI). | Facebook Access Token |
+| **4. SaaS** | `PLAYBOOK_04_SAAS_PORTAL.md` | User Auth & History. | Phase 2 Pricing |
+
+## 5. Development Protocol
+
+1. **Read the Playbook:** Before coding, read the specific markdown file for the active phase.
+2. **Type-First Development:** Define Zod schemas and TypeScript interfaces before writing logic.
+3. **Strict Logs:** Use structured logging for server actions to debug "Fail-Open" scenarios.
+    - *Format:* `[MODULE:ACTION] <Status> | Payload: {...}`
+4. **Sync Rules:**
+    - If you modify `lib/pricing.ts`, you **MUST** update `lib/pricing.test.ts`.
+    - If you modify the DB Schema, update `DB_SCHEMA.md` immediately.
