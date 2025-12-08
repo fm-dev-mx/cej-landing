@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useCejStore } from '@/store/useCejStore';
 import { Button } from '@/components/ui/Button/Button';
 import { fmtMXN } from '@/lib/utils';
-import { type QuoteBreakdown } from '@/components/Calculator/types';
+import { type QuoteBreakdown } from '@/types/domain';
 import styles from './CalculatorForm.module.scss';
 
 interface Props {
