@@ -27,6 +27,9 @@ const envSchema = z.object({
 
     // Monitoring
     MONITORING_WEBHOOK_URL: z.string().url().optional(),
+
+    // --- PHASE 3: Marketing Ops (Server Secrets) ---
+    FB_ACCESS_TOKEN: z.string().optional(),
 });
 
 const processEnv = {
@@ -41,6 +44,7 @@ const processEnv = {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     MONITORING_WEBHOOK_URL: process.env.MONITORING_WEBHOOK_URL,
+    FB_ACCESS_TOKEN: process.env.FB_ACCESS_TOKEN,
 };
 
 // Validación segura (no lanza excepción, devuelve success: false)
@@ -63,9 +67,6 @@ export const env = parsed.success
 // Verifica configuración crítica en runtime (servidor)
 if (process.env.NODE_ENV === 'production') {
     if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
-        console.warn(
-            '\x1b[33m%s\x1b[0m', // Color Amarillo
-            '⚠️ [CRITICAL] Supabase keys missing. App running in Fail-Open mode (No DB Persistence).'
-        );
+        console.warn('⚠️ [CRITICAL] Supabase keys missing. Running in Fail-Open mode.');
     }
 }

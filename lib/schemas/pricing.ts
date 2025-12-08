@@ -46,3 +46,4 @@ export const PricingRulesSchema = z.object({
 
 export type PricingRules = z.infer<typeof PricingRulesSchema>;
 export type Additive = z.infer<typeof AdditiveSchema>;
+export type VolumeTier = z.infer<typeof VolumeTierSchema>; // Export added

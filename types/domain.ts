@@ -1,5 +1,5 @@
 // types/domain.ts
-import type { PricingRules } from '@/lib/schemas/pricing';
+import type { PricingRules, VolumeTier } from '@/lib/schemas/pricing';
 
 // --- 1. Core Primitives ---
 export type Strength = '100' | '150' | '200' | '250' | '300';
@@ -66,7 +66,10 @@ export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
 
 // --- 3. Pricing & Quotes (Referencing Schema) ---
 // Re-exportamos tipos derivados del schema para consistencia
-export type { PricingRules };
+export type { PricingRules, VolumeTier };
+
+// Alias para compatibilidad con código legado (config/business.ts)
+export type PriceTable = PricingRules['base'];
 
 export type NormalizedVolume = {
     requestedM3: number;

@@ -36,6 +36,7 @@ export const CustomerSchema = z.object({
     name: z.string().min(3, "El nombre es muy corto"),
     phone: z.string().min(10, "Verifica el número (10 dígitos)"),
     visitorId: z.string().optional(),
+    email: z.string().email().optional(),
 });
 
 // Flexible item schema for the JSONB column
@@ -61,6 +62,7 @@ export const OrderSubmissionSchema = z.object({
             currency: z.string(),
         }),
         metadata: z.any().optional(),
+        customer: CustomerSchema.optional(),
     }),
 
     // Tracking & Privacy
