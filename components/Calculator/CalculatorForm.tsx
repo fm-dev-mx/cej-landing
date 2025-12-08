@@ -11,6 +11,7 @@ import { WorkTypeSelector } from './steps/forms/WorkTypeSelector';
 import { AssistVolumeForm } from './steps/forms/AssistVolumeForm';
 import { SpecsForm } from './steps/forms/SpecsForm';
 import { AdditivesForm } from './steps/forms/AdditivesForm';
+import { Step5Summary } from './steps/Step5Summary';
 import styles from './CalculatorForm.module.scss';
 
 /**
@@ -93,8 +94,9 @@ export function CalculatorForm() {
                 </div>
             )}
 
-            {/* 5. Summary */}
-            <CalculatorSummary quote={quote} isValid={isValid && !error} />
+            <div className={styles.summarySection}>
+                <Step5Summary />
+            </div>
         </div>
     );
 }

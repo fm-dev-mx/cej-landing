@@ -1,0 +1,126 @@
+@use "@/styles/mixins" as *;
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: var(--z-modal);
+    display: flex;
+    justify-content: center;
+
+    /* Mobile: Align to bottom */
+    align-items: flex-end;
+
+    /* Desktop: Center */
+    @include respond-to('md') {
+        align-items: center;
+        padding: var(--sp-4);
+    }
+
+    animation: fadeIn 0.2s ease-out;
+}
+
+.sheet {
+    background-color: var(--c-surface);
+    width: 100%;
+    max-height: 90dvh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-xl);
+
+    /* Mobile: Bottom Sheet Styles */
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Desktop: Modal Styles */
+    @include respond-to('md') {
+        max-width: 500px;
+        border-radius: var(--radius-lg);
+        animation: scaleIn 0.2s ease-out;
+        max-height: 85vh;
+        border: 1px solid var(--c-border);
+    }
+}
+
+.handle {
+    width: 3rem;
+    height: 4px;
+    background-color: var(--c-border-strong);
+    border-radius: 99px;
+    margin: var(--sp-3) auto 0;
+    flex-shrink: 0;
+
+    @include respond-to('md') {
+        display: none;
+    }
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--sp-4) var(--sp-6);
+    border-bottom: 1px solid var(--c-border);
+}
+
+.title {
+    font-size: var(--fs-lg);
+    font-weight: 700;
+    margin: 0;
+    color: var(--c-text);
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    line-height: 1;
+    color: var(--c-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    margin-right: -0.5rem;
+
+    &:hover {
+        color: var(--c-text);
+    }
+}
+
+.content {
+    padding: var(--sp-6);
+    overflow-y: auto;
+    /* Prevent scroll chaining */
+    overscroll-behavior: contain;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
