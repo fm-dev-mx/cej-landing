@@ -1,17 +1,11 @@
-// app/(app)/cotizador/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import ToolShell from '@/components/layouts/ToolShell/ToolShell';
 import { CalculatorForm } from '@/components/Calculator/CalculatorForm';
-import FeedbackToast from '@/components/ui/FeedbackToast/FeedbackToast';
-import QuoteDrawer from '@/components/QuoteDrawer/QuoteDrawer';
-import SmartBottomBar from '@/components/SmartBottomBar/SmartBottomBar';
-import { useCejStore } from '@/store/useCejStore';
 
 export default function CotizadorPage() {
     const [isHydrated, setIsHydrated] = useState(false);
-    const cart = useCejStore(s => s.cart);
 
     useEffect(() => {
         setIsHydrated(true);
@@ -23,7 +17,10 @@ export default function CotizadorPage() {
         <ToolShell>
             <div style={{ paddingBottom: '80px' }}>
                 <div className="container" style={{ maxWidth: '640px', margin: '0 auto' }}>
-                    {/* Reuse the Logic Component directly in the App shell */}
+                    {/* Note: QuoteDrawer, SmartBottomBar, and Toast are now mounted
+                      in the RootLayout (app/layout.tsx) via GlobalUI to ensure
+                      availability on the Marketing side as well.
+                    */}
                     <div style={{
                         background: 'white',
                         padding: '1.5rem',
@@ -34,10 +31,6 @@ export default function CotizadorPage() {
                     </div>
                 </div>
             </div>
-
-            <FeedbackToast />
-            <SmartBottomBar />
-            <QuoteDrawer />
         </ToolShell>
     );
 }

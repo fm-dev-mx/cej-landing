@@ -1,9 +1,9 @@
-// app/actions/submitLead.ts
 'use server';
 
 import { createClient } from '@supabase/supabase-js';
 import { OrderSubmissionSchema, type OrderSubmission } from '@/lib/schemas';
 import { env } from '@/config/env';
+import { reportError, reportWarning } from '@/lib/monitoring';
 
 // Initialize Supabase only if keys are present to allow build/dev without them
 const supabase =
@@ -27,6 +27,7 @@ export async function submitLead(payload: OrderSubmission): Promise<SubmitLeadRe
     const parseResult = OrderSubmissionSchema.safeParse(payload);
 
     if (!parseResult.success) {
+        // Validation failure is a hard stop
         console.error('Validation Error:', parseResult.error.flatten());
         return { success: false, error: 'Datos de pedido inválidos.' };
     }
@@ -35,8 +36,8 @@ export async function submitLead(payload: OrderSubmission): Promise<SubmitLeadRe
 
     // 2. Fail-Open Infrastructure Check
     if (!supabase) {
-        console.warn('SUPABASE_NOT_CONFIGURED: Lead was not saved to DB (Dev Mode or Missing Keys).');
-        // Return success so the user can still proceed to WhatsApp
+        reportWarning('SUPABASE_NOT_CONFIGURED: Lead was not saved to DB (Dev Mode or Missing Keys).');
+        // Fail-Open: Return success so the user can still proceed to WhatsApp
         return { success: true, id: 'mock-dev-id', warning: 'db_not_configured' };
     }
 
@@ -55,6 +56,7 @@ export async function submitLead(payload: OrderSubmission): Promise<SubmitLeadRe
                     utm_medium: utm_medium || 'none',
                     status: 'new',
                     fb_event_id: fb_event_id || null,
+                    privacy_accepted: true,
                     // created_at is handled by DB default
                 },
             ])
@@ -62,9 +64,10 @@ export async function submitLead(payload: OrderSubmission): Promise<SubmitLeadRe
             .single();
 
         if (error) {
-            console.error('CRITICAL: Supabase Insert Error:', error);
-            // Fail-Open Strategy: Return success but log the error internally
-            // In a real production app, we might fire an alert to Sentry here
+            // CRITICAL: Fail-Open Strategy
+            // Log the error for monitoring but do NOT stop the user flow.
+            reportError(new Error(`Supabase Insert Failed: ${error.message}`), { payload });
+
             return {
                 success: true,
                 id: 'fallback-id',
@@ -75,8 +78,9 @@ export async function submitLead(payload: OrderSubmission): Promise<SubmitLeadRe
         return { success: true, id: String(dbData?.id) };
 
     } catch (err) {
-        console.error('UNHANDLED EXCEPTION in submitLead:', err);
-        // Fail-Open Strategy
+        // CRITICAL: Fail-Open Strategy
+        reportError(err, { context: 'submitLead unhandled exception', payload });
+
         return {
             success: true,
             id: 'fallback-exception',

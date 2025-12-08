@@ -2,79 +2,85 @@
 
 ## 1. Technology Stack
 
-The architecture prioritizes client-side performance (Core Web Vitals) and server-side security.
+La arquitectura prioriza el rendimiento del lado del cliente (Core Web Vitals) y la seguridad del lado del servidor.
 
 - **Framework:** **Next.js 16** (App Router).
 - **Language:** **TypeScript 5.9** (Strict Mode).
-- **Styling:** **SCSS Modules** using a centralized Token System (`_tokens.scss`) and Mixins. **Note: No Tailwind is used.State Management:** **Zustand v5** with `persist` middleware.
-    - **Single Store Strategy:** The store is shared between Marketing and App layouts to preserve user sessions context-wide.
-- **Backend:** **Supabase** (PostgreSQL) integrated exclusively via **Server Actions**.
-- **Validation:** **Zod** used for form inputs, API payloads, and Environment Variables.
-- **Testing:** **Vitest** + React Testing Library for core logic (Pricing/Calculator).
+- **Styling:** **SCSS Modules** usando un sistema centralizado de Tokens (`_tokens.scss`) y Mixins.
+- **State Management:** **Zustand v5** con middleware `persist`.
+    - **Single Store Strategy:** El store se comparte globalmente para preservar la sesión del usuario entre las rutas de Marketing y la App.
+- **Backend:** **Supabase** (PostgreSQL) integrado exclusivamente vía **Server Actions**.
+- **Validation:** **Zod** para inputs de formularios, payloads de API y variables de entorno.
+- **Monitoring:** Abstracción ligera (`lib/monitoring.ts`) para reporte de errores sin bloquear la UI.
 
-## 2. Data Flow: Lead Capture (Fail-Open)
+## 2. Patterns & Strategies
 
-The system is designed to capture the lead even if the database layer fails, ensuring the user is always redirected to WhatsApp to close the sale.
+### The "Fail-Open" Logic (Lead Capture)
+
+El sistema está diseñado para capturar el lead incluso si la base de datos falla, asegurando que el usuario siempre sea redirigido a WhatsApp para cerrar la venta.
 
 ```mermaid
 sequenceDiagram
     participant User as Visitor
     participant UI as Calculator (Client)
-    participant Store as Zustand (Local)
     participant Server as Server Action
+    participant Monitoring as lib/monitoring
     participant DB as Supabase
     participant WA as WhatsApp
 
-    User->>UI: Inputs dimensions & selects type
-    UI->>Store: Calculates volume & price (Local Logic)
-    Store-->>UI: Updates Cart State
-    User->>UI: Clicks "Finish Order"
-    UI->>Server: Sends Payload (Lead + JSON Snapshot)
+    User->>UI: Input data & Click "Finalizar"
+    UI->>Server: submitLead(Payload)
 
     rect rgb(240, 255, 240)
         Note right of Server: Persistence Attempt
-        Server->>DB: INSERT into leads (Service Role Bypass)
-        DB-->>Server: Success / Error
+        Server->>DB: INSERT into leads
+        alt DB Fails
+            DB-->>Server: Error / Timeout
+            Server->>Monitoring: Log Error (Non-blocking)
+            Server-->>UI: Returns { success: true, warning: 'db_failed' }
+        else DB Success
+            DB-->>Server: ID Created
+            Server-->>UI: Returns { success: true, id: ... }
+        end
     end
 
-    Server-->>UI: Returns { success: true, warning? }
-
-    alt DB Failed or Succeeded
-        Note over UI: "Fail-Open" Logic
-        UI->>WA: Generates URL with Quote Folio & Redirects
-    end
+    Note over UI: UI always redirects
+    UI->>WA: Generates URL & Opens WhatsApp
 ```
+
+### The "Global UI" Pattern
+
+Para evitar la fragmentación de estado entre las páginas de Marketing (`/`) y la Aplicación (`/cotizador`), los componentes de feedback visual del carrito se inyectan en el `RootLayout`.
+
+- **Componente:** `components/GlobalUI.tsx`
+- **Ubicación:** `app/layout.tsx`
+- **Responsabilidad:** Manejar `QuoteDrawer`, `SmartBottomBar` y `FeedbackToast` de forma persistente en toda la navegación.
 
 ## 3. Directory Structure
 
-The project strictly separates the Marketing context from the SaaS Application context.
-
-Bash
+Plaintext
 
 ```tsx
 ├── app/
-│   ├── (marketing)/      # Public Landing pages. Optimized for SEO/LCP.
-│   ├── (app)/            # Private/Functional routes (/cotizador). Requires ToolShell.
-│   ├── actions/          # Server Actions (DB Mutations). The only write-access point.
-│   └── api/              # Route Handlers (Webhooks, CAPI).
+│   ├── (marketing)/      # Landing pages públicas.
+│   ├── (app)/            # Rutas funcionales (/cotizador).
+│   ├── actions/          # Server Actions (submitLead.ts). Único punto de escritura.
+│   └── layout.tsx        # Root Layout + GlobalUI.
 ├── components/
-│   ├── Calculator/       # Complex Domain Logic & Forms.
-│   ├── ui/               # Reusable Atoms (Buttons, Inputs, Cards).
-│   └── layouts/          # Context-specific layouts (Header, Footer, Shells).
-├── config/
-│   ├── business.ts       # Static pricing & business rules.
-│   └── env.ts            # Zod-validated environment variables.
+│   ├── Calculator/       # Lógica compleja de dominio.
+│   ├── GlobalUI.tsx      # Orquestador de componentes flotantes (Drawer/Toast).
+│   ├── ui/               # Átomos reutilizables (Buttons, Inputs).
+│   └── layouts/          # Shells específicos (ToolShell, Header).
 ├── lib/
-│   ├── pricing.ts        # Pricing Engine (100% Unit Tested).
-│   └── schemas.ts        # Zod Schemas (Single Source of Truth).
-├── store/                # Zustand Stores.
-└── types/                # Centralized Domain Types.
+│   ├── monitoring.ts     # Capa de abstracción para logging/errores.
+│   ├── pricing.ts        # Motor de precios (100% Unit Tested).
+│   └── schemas.ts        # Esquemas Zod (Single Source of Truth).
+└── store/                # Zustand Stores (Persisted).
 ```
 
 ## 4. Development Standards
 
-1. **Server Actions First:** Do not create API Routes for data mutation. Use `use server` files within `app/actions/`.
-2. **Strict Validation:** All inputs entering the server must be validated against schemas in `lib/schemas.ts`.
-3. **Fail-Open UX:** Critical paths (e.g., Send Order) must never block the user if a secondary service (DB, Pixel, Analytics) fails.
-4. **Mobile-First SCSS:** Use the provided mixins (`@include respond-to('md')`) and avoid inline styles.
-5. **Testing:** Any change to `lib/pricing.ts` MUST be accompanied by updated tests in `lib/pricing.test.ts`.
+1. **Server Actions First:** No crear API Routes. Usar `use server` en `app/actions/`.
+2. **Fail-Open UX:** Caminos críticos (Enviar Pedido) nunca deben bloquear al usuario si un servicio secundario falla.
+3. **SCSS Modules Only:** No usar estilos en línea (`style={{}}`). Usar clases compuestas.
+4. **Strict Typing:** Prohibido el uso de `any` en lógica de negocio (`store`, `pricing`, `actions`).

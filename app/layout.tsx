@@ -5,6 +5,7 @@ import { SEO_CONTENT } from "@/config/content";
 import "../styles/globals.scss";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
+import GlobalUI from "@/components/GlobalUI";
 
 export const viewport: Viewport = {
     width: "device-width",
@@ -70,6 +71,9 @@ export default function RootLayout({
                 )}
 
                 {children}
+
+                {/* Global UX Components (Cart, Drawer, Toast) */}
+                <GlobalUI />
 
                 <SpeedInsights />
                 <Analytics />

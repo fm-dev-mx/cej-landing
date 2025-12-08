@@ -1,75 +1,48 @@
-# Playbook 01: Data Core (Persistence)
+# Playbook 01: Data Core (Activation)
 
-**Status:** Planned (Blocked by Phase 0)
-**Context:** Connects the "Fail-Open" calculator to Supabase.
+**Status:** Ready for Execution
+**Pre-requisitos:** Fase 0 (QA Hardening) completada. Código de `submitLead.ts` ya implementado.
 
-## 1. Architecture: The Audit Trail
+## 1. Contexto
 
-We need to capture every quote generated, even if the user doesn't complete the purchase. This is an **Audit Trail**, not just an Order System.
+En la Fase 0 implementamos la lógica **Fail-Open** en el código. El sistema ya "intenta" guardar en base de datos, pero actualmente falla silenciosamente (y reporta el warning) porque no hay credenciales reales.
 
-### Data Model
+**Objetivo de esta Fase:** Activar la persistencia real conectando Supabase y asegurando que los datos fluyan correctamente sin romper la experiencia de usuario.
 
-```mermaid
-erDiagram
-    LEADS {
-        bigint id PK
-        string name
-        string phone
-        jsonb quote_data "Full Snapshot"
-        string status "new | contacted"
-        string visitor_id
-        timestamp created_at
-    }
-```
+## 2. Tareas de Ejecución
 
-## 2. Implementation Specs
+### 2.1 Infraestructura Supabase (SQL)
 
-### 2.1 Environment Security
+Ejecutar el script `bd.sql` (actualizado) en el Dashboard de Supabase para crear las tablas necesarias.
 
-- **File:** `config/env.ts`
-- **Requirement:** Validate `SUPABASE_SERVICE_ROLE_KEY` but **ensure it is not prefixed** with `NEXT_PUBLIC_`. It must remain server-side only.
+- [ ]  **Tabla `public.leads`:** Asegurar que soporte el campo JSONB `quote_data` y las columnas de tracking (`fb_event_id`, `visitor_id`).
+- [ ]  **Seguridad (RLS):** Verificar que la tabla `leads` no sea escribible públicamente (solo vía Service Role).
 
-### 2.2 Server Action: `submitLead.ts`
+### 2.2 Configuración de Entorno
 
-This is the most critical file in this phase. It acts as the bridge between the insecure client and the secure database.
+Actualizar las variables de entorno en Vercel y local (`.env.local`).
 
-- **Security Requirement:** Initialize the Supabase client with `persistSession: false`.TypeScript
+- [ ]  `NEXT_PUBLIC_SUPABASE_URL`: URL del proyecto.
+- [ ]  `SUPABASE_SERVICE_ROLE_KEY`: **CRÍTICO.** Esta llave nunca debe exponerse al cliente (sin prefijo `NEXT_PUBLIC_`). Es necesaria para que `submitLead` funcione.
 
-    #
+### 2.3 Validación de Datos (Data Integrity)
 
-    `// app/actions/submitLead.ts (Snippet)
-    const supabase = createClient(
-      env.NEXT_PUBLIC_SUPABASE_URL,
-      env.SUPABASE_SERVICE_ROLE_KEY, // Server-only key
-      {
-        auth: {
-          persistSession: false, // CRITICAL: Prevent shared state
-          autoRefreshToken: false,
-        }
-      }
-    );`
+Verificar que el JSON guardado en `leads` coincida con el esquema esperado por futuras fases.
 
-- **Logic Flow:**
-    1. **Validate:** Parse input with `OrderSubmissionSchema` (Zod). Return `{ success: false, error: ... }` if invalid.
-    2. **Connect:** Check DB connection.
-    3. **Insert:** Write to `public.leads`.
-    4. **Fail-Open Handling:**
-        - `try/catch` the entire block.
-        - If DB fails, log error to console (or Sentry).
-        - **Return:** `{ success: true, warning: 'db_down', folio: ... }`.
-        - *Rationale:* The UI must receive "success" to proceed to WhatsApp generation.
+- **Prueba:** Realizar un pedido de prueba.
+- **Validación:** 1. Revisar en Supabase que se creó una nueva fila.
+2. Verificar que `quote_data` contiene el snapshot completo (precios, items, desglose).
+3. Verificar que `privacy_accepted` es `true`.
 
-### 2.3 Client Integration
+### 2.4 Monitoreo (Sentry / Slack)
 
-- **File:** `hooks/useCheckOut.ts`
-- **Update:**
-    - Generate `folio` on the client (or optimistic ID).
-    - Call `submitLead`.
-    - If response has `warning`, log it to analytics but **do not alert the user**.
-    - Redirect to WhatsApp immediately.
+Actualizar `lib/monitoring.ts` para conectar con un servicio real.
 
-## 3. Exit Criteria
+- [ ]  Reemplazar el `console.error` actual con un hook real (ej. Webhook a Slack o Sentry Capture).
+- **Nota:** Si el presupuesto no permite Sentry aún, configurar un canal de Slack para alertas de "DB Down" es suficiente por ahora.
 
-1. Submitting a form creates a row in Supabase `leads`.
-2. The `quote_data` column contains a complete JSON snapshot of the calculation.
-3. **Integration Test:** Manually breaking the DB connection (e.g., bad URL in `.env`) results in a successful WhatsApp redirect (Fail-Open verified).
+## 3. Criterios de Éxito (Exit Criteria)
+
+1. **Persistencia Activa:** Los pedidos generados en la Landing Page aparecen en la tabla `leads` de Supabase en tiempo real.
+2. **Resiliencia Verificada:** Si se revocan las credenciales de Supabase intencionalmente, el flujo de usuario **sigue funcionando** (llega a WhatsApp) y se registra una alerta en el sistema de monitoreo.
+3. **Snapshot Completo:** El campo `quote_data` permite reconstruir la cotización exacta sin depender de `business.ts`.

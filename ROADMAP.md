@@ -2,59 +2,42 @@
 
 ## 1. Strategic Phases
 
-1. **CEJ Landing (Current):** Traffic capture and low-friction conversion to WhatsApp.
-2. **CEJ Cotizador:** Robust tool with multi-item cart, history, and persistence.
-3. **CEJ Pro (SaaS):** Contractor platform for order management, billing, and reordering.
+1. **CEJ Landing (Actual):** Captura de tráfico y conversión sin fricción a WhatsApp.
+2. **CEJ Cotizador:** Herramienta robusta con carrito multi-ítem, persistencia e historial.
+3. **CEJ Pro (SaaS):** Plataforma para contratistas (Gestión de pedidos y facturación).
 
-## 2. Functionality by Role (Target Vision)
+## 2. Sprint Plan
 
-| Feature | Visitor (Anonymous) | Pro User (Registered) | Admin (CEJ) |
-| --- | --- | --- | --- |
-| **Calculator** | ✅ Full Access | ✅ Full Access | ✅ Full Access |
-| **Pre-Quote** | ✅ (WhatsApp) | ✅ (PDF Ticket) | - |
-| **History** | ⚠️ Local (Session) | ✅ Cloud (Persistent) | ✅ Global View |
-| **Orders** | ❌ | ✅ Formal Creation | ✅ Status Management |
-| **Billing** | ❌ | ✅ Request Invoice | ✅ Validation |
-| **Dashboard** | ❌ | ✅ Spend Analytics | ✅ Sales Analytics |
+### ✅ Sprint 1: QA Hardening & Infraestructura (Completado)
 
-## 3. Sprint Plan
+*Meta: Eliminar deuda técnica y asegurar integridad matemática.*
 
-### 🏃 Sprint 1: UX Consolidation & Core Fixes (Immediate)
+- [x]  **Integridad Matemática:** Tests exhaustivos para redondeo, mínimos (MOQ) y precisión flotante.
+- [x]  **Arquitectura Fail-Open:** Implementación de `submitLead` resiliente a fallos de BD.
+- [x]  **Consolidación UX:** Implementación de `GlobalUI` para visibilidad del carrito en todas las rutas.
+- [x]  **Accesibilidad:** Refactor de `SelectionCard` y gestión de foco programático en la Calculadora.
+- [x]  **Limpieza:** Eliminación de estilos en línea y tipado estricto (No `any`).
 
-*Goal: Ensure 100% Calculator reliability and unified UI feedback.*
+### 🏃 Sprint 2: Data Core & Expert Engine (En Progreso)
 
-- [ ]  **Critical UX Fix:** Move `QuoteDrawer` and `SmartBottomBar` to the Root Layout or inject them into the Marketing Layout.
-- [ ]  **Feedback Loop:** Implement global Toasts when adding items to the cart from the landing page.
-- [ ]  **Expert Mode:** Enable UI for additive selection (Fiber, Accelerant) utilizing the existing store logic.
-- [ ]  **QA:** Expand Unit Test coverage for `pricing.ts` to cover edge cases (rounding errors, min-order quantities).
+*Meta: Persistencia real de datos y lógica avanzada.*
 
-### 🏃 Sprint 2: Authentication & Profiles
+- [ ]  **Infraestructura DB:** Provisionar Supabase (`leads`, `price_config`) y activar Server Actions con credenciales reales.
+- [ ]  **Motor Experto (UI):** Habilitar la interfaz para selección de Aditivos (Fibra, Acelerante) y conectarla al store.
+- [ ]  **Configuración Dinámica:** Migrar `business.ts` (precios estáticos) a tabla de base de datos con revalidación ISR.
 
-*Goal: Identify recurring users.*
+### 🏃 Sprint 3: Authentication & Profiles
 
-- [ ]  Implement Login/Register using Supabase Auth (Magic Link + Google).
-- [ ]  Create Onboarding flows to capture Fiscal Data (RFC, Address) into `public.profiles`.
-- [ ]  Protect `/app/*` routes via Middleware.
+*Meta: Identificar usuarios recurrentes.*
 
-### 🏃 Sprint 3: Order Management & Tickets
+- [ ]  Implementar Login/Register con Supabase Auth.
+- [ ]  Crear flujos de Onboarding para datos fiscales en `public.profiles`.
+- [ ]  Proteger rutas `/app/*` vía Middleware.
 
-*Goal: Professionalize the quote delivery.*
+### 🏃 Sprint 4: Order Management (SaaS)
 
-- [ ]  **Sync Engine:** Create a hook to migrate local `localStorage` cart items to the `orders` DB table upon login.
-- [ ]  **Ticket Generator:** Implement an endpoint to generate downloadable PDF quotes (matching visual reference).
-- [ ]  Build the "My Orders" (History) view.
+*Meta: Profesionalizar la entrega de cotizaciones.*
 
-### 🏃 Sprint 4: Dashboard & Sales (Mid-Term)
-
-*Goal: Provide control tools.*
-
-- [ ]  User Dashboard: Volume purchased charts.
-- [ ]  Basic Admin Panel: Lead list and Order Status management.
-- [ ]  **Marketing Ops:** Full implementation of Meta CAPI (Server-Side Events) for ad optimization.
-
-### 🏃 Sprints 5 & 6: Billing & Tracking
-
-*Goal: Operational automation.*
-
-- [ ]  Invoice Request module linked to completed orders.
-- [ ]  Order Tracking System (Status: At Plant, En Route, Delivered).
+- [ ]  **Sync Engine:** Migrar carrito local (`localStorage`) a DB (`orders`) al iniciar sesión.
+- [ ]  **Ticket Generator:** Endpoint para generar PDF de la cotización.
+- [ ]  Construir vista "Mis Pedidos" (Historial en la nube).

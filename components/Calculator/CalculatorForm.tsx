@@ -1,6 +1,6 @@
-// components/Calculator/CalculatorForm.tsx
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useCejStore } from '@/store/useCejStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useQuoteCalculator } from '@/hooks/useQuoteCalculator';
@@ -24,8 +24,26 @@ export function CalculatorForm() {
     );
 
     // 3. Calculation Logic (Hooks)
-    // This drives the summary and validation state for the whole form
     const { quote, isValid, error, warning } = useQuoteCalculator(draft);
+
+    // 4. Focus Management Refs
+    const inputsSectionRef = useRef<HTMLDivElement>(null);
+    const specsSectionRef = useRef<HTMLDivElement>(null);
+
+    // Effect: Shift focus to inputs section when Mode changes
+    useEffect(() => {
+        if (draft.mode && inputsSectionRef.current) {
+            // Find the first interactive element in the section
+            const firstInput = inputsSectionRef.current.querySelector('input, select');
+            if (firstInput instanceof HTMLElement) {
+                firstInput.focus();
+            }
+        }
+    }, [draft.mode]);
+
+    // Effect: Shift focus to specs when inputs are valid (soft guidance)
+    // Note: We avoid aggressive auto-focus here to not disturb typing,
+    // but ensuring the section is ready.
 
     return (
         <div className={styles.container}>
@@ -56,28 +74,30 @@ export function CalculatorForm() {
             </div>
 
             {/* --- SECTION 2: DYNAMIC INPUTS --- */}
-            {draft.mode === 'knownM3' ? (
-                <div className={styles.field}>
-                    <KnownVolumeForm hasError={!!error} />
-                </div>
-            ) : (
-                <>
+            <div ref={inputsSectionRef}>
+                {draft.mode === 'knownM3' ? (
                     <div className={styles.field}>
-                        <WorkTypeSelector />
+                        <KnownVolumeForm hasError={!!error} />
                     </div>
-
-                    {draft.workType && (
+                ) : (
+                    <>
                         <div className={styles.field}>
-                            {/* Pass specific volume error down to assist form */}
-                            <AssistVolumeForm error={error} />
+                            <WorkTypeSelector />
                         </div>
-                    )}
-                </>
-            )}
+
+                        {draft.workType && (
+                            <div className={styles.field}>
+                                {/* Pass specific volume error down to assist form */}
+                                <AssistVolumeForm error={error} />
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
 
             {/* --- SECTION 3: SPECS (Visible only if valid or assisting) --- */}
             {(draft.mode === 'knownM3' || draft.workType) && (
-                <div className={styles.field} style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem', marginTop: '1rem' }}>
+                <div className={styles.fieldWithSeparator} ref={specsSectionRef}>
                     <SpecsForm />
                 </div>
             )}
