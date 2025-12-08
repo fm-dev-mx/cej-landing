@@ -22,7 +22,8 @@
 
 *Meta: Persistencia real de datos y lógica avanzada.*
 
-- [ ]  **Infraestructura DB:** Provisionar Supabase (`leads`, `price_config`) y activar Server Actions con credenciales reales.
+- [x]  **Infraestructura DB:** Provisionar Supabase (`leads`, `price_config`) y activar Server Actions con credenciales reales.
+- [x]  **Tipado Estricto BD:** Definición de `types/database.ts` y eliminación de errores de compilación (`never` type).
 - [ ]  **Motor Experto (UI):** Habilitar la interfaz para selección de Aditivos (Fibra, Acelerante) y conectarla al store.
 - [ ]  **Configuración Dinámica:** Migrar `business.ts` (precios estáticos) a tabla de base de datos con revalidación ISR.
 

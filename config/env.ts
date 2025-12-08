@@ -1,26 +1,16 @@
 // config/env.ts
 import { z } from 'zod';
 
-/**
- * Schema validation for environment variables.
- * This ensures the app crashes early (or throws specific errors)
- * if critical configuration is missing, rather than failing silently at runtime.
- */
 const envSchema = z.object({
-    // Meta Pixel
-    // Optional for development / test. We will warn in production if missing.
+    // Meta Pixel & Analytics
     NEXT_PUBLIC_PIXEL_ID: z.string().optional().default(''),
-
-    // NEW: Google Analytics 4
     NEXT_PUBLIC_GA_ID: z.string().optional().default(''),
 
     // Contact Information
-    // We expect numbers in string format (e.g., "521656...")
     NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().optional().default(''),
     NEXT_PUBLIC_PHONE: z.string().optional().default(''),
 
     // Site Metadata
-    // Transform URL to remove trailing '/' if user accidentally adds it
     NEXT_PUBLIC_SITE_URL: z
         .string()
         .url()
@@ -30,15 +20,15 @@ const envSchema = z.object({
     NEXT_PUBLIC_BRAND_NAME: z.string().optional().default('Concreto y Equipos de Juárez'),
     NEXT_PUBLIC_CURRENCY: z.string().optional().default('MXN'),
 
-    // --- PHASE 2: Supabase Config ---
+    // --- PHASE 1: Data Core (Fail-Open Configuration) ---
+    // Hacemos estos campos opcionales. Si faltan, la app inicia pero en modo degradado.
     NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+
+    // Monitoring
+    MONITORING_WEBHOOK_URL: z.string().url().optional(),
 });
 
-/**
- * Helper to parse process.env safely.
- * In Next.js, process.env is available at build time for client-side variables.
- */
 const processEnv = {
     NEXT_PUBLIC_PIXEL_ID: process.env.NEXT_PUBLIC_PIXEL_ID,
     NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
@@ -47,12 +37,13 @@ const processEnv = {
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_BRAND_NAME: process.env.NEXT_PUBLIC_BRAND_NAME,
     NEXT_PUBLIC_CURRENCY: process.env.NEXT_PUBLIC_CURRENCY,
-    // Phase 2 vars
+    // Backend Vars
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    MONITORING_WEBHOOK_URL: process.env.MONITORING_WEBHOOK_URL,
 };
 
-// Parse and validate
+// Validación segura (no lanza excepción, devuelve success: false)
 const parsed = envSchema.safeParse(processEnv);
 
 if (!parsed.success && process.env.NODE_ENV !== 'test') {
@@ -60,18 +51,21 @@ if (!parsed.success && process.env.NODE_ENV !== 'test') {
         '❌ Invalid environment variables:',
         JSON.stringify(parsed.error.format(), null, 4)
     );
+    // Nota: Podríamos hacer process.exit(1) aquí si fuera un error fatal,
+    // pero para Fail-Open preferimos loguear y continuar con valores por defecto/undefined.
 }
 
 export const env = parsed.success
     ? parsed.data
-    : (processEnv as unknown as z.infer<typeof envSchema>); // Fallback to raw (unsafe) if validation fails
+    : (processEnv as unknown as z.infer<typeof envSchema>);
 
-// Extra safety: warnings in production
+// --- Runtime Integrity Check ---
+// Verifica configuración crítica en runtime (servidor)
 if (process.env.NODE_ENV === 'production') {
-    if (!env.NEXT_PUBLIC_PIXEL_ID) {
-        console.warn('⚠️ NEXT_PUBLIC_PIXEL_ID is empty.');
-    }
     if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
-        console.warn('⚠️ Supabase credentials missing. Leads will NOT be saved to DB.');
+        console.warn(
+            '\x1b[33m%s\x1b[0m', // Color Amarillo
+            '⚠️ [CRITICAL] Supabase keys missing. App running in Fail-Open mode (No DB Persistence).'
+        );
     }
 }

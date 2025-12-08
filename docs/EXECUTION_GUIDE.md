@@ -1,7 +1,7 @@
 # Execution Guide: CEJ Platform
 
 **Status:** Living Document
-**Version:** 2.0 (Post-Audit)
+**Version:** 2.1 (Data Core Active)
 
 ## 1. Vision & Core Philosophy
 
@@ -13,7 +13,7 @@
 We prioritize the user's ability to complete a quote and contact sales above all else.
 
 - **Principle:** Technical failures (Database down, API timeout) must **never** block the primary conversion path (WhatsApp redirect).
-- **Implementation:** All critical mutations (Lead Submission) must have graceful degradation paths.
+- **Implementation:** All critical mutations (Lead Submission) have graceful degradation paths (implemented via optional env vars and try/catch blocks).
 
 ## 2. Technical Stack & Standards
 
@@ -48,7 +48,7 @@ graph TD
     end
 
     ServerAction -->|Service Role Key| Supabase
-    ServerAction -.->|Async / Non-blocking| CAPI
+    ServerAction -.->|Fire-and-Forget| Monitoring[Webhook/Logs]
 
     ServerAction -->|Response| CalculatorUI
 
@@ -59,13 +59,13 @@ graph TD
 
 We follow a strict, serialized playbook approach. Do not proceed to the next phase until the Exit Criteria of the current phase are met.
 
-| **Phase** | **Playbook** | **Goal** | **Critical Dependency** |
+| **Phase** | **Playbook** | **Goal** | **Status** |
 | --- | --- | --- | --- |
-| **0. Hardening** | `PLAYBOOK_00_QA_HARDENING.md` | Ensure math accuracy & A11y. | Existing Codebase |
-| **1. Data Core** | `PLAYBOOK_01_DATA_CORE.md` | Zero-loss data capture (DB). | Supabase Keys |
-| **2. Engine** | `PLAYBOOK_02_CALC_ENGINE.md` | Expert features (Additives). | Phase 1 Data Structure |
-| **3. Marketing** | `PLAYBOOK_03_MARKETING_OPS.md` | Server-side Tracking (CAPI). | Facebook Access Token |
-| **4. SaaS** | `PLAYBOOK_04_SAAS_PORTAL.md` | User Auth & History. | Phase 2 Pricing |
+| **0. Hardening** | `/docs/PLAYBOOK_00_QA_HARDENING.md` | Ensure math accuracy & A11y. | ✅ Completed |
+| **1. Data Core** | `/docs/PLAYBOOK_01_DATA_CORE.md` | Zero-loss data capture (DB) & Fail-Open. | ✅ Completed |
+| **2. Engine** | `/docs/PLAYBOOK_02_CALC_ENGINE.md` | Expert features (Additives). | 🏃 In Progress |
+| **3. Marketing** | `/docs/PLAYBOOK_03_MARKETING_OPS.md` | Server-side Tracking (CAPI). | Planned |
+| **4. SaaS** | `/docs/PLAYBOOK_04_SAAS_PORTAL.md` | User Auth & History. | Planned |
 
 ## 5. Development Protocol
 
