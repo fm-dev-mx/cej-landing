@@ -4,8 +4,8 @@ import { useEffect, useRef } from 'react';
 import { useCejStore } from '@/store/useCejStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useQuoteCalculator } from '@/hooks/useQuoteCalculator';
-import { SelectionCard } from '@/components/ui/SelectionCard/SelectionCard';
 import { CalculatorSummary } from './CalculatorSummary';
+import { ModeSelector } from './steps/ModeSelector';
 import { KnownVolumeForm } from './steps/forms/KnownVolumeForm';
 import { WorkTypeSelector } from './steps/forms/WorkTypeSelector';
 import { AssistVolumeForm } from './steps/forms/AssistVolumeForm';
@@ -13,19 +13,18 @@ import { SpecsForm } from './steps/forms/SpecsForm';
 import { AdditivesForm } from './steps/forms/AdditivesForm';
 import styles from './CalculatorForm.module.scss';
 
+/**
+ * CalculatorForm Orchestrator
+ * Connects the Store state to the presentation components.
+ * Refactored to reduce complexity.
+ */
 export function CalculatorForm() {
-    // State
     const draft = useCejStore((s) => s.draft);
 
-    // Actions
-    const { setMode } = useCejStore(
-        useShallow((s) => ({ setMode: s.setMode }))
-    );
-
-    // Calc Engine
+    // Engine Logic
     const { quote, isValid, error, warning } = useQuoteCalculator(draft);
 
-    // Refs
+    // Focus Management
     const inputsSectionRef = useRef<HTMLDivElement>(null);
     const specsSectionRef = useRef<HTMLDivElement>(null);
 
@@ -41,30 +40,10 @@ export function CalculatorForm() {
             {/* 1. Mode Selection */}
             <div className={styles.field}>
                 <label className={styles.label}>¿Cómo quieres cotizar?</label>
-                <div className={styles.selectionGrid}>
-                    <SelectionCard
-                        id="mode-known"
-                        name="mode"
-                        value="knownM3"
-                        label="Sé la cantidad"
-                        description="Tengo los m³ exactos."
-                        isSelected={draft.mode === 'knownM3'}
-                        onChange={() => setMode('knownM3')}
-                    />
-                    <SelectionCard
-                        id="mode-assist"
-                        name="mode"
-                        value="assistM3"
-                        label="Ayúdame a calcular"
-                        description="En base a medidas."
-                        customIndicator="📐"
-                        isSelected={draft.mode === 'assistM3'}
-                        onChange={() => setMode('assistM3')}
-                    />
-                </div>
+                <ModeSelector currentMode={draft.mode} />
             </div>
 
-            {/* 2. Inputs */}
+            {/* 2. Volume Inputs */}
             <div ref={inputsSectionRef}>
                 {draft.mode === 'knownM3' ? (
                     <div className={styles.field}>

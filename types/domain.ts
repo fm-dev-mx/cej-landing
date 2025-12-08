@@ -1,9 +1,15 @@
 // types/domain.ts
+import { z } from 'zod';
 import type { PricingRules, VolumeTier } from '@/lib/schemas/pricing';
+import {
+    ConcreteTypeEnum,
+    StrengthEnum
+} from '@/lib/schemas/pricing';
 
-// --- 1. Core Primitives ---
-export type Strength = '100' | '150' | '200' | '250' | '300';
-export type ConcreteType = 'direct' | 'pumped';
+// --- 1. Core Primitives (Inferred where possible) ---
+export type Strength = z.infer<typeof StrengthEnum>;
+export type ConcreteType = z.infer<typeof ConcreteTypeEnum>;
+
 export type CalculatorMode = 'knownM3' | 'assistM3';
 export type AssistVolumeMode = 'dimensions' | 'area';
 export type CofferedSize = '7' | '10' | '15';
@@ -23,7 +29,7 @@ export type WorkTypeConfig = {
     icon?: string;
 };
 
-// --- 2. Calculator State (UPDATED) ---
+// --- 2. Calculator State ---
 export type CalculatorState = {
     mode: CalculatorMode;
     volumeMode: AssistVolumeMode;
@@ -40,8 +46,8 @@ export type CalculatorState = {
     cofferedSize: CofferedSize | null;
 
     // Phase 2: Expert Fields
-    additives: string[]; // IDs de aditivos seleccionados
-    showExpertOptions: boolean; // Flag de UI
+    additives: string[];
+    showExpertOptions: boolean;
 };
 
 export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
@@ -58,18 +64,12 @@ export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
     thicknessByArea: '12',
     hasCoffered: 'no',
     cofferedSize: '7',
-
-    // Defaults Phase 2
     additives: [],
     showExpertOptions: false,
 };
 
-// --- 3. Pricing & Quotes (Referencing Schema) ---
-// Re-exportamos tipos derivados del schema para consistencia
+// --- 3. Pricing & Quotes ---
 export type { PricingRules, VolumeTier };
-
-// Alias para compatibilidad con código legado (config/business.ts)
-export type PriceTable = PricingRules['base'];
 
 export type NormalizedVolume = {
     requestedM3: number;
@@ -93,13 +93,13 @@ export type QuoteBreakdown = {
     // Financials
     unitPricePerM3: number;
     baseSubtotal: number;
-    additivesSubtotal: number; // New
+    additivesSubtotal: number;
     subtotal: number;
     vat: number;
     total: number;
 
     // Metadata
-    breakdownLines: QuoteLineItem[]; // Para desglose detallado en UI
+    breakdownLines: QuoteLineItem[];
     calculationDetails?: {
         formula: string;
         factorUsed?: number;
@@ -151,7 +151,7 @@ export type OrderPayload = {
         volume: number;
         service: string;
         subtotal: number;
-        additives?: string[]; // Snapshot of additives IDs
+        additives?: string[];
     }[];
     financials: {
         total: number;
@@ -159,7 +159,7 @@ export type OrderPayload = {
     };
     metadata: {
         source: 'web_calculator';
-        pricing_version?: number; // Auditabilidad
+        pricing_version?: number;
         utm_source?: string;
         utm_medium?: string;
         userAgent?: string;

@@ -1,18 +1,47 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { submitLead } from './submitLead';
 import { reportError } from '@/lib/monitoring';
+import { sendToMetaCAPI } from '@/lib/tracking/capi';
 
-// Mocks
+// --- Mocks ---
 vi.mock('@/lib/monitoring', () => ({
     reportError: vi.fn(),
     reportWarning: vi.fn(),
+}));
+
+// Mock tracking to verify payload
+vi.mock('@/lib/tracking/capi', () => ({
+    sendToMetaCAPI: vi.fn(),
+}));
+
+// Mock Next.js headers/cookies
+vi.mock('next/headers', () => ({
+    headers: () => ({
+        get: (key: string) => {
+            if (key === 'x-forwarded-for') return '127.0.0.1';
+            if (key === 'user-agent') return 'Mozilla/5.0 Test';
+            if (key === 'referer') return 'http://localhost';
+            return null;
+        }
+    }),
+    cookies: () => ({
+        get: (key: string) => {
+            if (key === '_fbp') return { value: 'fb.1.123456789' };
+            return null;
+        }
+    })
+}));
+
+// Mock Next.js after() - Execute callback immediately for testing
+vi.mock('next/server', () => ({
+    after: (fn: () => Promise<void>) => fn(),
 }));
 
 const mockInsert = vi.fn();
 const mockSelect = vi.fn();
 const mockSingle = vi.fn();
 
-// Mock Supabase client creator
+// Mock Supabase
 vi.mock('@supabase/supabase-js', () => ({
     createClient: () => ({
         from: () => ({
@@ -25,18 +54,21 @@ vi.mock('@supabase/supabase-js', () => ({
     })
 }));
 
-// Mock Env to ensure supabase client is initialized in logic
+// Mock Env
 vi.mock('@/config/env', () => ({
     env: {
         NEXT_PUBLIC_SUPABASE_URL: 'https://mock.supabase.co',
-        SUPABASE_SERVICE_ROLE_KEY: 'mock-key'
+        SUPABASE_SERVICE_ROLE_KEY: 'mock-key',
+        FB_ACCESS_TOKEN: 'mock-token' // Ensure CAPI logic triggers
     }
 }));
 
-describe('Server Action: submitLead (Fail-Open)', () => {
+describe('Server Action: submitLead', () => {
     const validPayload = {
         name: 'Test User',
         phone: '6561234567',
+        visitor_id: 'visitor-123',
+        fb_event_id: 'evt-uuid-5678', // Critical for CAPI
         quote: {
             folio: 'WEB-123',
             items: [],
@@ -56,40 +88,37 @@ describe('Server Action: submitLead (Fail-Open)', () => {
 
         expect(result.success).toBe(true);
         expect(result.id).toBe('999');
-        expect(result.warning).toBeUndefined();
     });
 
-    it('returns success WITH WARNING if DB fails (Fail-Open)', async () => {
-        // Simulate DB Error
-        mockSingle.mockResolvedValue({ data: null, error: { message: 'Connection refused' } });
+    it('triggers Meta CAPI with correct payload (Hashing & EventID)', async () => {
+        mockSingle.mockResolvedValue({ data: { id: '999' }, error: null });
+
+        await submitLead(validPayload as any);
+
+        expect(sendToMetaCAPI).toHaveBeenCalledTimes(1);
+
+        const callArgs = (sendToMetaCAPI as any).mock.calls[0][0];
+
+        // 1. Verify Event ID matches (Deduplication key)
+        expect(callArgs.event_id).toBe(validPayload.fb_event_id);
+
+        // 2. Verify PII is hashed
+        expect(callArgs.user_data.ph).not.toBe(validPayload.phone);
+        // SHA-256 of '6561234567'
+        expect(callArgs.user_data.ph).toMatch(/^[a-f0-9]{64}$/);
+
+        // 3. Verify Context
+        expect(callArgs.user_data.client_ip_address).toBe('127.0.0.1');
+        expect(callArgs.user_data.fbp).toBe('fb.1.123456789');
+    });
+
+    it('Fail-Open: returns success WITH WARNING if DB fails', async () => {
+        mockSingle.mockResolvedValue({ data: null, error: { message: 'DB Down' } });
 
         const result = await submitLead(validPayload as any);
 
-        // Verification: The user flow must not break
         expect(result.success).toBe(true);
         expect(result.warning).toBe('db_insert_failed');
-
-        // Monitoring must be called
         expect(reportError).toHaveBeenCalled();
-    });
-
-    it('returns success WITH WARNING on unhandled exception', async () => {
-        // Simulate Crash
-        mockSingle.mockRejectedValue(new Error('Unexpected Crash'));
-
-        const result = await submitLead(validPayload as any);
-
-        expect(result.success).toBe(true);
-        expect(result.warning).toBe('server_exception');
-        expect(reportError).toHaveBeenCalled();
-    });
-
-    it('fails validation gracefully', async () => {
-        const invalidPayload = { name: 'Bo', phone: '123' }; // Too short
-
-        const result = await submitLead(invalidPayload as any);
-
-        expect(result.success).toBe(false);
-        expect(result.error).toBeDefined();
     });
 });

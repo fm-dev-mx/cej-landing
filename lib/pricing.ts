@@ -3,9 +3,7 @@ import {
     M3_STEP,
     CASETON_FACTORS,
     COFFERED_SPECS,
-    PRICE_TABLE as STATIC_PRICE_TABLE,
-    VAT_RATE as STATIC_VAT_RATE,
-    MIN_M3_BY_TYPE as STATIC_MINS
+    FALLBACK_PRICING_RULES // Now consuming the validated fallback
 } from "@/config/business";
 import type {
     ConcreteType,
@@ -16,37 +14,10 @@ import type {
     CalculatorState,
     QuoteLineItem
 } from "@/types/domain";
-import type { PricingRules, Additive } from "@/lib/schemas/pricing";
+import type { PricingRules } from "@/lib/schemas/pricing";
 
-// --- Fail-Open Configuration Adapter ---
-// Convierte la config estática legacy al nuevo formato PricingRules
-export const DEFAULT_PRICING_RULES: PricingRules = {
-    version: 1,
-    lastUpdated: new Date().toISOString(),
-    base: STATIC_PRICE_TABLE.base,
-    additives: [
-        // Aditivos "Hardcoded" para fallback si no hay DB
-        {
-            id: 'fiber',
-            label: 'Fibra de Refuerzo',
-            description: 'Micro-refuerzo para reducir grietas',
-            priceCents: 15000, // $150.00 MXN
-            pricingModel: 'per_m3',
-            active: true
-        },
-        {
-            id: 'accelerant',
-            label: 'Acelerante (1%)',
-            description: 'Fraguado rápido para clima frío',
-            priceCents: 18000, // $180.00 MXN
-            pricingModel: 'per_m3',
-            active: true
-        }
-    ],
-    vatRate: STATIC_VAT_RATE,
-    currency: 'MXN',
-    minOrderQuantity: STATIC_MINS
-};
+// Re-export default rules for consumers (Fail-Open Pattern)
+export const DEFAULT_PRICING_RULES: PricingRules = FALLBACK_PRICING_RULES;
 
 export const EMPTY_QUOTE: QuoteBreakdown = {
     volume: {
@@ -102,7 +73,7 @@ export function normalizeVolume(
     };
 }
 
-// Volume Calculators (Geometric) - Unchanged but re-exported
+// Volume Calculators (Geometric)
 export type SlabInputBase = {
     hasCofferedSlab: boolean;
     cofferedSize: CofferedSize | null;

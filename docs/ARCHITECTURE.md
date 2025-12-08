@@ -8,7 +8,6 @@ La arquitectura prioriza el rendimiento del lado del cliente (Core Web Vitals) y
 - **Language:** **TypeScript 5.9** (Strict Mode).
 - **Styling:** **SCSS Modules** usando un sistema centralizado de Tokens (`_tokens.scss`) y Mixins.
 - **State Management:** **Zustand v5** con middleware `persist`.
-    - **Single Store Strategy:** El store se comparte globalmente para preservar la sesión del usuario entre las rutas de Marketing y la App.
 - **Backend:** **Supabase** (PostgreSQL) integrado exclusivamente vía **Server Actions**.
 - **Validation:** **Zod** para inputs de formularios, payloads de API y variables de entorno.
 - **Monitoring:** Abstracción ligera (`lib/monitoring.ts`) para reporte de errores sin bloquear la UI.
@@ -45,8 +44,17 @@ sequenceDiagram
     end
 
     Note over UI: UI always redirects
-    UI->>WA: Generates URL & Opens WhatsApp
+    UI->>WA: Generates URL & Opens WhatsApp`
 ```
+
+### Marketing Ops: Event Deduplication Flow
+
+Para garantizar la medición precisa en Meta Ads (iOS 14+), utilizamos un modelo híbrido Browser + Server (CAPI).
+
+1. **Client:** Genera un `event_id` único (UUID) al iniciar el checkout.
+2. **Pixel:** Envía evento `Lead` al navegador con ese `event_id`.
+3. **Server:** Recibe el payload con el `event_id` y lo envía a Meta CAPI via `submitLead`.
+4. **Meta:** Deduplica ambos eventos usando el ID compartido, mejorando la calidad de la coincidencia.
 
 ### The "Global UI" Pattern
 
@@ -58,8 +66,6 @@ Para evitar la fragmentación de estado entre las páginas de Marketing (`/`) y 
 
 ## 3. Directory Structure
 
-Plaintext
-
 ```tsx
 ├── app/
 │   ├── (marketing)/      # Landing pages públicas.
@@ -68,13 +74,13 @@ Plaintext
 │   └── layout.tsx        # Root Layout + GlobalUI.
 ├── components/
 │   ├── Calculator/       # Lógica compleja de dominio.
-│   ├── GlobalUI.tsx      # Orquestador de componentes flotantes (Drawer/Toast).
+│   │   ├── steps/        # Sub-componentes refactorizados (Forms, ModeSelector).
+│   ├── GlobalUI.tsx      # Orquestador de componentes flotantes.
 │   ├── ui/               # Átomos reutilizables (Buttons, Inputs).
-│   └── layouts/          # Shells específicos (ToolShell, Header).
 ├── lib/
-│   ├── monitoring.ts     # Capa de abstracción para logging/errores.
-│   ├── pricing.ts        # Motor de precios (100% Unit Tested).
-│   └── schemas.ts        # Esquemas Zod (Single Source of Truth).
+│   ├── monitoring.ts     # Capa de abstracción para logging.
+│   ├── pricing.ts        # Motor de precios (Consume config/business.ts como fallback).
+│   └── schemas/          # Esquemas Zod (Pricing, Orders).
 └── store/                # Zustand Stores (Persisted).
 ```
 
@@ -82,5 +88,5 @@ Plaintext
 
 1. **Server Actions First:** No crear API Routes. Usar `use server` en `app/actions/`.
 2. **Fail-Open UX:** Caminos críticos (Enviar Pedido) nunca deben bloquear al usuario si un servicio secundario falla.
-3. **SCSS Modules Only:** No usar estilos en línea (`style={{}}`). Usar clases compuestas.
-4. **Strict Typing:** Prohibido el uso de `any` en lógica de negocio (`store`, `pricing`, `actions`).
+3. **Strict Typing:** Usar `z.infer` para mantener sincronizados los tipos de TypeScript con los validadores de runtime.
+4. **Single Source of Truth:** `config/business.ts` es el fallback actual, pero la arquitectura está lista para hidratarse desde DB.

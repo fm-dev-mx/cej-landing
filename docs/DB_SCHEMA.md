@@ -56,33 +56,23 @@ Primary inbox for anonymous activity.
     volume: number;
     service: "direct" | "pumped";
     subtotal: number;
+    additives: string[]; // Phase 2: Additives Support
   }>;
   financials: { total: number; currency: "MXN"; };
-  metadata: { source: string; userAgent: string; };
+  metadata: { source: string; userAgent: string; pricing_version: number; };
 }
 ```
 
-### `public.profiles` (Provisioned)
-
-Extension of the Auth table.
-
-- **Trigger:** `handle_new_user` automatically creates this row upon user registration.
-- **Data:** Fiscal and billing information.
-
-### `public.orders` (Provisioned - SaaS Core)
-
-Structured history for registered users.
-
-- **Difference from Leads:** Data is normalized and linked to a User ID. Allows status mutations (Ordered -> Paid -> Delivered).
-- **Security (RLS):**
-    - `SELECT`: Strictly limited to the record owner (`auth.uid() = user_id`).
-    - `INSERT`: Authenticated users only.
-
-### `public.price_config` (Provisioned)
+### `public.price_config` (Provisioned - Future Source of Truth)
 
 Source of truth for pricing.
 
-- **Future Usage:** The frontend will read from this table (using ISR) instead of the static `business.ts` file, allowing dynamic price updates via the Admin Panel without redeploying code.
+- **Status:** Provisioned in SQL script. Currently, the application uses `config/business.ts` (FALLBACK_PRICING_RULES) as the adapter.
+- **Migration Plan:** In Phase 3 (End), the frontend hook `usePricingRules` will attempt to fetch this table via ISR/SWR. If it fails or is empty, it falls back to the local config.
+
+### `public.profiles` & `public.orders` (Provisioned)
+
+Core tables for the SaaS Phase (Sprint 4).
 
 ## 3. Security & RLS Policies
 

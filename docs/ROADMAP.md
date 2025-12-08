@@ -3,8 +3,8 @@
 ## 1. Strategic Phases
 
 1.  **CEJ Landing (Completed):** Traffic capture and friction-free conversion to WhatsApp.
-2.  **CEJ Cotizador (Current):** Robust tool with multi-item cart, expert mode, and local persistence.
-3.  **CEJ Pro (Next):** SaaS platform for contractors (Order management and billing).
+2.  **CEJ Cotizador (Completed):** Robust tool with multi-item cart, expert mode, and local persistence.
+3.  **CEJ Pro (Active):** SaaS platform for contractors (Order management and billing).
 
 ## 2. Sprint Plan
 
@@ -24,9 +24,10 @@
 
 ### 🏃 Sprint 3: Marketing Ops (Active)
 *Goal: Solve iOS data loss and improve Semantic SEO.*
-- [ ] **Meta CAPI:** Server-side event tracking implementation (`submitLead` integration).
-- [ ] **Event Deduplication:** Shared `event_id` architecture (Pixel + Server).
-- [ ] **Rich Snippets:** JSON-LD expansion with `OfferCatalog` for concrete types.
+- [x] **Meta CAPI:** Server-side event tracking implemented in `submitLead` (awaiting validation in prod).
+- [x] **Event Deduplication:** Shared `event_id` architecture connected between Client and Server.
+- [ ] **Data Sync:** Migrate from static `FALLBACK_PRICING_RULES` to live `price_config` table in Supabase.
+- [ ] **Rich Snippets:** Final validation of JSON-LD schemas.
 
 ### 📅 Sprint 4: SaaS Foundation (Planned)
 *Goal: User identification and recurring orders.*
