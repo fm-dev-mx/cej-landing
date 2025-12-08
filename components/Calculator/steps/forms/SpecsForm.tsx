@@ -4,7 +4,7 @@ import { type ChangeEvent } from 'react';
 import { useCejStore } from '@/store/useCejStore';
 import { Select } from '@/components/ui/Select/Select';
 import { STRENGTHS, CONCRETE_TYPES } from '@/config/business';
-import { type Strength, type ConcreteType } from '@/components/Calculator/types';
+import { type Strength, type ConcreteType } from '@/types/domain';
 import styles from '../../CalculatorForm.module.scss';
 
 export function SpecsForm() {

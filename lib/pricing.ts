@@ -15,7 +15,7 @@ import type {
     QuoteBreakdown,
     Strength,
     CofferedSize
-} from "@/components/Calculator/types";
+} from "@/types/domain";
 
 export const EMPTY_QUOTE: QuoteBreakdown = {
     volume: {

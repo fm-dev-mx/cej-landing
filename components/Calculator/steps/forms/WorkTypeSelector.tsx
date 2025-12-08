@@ -4,7 +4,7 @@ import { useCejStore } from '@/store/useCejStore';
 import { WORK_TYPES } from '@/config/business';
 import { Select } from '@/components/ui/Select/Select';
 import { type ChangeEvent } from 'react';
-import { type WorkTypeId } from '@/components/Calculator/types';
+import { type WorkTypeId } from '@/types/domain';
 import styles from '../../CalculatorForm.module.scss';
 
 export function WorkTypeSelector() {

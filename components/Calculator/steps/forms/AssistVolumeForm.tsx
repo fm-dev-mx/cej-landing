@@ -4,7 +4,7 @@ import { type ChangeEvent, useCallback } from 'react';
 import { useCejStore } from '@/store/useCejStore';
 import { useShallow } from 'zustand/react/shallow';
 import { Input } from '@/components/ui/Input/Input';
-import { type CofferedSize } from '@/components/Calculator/types';
+import { type CofferedSize } from '@/types/domain';
 import styles from '../../CalculatorForm.module.scss';
 
 interface Props {

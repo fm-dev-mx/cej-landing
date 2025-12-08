@@ -7,7 +7,7 @@ import type {
     PriceTable,
     VolumeTier,
     CofferedSize
-} from '@/components/Calculator/types';
+} from '@/types/domain';
 import { env } from '@/config/env';
 
 // --- Global business configuration ---
