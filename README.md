@@ -2,35 +2,37 @@
 
 **A hybrid Next.js platform combining a high-performance landing page with a scalable SaaS OS for concrete order management.**
 
-![Status](https://img.shields.io/badge/Status-Phase_2_Active-green)
-![Stack](https://img.shields.io/badge/Stack-Next.js_16_|_Supabase_|_Zustand-blue)
+![Status](https://img.shields.io/badge/Status-Phase_2_Complete-green)
+![Version](https://img.shields.io/badge/Version-0.2.0-blue)
+[![Changelog](https://img.shields.io/badge/Keep_a-Changelog-orange)](./CHANGELOG.md)
 ![Coverage](https://img.shields.io/badge/Tests-Vitest-yellow)
+
 ---
 
 ## 1. Project Vision
 
 **Concreto y Equipos de Juárez (CEJ)** is evolving from manual sales processes to a digital-first platform solving two critical problems:
 
-1. **Lead Generation (Public):** A friction-free calculator to capture anonymous traffic, precise volume estimation (Slabs/Footings), and immediate lead conversion via WhatsApp.
-2. **Order Management (Private SaaS):** A "CEJ Pro" portal for recurring contractors to manage order history, fiscal data, and repeat purchases.
+1.  **Lead Generation (Public):** A friction-free calculator to capture anonymous traffic, providing precise volume estimation and immediate lead conversion via WhatsApp.
+2.  **Order Management (Private SaaS):** A "CEJ Pro" portal for recurring contractors to manage order history, fiscal data, and repeat purchases.
 
 ---
 
-## 2. Current Status (Phase 2: Expert Engine)
+## 2. Current Status (Phase 3: Marketing Ops)
 
-The project currently operates as a robust marketing site with local persistence and a database-backed lead capture system.
+The project has successfully deployed the **Expert Engine** (v0.2.0) and is now focusing on Marketing Technology integrations.
 
 ### ✅ Operational Modules
 
-- **Landing Page (`app/(marketing)`):** Fully responsive, SEO-optimized, and instrumented with Meta Pixel & Vercel Analytics.
-- **Calculation Engine (`useQuoteCalculator`):** Business logic validated for Slabs (Solid/Coffered), Footings, and Walls. Unit tested via Vitest.
-- **Lead Database:** Anonymous lead ingestion into Supabase (`public.leads`) using Server Actions with a strict **"Fail-Open" strategy** (system works even if DB is down).
-- **Local Persistence:** Guest cart state persists across reloads using `localStorage` + Zustand.
+-   **Expert Pricing Engine:** A dynamic, dependency-injected calculation core capable of handling complex pricing rules, additives (fiber, accelerants), and service fees.
+-   **Fail-Open 2.0:** The application operates with a robust fallback configuration (`DEFAULT_PRICING_RULES`), ensuring zero downtime even if the database connection fails.
+-   **Lead Database:** Anonymous lead ingestion into Supabase (`public.leads`) using Server Actions.
+-   **State Management:** Advanced Zustand store with versioning and auto-migration to handle state schema evolution without breaking user sessions.
 
-### ⚠️ Critical Known Issues (WIP)
+### 🚀 Active Development (Phase 3)
 
-- **Static Pricing:** Prices are currently hardcoded in `config/business.ts`. The migration to the dynamic `price_config` database table is the next priority.
-- **Hidden Expert Mode:** Logic for additives (accelerants, fiber) exists in the store but is hidden in the UI.
+-   **Meta CAPI:** Implementing server-side tracking to bypass iOS privacy restrictions.
+-   **Semantic SEO:** Structuring `OfferCatalog` data for rich search results.
 
 ---
 
@@ -38,48 +40,41 @@ The project currently operates as a robust marketing site with local persistence
 
 ### Prerequisites
 
-- Node.js 20+
-- pnpm (`npm install -g pnpm`)
-- A Supabase Project (See `/docs/DB_SCHEMA.md` for setup).
+-   Node.js 20+
+-   pnpm (`npm install -g pnpm`)
+-   A Supabase Project (See `/docs/DB_SCHEMA.md` for setup).
 
 ### Installation
 
-1. **Clone the repository:**
-
+1.  **Clone the repository:**
     ```bash
     git clone <repo-url>
     cd cej-landing
     pnpm install
     ```
 
-2. Environment Configuration:Bash
+2.  **Environment Configuration:**
+    Duplicate `.env.example` to `.env.local`.
 
-    Duplicate .env.example to .env.local. Note that NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are optional for development; the app will run in "Fail-Open" mode without them.
-
-    ```tsx
-    # Supabase (Optional for Dev, Required for Prod)
-    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key # SERVER-SIDE ONLY
+    ```bash
+    # Supabase (Required for Persistence, Optional for Dev)
+    NEXT_PUBLIC_SUPABASE_URL=[https://your-project.supabase.co](https://your-project.supabase.co)
+    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
     # Monitoring (Optional)
-    MONITORING_WEBHOOK_URL=https://hooks.slack.com/...`
+    MONITORING_WEBHOOK_URL=[https://hooks.slack.com/](https://hooks.slack.com/)...
     ```
 
-3. **Run Development Server:**Bash
-
-    ```tsx
+3.  **Run Development Server:**
+    ```bash
     pnpm dev
     ```
 
-4. Run Tests:Bash
-
+4.  **Run Tests:**
     Ensure business logic integrity before pushing.
-
-    ```tsx
-    pnpm test        # Run Unit Tests (Single Pass)
-    pnpm test:watch  # Run Unit Tests (Watch Mode)`
+    ```bash
+    pnpm test        # Run Unit Tests
     ```
-
 
 ---
 
@@ -87,22 +82,23 @@ The project currently operates as a robust marketing site with local persistence
 
 For detailed architecture, database schemas, and the development roadmap, please refer to the `/docs` directory:
 
-- [🗺️ **Roadmap & Sprints**](/docs/ROADMAP.md): Project phases, user roles, and execution plan.
-- [🏗️ **Architecture**](/docs/ARCHITECTURE.md): Data flow diagrams, state management, and code conventions.
-- [🗄️ **Database Schema**](/docs/DB_SCHEMA.md): Table definitions, JSONB snapshots, and RLS security policies.
+-   [🗺️ **Roadmap & Sprints**](/docs/ROADMAP.md): Project phases, user roles, and execution plan.
+-   [🏗️ **Architecture**](/docs/ARCHITECTURE.md): Data flow diagrams, state management, and code conventions.
+-   [🗄️ **Database Schema**](/docs/DB_SCHEMA.md): Table definitions, JSONB snapshots, and RLS security policies.
+-   [📘 **Playbooks**](/docs/): Specific execution guides for each engineering phase.
 
 ---
 
 ## 5. Tech Stack
 
-| **Category** | **Technology** | **Justification** |
-| --- | --- | --- |
+| Category | Technology | Justification |
+| :--- | :--- | :--- |
 | **Framework** | **Next.js 16** | App Router for layouts, Server Components, and Server Actions. |
 | **Language** | **TypeScript** | Strict typing is mandatory for financial/pricing logic. |
 | **Backend** | **Supabase** | Managed PostgreSQL, Auth (Magic Link), and Real-time capabilities. |
 | **State** | **Zustand** | Lightweight state management with built-in `localStorage` persistence. |
-| **Styling** | **Sass (Modules)** | Modular, scoped styling with a centralized Design System (`_tokens.scss`). |
-| **Validation** | **Zod** | Runtime schema validation for forms and API inputs to ensure data integrity. |
+| **Styling** | **Sass (Modules)** | Modular, scoped styling with a centralized Design System. |
+| **Validation** | **Zod** | Runtime schema validation for forms, API inputs, and configuration objects. |
 | **Testing** | **Vitest** | High-performance unit testing for the pricing engine. |
 
 ---

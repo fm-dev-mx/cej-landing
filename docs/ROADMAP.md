@@ -2,43 +2,34 @@
 
 ## 1. Strategic Phases
 
-1. **CEJ Landing (Actual):** Captura de tráfico y conversión sin fricción a WhatsApp.
-2. **CEJ Cotizador:** Herramienta robusta con carrito multi-ítem, persistencia e historial.
-3. **CEJ Pro (SaaS):** Plataforma para contratistas (Gestión de pedidos y facturación).
+1.  **CEJ Landing (Completed):** Traffic capture and friction-free conversion to WhatsApp.
+2.  **CEJ Cotizador (Current):** Robust tool with multi-item cart, expert mode, and local persistence.
+3.  **CEJ Pro (Next):** SaaS platform for contractors (Order management and billing).
 
 ## 2. Sprint Plan
 
-### ✅ Sprint 1: QA Hardening & Infraestructura (Completado)
+### ✅ Sprint 1: QA Hardening & Infrastructure (Completed)
+*Goal: Eliminate technical debt and ensure mathematical integrity.*
+- [x] **Math Integrity:** Exhaustive tests for rounding, MOQs, and float precision.
+- [x] **Fail-Open Architecture:** Resilient `submitLead` implementation.
+- [x] **UX Consolidation:** GlobalUI for persistent cart visibility.
 
-*Meta: Eliminar deuda técnica y asegurar integridad matemática.*
+### ✅ Sprint 2: Data Core & Expert Engine (Completed)
+*Goal: Real data persistence and advanced logic.*
+- [x] **DB Infrastructure:** Supabase provisioning (`leads` table) and RLS policies.
+- [x] **Strict Typing:** Database types definition and Zod schemas.
+- [x] **Dynamic Engine:** Refactored `pricing.ts` to support Dependency Injection.
+- [x] **Expert UI:** Additives selection form and toggle logic.
+- [x] **State Migration:** Zustand store versioning and auto-migration for legacy clients.
 
-- [x]  **Integridad Matemática:** Tests exhaustivos para redondeo, mínimos (MOQ) y precisión flotante.
-- [x]  **Arquitectura Fail-Open:** Implementación de `submitLead` resiliente a fallos de BD.
-- [x]  **Consolidación UX:** Implementación de `GlobalUI` para visibilidad del carrito en todas las rutas.
-- [x]  **Accesibilidad:** Refactor de `SelectionCard` y gestión de foco programático en la Calculadora.
-- [x]  **Limpieza:** Eliminación de estilos en línea y tipado estricto (No `any`).
+### 🏃 Sprint 3: Marketing Ops (Active)
+*Goal: Solve iOS data loss and improve Semantic SEO.*
+- [ ] **Meta CAPI:** Server-side event tracking implementation (`submitLead` integration).
+- [ ] **Event Deduplication:** Shared `event_id` architecture (Pixel + Server).
+- [ ] **Rich Snippets:** JSON-LD expansion with `OfferCatalog` for concrete types.
 
-### 🏃 Sprint 2: Data Core & Expert Engine (En Progreso)
-
-*Meta: Persistencia real de datos y lógica avanzada.*
-
-- [x]  **Infraestructura DB:** Provisionar Supabase (`leads`, `price_config`) y activar Server Actions con credenciales reales.
-- [x]  **Tipado Estricto BD:** Definición de `types/database.ts` y eliminación de errores de compilación (`never` type).
-- [ ]  **Motor Experto (UI):** Habilitar la interfaz para selección de Aditivos (Fibra, Acelerante) y conectarla al store.
-- [ ]  **Configuración Dinámica:** Migrar `business.ts` (precios estáticos) a tabla de base de datos con revalidación ISR.
-
-### 🏃 Sprint 3: Authentication & Profiles
-
-*Meta: Identificar usuarios recurrentes.*
-
-- [ ]  Implementar Login/Register con Supabase Auth.
-- [ ]  Crear flujos de Onboarding para datos fiscales en `public.profiles`.
-- [ ]  Proteger rutas `/app/*` vía Middleware.
-
-### 🏃 Sprint 4: Order Management (SaaS)
-
-*Meta: Profesionalizar la entrega de cotizaciones.*
-
-- [ ]  **Sync Engine:** Migrar carrito local (`localStorage`) a DB (`orders`) al iniciar sesión.
-- [ ]  **Ticket Generator:** Endpoint para generar PDF de la cotización.
-- [ ]  Construir vista "Mis Pedidos" (Historial en la nube).
+### 📅 Sprint 4: SaaS Foundation (Planned)
+*Goal: User identification and recurring orders.*
+- [ ] **Auth:** Supabase Auth integration (Magic Link).
+- [ ] **Profiles:** User profile management (`public.profiles`).
+- [ ] **Order History:** Sync local cart to database for authenticated users.
