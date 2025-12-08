@@ -2,12 +2,9 @@
 
 **A hybrid Next.js platform combining a high-performance landing page with a scalable SaaS OS for concrete order management.**
 
-[Status](https://img.shields.io/badge/Status-Phase_2_Expert_Engine-blue)
-
-[Stack](https://img.shields.io/badge/Stack-Next.js_16_%7C_Supabase_%7C_Zustand-blue)
-
-[Coverage](https://img.shields.io/badge/Tests-Vitest-yellow)
-
+![Status](https://img.shields.io/badge/Status-Phase_2_Active-green)
+![Stack](https://img.shields.io/badge/Stack-Next.js_16_|_Supabase_|_Zustand-blue)
+![Coverage](https://img.shields.io/badge/Tests-Vitest-yellow)
 ---
 
 ## 1. Project Vision
