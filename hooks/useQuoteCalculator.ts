@@ -1,3 +1,4 @@
+// hooks/useQuoteCalculator.ts
 import { useMemo } from 'react';
 import {
     calcQuote,
@@ -39,6 +40,7 @@ export function useQuoteCalculator(input: CalculatorState) {
         cofferedSize,
         strength,
         type,
+        additives // Phase 2: Additives support
     } = input;
 
     const result = useMemo(() => {
@@ -151,8 +153,17 @@ export function useQuoteCalculator(input: CalculatorState) {
             return { ...emptyResult, error };
         }
 
-        // 3. Calculate Financials
-        const quote = calcQuote(rawRequested, strength, type);
+        // 3. Calculate Financials (Phase 2 Update)
+        // Note: We don't pass the 3rd argument (pricingRules) so it uses the DEFAULT static fallback.
+        // In Phase 3, we will inject the rules from context here.
+        const quote = calcQuote(
+            rawRequested,
+            {
+                strength,
+                type,
+                additives: additives || [] // Ensure array safety
+            }
+        );
         quote.calculationDetails = calculationDetails;
 
         // 4. Generate Warnings
@@ -197,7 +208,7 @@ export function useQuoteCalculator(input: CalculatorState) {
 
     }, [
         mode, m3, volumeMode, length, width, thicknessByDims, area, thicknessByArea,
-        hasCoffered, cofferedSize, strength, type
+        hasCoffered, cofferedSize, strength, type, additives
     ]);
 
     return result;

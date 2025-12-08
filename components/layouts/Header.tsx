@@ -7,19 +7,28 @@ import { env } from "@/config/env";
 import { useHeaderLogic } from "./header/useHeaderLogic";
 import DesktopNav from "./header/DesktopNav";
 import MobileMenu from "./header/MobileMenu";
+import { useCejStore } from "@/store/useCejStore";
 import styles from "./Header.module.scss";
 
 export default function Header() {
   const { state, data, actions } = useHeaderLogic();
 
+  // Acciones para abrir el historial
+  const setDrawerOpen = useCejStore((s) => s.setDrawerOpen);
+  const setActiveTab = useCejStore((s) => s.setActiveTab);
+  const cartCount = useCejStore((s) => s.cart.length);
+
+  const openHistory = () => {
+    setActiveTab('history');
+    setDrawerOpen(true);
+  };
+
   return (
     <>
       <header
-        className={`${styles.header} ${state.isScrolled ? styles.headerScrolled : ""
-          }`}
+        className={`${styles.header} ${state.isScrolled ? styles.headerScrolled : ""}`}
       >
         <div className={styles.inner}>
-          {/* Brand / Logo */}
           <div className={styles.brand}>
             <Link href="/" className={styles.logoLink} aria-label="Inicio">
               <Image
@@ -33,14 +42,21 @@ export default function Header() {
             </Link>
           </div>
 
-          {/* Navigation */}
           <DesktopNav
             navItems={data.navItems}
             activeSectionId={state.activeSectionId}
           />
 
-          {/* Desktop Actions */}
           <div className={styles.actions}>
+            {/* Botón de Historial/Carrito Desktop */}
+            <button
+              onClick={openHistory}
+              className={`${styles.button} ${styles.buttonHistory}`}
+              aria-label="Ver mis pedidos"
+            >
+              📋 {cartCount > 0 && <span className={styles.badgeCount}>({cartCount})</span>}
+            </button>
+
             {data.waHref && (
               <a
                 href={data.waHref}
@@ -63,18 +79,16 @@ export default function Header() {
             )}
           </div>
 
-          {/* Mobile Menu Toggle */}
           <button
             type="button"
             className={styles.menuToggle}
+            onClick={actions.toggleMenu}
             aria-label={state.isMenuOpen ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={state.isMenuOpen}
             aria-controls="mobile-menu"
-            onClick={actions.toggleMenu}
           >
             <span
-              className={`${styles.menuIcon} ${state.isMenuOpen ? styles.menuIconOpen : ""
-                }`}
+              className={`${styles.menuIcon} ${state.isMenuOpen ? styles.menuIconOpen : ""}`}
             >
               <span className={styles.menuIconBar} />
               <span className={styles.menuIconBar} />
@@ -84,7 +98,6 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
       <MobileMenu
         isOpen={state.isMenuOpen}
         navItems={data.navItems}

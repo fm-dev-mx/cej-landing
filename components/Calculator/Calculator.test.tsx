@@ -76,7 +76,8 @@ describe('Calculator UI Integration', () => {
 
     // 3. Check Result (Instant calculation)
     // We expect the summary to appear
-    expect(screen.getByText('Total Estimado')).toBeInTheDocument(); // Case sensitive check or adjusted
+    // FIX: Updated text match to 'Total Neto' (Phase 2 change)
+    expect(screen.getByText('Total Neto')).toBeInTheDocument();
     expect(screen.getByText('5.00 m³')).toBeInTheDocument();
 
     // 4. Add to Cart
@@ -106,7 +107,8 @@ describe('Calculator UI Integration', () => {
     fireEvent.change(widthInput, { target: { value: '5' } });
     fireEvent.change(thickInput, { target: { value: '10' } });
 
-    expect(screen.getByText('Total Estimado')).toBeInTheDocument();
+    // FIX: Updated text match to 'Total Neto' (Phase 2 change)
+    expect(screen.getByText('Total Neto')).toBeInTheDocument();
 
     // 10*5*0.10 = 5m3 * factor. Should be valid.
     const addBtn = screen.getByRole('button', { name: /Agregar al Pedido/i });
@@ -122,12 +124,9 @@ describe('Calculator UI Integration', () => {
     fireEvent.change(volInput, { target: { value: '0' } });
 
     // Check for error message
-    // The previous test looked for role="alert", let's keep that
     const alert = screen.getByRole('alert');
     expect(alert).toBeInTheDocument();
 
-    // Check that button is not available or disabled (implementation dependent,
-    // CalculatorSummary hides it if total <= 0, so query shouldn't find enabled one)
     const addBtn = screen.queryByRole('button', { name: /Agregar al Pedido/i });
     expect(addBtn).not.toBeInTheDocument();
   });

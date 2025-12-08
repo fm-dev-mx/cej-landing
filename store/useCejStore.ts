@@ -30,11 +30,14 @@ interface CalculatorSlice {
     updateDraft: (updates: Partial<CalculatorState>) => void;
     setMode: (mode: CalculatorMode) => void;
     setWorkType: (id: WorkTypeId | null) => void;
+    // Phase 2 Actions
+    toggleAdditive: (id: string) => void;
+    setExpertMode: (isActive: boolean) => void;
 }
 
 interface OrderSlice {
     cart: CartItem[];
-    history: CartItem[]; // "Mis Pedidos" (Local History)
+    history: CartItem[];
     addToCart: (quote: QuoteBreakdown) => void;
     removeFromCart: (id: string) => void;
     editCartItem: (id: string) => void;
@@ -57,7 +60,6 @@ interface IdentitySlice {
 
 type CejStore = CalculatorSlice & OrderSlice & UISlice & IdentitySlice;
 
-// Define exactly what we persist to avoid circular dependencies or hydrating UI state
 type PersistedState = Pick<CejStore, 'cart' | 'history' | 'user' | 'draft'>;
 
 // --- Store Implementation ---
@@ -65,7 +67,7 @@ type PersistedState = Pick<CejStore, 'cart' | 'history' | 'user' | 'draft'>;
 export const useCejStore = create<CejStore>()(
     persist(
         (set, get) => ({
-            // 1. Calculator Slice
+            // --- Calculator Slice ---
             draft: { ...DEFAULT_CALCULATOR_STATE },
 
             resetDraft: () => set({ draft: { ...DEFAULT_CALCULATOR_STATE } }),
@@ -106,7 +108,32 @@ export const useCejStore = create<CejStore>()(
                 });
             },
 
-            // 2. Order Slice
+            // Safe Additive Toggle
+            toggleAdditive: (id) => {
+                set((state) => {
+                    // Safety: Ensure array exists
+                    const current = state.draft.additives || [];
+                    const exists = current.includes(id);
+                    const next = exists
+                        ? current.filter(a => a !== id)
+                        : [...current, id];
+                    return { draft: { ...state.draft, additives: next } };
+                });
+            },
+
+            // Safe Expert Mode
+            setExpertMode: (isActive) => {
+                set((state) => ({
+                    draft: {
+                        ...state.draft,
+                        showExpertOptions: isActive,
+                        // Clear additives if disabling expert mode
+                        additives: isActive ? (state.draft.additives || []) : []
+                    }
+                }));
+            },
+
+            // --- Order Slice ---
             cart: [],
             history: [],
 
@@ -120,19 +147,23 @@ export const useCejStore = create<CejStore>()(
                     workTypeLabel = 'Volumen Directo';
                 }
 
-                const label = `${workTypeLabel} - f'c ${state.draft.strength}`;
+                // FIX: Defensive coding for hydration mismatch
+                const additivesList = state.draft.additives || [];
+                const additivesCount = additivesList.length;
+
+                const label = `${workTypeLabel} - f'c ${state.draft.strength} ${additivesCount > 0 ? `(+${additivesCount})` : ''}`;
 
                 const newItem: CartItem = {
                     id: uuidv4(),
                     timestamp: Date.now(),
-                    inputs: { ...state.draft },
+                    inputs: { ...state.draft, additives: additivesList },
                     results,
                     config: { label }
                 };
 
                 set((s) => ({
                     cart: [...s.cart, newItem],
-                    draft: { ...DEFAULT_CALCULATOR_STATE },
+                    draft: { ...DEFAULT_CALCULATOR_STATE }, // Reset Form
                     isDrawerOpen: true,
                     activeTab: 'order'
                 }));
@@ -174,13 +205,13 @@ export const useCejStore = create<CejStore>()(
                 cart: []
             })),
 
-            // 3. UI Slice
+            // --- UI Slice ---
             isDrawerOpen: false,
             activeTab: 'order',
             setDrawerOpen: (isOpen) => set({ isDrawerOpen: isOpen }),
             setActiveTab: (tab) => set({ activeTab: tab }),
 
-            // 4. Identity Slice
+            // --- Identity Slice ---
             user: {
                 visitorId: uuidv4(),
                 hasConsentedPersistence: true,
@@ -197,7 +228,18 @@ export const useCejStore = create<CejStore>()(
         {
             name: 'cej-pro-storage',
             storage: createJSONStorage(() => localStorage),
-            // Explicitly typed partializer
+            version: 2,
+            migrate: (persistedState: unknown, version) => {
+                const state = persistedState as CejStore;
+                if (version === 0 || version === 1) {
+                    // Migración Fase 1 -> Fase 2
+                    if (state.draft && !state.draft.additives) {
+                        state.draft.additives = [];
+                        state.draft.showExpertOptions = false;
+                    }
+                }
+                return state;
+            },
             partialize: (state): PersistedState => ({
                 cart: state.cart,
                 history: state.history,

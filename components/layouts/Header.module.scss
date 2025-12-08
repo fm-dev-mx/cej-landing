@@ -140,6 +140,25 @@
   text-decoration: none;
 }
 
+.buttonHistory {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-right: 0.5rem;
+  padding: 0.5rem 1rem;
+  color: var(--c-text-on-dark);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+  }
+}
+
+.badgeCount {
+  margin-left: 4px;
+  font-size: 0.8em;
+  color: var(--c-accent);
+}
+
 .buttonWhatsApp {
   background-color: var(--c-accent);
   color: var(--c-primary-dark);

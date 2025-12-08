@@ -1,4 +1,4 @@
-// hooks/useCheckout.ts
+// hooks/useCheckOut.ts
 import { useState } from 'react';
 import { useCejStore } from '@/store/useCejStore';
 import { useIdentity } from '@/hooks/useIdentity';
@@ -16,19 +16,15 @@ type CheckoutState = {
 export function useCheckout() {
     const [state, setState] = useState<CheckoutState>({ isProcessing: false, error: null });
 
-    // Store access
     const cart = useCejStore(s => s.cart);
     const updateUserContact = useCejStore(s => s.updateUserContact);
     const moveToHistory = useCejStore(s => s.moveToHistory);
-
-    // Tracking identity
     const identity = useIdentity();
 
     const processOrder = async (customer: CustomerInfo, saveContact: boolean) => {
         setState({ isProcessing: true, error: null });
 
         try {
-            // 1. Prepare Data
             const folio = generateQuoteId();
             const totalValue = cart.reduce((acc, item) => acc + item.results.total, 0);
             const fbEventId = crypto.randomUUID();
@@ -41,7 +37,9 @@ export function useCheckout() {
                     label: i.config.label,
                     volume: i.results.volume.billedM3,
                     service: i.results.concreteType,
-                    subtotal: i.results.total
+                    subtotal: i.results.total,
+                    // FIX: Incluimos los aditivos en el payload JSONB
+                    additives: i.inputs.additives || []
                 })),
                 financials: {
                     total: totalValue,
@@ -49,18 +47,17 @@ export function useCheckout() {
                 },
                 metadata: {
                     source: 'web_calculator',
+                    pricing_version: 2, // Auditabilidad: Fase 2 Engine
                     userAgent: navigator.userAgent
                 }
             };
 
-            // 2. Persist User (Local)
             updateUserContact({
                 name: customer.name,
                 phone: customer.phone,
                 save: saveContact
             });
 
-            // 3. Submit to Server (Fail-Open Strategy)
             const result = await submitLead({
                 name: customer.name,
                 phone: customer.phone,
@@ -72,15 +69,10 @@ export function useCheckout() {
                 privacy_accepted: true
             });
 
-            // Log any warnings (e.g. DB down) but proceed
-            if (result.success && result.warning) {
-                console.warn(`[Checkout] Completed with warning: ${result.warning}`);
-            } else if (!result.success) {
-                // Should only happen on validation errors
+            if (!result.success) {
                 throw new Error(result.error || 'Error al procesar el pedido.');
             }
 
-            // 4. Tracking
             trackLead({
                 value: totalValue,
                 currency: 'MXN',
@@ -89,17 +81,13 @@ export function useCheckout() {
             });
             trackContact('WhatsApp');
 
-            // 5. Cleanup & Redirect
-            moveToHistory(); // Clears cart too
+            moveToHistory();
 
             const message = generateCartMessage(cart, customer.name, folio);
             const waUrl = getWhatsAppUrl(env.NEXT_PUBLIC_WHATSAPP_NUMBER, message);
 
             if (waUrl) {
-                // Short delay to allow UI to update
-                setTimeout(() => {
-                    window.open(waUrl, '_blank');
-                }, 100);
+                setTimeout(() => window.open(waUrl, '_blank'), 100);
             }
 
             return true;
@@ -116,8 +104,5 @@ export function useCheckout() {
         }
     };
 
-    return {
-        ...state,
-        processOrder
-    };
+    return { ...state, processOrder };
 }

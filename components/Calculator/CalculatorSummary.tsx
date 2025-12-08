@@ -1,4 +1,3 @@
-// components/Calculator/CalculatorSummary.tsx
 'use client';
 
 import { useState } from 'react';
@@ -20,15 +19,13 @@ export function CalculatorSummary({ quote, isValid }: Props) {
     const handleAdd = () => {
         if (!isValid) return;
         addToCart(quote);
-
-        // Trigger micro-interaction
         setIsAdded(true);
         setTimeout(() => setIsAdded(false), 1500);
     };
 
     if (quote.total <= 0) {
         return (
-            <div style={{ marginTop: '2rem', textAlign: 'center', opacity: 0.5 }}>
+            <div className={styles.emptyStateHint}>
                 <p className={styles.hint}>Completa los datos para ver el precio.</p>
             </div>
         );
@@ -38,7 +35,24 @@ export function CalculatorSummary({ quote, isValid }: Props) {
 
     return (
         <div className={summaryClass}>
-            <div className={styles.summaryRow}>
+            {/* 1. Desglose Detallado */}
+            <div className={styles.breakdownList}>
+                {quote.breakdownLines && quote.breakdownLines.map((line, idx) => (
+                    <div key={idx} className={styles.breakdownRow} data-type={line.type}>
+                        <span>{line.label}</span>
+                        <span>{fmtMXN(line.value)}</span>
+                    </div>
+                ))}
+
+                {/* Línea de IVA */}
+                <div className={`${styles.breakdownRow} ${styles.breakdownRowVat}`}>
+                    <span>IVA (8%)</span>
+                    <span>{fmtMXN(quote.vat)}</span>
+                </div>
+            </div>
+
+            {/* 2. Total Final */}
+            <div className={`${styles.summaryRow} ${styles.summaryTotalRow}`}>
                 <div>
                     <span className={styles.summaryLabel}>
                         Volumen Facturable
@@ -49,7 +63,7 @@ export function CalculatorSummary({ quote, isValid }: Props) {
                 </div>
                 <div style={{ textAlign: 'right' }}>
                     <span className={styles.summaryLabel}>
-                        Total Estimado
+                        Total Neto
                     </span>
                     <span className={styles.summaryValueHighlight}>
                         {fmtMXN(quote.total)}
@@ -66,7 +80,6 @@ export function CalculatorSummary({ quote, isValid }: Props) {
                     backgroundColor: isAdded ? 'var(--c-success)' : undefined,
                     borderColor: isAdded ? 'var(--c-success)' : undefined,
                     color: isAdded ? 'white' : undefined,
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}
             >
                 {isAdded ? (

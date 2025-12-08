@@ -10,44 +10,35 @@ import { KnownVolumeForm } from './steps/forms/KnownVolumeForm';
 import { WorkTypeSelector } from './steps/forms/WorkTypeSelector';
 import { AssistVolumeForm } from './steps/forms/AssistVolumeForm';
 import { SpecsForm } from './steps/forms/SpecsForm';
+import { AdditivesForm } from './steps/forms/AdditivesForm';
 import styles from './CalculatorForm.module.scss';
 
 export function CalculatorForm() {
-    // 1. Store State (Select necessary fields)
+    // State
     const draft = useCejStore((s) => s.draft);
 
-    // 2. Actions
+    // Actions
     const { setMode } = useCejStore(
-        useShallow((s) => ({
-            setMode: s.setMode,
-        }))
+        useShallow((s) => ({ setMode: s.setMode }))
     );
 
-    // 3. Calculation Logic (Hooks)
+    // Calc Engine
     const { quote, isValid, error, warning } = useQuoteCalculator(draft);
 
-    // 4. Focus Management Refs
+    // Refs
     const inputsSectionRef = useRef<HTMLDivElement>(null);
     const specsSectionRef = useRef<HTMLDivElement>(null);
 
-    // Effect: Shift focus to inputs section when Mode changes
     useEffect(() => {
         if (draft.mode && inputsSectionRef.current) {
-            // Find the first interactive element in the section
             const firstInput = inputsSectionRef.current.querySelector('input, select');
-            if (firstInput instanceof HTMLElement) {
-                firstInput.focus();
-            }
+            if (firstInput instanceof HTMLElement) firstInput.focus();
         }
     }, [draft.mode]);
 
-    // Effect: Shift focus to specs when inputs are valid (soft guidance)
-    // Note: We avoid aggressive auto-focus here to not disturb typing,
-    // but ensuring the section is ready.
-
     return (
         <div className={styles.container}>
-            {/* --- SECTION 1: MODE --- */}
+            {/* 1. Mode Selection */}
             <div className={styles.field}>
                 <label className={styles.label}>¿Cómo quieres cotizar?</label>
                 <div className={styles.selectionGrid}>
@@ -73,7 +64,7 @@ export function CalculatorForm() {
                 </div>
             </div>
 
-            {/* --- SECTION 2: DYNAMIC INPUTS --- */}
+            {/* 2. Inputs */}
             <div ref={inputsSectionRef}>
                 {draft.mode === 'knownM3' ? (
                     <div className={styles.field}>
@@ -84,10 +75,8 @@ export function CalculatorForm() {
                         <div className={styles.field}>
                             <WorkTypeSelector />
                         </div>
-
                         {draft.workType && (
                             <div className={styles.field}>
-                                {/* Pass specific volume error down to assist form */}
                                 <AssistVolumeForm error={error} />
                             </div>
                         )}
@@ -95,18 +84,23 @@ export function CalculatorForm() {
                 )}
             </div>
 
-            {/* --- SECTION 3: SPECS (Visible only if valid or assisting) --- */}
+            {/* 3. Specs & Additives */}
             {(draft.mode === 'knownM3' || draft.workType) && (
                 <div className={styles.fieldWithSeparator} ref={specsSectionRef}>
                     <SpecsForm />
+
+                    {/* Expert Mode Section */}
+                    {draft.showExpertOptions && (
+                        <div className={styles.animateFadeIn}>
+                            <AdditivesForm />
+                        </div>
+                    )}
                 </div>
             )}
 
-            {/* --- SECTION 4: FEEDBACK --- */}
+            {/* 4. Feedback & Warning */}
             {error && (
-                <div className={styles.error} role="alert">
-                    {error}
-                </div>
+                <div className={styles.error} role="alert">{error}</div>
             )}
 
             {!error && warning && (
@@ -120,11 +114,8 @@ export function CalculatorForm() {
                 </div>
             )}
 
-            {/* --- SECTION 5: SUMMARY --- */}
-            <CalculatorSummary
-                quote={quote}
-                isValid={isValid && !error}
-            />
+            {/* 5. Summary */}
+            <CalculatorSummary quote={quote} isValid={isValid && !error} />
         </div>
     );
 }

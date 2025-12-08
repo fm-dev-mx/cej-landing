@@ -1,4 +1,5 @@
 // types/domain.ts
+import type { PricingRules } from '@/lib/schemas/pricing';
 
 // --- 1. Core Primitives ---
 export type Strength = '100' | '150' | '200' | '250' | '300';
@@ -22,7 +23,7 @@ export type WorkTypeConfig = {
     icon?: string;
 };
 
-// --- 2. Calculator State ---
+// --- 2. Calculator State (UPDATED) ---
 export type CalculatorState = {
     mode: CalculatorMode;
     volumeMode: AssistVolumeMode;
@@ -37,6 +38,10 @@ export type CalculatorState = {
     thicknessByArea: string;
     hasCoffered: 'yes' | 'no';
     cofferedSize: CofferedSize | null;
+
+    // Phase 2: Expert Fields
+    additives: string[]; // IDs de aditivos seleccionados
+    showExpertOptions: boolean; // Flag de UI
 };
 
 export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
@@ -53,23 +58,15 @@ export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
     thicknessByArea: '12',
     hasCoffered: 'no',
     cofferedSize: '7',
+
+    // Defaults Phase 2
+    additives: [],
+    showExpertOptions: false,
 };
 
-// --- 3. Pricing & Quotes ---
-export type VolumeTier = {
-    minM3: number;
-    maxM3?: number;
-    pricePerM3Cents: number;
-};
-
-export type BasePriceTable = Record<
-    ConcreteType,
-    Record<Strength, VolumeTier[]>
->;
-
-export type PriceTable = {
-    base: BasePriceTable;
-};
+// --- 3. Pricing & Quotes (Referencing Schema) ---
+// Re-exportamos tipos derivados del schema para consistencia
+export type { PricingRules };
 
 export type NormalizedVolume = {
     requestedM3: number;
@@ -79,18 +76,30 @@ export type NormalizedVolume = {
     isBelowMinimum: boolean;
 };
 
+export type QuoteLineItem = {
+    label: string;
+    value: number; // Formatted currency
+    type: 'base' | 'additive' | 'surcharge';
+};
+
 export type QuoteBreakdown = {
     volume: NormalizedVolume;
     strength: Strength;
     concreteType: ConcreteType;
-    unitPricePerM3: number; // MXN without VAT
-    subtotal: number;       // MXN without VAT
-    vat: number;            // MXN (IVA)
-    total: number;          // MXN with VAT
+
+    // Financials
+    unitPricePerM3: number;
+    baseSubtotal: number;
+    additivesSubtotal: number; // New
+    subtotal: number;
+    vat: number;
+    total: number;
+
+    // Metadata
+    breakdownLines: QuoteLineItem[]; // Para desglose detallado en UI
     calculationDetails?: {
         formula: string;
         factorUsed?: number;
-        effectiveThickness?: number;
     };
 };
 
@@ -112,7 +121,7 @@ export type QuoteWarning =
     }
     | null;
 
-// --- 4. Order & Cart (Previously in types/order.ts) ---
+// --- 4. Order & Cart ---
 export type CartItem = {
     id: string;
     timestamp: number;
@@ -139,6 +148,7 @@ export type OrderPayload = {
         volume: number;
         service: string;
         subtotal: number;
+        additives?: string[]; // Snapshot of additives IDs
     }[];
     financials: {
         total: number;
@@ -146,9 +156,9 @@ export type OrderPayload = {
     };
     metadata: {
         source: 'web_calculator';
+        pricing_version?: number; // Auditabilidad
         utm_source?: string;
         utm_medium?: string;
         userAgent?: string;
-        landingPage?: string;
     };
 };
