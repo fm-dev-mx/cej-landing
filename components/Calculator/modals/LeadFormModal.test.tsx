@@ -7,6 +7,11 @@ import { useCejStore } from '@/store/useCejStore';
 import { DEFAULT_CALCULATOR_STATE } from '@/types/domain';
 import { submitLead } from '@/app/actions/submitLead';
 
+// Mock useCheckoutUI to avoid issues with internal hooks if necessary,
+// but the original test seems to want to test integration with the store.
+// If useCheckoutUI uses complex internal logic, we could mock it,
+// but we maintain the original approach by adjusting the selectors.
+
 // 1. Mock de Portal (para que se renderice en el DOM de prueba)
 vi.mock('react-dom', async () => {
     const actual = await vi.importActual<typeof import('react-dom')>('react-dom');
@@ -58,6 +63,7 @@ describe('LeadFormModal', () => {
     };
 
     beforeAll(() => {
+        // Polyfill for crypto.randomUUID in JSDOM/Node test environment if missing
         if (!globalThis.crypto) {
             Object.defineProperty(globalThis, 'crypto', {
                 value: {
@@ -98,9 +104,12 @@ describe('LeadFormModal', () => {
         );
 
         expect(screen.getByLabelText(/Nombre completo/i)).toBeInTheDocument();
+        // Adjust regex to be more flexible with "Teléfono" or "Teléfono Móvil"
         expect(screen.getByLabelText(/Teléfono/i)).toBeInTheDocument();
         expect(screen.getByText(/Aviso de Privacidad/i)).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /Enviar Pedido/i })).toBeInTheDocument();
+
+        // FIX: Button text is "Generar Ticket"
+        expect(screen.getByRole('button', { name: /Generar Ticket/i })).toBeInTheDocument();
     });
 
     it('submits data to Server Action and closes on success', async () => {
@@ -122,12 +131,15 @@ describe('LeadFormModal', () => {
             target: { value: '6561234567' },
         });
 
-        // Accept Privacy Policy
-        const privacyCheckbox = screen.getByLabelText(/Aviso de Privacidad/i);
+        // Accept Privacy Policy (Search by visible text or associated label)
+        const privacyCheckbox = screen.getByLabelText(/Acepto el/i);
         fireEvent.click(privacyCheckbox);
 
         // Submit
-        fireEvent.click(screen.getByRole('button', { name: /Enviar Pedido/i }));
+        // FIX: Search for "Generar Ticket"
+        const submitButton = screen.getByRole('button', { name: /Generar Ticket/i });
+        expect(submitButton).toBeEnabled();
+        fireEvent.click(submitButton);
 
         await waitFor(() => {
             expect(submitLead).toHaveBeenCalled();
@@ -161,10 +173,11 @@ describe('LeadFormModal', () => {
             target: { value: '6561112233' },
         });
 
-        const privacyCheckbox = screen.getByLabelText(/Aviso de Privacidad/i);
+        const privacyCheckbox = screen.getByLabelText(/Acepto el/i);
         fireEvent.click(privacyCheckbox);
 
-        fireEvent.click(screen.getByRole('button', { name: /Enviar Pedido/i }));
+        // FIX: Search for "Generar Ticket"
+        fireEvent.click(screen.getByRole('button', { name: /Generar Ticket/i }));
 
         await waitFor(() => {
             expect(submitLead).toHaveBeenCalled();
@@ -195,13 +208,13 @@ describe('LeadFormModal', () => {
 
         // NO hacemos click en el checkbox de privacidad
 
-        // Submit (Botón debería estar deshabilitado según la nueva implementación, pero forzamos click o verificamos disabled)
-        const submitBtn = screen.getByRole('button', { name: /Enviar Pedido/i });
+        // FIX: Search for "Generar Ticket"
+        const submitBtn = screen.getByRole('button', { name: /Generar Ticket/i });
 
-        // La nueva implementación deshabilita el botón
+        // The new implementation disables the button if not accepted
         expect(submitBtn).toBeDisabled();
 
-        // Si intentamos forzar click (aunque esté disabled en DOM, fireEvent puede dispararlo, pero React no procesa onSubmit)
+        // Attempt to fire the event to ensure the action is not called
         fireEvent.click(submitBtn);
 
         expect(submitLead).not.toHaveBeenCalled();

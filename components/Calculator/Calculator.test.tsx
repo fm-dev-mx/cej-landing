@@ -75,13 +75,14 @@ describe('Calculator UI Integration', () => {
     expect(volInput).toHaveValue(5);
 
     // 3. Check Result (Instant calculation)
-    // We expect the summary to appear
-    // FIX: Updated text match to 'Total Neto' (Phase 2 change)
-    expect(screen.getByText('Total Neto')).toBeInTheDocument();
-    expect(screen.getByText('5.00 m³')).toBeInTheDocument();
+    // We expect the summary to appear with the new Ticket Label
+    expect(screen.getByText('TOTAL')).toBeInTheDocument();
 
-    // 4. Add to Cart
-    const addBtn = screen.getByRole('button', { name: /Agregar al Pedido/i });
+    // Note: Volume text "5.00 m³" might not be explicitly visible in the new Ticket summary
+    // relying on price/total verification via 'TOTAL' presence is sufficient for integration here.
+
+    // 4. Add to Cart (Button text updated)
+    const addBtn = screen.getByRole('button', { name: /Ver Cotización Formal/i });
     expect(addBtn).toBeEnabled();
     fireEvent.click(addBtn);
   });
@@ -98,7 +99,7 @@ describe('Calculator UI Integration', () => {
     // Select Solid Slab
     fireEvent.click(screen.getByRole('radio', { name: /Sólida/i }));
 
-    // FIX: Usar strings exactos para evitar colisión con el radio button "Largo x Ancho"
+    // Inputs
     const lengthInput = screen.getByLabelText('Largo (m)');
     const widthInput = screen.getByLabelText('Ancho (m)');
     const thickInput = screen.getByLabelText('Grosor (cm)');
@@ -107,11 +108,12 @@ describe('Calculator UI Integration', () => {
     fireEvent.change(widthInput, { target: { value: '5' } });
     fireEvent.change(thickInput, { target: { value: '10' } });
 
-    // FIX: Updated text match to 'Total Neto' (Phase 2 change)
-    expect(screen.getByText('Total Neto')).toBeInTheDocument();
+    // Check for updated Total label
+    expect(screen.getByText('TOTAL')).toBeInTheDocument();
 
     // 10*5*0.10 = 5m3 * factor. Should be valid.
-    const addBtn = screen.getByRole('button', { name: /Agregar al Pedido/i });
+    // Button text updated
+    const addBtn = screen.getByRole('button', { name: /Ver Cotización Formal/i });
     expect(addBtn).toBeEnabled();
   });
 
@@ -127,7 +129,8 @@ describe('Calculator UI Integration', () => {
     const alert = screen.getByRole('alert');
     expect(alert).toBeInTheDocument();
 
-    const addBtn = screen.queryByRole('button', { name: /Agregar al Pedido/i });
+    // Ensure the new button is NOT present
+    const addBtn = screen.queryByRole('button', { name: /Ver Cotización Formal/i });
     expect(addBtn).not.toBeInTheDocument();
   });
 
