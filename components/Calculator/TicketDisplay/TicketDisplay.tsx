@@ -1,8 +1,5 @@
-'use client';
-
 import { useState, useEffect } from 'react';
-import { type QuoteBreakdown } from '@/types/domain';
-
+import { QuoteBreakdown } from '@/types/domain';
 import { fmtMXN } from '@/lib/utils';
 import { env } from '@/config/env';
 
@@ -10,7 +7,7 @@ import styles from './TicketDisplay.module.scss';
 
 interface TicketDisplayProps {
     variant: 'preview' | 'full';
-    quote: QuoteBreakdown;
+    quote: QuoteBreakdown | null; // May be null
     folio?: string;
     customerName?: string;
 }
@@ -19,14 +16,22 @@ export function TicketDisplay({ variant, quote, folio, customerName }: TicketDis
     const isPreview = variant === 'preview';
     const [dateStr, setDateStr] = useState('');
 
+    // If no quote, show empty state
+    if (!quote) {
+        return (
+            <div className={styles.emptyState}>
+                <p>No hay datos de cotización disponibles.</p>
+            </div>
+        );
+    }
+
+    // Initialize date on mount
     useEffect(() => {
         setDateStr(
             new Date().toLocaleDateString('es-MX', {
                 year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
+                month: 'long',
+                day: 'numeric'
             })
         );
     }, []);

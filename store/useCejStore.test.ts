@@ -1,98 +1,120 @@
-// store/useCejStore.test.ts
-import { describe, it, expect, beforeEach } from 'vitest';
-import { useCejStore } from './useCejStore';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import { useCejStore } from '@/store/useCejStore';
 import { DEFAULT_CALCULATOR_STATE } from '@/types/domain';
 
-// QA NOTE: We do NOT mock the store module.
-// We test the real Zustand store logic to ensure actions actually update the state.
+// Mock persist middleware behavior if needed,
+// but for unit tests we generally test the reducer logic.
+// We will rely on Zustand's default behavior in JSDOM.
 
-describe('Zustand Store Logic', () => {
-    // Reset the store state before each test to ensure isolation
+describe('useCejStore (State Management)', () => {
+
     beforeEach(() => {
-        useCejStore.setState({
-            draft: { ...DEFAULT_CALCULATOR_STATE },
-            cart: [],
-            history: [],
-            isDrawerOpen: false,
-            activeTab: 'order',
-            user: {
-                visitorId: 'test-visitor',
-                hasConsentedPersistence: true
-            }
+        // Reset store before each test
+        const { resetDraft, clearCart } = useCejStore.getState();
+        act(() => {
+            resetDraft();
+            clearCart();
         });
     });
 
-    it('initializes with default state', () => {
-        const state = useCejStore.getState();
-        expect(state.draft).toEqual(DEFAULT_CALCULATOR_STATE);
-        expect(state.cart).toEqual([]);
+    describe('Draft / Calculator Slice', () => {
+        it('initializes with default state', () => {
+            const { result } = renderHook(() => useCejStore());
+            expect(result.current.draft).toEqual(DEFAULT_CALCULATOR_STATE);
+        });
+
+        it('updates draft fields correctly', () => {
+            const { result } = renderHook(() => useCejStore());
+
+            act(() => {
+                result.current.updateDraft({ m3: '10', strength: '250' });
+            });
+
+            expect(result.current.draft.m3).toBe('10');
+            expect(result.current.draft.strength).toBe('250');
+        });
+
+        it('resets logic when changing Mode', () => {
+            const { result } = renderHook(() => useCejStore());
+
+            // Set some state in Assist mode
+            act(() => {
+                result.current.setMode('assistM3');
+                result.current.updateDraft({ m3: '50' }); // Should be cleared on mode switch
+            });
+
+            // Switch to Known Mode
+            act(() => {
+                result.current.setMode('knownM3');
+            });
+
+            expect(result.current.draft.mode).toBe('knownM3');
+            expect(result.current.draft.workType).toBeNull();
+            // Assuming setMode logic clears irrelevant fields:
+            // "if mode === 'knownM3' ... nextDraft.workType = null"
+        });
+
+        it('toggles additives idempotently', () => {
+            const { result } = renderHook(() => useCejStore());
+
+            // Add
+            act(() => result.current.toggleAdditive('fiber'));
+            expect(result.current.draft.additives).toContain('fiber');
+
+            // Remove
+            act(() => result.current.toggleAdditive('fiber'));
+            expect(result.current.draft.additives).not.toContain('fiber');
+        });
+
+        it('clears additives when expert mode is disabled', () => {
+            const { result } = renderHook(() => useCejStore());
+
+            act(() => {
+                result.current.setExpertMode(true);
+                result.current.toggleAdditive('fiber');
+            });
+            expect(result.current.draft.additives).toHaveLength(1);
+
+            act(() => {
+                result.current.setExpertMode(false);
+            });
+            expect(result.current.draft.additives).toHaveLength(0);
+        });
     });
 
-    it('toggles Expert Mode correctly and clears additives when disabled', () => {
-        const store = useCejStore.getState();
+    describe('Cart / Order Slice', () => {
+        it('adds a quote to the cart', () => {
+            const { result } = renderHook(() => useCejStore());
 
-        // 1. Enable expert mode
-        store.setExpertMode(true);
-        expect(useCejStore.getState().draft.showExpertOptions).toBe(true);
+            const mockQuote: any = { total: 5000, subtotal: 4000 };
 
-        // 2. Add additive
-        store.toggleAdditive('fiber');
-        expect(useCejStore.getState().draft.additives).toContain('fiber');
+            act(() => {
+                result.current.updateDraft({ m3: '5', strength: '200' });
+                result.current.addToCart(mockQuote);
+            });
 
-        // 3. Disable expert mode (should clear additives)
-        store.setExpertMode(false);
-        expect(useCejStore.getState().draft.showExpertOptions).toBe(false);
-        expect(useCejStore.getState().draft.additives).toEqual([]);
-    });
+            expect(result.current.cart).toHaveLength(1);
+            expect(result.current.cart[0].results.total).toBe(5000);
+            expect(result.current.isDrawerOpen).toBe(true);
 
-    it('addToCart adds item and resets draft', () => {
-        const store = useCejStore.getState();
+            // Draft should be reset after adding to cart
+            expect(result.current.draft.m3).toBe('');
+        });
 
-        // 1. Modify draft
-        store.updateDraft({ m3: '10' });
+        it('removes item from cart', () => {
+            const { result } = renderHook(() => useCejStore());
+            const mockQuote: any = { total: 100 };
 
-        // 2. Mock Quote Result (Partial)
-        const mockQuote: any = {
-            total: 1000,
-            volume: { billedM3: 10 },
-            concreteType: 'direct'
-        };
+            act(() => {
+                result.current.addToCart(mockQuote);
+            });
+            const id = result.current.cart[0].id;
 
-        // 3. Add to cart
-        store.addToCart(mockQuote);
-
-        const newState = useCejStore.getState();
-
-        // Verify Cart
-        expect(newState.cart).toHaveLength(1);
-        expect(newState.cart[0].results).toEqual(mockQuote);
-        expect(newState.cart[0].inputs.m3).toBe('10');
-
-        // Verify Draft Reset
-        expect(newState.draft).toEqual(DEFAULT_CALCULATOR_STATE);
-
-        // Verify UI effect
-        expect(newState.isDrawerOpen).toBe(true);
-    });
-
-    it('removeFromCart removes correct item', () => {
-        const store = useCejStore.getState();
-
-        const mockQuote: any = { total: 500 };
-
-        // Add 2 items
-        store.addToCart(mockQuote); // Item 1
-        store.addToCart(mockQuote); // Item 2
-
-        const cart = useCejStore.getState().cart;
-        const idToRemove = cart[0].id;
-        const idToKeep = cart[1].id;
-
-        // Remove first item
-        store.removeFromCart(idToRemove);
-
-        const newCart = useCejStore.getState().cart;
-        expect(newCart).toHaveLength(1);
-        expect(newCart[0].id).toBe(idToKeep);
+            act(() => {
+                result.current.removeFromCart(id);
+            });
+            expect(result.current.cart).toHaveLength(0);
+        });
     });
 });

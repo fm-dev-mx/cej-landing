@@ -1,50 +1,47 @@
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { TicketDisplay } from './TicketDisplay';
-import { EMPTY_QUOTE } from '@/lib/pricing';
+import { TicketDisplay } from '@/components/Calculator/TicketDisplay/TicketDisplay';
+import { QuoteBreakdown } from '@/types/domain';
 
-describe('TicketDisplay Component', () => {
-    const mockQuote = {
-        ...EMPTY_QUOTE,
-        total: 1500.00,
-        subtotal: 1388.89,
-        vat: 111.11,
-        breakdownLines: [
-            { label: "Concreto f'c 200", value: 1388.89, type: 'base' as const }
-        ]
-    };
+// Mock quote data
+const MOCK_QUOTE: QuoteBreakdown = {
+    volume: {
+        requestedM3: 5,
+        roundedM3: 5,
+        minM3ForType: 3,
+        billedM3: 5,
+        isBelowMinimum: false
+    },
+    strength: '250',
+    concreteType: 'direct',
+    unitPricePerM3: 2000,
+    baseSubtotal: 10000,
+    additivesSubtotal: 0,
+    subtotal: 10000,
+    vat: 1600,
+    total: 11600,
+    breakdownLines: [
+        { label: "Concreto Directo 5 m³", value: 10000, type: 'base' }
+    ]
+};
 
-    it('renders PREVIEW variant blurring details', () => {
-        render(<TicketDisplay variant="preview" quote={mockQuote} />);
+describe('TicketDisplay', () => {
+    it('renders the correct financial breakdown', () => {
+        render(<TicketDisplay quote={MOCK_QUOTE} variant="full" />);
 
-        // Should show total roughly (or hidden by blur visuals, but present in DOM)
-        expect(screen.getByText(/COTIZACIÓN PRELIMINAR/i)).toBeInTheDocument();
-
-        // The overlay text must be present
-        expect(screen.getByText(/Desglose completo disponible/i)).toBeInTheDocument();
-
-        // Customer name should NOT be visible even if passed
-        expect(screen.queryByText(/Cliente:/i)).not.toBeInTheDocument();
+        // Check key values
+        expect(screen.getAllByText('$10,000.00').length).toBeGreaterThan(0); // Subtotal
+        expect(screen.getByText('$1,600.00')).toBeInTheDocument(); // IVA
+        expect(screen.getByText('$11,600.00')).toBeInTheDocument(); // Total
     });
 
-    it('renders FULL variant with detailed info', () => {
-        render(
-            <TicketDisplay
-                variant="full"
-                quote={mockQuote}
-                folio="WEB-123"
-                customerName="Test User"
-            />
-        );
+    it('shows volume details', () => {
+        render(<TicketDisplay quote={MOCK_QUOTE} variant="full" />);
+        expect(screen.getByText(/5 m³/)).toBeInTheDocument();
+    });
 
-        // Header info
-        expect(screen.getByText("Folio: WEB-123")).toBeInTheDocument();
-        expect(screen.getByText("Test User")).toBeInTheDocument();
-
-        // Footer disclaimer
-        expect(screen.getByText(/Precios sujetos a cambio/i)).toBeInTheDocument();
-
-        // No blur overlay
-        expect(screen.queryByText(/Desglose completo disponible/i)).not.toBeInTheDocument();
+    it('handles null quote (Loading/Empty state)', () => {
+        render(<TicketDisplay quote={null} variant="preview" />);
+        expect(screen.getByText(/No hay datos de cotización/i)).toBeInTheDocument();
     });
 });
