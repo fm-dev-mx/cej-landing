@@ -1,6 +1,6 @@
 // components/layouts/header/MobileMenu.tsx
 import { type NavItem, type PhoneMeta } from "./header.types";
-import styles from "../Header.module.scss";
+import styles from "./Header.module.scss";
 
 type MobileMenuProps = {
     isOpen: boolean;

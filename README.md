@@ -2,79 +2,76 @@
 
 **A hybrid Next.js platform combining a high-performance landing page with a scalable SaaS OS for concrete order management.**
 
-![Status](https://img.shields.io/badge/Status-Phase_2_Complete-green)
-![Version](https://img.shields.io/badge/Version-0.2.0-blue)
-[![Changelog](https://img.shields.io/badge/Keep_a-Changelog-orange)](./CHANGELOG.md)
-![Coverage](https://img.shields.io/badge/Tests-Vitest-yellow)
-
 ---
 
 ## 1. Project Vision
 
-**Concreto y Equipos de Juárez (CEJ)** is evolving from manual sales processes to a digital-first platform solving two critical problems:
+**Concreto y Equipos de Juárez (CEJ)** evolves into a digital-first platform:
 
-1.  **Lead Generation (Public):** A friction-free calculator to capture anonymous traffic, providing precise volume estimation and immediate lead conversion via WhatsApp.
-2.  **Order Management (Private SaaS):** A "CEJ Pro" portal for recurring contractors to manage order history, fiscal data, and repeat purchases.
+1. **Lead Generation:** Friction-free calculator for anonymous traffic.
+2. **Order Management:** “CEJ Pro” SaaS for contractors.
 
 ---
 
-## 2. Current Status (Phase 3: Marketing Ops)
+## 2. Architecture & Structure
 
-The project has successfully deployed the **Expert Engine** (v0.2.0) and is now focusing on Marketing Technology integrations.
+We follow a strict **Feature-First** and **Component-Folder** architecture.
 
-### ✅ Operational Modules
+```text
+src/
+├── app/                 # Next.js App Router
+├── components/
+│   ├── Calculator/      # Complex domain components
+│   │   ├── Forms/       # Reusable sub-forms (flattened)
+│   │   └── Steps/       # Logical wizard steps
+│   ├── layouts/         # Layout components (Header, GlobalUI, ToolShell)
+│   └── ui/              # UI atoms (Button, Input, Select, etc.)
+├── hooks/               # Custom hooks (checkout, quote engine, identity)
+├── lib/
+│   ├── schemas/         # Zod definitions (orders, calculator, pricing)
+│   └── pricing.ts       # Core pricing engine
+└── store/               # Zustand state (cart, drafts, user)
+````
 
--   **Expert Pricing Engine:** A dynamic, dependency-injected calculation core capable of handling complex pricing rules, additives (fiber, accelerants), and service fees.
--   **Fail-Open 2.0:** The application operates with a robust fallback configuration (`DEFAULT_PRICING_RULES`), ensuring zero downtime even if the database connection fails.
--   **Lead Database:** Anonymous lead ingestion into Supabase (`public.leads`) using Server Actions.
--   **State Management:** Advanced Zustand store with versioning and auto-migration to handle state schema evolution without breaking user sessions.
+### Key Patterns
 
-### 🚀 Active Development (Phase 3)
-
--   **Meta CAPI:** Implementing server-side tracking to bypass iOS privacy restrictions.
--   **Semantic SEO:** Structuring `OfferCatalog` data for rich search results.
+* **Fail-Open:** Lead submission keeps the UX flow even if DB write fails (`submitLead`).
+* **Global UI:** Cart state and overlays are mounted once in `components/layouts/GlobalUI`.
+* **Strict Typing:** Database payloads and server actions are validated with Zod schemas.
 
 ---
 
 ## 3. Quick Start
 
-### Prerequisites
-
--   Node.js 20+
--   pnpm (`npm install -g pnpm`)
--   A Supabase Project (See `/docs/DB_SCHEMA.md` for setup).
-
 ### Installation
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <repo-url>
-    cd cej-landing
-    pnpm install
-    ```
+```bash
+pnpm install
+cp .env.example .env.local
+pnpm dev
+```
 
-2.  **Environment Configuration:**
-    Duplicate `.env.example` to `.env.local`.
+### Environment Variables (essential)
 
-    ```bash
-    # Supabase (Required for Persistence, Optional for Dev)
-    NEXT_PUBLIC_SUPABASE_URL=[https://your-project.supabase.co](https://your-project.supabase.co)
-    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```bash
+NEXT_PUBLIC_SITE_URL=
+NEXT_PUBLIC_BRAND_NAME=
+NEXT_PUBLIC_WHATSAPP_NUMBER=
+NEXT_PUBLIC_PIXEL_ID=
+NEXT_PUBLIC_GA_ID=
 
-    # Monitoring (Optional)
-    MONITORING_WEBHOOK_URL=[https://hooks.slack.com/](https://hooks.slack.com/)...
-    ```
+NEXT_PUBLIC_SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+```
 
-3.  **Run Development Server:**
-    ```bash
-    pnpm dev
-    ```
+### Seeding Pricing Data
 
-4.  **Run Tests:**
-    Ensure business logic integrity before pushing.
-    ```bash
-    pnpm test        # Run Unit Tests
-    ```
+To populate the `price_config` table in Supabase:
+
+```bash
+# Ensure env vars are set
+npx tsx scripts/seed-pricing.ts
+```
 
 ---
 
@@ -91,16 +88,13 @@ For detailed architecture, database schemas, and the development roadmap, please
 
 ## 5. Tech Stack
 
-| Category | Technology | Justification |
-| :--- | :--- | :--- |
-| **Framework** | **Next.js 16** | App Router for layouts, Server Components, and Server Actions. |
-| **Language** | **TypeScript** | Strict typing is mandatory for financial/pricing logic. |
-| **Backend** | **Supabase** | Managed PostgreSQL, Auth (Magic Link), and Real-time capabilities. |
-| **State** | **Zustand** | Lightweight state management with built-in `localStorage` persistence. |
-| **Styling** | **Sass (Modules)** | Modular, scoped styling with a centralized Design System. |
-| **Validation** | **Zod** | Runtime schema validation for forms, API inputs, and configuration objects. |
-| **Testing** | **Vitest** | High-performance unit testing for the pricing engine. |
+* **Next.js 16** (App Router + Server Actions)
+* **TypeScript 5.9**
+* **Supabase** (Postgres + Auth)
+* **Zustand** (State management)
+* **SCSS Modules** (Design system tokens & components)
+
+````
 
 ---
 
-*Documentation maintained by the FM Creativo Engineering Team.*

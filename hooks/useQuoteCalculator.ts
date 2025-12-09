@@ -1,31 +1,31 @@
-// hooks/useQuoteCalculator.ts
-import { useMemo } from 'react';
+// File: hooks/useQuoteCalculator.ts
+// Description: Hook that validates calculator input and produces a quote + warnings.
+
+import { useMemo } from "react";
+
 import {
     calcQuote,
     calcVolumeFromDimensions,
     calcVolumeFromArea,
-    EMPTY_QUOTE
-} from '@/lib/pricing';
+    EMPTY_QUOTE,
+} from "@/lib/pricing";
 import {
     COFFERED_SPECS,
     CASETON_FACTORS,
-    CONCRETE_TYPES
-} from '@/config/business';
+    CONCRETE_TYPES,
+} from "@/config/business";
 import {
     createKnownVolumeSchema,
     DimensionsSchema,
-    AreaSchema
-} from '@/lib/schemas';
-import {
-    type CalculatorState,
-    type QuoteBreakdown,
-    type QuoteWarning,
-} from '@/types/domain';
+    AreaSchema,
+} from "@/lib/schemas";
 
-/**
- * Pure calculation logic.
- * Decoupled from the Store to allow usage with any input source (Draft or History Item).
- */
+import type {
+    CalculatorState,
+    QuoteBreakdown,
+    QuoteWarning,
+} from "@/types/domain";
+
 export function useQuoteCalculator(input: CalculatorState) {
     const {
         mode,
@@ -40,161 +40,190 @@ export function useQuoteCalculator(input: CalculatorState) {
         cofferedSize,
         strength,
         type,
-        additives // Phase 2: Additives support
+        additives,
     } = input;
 
     const result = useMemo(() => {
-        // 1. Initial State
         const emptyResult = {
             quote: EMPTY_QUOTE,
             rawVolume: 0,
             isValid: false,
             error: null as string | null,
-            warning: null as QuoteWarning
+            warning: null as QuoteWarning,
         };
 
         if (mode === null) return emptyResult;
 
         let rawRequested = 0;
         let error: string | null = null;
-        let calculationDetails: QuoteBreakdown['calculationDetails'];
+        let calculationDetails: QuoteBreakdown["calculationDetails"];
 
-        // 2. Validate & Calculate Volume
-        if (mode === 'knownM3') {
+        // MODE 1: Direct known volume
+        if (mode === "knownM3") {
             const schema = createKnownVolumeSchema();
             const parse = schema.safeParse({ m3 });
+
             if (!parse.success) {
-                error = parse.error.issues[0].message;
+                error = parse.error.issues[0]?.message ?? "Volumen inválido.";
             } else {
                 rawRequested = parse.data.m3;
-                calculationDetails = { formula: 'Volumen ingresado manualmente' };
+                calculationDetails = {
+                    formula: "Volumen ingresado manualmente",
+                };
             }
         } else {
-            // Assist Mode Logic
-            const hasCofferedSlab = hasCoffered === 'yes';
+            // MODE 2: Assisted volume (dimensions/area)
+            const hasCofferedSlab = hasCoffered === "yes";
             let effectiveThicknessCm = 0;
             let coefficient = 0;
 
-            if (hasCofferedSlab && cofferedSize && COFFERED_SPECS[cofferedSize]) {
-                effectiveThicknessCm = COFFERED_SPECS[cofferedSize].totalThicknessCm;
+            if (
+                hasCofferedSlab &&
+                cofferedSize &&
+                COFFERED_SPECS[cofferedSize]
+            ) {
+                effectiveThicknessCm =
+                    COFFERED_SPECS[cofferedSize].totalThicknessCm;
                 coefficient = COFFERED_SPECS[cofferedSize].coefficient;
             }
 
-            // Dummy for validation if coffered (since user doesn't type thickness)
+            // For coffered slabs we use a dummy thickness for schema validation
             const dummyThickness = "12";
 
-            if (volumeMode === 'dimensions') {
-                const inputThickness = hasCofferedSlab ? dummyThickness : thicknessByDims;
-                const parse = DimensionsSchema.safeParse({ length, width, thickness: inputThickness });
+            if (volumeMode === "dimensions") {
+                const inputThickness = hasCofferedSlab
+                    ? dummyThickness
+                    : thicknessByDims;
+
+                const parse = DimensionsSchema.safeParse({
+                    length,
+                    width,
+                    thickness: inputThickness,
+                });
 
                 if (!parse.success) {
                     if (length || width || inputThickness) {
-                        error = parse.error.issues[0].message;
+                        error =
+                            parse.error.issues[0]?.message ??
+                            "Medidas inválidas.";
                     } else {
-                        error = 'Ingresa las medidas.';
+                        error = "Ingresa las medidas.";
                     }
                 } else {
                     const { length: l, width: w, thickness: t } = parse.data;
+
                     rawRequested = calcVolumeFromDimensions({
                         lengthM: l,
                         widthM: w,
                         manualThicknessCm: hasCofferedSlab ? 0 : t,
                         hasCofferedSlab,
-                        cofferedSize
+                        cofferedSize,
                     });
 
                     const areaM2 = l * w;
+
                     if (hasCofferedSlab) {
                         calculationDetails = {
-                            formula: `${areaM2.toFixed(2)} m² × ${coefficient} (Coef. Aporte)`,
-                            factorUsed: coefficient
+                            formula: `${areaM2.toFixed(
+                                2
+                            )} m² × ${coefficient} (Coef. Aporte)`,
+                            factorUsed: coefficient,
                         };
                     } else {
                         const tM = t / 100;
                         calculationDetails = {
-                            formula: `${areaM2.toFixed(2)} m² × ${tM.toFixed(2)} m`,
-                            factorUsed: CASETON_FACTORS.solidSlab
+                            formula: `${areaM2.toFixed(
+                                2
+                            )} m² × ${tM.toFixed(2)} m`,
+                            factorUsed: CASETON_FACTORS.solidSlab,
                         };
                     }
                 }
             } else {
-                // Area Mode
-                const inputThickness = hasCofferedSlab ? dummyThickness : thicknessByArea;
-                const parse = AreaSchema.safeParse({ area, thickness: inputThickness });
+                // volumeMode === 'area'
+                const inputThickness = hasCofferedSlab
+                    ? dummyThickness
+                    : thicknessByArea;
+
+                const parse = AreaSchema.safeParse({
+                    area,
+                    thickness: inputThickness,
+                });
 
                 if (!parse.success) {
-                    error = parse.error.issues[0].message;
+                    error =
+                        parse.error.issues[0]?.message ?? "Área inválida.";
                 } else {
                     const { area: a, thickness: t } = parse.data;
+
                     rawRequested = calcVolumeFromArea({
                         areaM2: a,
                         manualThicknessCm: hasCofferedSlab ? 0 : t,
                         hasCofferedSlab,
-                        cofferedSize
+                        cofferedSize,
                     });
 
                     if (hasCofferedSlab) {
                         calculationDetails = {
-                            formula: `${a.toFixed(2)} m² × ${coefficient} (Coef. Aporte)`,
-                            factorUsed: coefficient
+                            formula: `${a.toFixed(
+                                2
+                            )} m² × ${coefficient} (Coef. Aporte)`,
+                            factorUsed: coefficient,
                         };
                     } else {
                         const tM = t / 100;
                         calculationDetails = {
                             formula: `${a.toFixed(2)} m² × ${tM.toFixed(2)} m`,
-                            factorUsed: CASETON_FACTORS.solidSlab
+                            factorUsed: CASETON_FACTORS.solidSlab,
                         };
                     }
                 }
             }
         }
 
+        // If any validation error or non-positive volume, fail fast
         if (error || rawRequested <= 0) {
             return { ...emptyResult, error };
         }
 
-        // 3. Calculate Financials (Phase 2 Update)
-        // Note: We don't pass the 3rd argument (pricingRules) so it uses the DEFAULT static fallback.
-        // In Phase 3, we will inject the rules from context here.
-        const quote = calcQuote(
-            rawRequested,
-            {
-                strength,
-                type,
-                additives: additives || [] // Ensure array safety
-            }
-        );
+        // Compute quote using engine
+        const quote = calcQuote(rawRequested, {
+            strength,
+            type,
+            additives: additives || [],
+        });
+
         quote.calculationDetails = calculationDetails;
 
-        // 4. Generate Warnings
         const {
             requestedM3: normReq,
             billedM3: normBill,
             minM3ForType,
             roundedM3,
-            isBelowMinimum
+            isBelowMinimum,
         } = quote.volume;
 
         let warning: QuoteWarning = null;
-        const typeLabel = CONCRETE_TYPES.find(t => t.value === type)?.label ?? type;
+        const typeLabel =
+            CONCRETE_TYPES.find((t) => t.value === type)?.label ?? type;
 
         if (isBelowMinimum) {
             warning = {
-                code: 'BELOW_MINIMUM',
+                code: "BELOW_MINIMUM",
                 minM3: minM3ForType,
                 billedM3: normBill,
-                typeLabel
+                typeLabel,
             };
         } else if (normBill !== normReq) {
             warning = {
-                code: 'ROUNDING_POLICY',
+                code: "ROUNDING_POLICY",
                 requestedM3: normReq,
-                billedM3: normBill
+                billedM3: normBill,
             };
         } else if (roundedM3 !== normReq) {
             warning = {
-                code: 'ROUNDING_ADJUSTMENT',
-                billedM3: normBill
+                code: "ROUNDING_ADJUSTMENT",
+                billedM3: normBill,
             };
         }
 
@@ -203,12 +232,22 @@ export function useQuoteCalculator(input: CalculatorState) {
             rawVolume: rawRequested,
             isValid: true,
             error: null,
-            warning
+            warning,
         };
-
     }, [
-        mode, m3, volumeMode, length, width, thicknessByDims, area, thicknessByArea,
-        hasCoffered, cofferedSize, strength, type, additives
+        mode,
+        m3,
+        volumeMode,
+        length,
+        width,
+        thicknessByDims,
+        area,
+        thicknessByArea,
+        hasCoffered,
+        cofferedSize,
+        strength,
+        type,
+        additives,
     ]);
 
     return result;

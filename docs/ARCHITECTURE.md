@@ -2,91 +2,116 @@
 
 ## 1. Technology Stack
 
-La arquitectura prioriza el rendimiento del lado del cliente (Core Web Vitals) y la seguridad del lado del servidor.
+- **Framework:** Next.js 16 (App Router)
+- **Language:** TypeScript 5.9
+- **Styling:** SCSS Modules (`_tokens.scss`, `_primitives.scss`)
+- **State:** Zustand v5 (with `persist` middleware)
+- **Backend:** Supabase (Postgres + Auth), accessed via Server Actions
+- **Analytics:** GA4 + Meta Pixel (browser) + CAPI (server)
 
-- **Framework:** **Next.js 16** (App Router).
-- **Language:** **TypeScript 5.9** (Strict Mode).
-- **Styling:** **SCSS Modules** usando un sistema centralizado de Tokens (`_tokens.scss`) y Mixins.
-- **State Management:** **Zustand v5** con middleware `persist`.
-- **Backend:** **Supabase** (PostgreSQL) integrado exclusivamente vía **Server Actions**.
-- **Validation:** **Zod** para inputs de formularios, payloads de API y variables de entorno.
-- **Monitoring:** Abstracción ligera (`lib/monitoring.ts`) para reporte de errores sin bloquear la UI.
+---
 
-## 2. Patterns & Strategies
+## 2. Folder Structure Standards
 
-### The "Fail-Open" Logic (Lead Capture)
+To ensure maintainability during the SaaS scaling phases:
 
-El sistema está diseñado para capturar el lead incluso si la base de datos falla, asegurando que el usuario siempre sea redirigido a WhatsApp para cerrar la venta.
+1. **Folder-per-Component**
+   Complex components (such as `Header`) must live in their own directory containing both `.tsx` and `.module.scss`.
 
-```mermaid
-sequenceDiagram
-    participant User as Visitor
-    participant UI as Calculator (Client)
-    participant Server as Server Action
-    participant Monitoring as lib/monitoring
-    participant DB as Supabase
-    participant WA as WhatsApp
+   - ✅ `components/layouts/header/Header.tsx`
+   - ❌ `components/layouts/Header.tsx` (flat file)
 
-    User->>UI: Input data & Click "Finalizar"
-    UI->>Server: submitLead(Payload)
+2. **No Typos**
+   Directory names must be consistent and intentional (`ToolShell`, not `ToolSheel`).
 
-    rect rgb(240, 255, 240)
-        Note right of Server: Persistence Attempt
-        Server->>DB: INSERT into leads
-        alt DB Fails
-            DB-->>Server: Error / Timeout
-            Server->>Monitoring: Log Error (Non-blocking)
-            Server-->>UI: Returns { success: true, warning: 'db_failed' }
-        else DB Success
-            DB-->>Server: ID Created
-            Server-->>UI: Returns { success: true, id: ... }
-        end
-    end
+3. **Barrel Files**
+   Use `index.ts` sparingly and mostly for library-style exports, e.g. `lib/schemas/index.ts`.
 
-    Note over UI: UI always redirects
-    UI->>WA: Generates URL & Opens WhatsApp`
-```
+4. **Colocation**
+   Tests (`.test.ts` / `.spec.ts`) should live next to the file they test.
 
-### Marketing Ops: Event Deduplication Flow
+---
 
-Para garantizar la medición precisa en Meta Ads (iOS 14+), utilizamos un modelo híbrido Browser + Server (CAPI).
+## 3. Core Patterns
 
-1. **Client:** Genera un `event_id` único (UUID) al iniciar el checkout.
-2. **Pixel:** Envía evento `Lead` al navegador con ese `event_id`.
-3. **Server:** Recibe el payload con el `event_id` y lo envía a Meta CAPI via `submitLead`.
-4. **Meta:** Deduplica ambos eventos usando el ID compartido, mejorando la calidad de la coincidencia.
+### 3.1 Fail-Open Persistence
 
-### The "Global UI" Pattern
+Lead submission uses:
 
-Para evitar la fragmentación de estado entre las páginas de Marketing (`/`) y la Aplicación (`/cotizador`), los componentes de feedback visual del carrito se inyectan en el `RootLayout`.
+- **DB path:** Insert into `leads` table.
+- **CAPI path:** Fire Meta CAPI with hashed PII and `event_id`.
 
-- **Componente:** `components/GlobalUI.tsx`
-- **Ubicación:** `app/layout.tsx`
-- **Responsabilidad:** Manejar `QuoteDrawer`, `SmartBottomBar` y `FeedbackToast` de forma persistente en toda la navegación.
+If Supabase is not configured or write fails:
 
-## 3. Directory Structure
+- Errors are logged with `reportError` / `reportWarning`.
+- The action still returns `success: true` so the WhatsApp handoff is never blocked.
 
-```tsx
-├── app/
-│   ├── (marketing)/      # Landing pages públicas.
-│   ├── (app)/            # Rutas funcionales (/cotizador).
-│   ├── actions/          # Server Actions (submitLead.ts). Único punto de escritura.
-│   └── layout.tsx        # Root Layout + GlobalUI.
-├── components/
-│   ├── Calculator/       # Lógica compleja de dominio.
-│   │   ├── steps/        # Sub-componentes refactorizados (Forms, ModeSelector).
-│   ├── GlobalUI.tsx      # Orquestador de componentes flotantes.
-│   ├── ui/               # Átomos reutilizables (Buttons, Inputs).
-├── lib/
-│   ├── monitoring.ts     # Capa de abstracción para logging.
-│   ├── pricing.ts        # Motor de precios (Consume config/business.ts como fallback).
-│   └── schemas/          # Esquemas Zod (Pricing, Orders).
-└── store/                # Zustand Stores (Persisted).
-```
+### 3.2 Global UI Orchestrator
 
-## 4. Development Standards
+`components/layouts/GlobalUI.tsx` is mounted once at the root (`app/layout.tsx`) and contains:
 
-1. **Server Actions First:** No crear API Routes. Usar `use server` en `app/actions/`.
-2. **Fail-Open UX:** Caminos críticos (Enviar Pedido) nunca deben bloquear al usuario si un servicio secundario falla.
-3. **Strict Typing:** Usar `z.infer` para mantener sincronizados los tipos de TypeScript con los validadores de runtime.
-4. **Single Source of Truth:** `config/business.ts` es el fallback actual, pero la arquitectura está lista para hidratarse desde DB.
+- `FeedbackToast`
+- `QuoteDrawer`
+- `SmartBottomBar`
+
+This prevents losing cart state when navigating between:
+
+- Marketing routes (`app/(marketing)/*`)
+- Internal tool routes (`app/(app)/*`, future CEJ Pro)
+
+### 3.3 Domain Separation
+
+- `lib/schemas/calculator.ts`
+  Input validation for physical and geometric constraints (dimensions, area, thickness, m³).
+
+- `lib/schemas/orders.ts`
+  Validation for business payloads (leads, quotes, financials, tracking, privacy).
+
+- `lib/pricing.ts`
+  Pricing engine: minimum order constraints, rounding to 0.5 m³, additives and freight pricing.
+
+- `app/actions/submitLead.ts`
+  Server action to persist leads and send CAPI events.
+
+---
+
+## 4. Data Flow (Quote → Lead → WhatsApp)
+
+1. **Calculator Form** (`components/Calculator/CalculatorForm.tsx`)
+
+   - Captures inputs (mode, volume, strength, type, additives).
+   - Uses `useQuoteCalculator` to compute a `Quote` object and warnings.
+
+2. **Cart & History** (`store/useCejStore.ts`)
+
+   - Adds the current quote as a cart item.
+   - Maintains history of previous quotes.
+
+3. **Checkout Modal** (`LeadFormModal` + `useCheckoutUI`)
+
+   - Captures name and phone.
+   - Calls `useCheckoutUI.processOrder`.
+
+4. **Server Action** (`submitLead`)
+
+   - Validates payload with `OrderSubmissionSchema`.
+   - Stores `quote_data` snapshot in `leads`.
+   - Optionally calls Meta CAPI with hashed PII.
+
+5. **WhatsApp Handoff**
+
+   - Builds a prefilled message including folio, items and total.
+   - Opens `wa.me` link for the configured `NEXT_PUBLIC_WHATSAPP_NUMBER`.
+
+---
+
+## 5. Future Extensions
+
+- **Phase 3 – Auth & Profiles**
+  - Link `leads` and `orders` to authenticated `profiles`.
+  - Enable CEJ Pro dashboards over the same data model.
+
+- **Phase 4 – Price Config Admin**
+  - CRUD UI over `price_config`.
+  - Support for seasonal pricing and zone-based freight rules.
+````

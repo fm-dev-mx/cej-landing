@@ -1,7 +1,10 @@
-// components/layouts/Header.module.scss
-@use "../../styles/primitives" as p;
-@use "../../styles/mixins" as *;
+// File: components/layouts/header/Header.module.scss
+// Description: Styling for main site header, navigation, and mobile menu.
 
+@use "../../../styles/primitives" as p;
+@use "../../../styles/mixins" as *;
+
+/* --- Header Container --- */
 .header {
   position: fixed;
   top: 0;
@@ -12,6 +15,7 @@
 
   background-color: transparent;
   border-bottom: 1px solid transparent;
+
   transition:
     background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     backdrop-filter 0.3s ease,
@@ -32,6 +36,7 @@
   box-shadow: var(--shadow-md);
 }
 
+/* --- Inner Layout --- */
 .inner {
   @include container;
   display: flex;
@@ -41,6 +46,7 @@
   gap: var(--sp-2);
 }
 
+/* --- Brand / Logo --- */
 .brand {
   display: flex;
   align-items: center;
@@ -62,11 +68,11 @@
   transition: height 0.3s ease;
 }
 
-/* --- Desktop Nav --- */
+/* --- Desktop Navigation --- */
 .nav {
   display: none;
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     display: block;
   }
 }
@@ -79,7 +85,7 @@
   margin: 0;
   padding: 0;
 
-  @include respond-to('lg') {
+  @include respond-to("lg") {
     gap: var(--sp-8);
   }
 }
@@ -107,7 +113,7 @@
     font-weight: 700;
 
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       bottom: 0;
       left: 50%;
@@ -121,13 +127,13 @@
   }
 }
 
-/* --- Actions --- */
+/* --- Desktop Actions --- */
 .actions {
   display: none;
   align-items: center;
   gap: var(--sp-1);
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     display: flex;
   }
 }
@@ -175,7 +181,6 @@
   color: var(--c-text-on-dark);
   border: 1px solid rgba(255, 255, 255, 0.2);
   font-family: var(--font-mono, monospace);
-  /* Monospace often looks better for numbers, or use sans if preferred */
   font-variant-numeric: tabular-nums;
   text-wrap: nowrap;
 
@@ -202,7 +207,7 @@
   cursor: pointer;
   z-index: 20;
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     display: none;
   }
 }
@@ -248,6 +253,7 @@
   transform: translateY(-100%);
   opacity: 0;
   visibility: hidden;
+
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.3s ease,
@@ -259,7 +265,7 @@
     visibility: visible;
   }
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     display: none;
   }
 }

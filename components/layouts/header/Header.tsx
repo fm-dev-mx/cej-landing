@@ -1,36 +1,45 @@
-// components/layouts/Header.tsx
+// File: components/layouts/header/Header.tsx
+// Description: Main site header with brand, navigation, cart/history access and mobile menu.
+
 "use client";
 
 import Link from "next/link";
 import Image from "next/image";
+
 import { env } from "@/config/env";
-import { useHeaderLogic } from "./header/useHeaderLogic";
-import DesktopNav from "./header/DesktopNav";
-import MobileMenu from "./header/MobileMenu";
+import { useHeaderLogic } from "./useHeaderLogic";
+import DesktopNav from "./DesktopNav";
+import MobileMenu from "./MobileMenu";
 import { useCejStore } from "@/store/useCejStore";
+
 import styles from "./Header.module.scss";
 
 export default function Header() {
   const { state, data, actions } = useHeaderLogic();
 
-  // Acciones para abrir el historial
   const setDrawerOpen = useCejStore((s) => s.setDrawerOpen);
   const setActiveTab = useCejStore((s) => s.setActiveTab);
   const cartCount = useCejStore((s) => s.cart.length);
 
   const openHistory = () => {
-    setActiveTab('history');
+    setActiveTab("history");
     setDrawerOpen(true);
   };
 
   return (
     <>
       <header
-        className={`${styles.header} ${state.isScrolled ? styles.headerScrolled : ""}`}
+        className={`${styles.header} ${state.isScrolled ? styles.headerScrolled : ""
+          }`}
       >
         <div className={styles.inner}>
+          {/* Brand / Logo */}
           <div className={styles.brand}>
-            <Link href="/" className={styles.logoLink} aria-label="Inicio">
+            <Link
+              href="/"
+              className={styles.logoLink}
+              aria-label="Inicio"
+            >
               <Image
                 src="/logo.svg"
                 alt={env.NEXT_PUBLIC_BRAND_NAME}
@@ -42,19 +51,25 @@ export default function Header() {
             </Link>
           </div>
 
+          {/* Desktop navigation */}
           <DesktopNav
             navItems={data.navItems}
             activeSectionId={state.activeSectionId}
           />
 
+          {/* Desktop actions (history, WhatsApp, call) */}
           <div className={styles.actions}>
-            {/* Botón de Historial/Carrito Desktop */}
             <button
               onClick={openHistory}
               className={`${styles.button} ${styles.buttonHistory}`}
               aria-label="Ver mis pedidos"
             >
-              📋 {cartCount > 0 && <span className={styles.badgeCount}>({cartCount})</span>}
+              📋{" "}
+              {cartCount > 0 && (
+                <span className={styles.badgeCount}>
+                  ({cartCount})
+                </span>
+              )}
             </button>
 
             {data.waHref && (
@@ -67,6 +82,7 @@ export default function Header() {
                 WhatsApp
               </a>
             )}
+
             {data.phoneMeta && (
               <a
                 href={data.phoneMeta.href}
@@ -79,6 +95,7 @@ export default function Header() {
             )}
           </div>
 
+          {/* Mobile menu toggle */}
           <button
             type="button"
             className={styles.menuToggle}
@@ -88,7 +105,8 @@ export default function Header() {
             aria-controls="mobile-menu"
           >
             <span
-              className={`${styles.menuIcon} ${state.isMenuOpen ? styles.menuIconOpen : ""}`}
+              className={`${styles.menuIcon} ${state.isMenuOpen ? styles.menuIconOpen : ""
+                }`}
             >
               <span className={styles.menuIconBar} />
               <span className={styles.menuIconBar} />
@@ -98,6 +116,7 @@ export default function Header() {
         </div>
       </header>
 
+      {/* Mobile menu overlay */}
       <MobileMenu
         isOpen={state.isMenuOpen}
         navItems={data.navItems}

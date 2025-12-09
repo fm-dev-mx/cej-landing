@@ -1,52 +1,63 @@
-'use client';
+// File: components/Calculator/CalculatorForm.tsx
+// Description: Main calculator orchestrator wiring store state to form steps and summary.
 
-import { useEffect, useRef } from 'react';
-import { useCejStore } from '@/store/useCejStore';
-import { useShallow } from 'zustand/react/shallow';
-import { useQuoteCalculator } from '@/hooks/useQuoteCalculator';
-import { CalculatorSummary } from './CalculatorSummary';
-import { ModeSelector } from './steps/ModeSelector';
-import { KnownVolumeForm } from './steps/forms/KnownVolumeForm';
-import { WorkTypeSelector } from './steps/forms/WorkTypeSelector';
-import { AssistVolumeForm } from './steps/forms/AssistVolumeForm';
-import { SpecsForm } from './steps/forms/SpecsForm';
-import { AdditivesForm } from './steps/forms/AdditivesForm';
-import { Step5Summary } from './steps/Step5Summary';
-import styles from './CalculatorForm.module.scss';
+"use client";
+
+import { useEffect, useRef } from "react";
+
+import { useCejStore } from "@/store/useCejStore";
+import { useQuoteCalculator } from "@/hooks/useQuoteCalculator";
+
+import { CalculatorSummary } from "./CalculatorSummary";
+import { ModeSelector } from "./steps/ModeSelector";
+import { Step5Summary } from "./steps/Step5Summary";
+
+import { KnownVolumeForm } from "./Forms/KnownVolumeForm";
+import { WorkTypeSelector } from "./Forms/WorkTypeSelector";
+import { AssistVolumeForm } from "./Forms/AssistVolumeForm";
+import { SpecsForm } from "./Forms/SpecsForm";
+import { AdditivesForm } from "./Forms/AdditivesForm";
+
+import styles from "./CalculatorForm.module.scss";
 
 /**
- * CalculatorForm Orchestrator
- * Connects the Store state to the presentation components.
- * Refactored to reduce complexity.
+ * CalculatorForm
+ *
+ * - Connects the Zustand store draft to individual form sections.
+ * - Manages focus when mode changes.
+ * - Shows validation errors, warnings and summary (ticket-style).
  */
 export function CalculatorForm() {
     const draft = useCejStore((s) => s.draft);
 
-    // Engine Logic
-    const { quote, isValid, error, warning } = useQuoteCalculator(draft);
+    // Quote engine result
+    const { isValid, error, warning } = useQuoteCalculator(draft);
 
-    // Focus Management
+    // Focus management
     const inputsSectionRef = useRef<HTMLDivElement>(null);
     const specsSectionRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (draft.mode && inputsSectionRef.current) {
-            const firstInput = inputsSectionRef.current.querySelector('input, select');
-            if (firstInput instanceof HTMLElement) firstInput.focus();
+            const firstInput =
+                inputsSectionRef.current.querySelector("input, select");
+            if (firstInput instanceof HTMLElement) {
+                firstInput.focus();
+            }
         }
     }, [draft.mode]);
 
     return (
         <div className={styles.container}>
-            {/* 1. Mode Selection */}
+            {/* 1. Mode selection */}
             <div className={styles.field}>
                 <label className={styles.label}>¿Cómo quieres cotizar?</label>
                 <ModeSelector currentMode={draft.mode} />
             </div>
 
-            {/* 2. Volume Inputs */}
+            {/* 2. Volume inputs */}
             <div ref={inputsSectionRef}>
-                {draft.mode === 'knownM3' ? (
+                {draft.mode === "knownM3" ? (
                     <div className={styles.field}>
                         <KnownVolumeForm hasError={!!error} />
                     </div>
@@ -55,6 +66,7 @@ export function CalculatorForm() {
                         <div className={styles.field}>
                             <WorkTypeSelector />
                         </div>
+
                         {draft.workType && (
                             <div className={styles.field}>
                                 <AssistVolumeForm error={error} />
@@ -64,12 +76,14 @@ export function CalculatorForm() {
                 )}
             </div>
 
-            {/* 3. Specs & Additives */}
-            {(draft.mode === 'knownM3' || draft.workType) && (
-                <div className={styles.fieldWithSeparator} ref={specsSectionRef}>
+            {/* 3. Specs & additives (expert section) */}
+            {(draft.mode === "knownM3" || draft.workType) && (
+                <div
+                    className={styles.fieldWithSeparator}
+                    ref={specsSectionRef}
+                >
                     <SpecsForm />
 
-                    {/* Expert Mode Section */}
                     {draft.showExpertOptions && (
                         <div className={styles.animateFadeIn}>
                             <AdditivesForm />
@@ -78,22 +92,31 @@ export function CalculatorForm() {
                 </div>
             )}
 
-            {/* 4. Feedback & Warning */}
+            {/* 4. Feedback & warnings */}
             {error && (
-                <div className={styles.error} role="alert">{error}</div>
+                <div className={styles.error} role="alert">
+                    {error}
+                </div>
             )}
 
             {!error && warning && (
                 <div className={styles.note}>
-                    {warning.code === 'BELOW_MINIMUM' && (
-                        <span>Nota: El pedido mínimo es {warning.minM3} m³. Se ajustará el precio.</span>
+                    {warning.code === "BELOW_MINIMUM" && (
+                        <span>
+                            Nota: El pedido mínimo es {warning.minM3} m³. Se
+                            ajustará el precio.
+                        </span>
                     )}
-                    {warning.code === 'ROUNDING_POLICY' && (
-                        <span>El volumen se ajusta a múltiplos de 0.5 m³.</span>
+
+                    {warning.code === "ROUNDING_POLICY" && (
+                        <span>
+                            El volumen se ajusta a múltiplos de 0.5 m³.
+                        </span>
                     )}
                 </div>
             )}
 
+            {/* 5. Summary (ticket-like view) */}
             <div className={styles.summarySection}>
                 <Step5Summary />
             </div>
