@@ -6,7 +6,7 @@
 
 ## 1. Project Vision
 
-**Concreto y Equipos de Juárez (CEJ)** evolves into a digital-first platform:
+**Concreto y Equipos de Juárez (CEJ) evolves into a digital-first platform:**
 
 1. **Lead Generation:** Friction-free calculator for anonymous traffic.
 2. **Order Management:** “CEJ Pro” SaaS for contractors.
@@ -31,13 +31,13 @@ src/
 │   ├── schemas/         # Zod definitions (orders, calculator, pricing)
 │   └── pricing.ts       # Core pricing engine
 └── store/               # Zustand state (cart, drafts, user)
-````
+```
 
 ### Key Patterns
 
-* **Fail-Open:** Lead submission keeps the UX flow even if DB write fails (`submitLead`).
-* **Global UI:** Cart state and overlays are mounted once in `components/layouts/GlobalUI`.
-* **Strict Typing:** Database payloads and server actions are validated with Zod schemas.
+- **Fail-Open:** Lead submission keeps the UX flow even if DB write fails (`submitLead`).
+- **Global UI:** Cart state and overlays are mounted once in `components/layouts/GlobalUI`.
+- **Strict Typing:** Database payloads and server actions are validated with Zod schemas.
 
 ---
 
@@ -79,22 +79,20 @@ npx tsx scripts/seed-pricing.ts
 
 For detailed architecture, database schemas, and the development roadmap, please refer to the `/docs` directory:
 
--   [🗺️ **Roadmap & Sprints**](/docs/ROADMAP.md): Project phases, user roles, and execution plan.
--   [🏗️ **Architecture**](/docs/ARCHITECTURE.md): Data flow diagrams, state management, and code conventions.
--   [🗄️ **Database Schema**](/docs/DB_SCHEMA.md): Table definitions, JSONB snapshots, and RLS security policies.
--   [📘 **Playbooks**](/docs/): Specific execution guides for each engineering phase.
+- [🗺️ **Roadmap & Sprints**](/docs/ROADMAP.md): Project phases, user roles, and execution plan.
+- [🏗️ **Architecture**](/docs/ARCHITECTURE.md): Data flow diagrams, state management, and code conventions.
+- [🗄️ **Database Schema**](/docs/DB_SCHEMA.md): Table definitions, JSONB snapshots, and RLS security policies.
+- [📘 **Playbooks**](/docs/): Active execution guides (Older phases in `/docs/archive/`).
+- [📊 **Pricing Model**](/docs/PRICING_MODEL.md): Math logic, formulas, and business rules.
+- [📈 **Tracking & SEO**](/docs/TRACKING_GUIDE.md): Meta CAPI, Pixel, and Analytics setup.
+- [🚀 **Execution Guide**](/docs/EXECUTION_GUIDE.md): Standards and deployment protocol.
 
 ---
 
 ## 5. Tech Stack
 
-* **Next.js 16** (App Router + Server Actions)
-* **TypeScript 5.9**
-* **Supabase** (Postgres + Auth)
-* **Zustand** (State management)
-* **SCSS Modules** (Design system tokens & components)
-
-````
-
----
-
+- **Next.js 16** (App Router + Server Actions)
+- **TypeScript 5.9**
+- **Supabase** (Postgres + Auth)
+- **Zustand** (State management)
+- **SCSS Modules** (Design system tokens & components)

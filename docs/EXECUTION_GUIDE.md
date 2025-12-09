@@ -1,78 +1,51 @@
 # Execution Guide: CEJ Platform
 
 **Status:** Living Document
-**Version:** 2.1 (Data Core Active)
+**Version:** 3.0 (SaaS Portal Active)
 
 ## 1. Vision & Core Philosophy
 
-**Product:** From `cej-landing` (Lead Gen) $\rightarrow$ `CEJ Pro` (SaaS).
-**Goal:** Transform a high-performance landing page into a robust SaaS platform for concrete contractors in Ciudad Juárez.
+We prioritize the user's ability to complete a quote and contact sales above all else. This means implementing "Fail-Open" mechanisms where a database outage or API failure never blocks the user from seeing a "Success" message, even if we have to degrade gracefully to email backups.
 
-### The "Fail-Open" Philosophy
-
-We prioritize the user's ability to complete a quote and contact sales above all else.
-
-- **Principle:** Technical failures (Database down, API timeout) must **never** block the primary conversion path (WhatsApp redirect).
-- **Implementation:** All critical mutations (Lead Submission) have graceful degradation paths (implemented via optional env vars and try/catch blocks).
-
-## 2. Technical Stack & Standards
+## 2. Tech Stack Constraints
 
 - **Framework:** Next.js 16 (App Router).
 - **Language:** TypeScript 5.9 (Strict Mode). No `any`.
 - **Styling:** **SCSS Modules** only.
-    - **Constraint:** **No Tailwind CSS**. Adhere to `_tokens.scss` and `_mixins.scss`.
+  - **Constraint:** **No Tailwind CSS**. Adhere to `_tokens.scss` and `_mixins.scss`.
 - **State:** Zustand v5 (with Persistence Middleware).
-- **Backend:** Supabase (PostgreSQL) via **Server Actions**.
 - **Validation:** Zod (Runtime schema validation for ALL inputs).
 
 ## 3. Architecture Overview
 
-```mermaid
-graph TD
-    User[Visitor] -->|Interacts| CalculatorUI[Calculator Component]
-    CalculatorUI -->|Local Logic| PricingEngine[lib/pricing.ts]
+Please refer to `docs/ARCHITECTURE.md` for the full data flow diagrams.
 
-    subgraph Client Side
-        Store[Zustand Store]
-        Local[LocalStorage]
-    end
-
-    PricingEngine --> Store
-    Store <--> Local
-
-    User -->|Submit Order| ServerAction[submitLead.ts]
-
-    subgraph Server Side
-        Supabase[(Supabase DB)]
-        CAPI[Meta CAPI]
-    end
-
-    ServerAction -->|Service Role Key| Supabase
-    ServerAction -.->|Fire-and-Forget| Monitoring[Webhook/Logs]
-
-    ServerAction -->|Response| CalculatorUI
-
-    CalculatorUI -->|Redirect| WhatsApp[WhatsApp API]
-```
+- **Tracking:** See `docs/TRACKING_GUIDE.md` for CAPI, Pixel, and SEO details.
+- **Pricing:** See `docs/PRICING_MODEL.md` for math logic and business rules.
 
 ## 4. Execution Roadmap
 
-We follow a strict, serialized playbook approach. Do not proceed to the next phase until the Exit Criteria of the current phase are met.
+We follow a strict, serialized playbook approach.
+Do not proceed to the next phase until the Exit Criteria of the current phase are met.
 
-| **Phase** | **Playbook** | **Goal** | **Status** |
-| --- | --- | --- | --- |
-| **0. Hardening** | `/docs/PLAYBOOK_00_QA_HARDENING.md` | Ensure math accuracy & A11y. | ✅ Completed |
-| **1. Data Core** | `/docs/PLAYBOOK_01_DATA_CORE.md` | Zero-loss data capture (DB) & Fail-Open. | ✅ Completed |
-| **2. Engine** | `/docs/PLAYBOOK_02_CALC_ENGINE.md` | Expert features (Additives). | 🏃 In Progress |
-| **3. Marketing** | `/docs/PLAYBOOK_03_MARKETING_OPS.md` | Server-side Tracking (CAPI). | Planned |
-| **4. SaaS** | `/docs/PLAYBOOK_04_SAAS_PORTAL.md` | User Auth & History. | Planned |
+| **Phase** | **Playbook/Ref** | **Goal** | **Status** |
+| :--- | :--- | :--- | :--- |
+| **0. Hardening** | `archive/PLAYBOOK_00...` | Math accuracy & A11y. | ✅ Completed |
+| **1. Data Core** | `archive/PLAYBOOK_01...` | DB Persistence & Fail-Open. | ✅ Completed |
+| **2. Engine** | `archive/PLAYBOOK_02...` | Expert features (Additives). | ✅ Completed |
+| **3. Marketing** | `docs/TRACKING_GUIDE.md` | Server-side Tracking (CAPI). | 🏃 **Active** |
+| **4. SaaS** | `docs/PLAYBOOK_04_SAAS_PORTAL.md` | User Auth & History. | Planned |
 
 ## 5. Development Protocol
 
-1. **Read the Playbook:** Before coding, read the specific markdown file for the active phase.
-2. **Type-First Development:** Define Zod schemas and TypeScript interfaces before writing logic.
-3. **Strict Logs:** Use structured logging for server actions to debug "Fail-Open" scenarios.
+1. **Check the Guide:** Verify your PR against the active Playbook requirements.
+2. **Type-First:** Define Zod schemas before writing logic.
+3. **Strict Logs:** Use structured logging for server actions.
     - *Format:* `[MODULE:ACTION] <Status> | Payload: {...}`
 4. **Sync Rules:**
-    - If you modify `lib/pricing.ts`, you **MUST** update `lib/pricing.test.ts`.
-    - If you modify the DB Schema, update `DB_SCHEMA.md` immediately.
+    - If you modify `lib/pricing.ts`, update `lib/pricing.test.ts`.
+    - If you change the DB Schema, update `docs/DB_SCHEMA.md`.
+    - If you modify `lib/tracking/*` or `lib/seo.ts`, update `docs/TRACKING_GUIDE.md`.
+5. **Quality Gate:**
+    - **Critical Path Validation:** Automated tests (Unit & Integration) covering math logic and checkout flows must pass 100% before any merge to main.
+    No Phase exit criteria is met without passing regression tests.
