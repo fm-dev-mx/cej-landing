@@ -11,17 +11,22 @@ export default function ExpertToggle() {
         <button
             className={styles.toggle}
             onClick={() => setExpertMode(!isExpert)}
-            aria-label={`Cambiar a modo ${!isExpert ? 'Experto' : 'Básico'}`}
+            // A11y: Semantic toggle state
+            aria-pressed={isExpert}
+            type="button"
             title="Activar selección de aditivos"
         >
-            <span className={`${styles.label} ${!isExpert ? styles.active : ''}`}>
+            <span className={`${styles.label} ${!isExpert ? styles.active : ''}`} aria-hidden="true">
                 Básico
             </span>
             <div className={styles.track}>
                 <div className={`${styles.thumb} ${isExpert ? styles.thumbRight : ''}`} />
             </div>
-            <span className={`${styles.label} ${isExpert ? styles.active : ''}`}>
+            <span className={`${styles.label} ${isExpert ? styles.active : ''}`} aria-hidden="true">
                 +Aditivos
+            </span>
+            <span className="sr-only">
+                {isExpert ? "Modo experto activado" : "Modo básico activado"}
             </span>
         </button>
     );

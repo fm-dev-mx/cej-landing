@@ -106,8 +106,19 @@ export function useCheckoutUI() {
                 privacy_accepted: true,
             });
 
-            if (!result.success) {
-                throw new Error(result.error || "Error al procesar el pedido.");
+            // FIX: Handled the new Discriminated Union type { status: 'success' | 'error' }
+            if (result.status === "error") {
+                // If there are validation errors, throw them with detailed messages
+                if (result.errors) {
+                    // Create an error message that contains the details of the fields
+                    const errorFields = Object.keys(result.errors).join(', ');
+                    const detailedMessage = `${result.message} Verifique los siguientes campos: ${errorFields}`;
+
+                    // Throw the error with the validation data
+                    throw new Error(detailedMessage, { cause: result.errors });
+                }
+
+                throw new Error(result.message || "Error al procesar el pedido.");
             }
 
             // Secondary event: contact via WhatsApp (no deduplication needed)
@@ -128,11 +139,19 @@ export function useCheckoutUI() {
             }
 
             return true;
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
+
+            // If the error has a 'cause' (our validation errors)
+            if (err.cause) {
+                // Here you could process err.cause (which is result.errors)
+                // and update the UI with field-specific errors.
+                // For now, we only use the detailed message.
+            }
+
             setState({
                 isProcessing: false,
-                error: "Hubo un problema. Por favor intenta de nuevo.",
+                error: err.message || "Hubo un problema. Por favor intenta de nuevo.",
             });
             return false;
         } finally {

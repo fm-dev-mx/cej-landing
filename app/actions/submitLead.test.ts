@@ -1,3 +1,4 @@
+// app/actions/submitLead.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { submitLead } from './submitLead';
 import { reportError } from '@/lib/monitoring';
@@ -86,8 +87,11 @@ describe('Server Action: submitLead', () => {
 
         const result = await submitLead(validPayload as any);
 
-        expect(result.success).toBe(true);
-        expect(result.id).toBe('999');
+        // Updated assertion for discriminated union
+        expect(result.status).toBe('success');
+        if (result.status === 'success') {
+            expect(result.id).toBe('999');
+        }
     });
 
     it('triggers Meta CAPI with correct payload (Hashing & EventID)', async () => {
@@ -117,8 +121,11 @@ describe('Server Action: submitLead', () => {
 
         const result = await submitLead(validPayload as any);
 
-        expect(result.success).toBe(true);
-        expect(result.warning).toBe('db_insert_failed');
+        // Fail-open means status is technically success, but with a warning
+        expect(result.status).toBe('success');
+        if (result.status === 'success') {
+            expect(result.warning).toBe('db_insert_failed');
+        }
         expect(reportError).toHaveBeenCalled();
     });
 });

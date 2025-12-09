@@ -16,11 +16,14 @@ export const SelectionCard = forwardRef<HTMLInputElement, SelectionCardProps>(
       <label
         className={`${styles.card} ${isSelected ? styles.selected : ''} ${className || ''}`}
         htmlFor={id}
+        // Ensure screen readers understand this container is part of a selection
+        aria-hidden="false"
       >
         <div className={styles.inputWrapper}>
           {/* ACCESSIBILITY NOTE:
             The input is visually hidden via SCSS mixins (clip-path) but remains
             in the DOM to handle focus and keyboard interaction.
+            'checked' attribute handles the aria-checked state implicitly for radio inputs.
           */}
           <input
             ref={ref}
@@ -31,7 +34,7 @@ export const SelectionCard = forwardRef<HTMLInputElement, SelectionCardProps>(
             {...props}
           />
 
-          {/* Visual Indicator (Decorative) */}
+          {/* Visual Indicator (Decorative) - hidden from screen readers to avoid noise */}
           {customIndicator ? (
             <div className={styles.customIndicatorWrapper} aria-hidden="true">
               {customIndicator}
@@ -43,7 +46,7 @@ export const SelectionCard = forwardRef<HTMLInputElement, SelectionCardProps>(
 
         <div className={styles.content}>
           <div className={styles.header}>
-            {icon && <span className={styles.icon}>{icon}</span>}
+            {icon && <span className={styles.icon} aria-hidden="true">{icon}</span>}
             <span className={styles.label}>{label}</span>
           </div>
           {description && <p className={styles.description}>{description}</p>}

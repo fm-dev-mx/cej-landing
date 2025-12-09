@@ -28,6 +28,14 @@ We enforce a minimum billed volume per service type.
 
 **Precedence:** The MOQ check happens *after* the rounding step.
 
+### 1.3 Volume Limits (Safety Constraints)
+
+To prevent logistical errors or abuse of the calculator:
+
+- **Minimum Calculation:** 0 m³ (Negative values are normalized to 0).
+- **Maximum Single Order:** **50 m³** (Soft limit).
+  - *Note:* Projects exceeding this volume typically require special logistics/pricing and should be directed to "Asesoría Técnica".
+
 ## 2. Pricing Architecture
 
 The final price is composed of three layers:
@@ -58,7 +66,12 @@ Additives are extra chemical or physical components. We support two pricing mode
 ### 2.3 Taxes & Validity
 
 - **VAT Rate:** 8% (Border Region Zone / IVA Fronterizo).
-- **Calculation:** Applied to the subtotal of (Base + Additives).
+- **Calculation Order:**
+    1. **Base Subtotal:** `round(Unit Price * Volume)`
+    2. **Additives Subtotal:** `sum(round(Additive Price * Quantity))`
+    3. **Subtotal:** `Base Subtotal + Additives Subtotal`
+    4. **VAT:** `round(Subtotal * 0.08)`
+    5. **Total:** `Subtotal + VAT`
 - **Validity:** Quotes are technically valid for **7 days** (`QUOTE_VALIDITY_DAYS`), though prices are subject to change without notice.
 
 ## 3. Geometric Calculators

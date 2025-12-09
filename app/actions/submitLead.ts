@@ -28,12 +28,17 @@ const supabase =
         )
         : null;
 
-export type SubmitLeadResult = {
-    success: boolean;
-    id?: string;
-    error?: string;
-    warning?: "db_not_configured" | "db_insert_failed" | "server_exception";
-};
+export type SubmitLeadResult =
+    | {
+        status: "success";
+        id: string;
+        warning?: "db_not_configured" | "db_insert_failed" | "server_exception";
+    }
+    | {
+        status: "error";
+        message: string;
+        errors?: Record<string, string[]>;
+    };
 
 /**
  * hashData
@@ -61,8 +66,9 @@ export async function submitLead(
         );
 
         return {
-            success: false,
-            error: "Datos de pedido inválidos o incompletos.",
+            status: "error",
+            message: "Datos de pedido inválidos o incompletos.",
+            errors: validationErrors.fieldErrors,
         };
     }
 
@@ -97,8 +103,9 @@ export async function submitLead(
             phone,
         });
 
+        // We return success to not block the user flow, but strictly typed as a warning state.
         return {
-            success: true,
+            status: "success",
             id: "mock-no-db",
             warning: "db_not_configured",
         };
@@ -150,7 +157,7 @@ export async function submitLead(
 
             // Fail-open: WhatsApp flow continues, but we mark a warning
             return {
-                success: true,
+                status: "success",
                 id: "fallback-db-error",
                 warning: "db_insert_failed",
             };
@@ -191,7 +198,7 @@ export async function submitLead(
             });
         }
 
-        return { success: true, id: String(data.id) };
+        return { status: "success", id: String(data.id) };
     } catch (err) {
         // Fail-open: log but keep flow going
         reportError(err, {
@@ -200,7 +207,7 @@ export async function submitLead(
         });
 
         return {
-            success: true,
+            status: "success",
             id: "fallback-exception",
             warning: "server_exception",
         };

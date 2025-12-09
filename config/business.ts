@@ -103,6 +103,8 @@ export const WORK_TYPES: WorkTypeConfig[] = [
 // --- PRICING RULES (FALLBACK / LEGACY ADAPTER) ---
 // This object is the static fallback used when DB connection fails or is not yet configured.
 // It matches the PricingRulesSchema strictly.
+// @deprecated - This static config will be replaced by DB fetching in Phase 4 (SaaS).
+// Currently used as Fail-Open fallback.
 
 const rawPricingConfig = {
     version: 1,

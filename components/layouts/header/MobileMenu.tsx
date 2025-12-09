@@ -23,7 +23,11 @@ export default function MobileMenu({
         <div
             id="mobile-menu"
             className={`${styles.mobileMenu} ${isOpen ? styles.mobileMenuOpen : ""}`}
+            // A11y: Dialog semantics for mobile overlay
+            role="dialog"
+            aria-modal="true"
             aria-hidden={!isOpen}
+            aria-label="Menú principal"
         >
             <div className={styles.mobileMenuInner}>
                 <nav className={styles.mobileNav}>
@@ -40,6 +44,7 @@ export default function MobileMenu({
                                         className={`${styles.mobileNavLink} ${isActive ? styles.mobileNavLinkActive : ""
                                             }`}
                                         onClick={onClose}
+                                        tabIndex={isOpen ? 0 : -1}
                                     >
                                         {item.label}
                                     </a>
@@ -56,12 +61,17 @@ export default function MobileMenu({
                             target="_blank"
                             rel="noopener noreferrer"
                             className={`${styles.button} ${styles.buttonWhatsApp}`}
+                            tabIndex={isOpen ? 0 : -1}
                         >
                             WhatsApp
                         </a>
                     )}
                     {phoneMeta && (
-                        <a href={phoneMeta.href} className={`${styles.button} ${styles.buttonCall}`}>
+                        <a
+                            href={phoneMeta.href}
+                            className={`${styles.button} ${styles.buttonCall}`}
+                            tabIndex={isOpen ? 0 : -1}
+                        >
                             Llamar
                         </a>
                     )}
