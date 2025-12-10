@@ -76,11 +76,11 @@ export default defineConfig({
   webServer: {
     // Optimization: Use 'start' instead of 'dev' for CI performance/stability.
     // Ensure 'npm run build' is executed before running tests in CI pipeline.
-    command: 'npm run start',
+    command: 'pnpm run start',
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000, // Give Next.js enough time to boot up (2 mins)
-    stdout: 'ignore',
+    stdout: 'pipe',
     stderr: 'pipe',
   },
 });
