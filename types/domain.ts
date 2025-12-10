@@ -1,4 +1,4 @@
-// types/domain.ts
+// File: types/domain.ts
 import { z } from 'zod';
 import type { PricingRules, VolumeTier } from '@/lib/schemas/pricing';
 import {
@@ -6,7 +6,7 @@ import {
     StrengthEnum
 } from '@/lib/schemas/pricing';
 
-// --- 1. Core Primitives (Inferred where possible) ---
+// --- 1. Core Primitives ---
 export type Strength = z.infer<typeof StrengthEnum>;
 export type ConcreteType = z.infer<typeof ConcreteTypeEnum>;
 
@@ -165,3 +165,30 @@ export type OrderPayload = {
         userAgent?: string;
     };
 };
+
+// --- 5. Meta CAPI ---
+
+/**
+ * Structure for Meta CAPI User Data.
+ */
+export interface CapiUserData {
+    em?: string; // Hashed Email
+    ph?: string; // Hashed Phone
+    client_ip_address: string;
+    client_user_agent: string;
+    fbc?: string;
+    fbp?: string;
+}
+
+/**
+ * Structure for Meta CAPI Events.
+ */
+export interface CapiEvent {
+    event_name: string;
+    event_time: number;
+    event_id: string;
+    event_source_url: string;
+    action_source: 'website';
+    user_data: CapiUserData;
+    custom_data?: Record<string, unknown>;
+}

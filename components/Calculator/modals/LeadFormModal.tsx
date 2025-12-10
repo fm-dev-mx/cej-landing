@@ -1,5 +1,6 @@
 // File: components/Calculator/modals/LeadFormModal.tsx
 // Description: Modal to capture customer data and trigger the checkout flow.
+// Optimized: Resets state on open to ensure data freshness without forcing parent 'key'.
 
 "use client";
 
@@ -25,15 +26,19 @@ export function LeadFormModal({
     const user = useCejStore((s) => s.user);
     const { processOrder, isProcessing, error } = useCheckoutUI();
 
-    const [name, setName] = useState(user.name || "");
-    const [phone, setPhone] = useState(user.phone || "");
+    // Initialize state lazily to avoid unnecessary renders
+    const [name, setName] = useState(() => user.name || "");
+    const [phone, setPhone] = useState(() => user.phone || "");
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [saveMyData, setSaveMyData] = useState(true);
 
-    // Prefill when modal opens and user data is available
+    // Sync: Update local state if store changes OR if modal opens.
+    // This fixes the risk of stale data if the modal is reused without unmounting.
     useEffect(() => {
-        if (isOpen && user.name) setName(user.name);
-        if (isOpen && user.phone) setPhone(user.phone);
+        if (isOpen) {
+            if (user.name) setName(user.name);
+            if (user.phone) setPhone(user.phone);
+        }
     }, [isOpen, user.name, user.phone]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -46,14 +51,13 @@ export function LeadFormModal({
         );
 
         if (success) {
-            // Use a placeholder or the actual response if processOrder returned the folio
             const tempFolio = "WEB-NEW";
             if (onSuccess) onSuccess(tempFolio, name);
         }
     };
 
     const isSubmitDisabled =
-        !privacyAccepted || name.length < 3 || phone.length < 10;
+        !privacyAccepted || name.trim().length < 3 || phone.trim().length < 10;
 
     return (
         <ResponsiveDialog
@@ -121,7 +125,6 @@ export function LeadFormModal({
                     </label>
                 </div>
 
-                {/* Optional: "remember my data" checkbox (future UX) */}
                 <div className={styles.checkboxWrapper}>
                     <label className={styles.checkboxLabel}>
                         <input

@@ -1,9 +1,10 @@
 // lib/utils.ts
+import { type CartItem } from '@/types/domain'; // Ensure this path matches your structure
 
-export const clamp = (v: number, min: number, max: number) =>
+export const clamp = (v: number, min: number, max: number): number =>
     Math.min(Math.max(v, min), max);
 
-export function fmtMXN(value: number) {
+export function fmtMXN(value: number): string {
     return new Intl.NumberFormat('es-MX', {
         style: 'currency',
         currency: 'MXN',
@@ -12,8 +13,8 @@ export function fmtMXN(value: number) {
     }).format(value);
 }
 
-export const parseNum = (s: string) => {
-    const n = Number(String(s).replace(/[^\d.]/g, ''));
+export const parseNum = (s: string | number | undefined): number => {
+    const n = Number(String(s || '0').replace(/[^\d.]/g, ''));
     return Number.isFinite(n) ? n : 0;
 };
 
@@ -72,16 +73,11 @@ export function getPhoneUrl(
     return `tel:${cleanPhone}`;
 }
 
-// Helper type for cart item structure without importing full Store types
-type MinimalCartItem = {
-    results: { total: number;[key: string]: any };
-    config?: { label?: string };
-    [key: string]: unknown;
-};
-
-// Helper to format cart for WhatsApp
+/**
+ * Helper to format cart for WhatsApp using strict types.
+ */
 export function generateCartMessage(
-    cart: MinimalCartItem[],
+    cart: CartItem[],
     name: string,
     folio: string
 ): string {
@@ -89,19 +85,21 @@ export function generateCartMessage(
 
     cart.forEach((item, index) => {
         const { results, config } = item;
-        const concreteType = (results as any).concreteType;
-        const volume = (results as any).volume?.billedM3;
-        const strength = (results as any).strength;
+        const concreteType = results.concreteType;
+        const volume = results.volume?.billedM3;
+        const strength = results.strength;
 
         const specs = strength ? `f'c ${strength}` : '';
         message += `🔹 *Ítem ${index + 1}:* ${config?.label || 'Concreto'} ${specs}\n`;
+
         if (volume) {
             message += `   • Volumen: ${Number(volume).toFixed(2)} m³\n`;
         }
+
         if (concreteType) {
-            message += `   • Servicio: ${concreteType === 'pumped' ? 'Bomba' : 'Tiro Directo'
-                }\n`;
+            message += `   • Servicio: ${concreteType === 'pumped' ? 'Bomba' : 'Tiro Directo'}\n`;
         }
+
         message += `   • Subtotal: ${fmtMXN(results.total)}\n\n`;
     });
 

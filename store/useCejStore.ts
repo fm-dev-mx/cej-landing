@@ -79,6 +79,7 @@ export const useCejStore = create<CejStore>()(
             setMode: (mode) => {
                 set((state) => {
                     const nextDraft = { ...state.draft, mode };
+                    // Reset fields relevant to the new mode
                     if (mode === 'knownM3') {
                         nextDraft.workType = null;
                         nextDraft.hasCoffered = 'no';
@@ -139,6 +140,8 @@ export const useCejStore = create<CejStore>()(
 
             addToCart: (results) => {
                 const state = get();
+
+                // Construct label
                 let workTypeLabel = 'Carga Manual';
                 if (state.draft.mode === 'assistM3' && state.draft.workType) {
                     const match = WORK_TYPES.find(w => w.id === state.draft.workType);
@@ -147,15 +150,14 @@ export const useCejStore = create<CejStore>()(
                     workTypeLabel = 'Volumen Directo';
                 }
 
-                // FIX: Defensive coding for hydration mismatch
                 const additivesList = state.draft.additives || [];
                 const additivesCount = additivesList.length;
 
                 const label = `${workTypeLabel} - f'c ${state.draft.strength} ${additivesCount > 0 ? `(+${additivesCount})` : ''}`;
 
+                // Create strict CartItem
                 const newItem: CartItem = {
                     id: uuidv4(),
-                    timestamp: Date.now(),
                     inputs: { ...state.draft, additives: additivesList },
                     results,
                     config: { label }
@@ -176,7 +178,8 @@ export const useCejStore = create<CejStore>()(
             editCartItem: (id) => {
                 const state = get();
                 const item = state.cart.find((i) => i.id === id);
-                if (item) {
+
+                if (item && item.inputs) {
                     set({
                         draft: { ...item.inputs },
                         cart: state.cart.filter((i) => i.id !== id),
@@ -189,12 +192,14 @@ export const useCejStore = create<CejStore>()(
             },
 
             cloneCartItem: (item) => {
-                set({
-                    draft: { ...item.inputs },
-                    isDrawerOpen: false,
-                });
-                if (typeof document !== 'undefined') {
-                    document.getElementById('calculator-section')?.scrollIntoView({ behavior: 'smooth' });
+                if (item.inputs) {
+                    set({
+                        draft: { ...item.inputs },
+                        isDrawerOpen: false,
+                    });
+                    if (typeof document !== 'undefined') {
+                        document.getElementById('calculator-section')?.scrollIntoView({ behavior: 'smooth' });
+                    }
                 }
             },
 

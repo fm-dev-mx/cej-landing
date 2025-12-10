@@ -1,6 +1,6 @@
 // File: app/actions/submitLead.ts
 // Description: Server action to persist a lead into Supabase and send data to Meta CAPI.
-// Optimized for strict error boundaries and fail-open resilience.
+// Optimized for strict error boundaries and strong typing.
 
 "use server";
 
@@ -11,8 +11,10 @@ import { createHash } from "node:crypto";
 
 import {
     OrderSubmissionSchema,
-    type OrderSubmission,
+    // Note: We prefer the strict domain type for the payload structure
+    // to ensure TS safety beyond the Zod schema.
 } from "@/lib/schemas";
+import type { OrderPayload } from "@/types/domain"; // Import strict type
 import { env } from "@/config/env";
 import { reportError, reportWarning } from "@/lib/monitoring";
 import type { Database, QuoteSnapshot } from "@/types/database";
@@ -53,11 +55,25 @@ function hashData(data: string | undefined): string | undefined {
     return createHash("sha256").update(normalized).digest("hex");
 }
 
+/**
+ * Definition of the input payload using strictly typed OrderPayload for the quote.
+ */
+type SubmitLeadPayload = {
+    name: string;
+    phone: string;
+    quote: OrderPayload; // Enforce strict type here
+    visitor_id?: string;
+    utm_source?: string;
+    utm_medium?: string;
+    fb_event_id?: string;
+    privacy_accepted: boolean;
+};
+
 export async function submitLead(
-    payload: OrderSubmission
+    payload: SubmitLeadPayload
 ): Promise<SubmitLeadResult> {
     try {
-        // 1. Validate payload with Zod
+        // 1. Validate payload with Zod for runtime safety
         const parseResult = OrderSubmissionSchema.safeParse(payload);
 
         if (!parseResult.success) {
@@ -69,6 +85,7 @@ export async function submitLead(
             };
         }
 
+        // Destructure safely from the parsed data
         const {
             name,
             phone,
@@ -79,6 +96,10 @@ export async function submitLead(
             fb_event_id,
             privacy_accepted,
         } = parseResult.data;
+
+        // Cast quote to OrderPayload to regain strict typing lost by Zod's .record(z.any())
+        // if the schema was too loose. Ideally, schema matches OrderPayload.
+        const typedQuote = quote as OrderPayload;
 
         const headerStore = await headers();
         const cookieStore = await cookies();
@@ -104,10 +125,10 @@ export async function submitLead(
 
         // Snapshot for JSONB storage in leads.quote_data
         const quoteSnapshot: QuoteSnapshot = {
-            folio: quote.folio,
-            items: quote.items,
-            financials: quote.financials,
-            metadata: quote.metadata,
+            folio: typedQuote.folio,
+            items: typedQuote.items,
+            financials: typedQuote.financials,
+            metadata: typedQuote.metadata,
             customer: {
                 name,
                 phone,
@@ -153,7 +174,7 @@ export async function submitLead(
         if (fb_event_id) {
             after(async () => {
                 const hashedPhone = hashData(phone);
-                const hashedEmail = hashData(quote.customer?.email);
+                const hashedEmail = hashData(typedQuote.customer?.email);
 
                 await sendToMetaCAPI({
                     event_name: "Lead",
@@ -170,11 +191,11 @@ export async function submitLead(
                         fbc,
                     },
                     custom_data: {
-                        currency: quote.financials.currency,
-                        value: quote.financials.total,
+                        currency: typedQuote.financials.currency,
+                        value: typedQuote.financials.total,
                         content_name: "Concrete Quote",
                         status: "new",
-                        contents: quote.items.map((item) => ({
+                        contents: typedQuote.items.map((item) => ({
                             id: item.id,
                             quantity: item.volume,
                             item_price: item.subtotal,
@@ -186,9 +207,11 @@ export async function submitLead(
 
         return { status: "success", id: String(data.id) };
 
-    } catch (err: any) {
+    } catch (err: unknown) {
         // Global Catch-All: Ensures the server never crashes the client request
-        reportError(err, { context: "submitLead unhandled exception" });
+        reportError(err instanceof Error ? err : new Error("Unknown error"), {
+            context: "submitLead unhandled exception"
+        });
 
         return {
             status: "success",

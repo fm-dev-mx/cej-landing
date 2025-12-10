@@ -3,6 +3,7 @@
 // Optimized for testability and fail-safe URL generation.
 
 import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 import { useCejStore } from "@/store/useCejStore";
 import { useIdentity } from "@/hooks/useIdentity";
@@ -58,7 +59,8 @@ export function useCheckoutUI() {
             );
 
             // 1. Generate deduplication key (event_id) for Pixel + CAPI
-            const fbEventId = crypto.randomUUID();
+            // Use uuidv4 for better compatibility than crypto.randomUUID
+            const fbEventId = uuidv4();
 
             const orderPayload: OrderPayload = {
                 folio,
@@ -99,10 +101,11 @@ export function useCheckoutUI() {
             });
 
             // 3. Send order snapshot to server (Supabase + CAPI)
+            // Passing strongly typed payload without 'as any'
             const result = await submitLead({
                 name: customer.name,
                 phone: customer.phone,
-                quote: orderPayload as any,
+                quote: orderPayload,
                 visitor_id: identity?.visitorId,
                 utm_source: identity?.utm_source,
                 utm_medium: identity?.utm_medium,
@@ -110,15 +113,11 @@ export function useCheckoutUI() {
                 privacy_accepted: true,
             });
 
-            // FIX: Handled the new Discriminated Union type { status: 'success' | 'error' }
             if (result.status === "error") {
                 // If there are validation errors, throw them with detailed messages
                 if (result.errors) {
-                    // Create an error message that contains the details of the fields
                     const errorFields = Object.keys(result.errors).join(', ');
                     const detailedMessage = `${result.message} Verifique los siguientes campos: ${errorFields}`;
-
-                    // Throw the error with the validation data
                     throw new Error(detailedMessage, { cause: result.errors });
                 }
 
@@ -142,28 +141,23 @@ export function useCheckoutUI() {
                 // Use constant delay for predictable UX and testing
                 setTimeout(() => window.open(waUrl, "_blank"), WHATSAPP_DELAY_MS);
             } else {
-                // Dev/Staging warning helper
-                console.warn("[Checkout] WhatsApp URL could not be generated. Check env vars.");
+                console.warn("[Checkout] WhatsApp URL missing.");
             }
 
             return true;
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
 
-            // If the error has a 'cause' (our validation errors)
-            if (err.cause) {
-                // Here you could process err.cause (which is result.errors)
-                // and update the UI with field-specific errors.
-                // For now, we only use the detailed message.
-            }
+            const message = err instanceof Error
+                ? err.message
+                : "Hubo un problema. Por favor intenta de nuevo.";
 
             setState({
                 isProcessing: false,
-                error: err.message || "Hubo un problema. Por favor intenta de nuevo.",
+                error: message,
             });
             return false;
         } finally {
-            // Ensure spinner is reset even if we returned earlier
             setState((prev) => ({ ...prev, isProcessing: false }));
         }
     };

@@ -7,6 +7,9 @@ import { trackLead } from '@/lib/tracking/visitor';
 
 // --- Mocks ---
 vi.mock('@/app/actions/submitLead');
+vi.mock('uuid', () => ({
+    v4: () => 'uuid-123'
+}));
 
 vi.mock('@/lib/tracking/visitor', () => ({
     trackLead: vi.fn(),
@@ -19,7 +22,7 @@ vi.mock('@/store/useCejStore', () => ({
             id: '1',
             results: { total: 1000, volume: { billedM3: 1 }, concreteType: 'direct' },
             config: { label: 'Test Item' },
-            inputs: {}
+            inputs: { additives: [] } // Ensure inputs match strictly
         }],
         updateUserContact: vi.fn(),
         moveToHistory: vi.fn()
@@ -43,7 +46,7 @@ describe('useCheckoutUI', () => {
         vi.clearAllMocks();
         vi.useFakeTimers(); // Enable fake timers to control setTimeout
         vi.stubGlobal('open', vi.fn());
-        vi.stubGlobal('crypto', { randomUUID: () => 'uuid-123' });
+        // No need to stub crypto anymore as we use uuid package
     });
 
     afterEach(() => {
@@ -72,6 +75,7 @@ describe('useCheckoutUI', () => {
         // Should pass now that getWhatsAppUrl is mocked
         expect(window.open).toHaveBeenCalledWith('https://wa.me/mock', '_blank');
 
+        // Verify tracking called with uuid from mock
         expect(trackLead).toHaveBeenCalledWith(expect.objectContaining({
             event_id: 'uuid-123'
         }));
