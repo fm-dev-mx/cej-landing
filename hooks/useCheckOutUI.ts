@@ -1,5 +1,6 @@
 // File: hooks/useCheckoutUI.ts
 // Description: UI-oriented checkout hook for processing cart -> order -> WhatsApp.
+// Optimized for testability and fail-safe URL generation.
 
 import { useState } from "react";
 
@@ -20,6 +21,9 @@ type CheckoutState = {
     isProcessing: boolean;
     error: string | null;
 };
+
+// CONSTANT: Exported for testing synchronization
+export const WHATSAPP_DELAY_MS = 100;
 
 export function useCheckoutUI() {
     const [state, setState] = useState<CheckoutState>({
@@ -129,13 +133,17 @@ export function useCheckoutUI() {
 
             // 4. Build WhatsApp message + open chat
             const message = generateCartMessage(cart, customer.name, folio);
-            const waUrl = getWhatsAppUrl(
-                env.NEXT_PUBLIC_WHATSAPP_NUMBER,
-                message
-            );
+
+            // Robustness: Handle missing env var gracefully
+            const phoneNumber = env.NEXT_PUBLIC_WHATSAPP_NUMBER || "";
+            const waUrl = getWhatsAppUrl(phoneNumber, message);
 
             if (waUrl) {
-                setTimeout(() => window.open(waUrl, "_blank"), 100);
+                // Use constant delay for predictable UX and testing
+                setTimeout(() => window.open(waUrl, "_blank"), WHATSAPP_DELAY_MS);
+            } else {
+                // Dev/Staging warning helper
+                console.warn("[Checkout] WhatsApp URL could not be generated. Check env vars.");
             }
 
             return true;
