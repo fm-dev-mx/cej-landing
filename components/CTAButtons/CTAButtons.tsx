@@ -3,7 +3,7 @@
 
 import { useMemo, useCallback } from "react";
 import { getWhatsAppUrl, getPhoneUrl } from "@/lib/utils";
-import { trackContact } from "@/lib/pixel";
+import { trackContact } from "@/lib/tracking/visitor";
 import { useCejStore } from "@/store/useCejStore";
 import styles from "./CTAButtons.module.scss";
 

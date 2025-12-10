@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useCejStore } from "@/store/useCejStore";
 import { useIdentity } from "@/hooks/useIdentity";
 import { submitLead } from "@/app/actions/submitLead";
-import { trackLead, trackContact } from "@/lib/pixel";
+import { trackLead, trackContact } from "@/lib/tracking/visitor";
 import {
     generateQuoteId,
     generateCartMessage,

@@ -1,4 +1,6 @@
-// path: lib/pixel.ts
+// File: lib/tracking/visitor.ts
+// Description: Client-side wrapper for Facebook Pixel interaction.
+
 import { env } from '@/config/env';
 
 // Extend Window to support the Facebook Pixel function
@@ -10,7 +12,7 @@ declare global {
 
 type Fbq = {
     (action: 'init', id: string): void;
-    (action: 'track', event: string, params?: Record<string, unknown>): void;
+    (action: 'track', event: string, params?: Record<string, unknown>, options?: { eventID: string }): void;
 };
 
 export const FB_PIXEL_ID = env.NEXT_PUBLIC_PIXEL_ID;
@@ -53,9 +55,7 @@ type LeadData = {
 
 /**
  * Lead – high value event.
- *
- * NOTE: `event_id` is also stored in the DB (fb_event_id) so it can be
- * matched later with Conversion API (CAPI) events on the server.
+ * Uses 'eventID' option specifically for deduplication with CAPI.
  */
 export const trackLead = ({
     value,
@@ -73,20 +73,15 @@ export const trackLead = ({
         content_category,
     };
 
+    // Correct Pixel Syntax: 4th argument is options object with eventID
     if (event_id) {
-        payload.event_id = event_id;
+        window.fbq?.('track', 'Lead', payload, { eventID: event_id });
+    } else {
+        window.fbq?.('track', 'Lead', payload);
     }
-
-    window.fbq?.('track', 'Lead', payload);
 };
 
-export type ContactMethod =
-    | 'WhatsApp'
-    | 'Phone'
-    | 'Email'
-    | 'whatsapp'
-    | 'phone'
-    | 'email';
+export type ContactMethod = 'WhatsApp' | 'Phone' | 'Email' | 'whatsapp' | 'phone' | 'email';
 
 /**
  * Contact – mid/low value contact intent event.

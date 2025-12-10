@@ -4,7 +4,7 @@ import { useScrollSpy } from "@/hooks/useScrollSpy";
 import { useLockBodyScroll } from "@/hooks/useLockBodyScroll";
 import { env } from "@/config/env";
 import { getPhoneUrl, getWhatsAppUrl } from "@/lib/utils";
-import { trackContact } from "@/lib/pixel";
+import { trackContact } from "@/lib/tracking/visitor";
 import { PRIMARY_NAV, type PhoneMeta } from "./header.types";
 
 const SECTION_IDS = PRIMARY_NAV.map((item) =>
