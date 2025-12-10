@@ -26,6 +26,11 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      # --- Build Application ---
+      - name: Build Application
+        run: pnpm build
+      # -------------------------
+
       - name: Unit & Integration Tests (Vitest)
         run: pnpm test
 
@@ -43,5 +48,6 @@ jobs:
       - name: Install Playwright Browsers
         # -- Playwright will use the cached browsers if available
         run: pnpm exec playwright install --with-deps
+
       - name: E2E Tests (Playwright)
         run: pnpm exec playwright test
