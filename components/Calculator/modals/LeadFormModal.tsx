@@ -4,14 +4,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import { useCejStore } from "@/store/useCejStore";
 import { useCheckoutUI } from "@/hooks/useCheckOutUI";
-
 import { Button } from "@/components/ui/Button/Button";
 import { Input } from "@/components/ui/Input/Input";
 import { ResponsiveDialog } from "@/components/ui/ResponsiveDialog/ResponsiveDialog";
-
 import styles from "./LeadFormModal.module.scss";
 
 type LeadFormModalProps = {
@@ -42,14 +39,14 @@ export function LeadFormModal({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Pass the data to the checkout hook
         const success = await processOrder(
             { name, phone },
             saveMyData
         );
 
         if (success) {
-            // NOTE: folio is generated inside processOrder.
-            // Here we just send a temporary placeholder if needed.
+            // Use a placeholder or the actual response if processOrder returned the folio
             const tempFolio = "WEB-NEW";
             if (onSuccess) onSuccess(tempFolio, name);
         }
@@ -64,10 +61,13 @@ export function LeadFormModal({
             onClose={onClose}
             title="Finalizar Cotización"
         >
-            <form className={styles.form} onSubmit={handleSubmit}>
+            <form
+                className={styles.form}
+                onSubmit={handleSubmit}
+                data-testid="lead-form"
+            >
                 <p className={styles.subtitle}>
-                    Ingresa tus datos para generar el ticket oficial y enviarlo a
-                    planta.
+                    Ingresa tus datos para generar el ticket oficial y enviarlo a planta.
                 </p>
 
                 <Input
@@ -79,6 +79,7 @@ export function LeadFormModal({
                     required
                     disabled={isProcessing}
                     autoComplete="name"
+                    data-testid="input-lead-name"
                 />
 
                 <Input
@@ -93,6 +94,7 @@ export function LeadFormModal({
                     required
                     disabled={isProcessing}
                     autoComplete="tel"
+                    data-testid="input-lead-phone"
                 />
 
                 <div className={styles.checkboxWrapper}>
@@ -100,11 +102,10 @@ export function LeadFormModal({
                         <input
                             type="checkbox"
                             checked={privacyAccepted}
-                            onChange={(e) =>
-                                setPrivacyAccepted(e.target.checked)
-                            }
+                            onChange={(e) => setPrivacyAccepted(e.target.checked)}
                             required
                             disabled={isProcessing}
+                            data-testid="checkbox-privacy"
                         />
                         <span>
                             Acepto el{" "}
@@ -126,17 +127,16 @@ export function LeadFormModal({
                         <input
                             type="checkbox"
                             checked={saveMyData}
-                            onChange={(e) =>
-                                setSaveMyData(e.target.checked)
-                            }
+                            onChange={(e) => setSaveMyData(e.target.checked)}
                             disabled={isProcessing}
+                            data-testid="checkbox-save-data"
                         />
                         <span>Recordar mis datos para futuras cotizaciones.</span>
                     </label>
                 </div>
 
                 {error && (
-                    <div className={styles.errorMessage} role="alert">
+                    <div className={styles.errorMessage} role="alert" data-testid="form-error">
                         {error}
                     </div>
                 )}
@@ -149,6 +149,7 @@ export function LeadFormModal({
                         isLoading={isProcessing}
                         loadingText="Generando..."
                         disabled={isSubmitDisabled}
+                        data-testid="btn-submit-lead"
                     >
                         Generar Ticket
                     </Button>
