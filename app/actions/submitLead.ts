@@ -1,5 +1,6 @@
 // File: app/actions/submitLead.ts
 // Description: Server action to persist a lead into Supabase and send data to Meta CAPI.
+// Optimized for strict error boundaries and fail-open resilience.
 
 "use server";
 
@@ -17,6 +18,7 @@ import { reportError, reportWarning } from "@/lib/monitoring";
 import type { Database, QuoteSnapshot } from "@/types/database";
 import { sendToMetaCAPI } from "@/lib/tracking/capi";
 
+// Initialize Supabase only if keys are present
 const supabase =
     env.NEXT_PUBLIC_SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY
         ? createClient<Database>(
@@ -42,8 +44,7 @@ export type SubmitLeadResult =
 
 /**
  * hashData
- *
- * - Normalizes and hashes PII for CAPI.
+ * Helper to normalize and SHA-256 hash PII for Meta CAPI compliance.
  */
 function hashData(data: string | undefined): string | undefined {
     if (!data) return undefined;
@@ -55,63 +56,52 @@ function hashData(data: string | undefined): string | undefined {
 export async function submitLead(
     payload: OrderSubmission
 ): Promise<SubmitLeadResult> {
-    // 1. Validate payload with Zod
-    const parseResult = OrderSubmissionSchema.safeParse(payload);
-
-    if (!parseResult.success) {
-        const validationErrors = parseResult.error.flatten();
-        console.error(
-            "[Action:submitLead] Validation Error:",
-            validationErrors
-        );
-
-        return {
-            status: "error",
-            message: "Datos de pedido inválidos o incompletos.",
-            errors: validationErrors.fieldErrors,
-        };
-    }
-
-    const {
-        name,
-        phone,
-        quote,
-        visitor_id,
-        utm_source,
-        utm_medium,
-        fb_event_id,
-        privacy_accepted,
-    } = parseResult.data;
-
-    const headerStore = await headers();
-    const cookieStore = await cookies();
-
-    const clientIp =
-        headerStore.get("x-forwarded-for")?.split(",")[0].trim() ||
-        "0.0.0.0";
-
-    const userAgent = headerStore.get("user-agent") || "";
-    const refererUrl =
-        headerStore.get("referer") || env.NEXT_PUBLIC_SITE_URL;
-
-    const fbp = cookieStore.get("_fbp")?.value;
-    const fbc = cookieStore.get("_fbc")?.value;
-
-    // 2. Fail-open behavior if DB is not configured
-    if (!supabase) {
-        reportWarning("SUPABASE_NOT_CONFIGURED: Lead not saved to DB.", {
-            phone,
-        });
-
-        // We return success to not block the user flow, but strictly typed as a warning state.
-        return {
-            status: "success",
-            id: "mock-no-db",
-            warning: "db_not_configured",
-        };
-    }
-
     try {
+        // 1. Validate payload with Zod
+        const parseResult = OrderSubmissionSchema.safeParse(payload);
+
+        if (!parseResult.success) {
+            const validationErrors = parseResult.error.flatten();
+            return {
+                status: "error",
+                message: "Datos de pedido inválidos o incompletos.",
+                errors: validationErrors.fieldErrors,
+            };
+        }
+
+        const {
+            name,
+            phone,
+            quote,
+            visitor_id,
+            utm_source,
+            utm_medium,
+            fb_event_id,
+            privacy_accepted,
+        } = parseResult.data;
+
+        const headerStore = await headers();
+        const cookieStore = await cookies();
+
+        const clientIp = headerStore.get("x-forwarded-for")?.split(",")[0].trim() || "0.0.0.0";
+        const userAgent = headerStore.get("user-agent") || "";
+        const refererUrl = headerStore.get("referer") || env.NEXT_PUBLIC_SITE_URL;
+
+        const fbp = cookieStore.get("_fbp")?.value;
+        const fbc = cookieStore.get("_fbc")?.value;
+
+        // 2. Fail-open behavior if DB is not configured
+        if (!supabase) {
+            reportWarning("SUPABASE_NOT_CONFIGURED: Lead not saved to DB.", { phone });
+            return {
+                status: "success",
+                id: "mock-no-db",
+                warning: "db_not_configured",
+            };
+        }
+
+        const now = new Date().toISOString();
+
         // Snapshot for JSONB storage in leads.quote_data
         const quoteSnapshot: QuoteSnapshot = {
             folio: quote.folio,
@@ -124,8 +114,6 @@ export async function submitLead(
                 visitorId: visitor_id,
             },
         };
-
-        const now = new Date().toISOString();
 
         // 3. Insert into leads table
         const { data, error } = await supabase
@@ -146,16 +134,13 @@ export async function submitLead(
             .single();
 
         if (error) {
-            reportError(
-                new Error(`Supabase Insert Failed: ${error.message}`),
-                {
-                    code: error.code,
-                    details: error.details,
-                    payloadPhone: phone,
-                }
-            );
+            reportError(new Error(`Supabase Insert Failed: ${error.message}`), {
+                code: error.code,
+                details: error.details,
+                payloadPhone: phone,
+            });
 
-            // Fail-open: WhatsApp flow continues, but we mark a warning
+            // Fail-open: Return success to UI so the user sees the "Order Received" page
             return {
                 status: "success",
                 id: "fallback-db-error",
@@ -163,7 +148,8 @@ export async function submitLead(
             };
         }
 
-        // 4. Fire Meta CAPI event asynchronously if event_id exists
+        // 4. Fire Meta CAPI event asynchronously
+        // Using 'after' allows the response to return immediately while CAPI sends in background
         if (fb_event_id) {
             after(async () => {
                 const hashedPhone = hashData(phone);
@@ -199,12 +185,10 @@ export async function submitLead(
         }
 
         return { status: "success", id: String(data.id) };
-    } catch (err) {
-        // Fail-open: log but keep flow going
-        reportError(err, {
-            context: "submitLead unhandled exception",
-            phone,
-        });
+
+    } catch (err: any) {
+        // Global Catch-All: Ensures the server never crashes the client request
+        reportError(err, { context: "submitLead unhandled exception" });
 
         return {
             status: "success",

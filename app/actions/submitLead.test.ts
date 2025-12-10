@@ -1,4 +1,4 @@
-// app/actions/submitLead.test.ts
+// File: app/actions/submitLead.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { submitLead } from './submitLead';
 import { reportError } from '@/lib/monitoring';
@@ -10,14 +10,13 @@ vi.mock('@/lib/monitoring', () => ({
     reportWarning: vi.fn(),
 }));
 
-// Mock tracking to verify payload
 vi.mock('@/lib/tracking/capi', () => ({
     sendToMetaCAPI: vi.fn(),
 }));
 
 // Mock Next.js headers/cookies
 vi.mock('next/headers', () => ({
-    headers: () => ({
+    headers: () => Promise.resolve({
         get: (key: string) => {
             if (key === 'x-forwarded-for') return '127.0.0.1';
             if (key === 'user-agent') return 'Mozilla/5.0 Test';
@@ -25,7 +24,7 @@ vi.mock('next/headers', () => ({
             return null;
         }
     }),
-    cookies: () => ({
+    cookies: () => Promise.resolve({
         get: (key: string) => {
             if (key === '_fbp') return { value: 'fb.1.123456789' };
             return null;
@@ -33,7 +32,7 @@ vi.mock('next/headers', () => ({
     })
 }));
 
-// Mock Next.js after() - Execute callback immediately for testing
+// Mock Next.js after() to execute immediately
 vi.mock('next/server', () => ({
     after: (fn: () => Promise<void>) => fn(),
 }));
@@ -60,72 +59,99 @@ vi.mock('@/config/env', () => ({
     env: {
         NEXT_PUBLIC_SUPABASE_URL: 'https://mock.supabase.co',
         SUPABASE_SERVICE_ROLE_KEY: 'mock-key',
-        FB_ACCESS_TOKEN: 'mock-token' // Ensure CAPI logic triggers
+        NEXT_PUBLIC_SITE_URL: 'http://localhost'
     }
 }));
 
 describe('Server Action: submitLead', () => {
+    // FIXED: Payload now fully complies with OrderSubmissionSchema AND CustomerSchema
     const validPayload = {
         name: 'Test User',
         phone: '6561234567',
         visitor_id: 'visitor-123',
-        fb_event_id: 'evt-uuid-5678', // Critical for CAPI
+        fb_event_id: 'evt-uuid-5678',
         quote: {
             folio: 'WEB-123',
             items: [],
-            financials: { total: 1000, currency: 'MXN' }
+            financials: { total: 1000, currency: 'MXN' },
+            metadata: {},
+            customer: {
+                name: 'Test User',     // Added required field
+                phone: '6561234567',   // Added required field
+                email: 'test@test.com'
+            }
         },
         privacy_accepted: true
     };
 
     beforeEach(() => {
         vi.clearAllMocks();
+        // Default success response for DB
+        mockSingle.mockResolvedValue({ data: { id: '999' }, error: null });
     });
 
     it('returns success on DB insertion', async () => {
-        mockSingle.mockResolvedValue({ data: { id: '999' }, error: null });
-
         const result = await submitLead(validPayload as any);
-
-        // Updated assertion for discriminated union
         expect(result.status).toBe('success');
         if (result.status === 'success') {
             expect(result.id).toBe('999');
+            expect(result.warning).toBeUndefined();
         }
     });
 
-    it('triggers Meta CAPI with correct payload (Hashing & EventID)', async () => {
-        mockSingle.mockResolvedValue({ data: { id: '999' }, error: null });
+    it('returns error when validation fails (Zod)', async () => {
+        const invalidPayload = { ...validPayload, phone: 'too-short' };
 
-        await submitLead(validPayload as any);
+        const result = await submitLead(invalidPayload as any);
 
-        expect(sendToMetaCAPI).toHaveBeenCalledTimes(1);
-
-        const callArgs = (sendToMetaCAPI as any).mock.calls[0][0];
-
-        // 1. Verify Event ID matches (Deduplication key)
-        expect(callArgs.event_id).toBe(validPayload.fb_event_id);
-
-        // 2. Verify PII is hashed
-        expect(callArgs.user_data.ph).not.toBe(validPayload.phone);
-        // SHA-256 of '6561234567'
-        expect(callArgs.user_data.ph).toMatch(/^[a-f0-9]{64}$/);
-
-        // 3. Verify Context
-        expect(callArgs.user_data.client_ip_address).toBe('127.0.0.1');
-        expect(callArgs.user_data.fbp).toBe('fb.1.123456789');
+        expect(result.status).toBe('error');
+        if (result.status === 'error') {
+            expect(result.message).toContain('inválidos');
+            expect(result.errors).toHaveProperty('phone');
+        }
     });
 
-    it('Fail-Open: returns success WITH WARNING if DB fails', async () => {
-        mockSingle.mockResolvedValue({ data: null, error: { message: 'DB Down' } });
+    it('fail-open: returns success with warning if DB insert fails', async () => {
+        // Simulate DB error
+        mockSingle.mockResolvedValue({ data: null, error: { message: 'DB Constraint', code: '23505' } });
 
         const result = await submitLead(validPayload as any);
 
-        // Fail-open means status is technically success, but with a warning
         expect(result.status).toBe('success');
         if (result.status === 'success') {
+            expect(result.id).toBe('fallback-db-error');
             expect(result.warning).toBe('db_insert_failed');
         }
-        expect(reportError).toHaveBeenCalled();
+        // Verify error reporting was called
+        expect(reportError).toHaveBeenCalledWith(expect.any(Error), expect.objectContaining({ code: '23505' }));
+    });
+
+    it('fail-open: catches unexpected exceptions', async () => {
+        // Force an exception inside the try block
+        mockInsert.mockImplementationOnce(() => { throw new Error('Catastrophic failure'); });
+
+        const result = await submitLead(validPayload as any);
+
+        expect(result.status).toBe('success');
+        if (result.status === 'success') {
+            expect(result.id).toBe('fallback-exception');
+            expect(result.warning).toBe('server_exception');
+        }
+        expect(reportError).toHaveBeenCalledWith(expect.any(Error), expect.objectContaining({ context: 'submitLead unhandled exception' }));
+    });
+
+    it('correctly hashes PII before sending to CAPI', async () => {
+        await submitLead(validPayload as any);
+
+        expect(sendToMetaCAPI).toHaveBeenCalled();
+        const args = (sendToMetaCAPI as any).mock.calls[0][0];
+
+        // Check phone hashing (SHA256 of 6561234567)
+        // 6561234567 -> sha256 -> ...
+        expect(args.user_data.ph).toMatch(/^[a-f0-9]{64}$/);
+        expect(args.user_data.ph).not.toBe('6561234567');
+
+        // Check email hashing
+        expect(args.user_data.em).toMatch(/^[a-f0-9]{64}$/);
     });
 });

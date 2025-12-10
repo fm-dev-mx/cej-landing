@@ -23,8 +23,9 @@ const OrderItemSchema = z.object({
 
 export const OrderSubmissionSchema = z.object({
     // Top level contact info (mapped to DB columns)
-    name: z.string(),
-    phone: z.string(),
+    // FIX: Apply validation rules to top-level fields to ensure test fails on invalid data
+    name: z.string().min(3, "El nombre es muy corto"),
+    phone: z.string().min(10, "Verifica el número (10 dígitos)"),
 
     // Rich quote payload, stored as JSONB snapshot
     quote: z.object({
