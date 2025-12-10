@@ -8,6 +8,7 @@ export default function Calculator() {
   return (
     <section
       id="calculator-section"
+      data-testid="calculator-widget" // Added for robust E2E testing (Playwright)
       className={styles.wrapper}
       aria-labelledby="calculator-heading"
     >
