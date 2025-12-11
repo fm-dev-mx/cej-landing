@@ -1,86 +1,211 @@
 # Execution Guide: CEJ Platform
 
 **Status:** Living Document
-**Version:** 3.1 (Updated for Phase 4 Prep)
+**Version:** 2.3 (Phase 3 Completed, Phase 4A Planned)
+
+---
 
 ## 1. Vision & Core Philosophy
 
-We prioritize the user's ability to complete a quote and contact sales above all else. This means implementing "Fail-Open" mechanisms where a database outage or API failure never blocks the user from seeing a "Success" message.
+**Product:** From **CEJ Landing (Lead Gen)** → **CEJ Cotizador (Expert Calculator)** → **CEJ Pro (SaaS Portal)**
+**Goal:** Transform a high-performance landing page into a robust SaaS platform for concrete contractors in Ciudad Juárez.
 
-## 2. Tech Stack Constraints
+### 1.1 The "Fail-Open" Philosophy
 
-- **Framework:** Next.js 16 (App Router).
-- **Language:** TypeScript 5.9 (Strict Mode). No `any`.
-- **Styling:** **SCSS Modules** only. No Tailwind.
-- **State:** Zustand v5 (with Persistence).
-- **Validation:** Zod (Runtime schema validation).
+We prioritize the user's ability to complete a quote and contact sales above all else.
 
-## 3. Architecture Overview
+- **Principle:** Technical failures (database down, API timeout, tracking failure) must *never block* the primary conversion path (WhatsApp redirect).
+- **Implementation:** All critical mutations (lead submission) have graceful degradation paths implemented via optional env vars and defensive `try/catch` blocks.
+- **Outcome:** Users can always reach CEJ via WhatsApp with a valid quote summary, even during partial outages.
 
-See `docs/ARCHITECTURE.md` for diagrams and data flow.
-See `docs/DESIGN_SYSTEM.md` for styling rules and tokens.
+---
+
+## 2. Technical Stack & Standards
+
+- **Framework:** Next.js 16 (App Router)
+- **Language:** TypeScript 5.9 (strict mode)
+  - No `any` in core paths: pricing, store, persistence, tracking.
+- **Styling:** SCSS Modules only
+  - Constraint: No Tailwind. Use `styles/_tokens.scss` + `styles/_mixins.scss`.
+- **State Management:** Zustand (`store/useCejStore`)
+- **Validation:** Zod for all user/input-facing payloads.
+- **Database:** Supabase (Postgres + Auth + RLS)
+- **Tracking:** Meta Pixel + Meta CAPI (server-side), optional analytics.
+
+### 2.1 Code Conventions
+
+- **UI text:** Spanish only.
+- **File naming:** `PascalCase` for components, `camelCase` for hooks/utils.
+- **Tests:**
+  - `*.test.ts` for Vitest.
+  - Playwright specs under `tests/e2e`.
+
+### 2.2 Environments
+
+- **Local:** `.env.local`, developer workstation.
+- **Preview:** Vercel preview deployments (feature branches).
+- **Production:** Vercel production environment.
+
+Environment-specific secrets are configured via Vercel and never committed.
+
+---
+
+## 3. Environments & Configuration
+
+### 3.1 Mandatory Environment Variables
+
+See `README.md` for the full table. Key requirements:
+
+- Supabase URLs and keys (anon + service role).
+- Meta Pixel and Meta CAPI credentials.
+- `NEXT_PUBLIC_WHATSAPP_NUMBER` for handoff.
+
+### 3.2 Configuration Files
+
+- `config/pricing.local.ts` – Local fallback pricing rules.
+- `lib/pricing.ts` – Engine that consumes either `price_config` (DB) or fallback.
+- `lib/tracking/*` – Pixel + CAPI abstractions.
+
+---
 
 ## 4. Execution Roadmap
 
-| **Phase** | **Playbook/Ref** | **Goal** | **Status** |
-| :--- | :--- | :--- | :--- |
-| **0. Hardening** | `archive/PLAYBOOK_00...` | Math accuracy & A11y. | ✅ Completed |
-| **1. Data Core** | `archive/PLAYBOOK_01...` | DB Persistence & Fail-Open. | ✅ Completed |
-| **2. Engine** | `archive/PLAYBOOK_02...` | Expert features (Additives). | ✅ Completed |
-| **3. Marketing** | `docs/TRACKING_GUIDE.md` | Server-side Tracking (CAPI). | ✅ Completed |
-| **4. SaaS** | `docs/PLAYBOOK_04_SAAS_PORTAL.md` | User Auth & History. | 🏃 **Active** |
+This table is the authoritative view of project phases and their status. Each phase is backed by one or more docs under `/docs`.
 
-## 5. Development Protocol
+| Phase | Playbook/Ref | Goal | Status |
+| --- | --- | --- | --- |
+| **0. Hardening** | `docs/archive/PLAYBOOK_00_QA_HARDENING.md` | Math accuracy & A11y baseline. | ✅ Completed |
+| **1. Data Core** | `docs/archive/PLAYBOOK_01_DATA_CORE.md` | DB persistence & fail-open infra. | ✅ Completed |
+| **2. Engine** | `docs/archive/PLAYBOOK_02_CALC_ENGINE.md` | Expert features (additives, dynamic pricing). | ✅ Completed |
+| **3. Marketing** | `docs/archive/PLAYBOOK_03_MARKETING_OPS.md` | Server-side tracking (CAPI) & SEO. | ✅ Completed |
+| **4A. SaaS Portal** | `docs/PLAYBOOK_04_SAAS_PORTAL.md` | Auth, profiles, order history, pricing data sync, A11y automation. | 📝 Planned |
+| **4B. CEJ Pro** | {TODO: future playbook} | Advanced SaaS operations (billing, contractor accounts, admin tools). | {TODO} |
 
-1. **Type-First:** Define Zod schemas before writing logic.
-2. **Strict Logs:** Use structured logging: `[MODULE:ACTION] <Status> | Payload: {...}`
-3. **Sync Rules:**
-    - If you modify `lib/pricing.ts`, update `lib/pricing.test.ts`.
-    - If you change DB Schema, update `docs/DB_SCHEMA.md`.
+> Phase 4B is intentionally underspecified; it requires business input before being decomposed into concrete sprints.
 
-## 6. Testing Protocols
+---
 
-We enforce a **100% Pass Rate** policy for the critical path (Pricing & Checkout).
+## 5. Quality Gates
 
-### 6.1 Unit Tests (Vitest)
+### 5.1 Testing
 
-Validates pure logic (Math, Pricing Rules, Utils).
+**Unit / Integration (Vitest):**
 
-- **Command:** `pnpm test`
-- **Watch Mode:** `pnpm test:watch`
-- **Location:** co-located with components.
+- `lib/pricing.ts`
+- `store/useCejStore`
+- `lib/utils` (formatting, parsing, WhatsApp URL building)
+- `hooks/useCheckoutUI`, `hooks/useQuoteCalculator`
 
-### 6.2 E2E Tests (Playwright)
+**E2E (Playwright):**
 
-Validates the full user journey (Calculator -> Form -> Submit).
+- Anonymous flow: Landing → Calculator → WhatsApp handoff.
+- Cart & QuoteDrawer behavior.
+- Edge cases: validation errors, mobile viewport, iOS-like conditions.
 
-- **Command:** `pnpm test:e2e`
-- **UI Mode:** `pnpm test:e2e:ui` (Recommended for debugging)
-- **Scope:** Smoke tests for Marketing pages and Critical Flows for the Calculator.
+### 5.2 Accessibility
 
-## 7. CI/CD Pipelines
+- **Current:**
+  - Semantic HTML, ARIA attributes, focus styles.
+  - High contrast support via `prefers-contrast: more`.
+- **Backlog (A11y-02):**
+  - `prefers-reduced-motion` global support.
+  - axe-core integration with Playwright for `/`, calculator, and lead modal.
 
-Automated checks run on every Push and Pull Request via GitHub Actions.
+See `docs/ACCESSIBILITY.md` for patterns and checklists.
 
-1. **CI Workflow (`.github/workflows/ci.yml`):**
-   - **Lint:** Checks ESLint rules and TypeScript types.
-   - **Unit:** Runs Vitest.
-   - **Build:** Verifies `next build` passes.
-2. **Playwright Workflow (`.github/workflows/playwright.yml`):**
-   - Runs E2E tests on a headless browser to ensure no regression in critical flows.
+### 5.3 Performance
 
-## 8. Contribution Standards
+- Lighthouse targets:
+  - Performance: ≥ 90 on mobile.
+  - Accessibility: ≥ 95.
+  - Best Practices: ≥ 95.
+  - SEO: ≥ 95.
+- Large assets are avoided; images are optimized via Next.js `Image`.
 
-### 8.1 Commit Convention
+---
 
-We follow **Conventional Commits** to automate changelogs and versioning.
+## 6. Release Process
 
-- `feat:` A new feature
-- `fix:` A bug fix
-- `docs:` Documentation only changes
-- `style:` Formatting (missing semi colons, etc)
-- `refactor:` Code change that neither fixes a bug nor adds a feature
-- `test:` Adding missing tests
-- `chore:` Build process or aux tool changes
+### 6.1 Branching & CI
 
-*Example:* `feat(pricing): add support for fiber additive`
+- All work happens on feature branches.
+- CI pipeline:
+  1. `pnpm lint`
+  2. `pnpm test`
+  3. `pnpm test:e2e` (subset or full, depending on pipeline configuration)
+
+A merge to `main` must not break any of the above.
+
+### 6.2 Versioning & Changelog
+
+- Semantic Versioning (MAJOR.MINOR.PATCH).
+- `CHANGELOG.md` records:
+  - Features added,
+  - Changes,
+  - Fixes,
+  - Unreleased / planned items (e.g. Phase 4A).
+
+---
+
+## 7. Operational Runbook
+
+### 7.1 Incident Response (DB / Tracking Failures)
+
+- If Supabase is down:
+  - Lead submission logs the failure.
+  - User still sees the WhatsApp handoff.
+- If Meta CAPI fails:
+  - Errors are reported via `lib/monitoring.ts`.
+  - Pixel continues to function in the browser.
+
+### 7.2 Deploying a New Release
+
+1. Ensure `CHANGELOG.md` is updated.
+2. Tag the release (e.g. `v0.3.0`).
+3. Merge into `main`.
+4. Vercel auto-deploys; verify:
+   - Health check on `/`.
+   - Calculator flow on mobile.
+   - One full lead flow to WhatsApp.
+
+---
+
+## 8. Phase 4A – SaaS Portal Execution Notes
+
+### 8.1 Scope Clarification
+
+Phase 4A is limited to:
+
+- Auth (Magic Link).
+- Profiles.
+- Order history.
+- Re-order.
+- Pricing data sync to Supabase (`price_config`).
+- A11y automation (axe-core).
+
+Anything beyond this (e.g. billing, multi-tenant orgs) belongs to Phase 4B.
+
+### 8.2 Success Criteria
+
+Phase 4A is considered **done** when:
+
+1. A user can:
+   - Sign in via email (Magic Link),
+   - Be redirected to `/dashboard`.
+2. A profile row exists for each authenticated user.
+3. Orders are persisted and listed in `/dashboard`.
+4. “Reordenar” clones a previous order into the current cart using **current** pricing.
+5. axe-core checks are integrated into Playwright and CI.
+6. All docs (README, ROADMAP, PLAYBOOK_04, DESIGN_SYSTEM, ACCESSIBILITY) are updated and consistent.
+
+---
+
+## 9. Future Work: Phase 4B – CEJ Pro
+
+Placeholder for future evolution:
+
+- Contractor billing,
+- Order lifecycle tracking,
+- Admin panel.
+
+> {TODO: business decision required – define exact scope and constraints for Phase 4B before implementation.}

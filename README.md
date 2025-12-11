@@ -18,17 +18,24 @@
 We follow a strict **Feature-First** and **Component-Folder** architecture.
 
 ```text
-src/
-├── app/                 # Next.js App Router
+cej-landing/
+├── app/                     # Next.js App Router (Route Groups)
+│   ├── (marketing)/         # Public landing pages (/, /aviso-de-privacidad)
+│   ├── (app)/               # Functional tools (/cotizador)
+│   └── actions/             # Server Actions (submitLead)
 ├── components/
-│   ├── Calculator/      # Complex domain components
-│   ├── layouts/         # Layout components (Header, GlobalUI)
-│   └── ui/              # UI atoms
-├── hooks/               # Custom hooks
+│   ├── Calculator/          # Complex domain components (wizard, modals)
+│   ├── layouts/             # Layout components (Header, Footer, GlobalUI)
+│   └── ui/                  # UI atoms (Button, Input, Card)
+├── config/                  # Business rules and content configuration
+├── hooks/                   # Custom React hooks
 ├── lib/
-│   ├── schemas/         # Zod definitions
-│   └── pricing.ts       # Core pricing engine
-└── store/               # Zustand state
+│   ├── schemas/             # Zod validation schemas
+│   ├── tracking/            # Meta CAPI, Pixel, identity management
+│   └── pricing.ts           # Core pricing engine
+├── store/                   # Zustand state management
+├── styles/                  # SCSS tokens and global styles
+└── types/                   # TypeScript type definitions
 ```
 
 ### Key Patterns
@@ -36,6 +43,16 @@ src/
 - **Fail-Open:** Lead submission keeps the UX flow even if DB write fails.
 - **Global UI:** Cart state and overlays are mounted once in `components/layouts/GlobalUI`.
 - **Strict Typing:** Database payloads and server actions are validated with Zod schemas.
+
+### Component Overview
+
+| **Directory** | **Purpose** |
+| --- | --- |
+| `Calculator/` | Multi-step quote wizard (24 files) |
+| `layouts/` | Header, Footer, GlobalUI, HeroSection |
+| `ui/` | Reusable atoms (Button, Input, Card, Modal) |
+| `FAQ/`, `Services/` | Landing page sections |
+| `QuoteDrawer/` | Cart sidebar |
 
 ---
 
@@ -82,21 +99,38 @@ npx tsx scripts/seed-pricing.ts
 
 For detailed architecture, database schemas, and the development roadmap, please refer to the `/docs` directory:
 
+### Technical Documentation
+
 - [🗺️ **Roadmap & Sprints**](/docs/ROADMAP.md): Project phases, user roles, and execution plan.
 - [🏗️ **Architecture**](/docs/ARCHITECTURE.md): Data flow diagrams, state management, and code conventions.
 - [🗄️ **Database Schema**](/docs/DB_SCHEMA.md): Table definitions, JSONB snapshots, and RLS security policies.
-- [🎨 **Design System**](/docs/DESIGN_SYSTEM.md): Component tokens, SCSS variables, and component styles.
-- [📘 **Playbooks**](/docs/): Active execution guides (Older phases in `/docs/archive/`).
 - [📊 **Pricing Model**](/docs/PRICING_MODEL.md): Math logic, formulas, and business rules.
 - [📈 **Tracking & SEO**](/docs/TRACKING_GUIDE.md): Meta CAPI, Pixel, and Analytics setup.
 - [🚀 **Execution Guide**](/docs/EXECUTION_GUIDE.md): Standards and deployment protocol.
 
----
+### UX/UI Documentation
+
+- [🎨 **Design System**](/docs/DESIGN_SYSTEM.md): Tokens, motion, shadows, and responsive behavior.
+- [🧩 **Component Library**](/docs/COMPONENT_LIBRARY.md): UI components, props, variants, and usage.
+- [🔄 **Interaction Patterns**](/docs/INTERACTION_PATTERNS.md): Forms, validation, loading, and feedback.
+- [🗺️ **UX Flows**](/docs/UX_FLOWS.md): User journeys, state machines, and flow diagrams.
+- [📊 **UI States**](/docs/UI_STATES.md): Empty, error, loading, and success states.
+- [🎯 **Iconography**](/docs/ICONOGRAPHY.md): Icon usage, sizing, and accessibility.
+- [♿ **Accessibility**](/docs/ACCESSIBILITY.md): WCAG compliance, patterns, and testing.
+
+### Playbooks
+
+- [🏃 **Sprint 4: SaaS Portal**](/docs/PLAYBOOK_04_SAAS_PORTAL.md): Active development guide.
+- [📁 **Archive**](/docs/archive/): Completed sprint playbooks (00-03).
 
 ## 5. Tech Stack
 
-- **Next.js 16** (App Router + Server Actions)
-- **TypeScript 5.9**
-- **Supabase** (Postgres + Auth)
-- **Zustand** (State management)
-- **SCSS Modules** (Design system tokens & components)
+| **Technology** | **Version** | **Purpose** |
+| --- | --- | --- |
+| **Next.js** | 16.0.7 | App Router + Server Actions |
+| **TypeScript** | 5.9.3 | Strict typing |
+| **React** | 19.2.0 | UI Framework |
+| **Supabase** | 2.87.1 | Postgres + Auth |
+| **Zustand** | 5.0.9 | State management |
+| **Zod** | 3.25.76 | Runtime validation |
+| **SCSS Modules** | - | Design system tokens |
