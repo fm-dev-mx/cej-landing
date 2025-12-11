@@ -180,7 +180,7 @@ Fail-Open Path:
 
 ### 4.1 Message Generation
 
-```
+```text
 🧾 Cotización CEJ - Folio: [FOLIO]
 ━━━━━━━━━━━━━━━━
 
@@ -200,7 +200,7 @@ Fail-Open Path:
 
 ### 4.2 Handoff URL
 
-```
+```text
 https://wa.me/[PHONE]?text=[ENCODED_MESSAGE]
 ```
 
@@ -229,9 +229,9 @@ flowchart LR
 
 | Additive | Pricing | Effect |
 |:---------|:--------|:-------|
-| **Fibra** | per_m³ ($150) | Volume × Price |
-| **Plastimer** | per_m³ | Volume × Price |
-| **Acelerante** | per_m³ | Volume × Price |
+| **Fibra** | per\_m³ ($150) | Volume × Price |
+| **Plastimer** | per\_m³ | Volume × Price |
+| **Acelerante** | per\_m³ | Volume × Price |
 
 ---
 
@@ -281,7 +281,7 @@ flowchart TD
 
 | Breakpoint | Dialog Style |
 |:-----------|:-------------|
-| < 768px | Bottom sheet (swipe up) |
+| \< 768px | Bottom sheet (swipe up) |
 | ≥ 768px | Centered modal |
 
 ---
@@ -299,7 +299,7 @@ flowchart TD
 
 ### 8.2 Deduplication Strategy
 
-```
+```text
 Client (Pixel)  ──────────────────────────────────┐
                                                   │
                     ┌── event_id (UUID) ──────────┤
@@ -308,3 +308,53 @@ Server (CAPI)  ─────┘                             ▼
                                            Meta Servers
                                            (Deduplicated)
 ```
+
+---
+
+## 9. SaaS & Authentication Flows (Phase 4A)
+
+### 9.1 Magic Link Login
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as Login Page
+    participant Auth as Supabase Auth
+    participant Mail as Email Provider
+
+    User->>UI: Enters Email
+    UI->>Auth: signInWithOtp(email)
+    Auth->>Mail: Send Magic Link
+    UI->>User: Show "Check Email" Toast
+
+    User->>Mail: Clicks Link
+    Mail->>UI: Redirects to /auth/callback
+    UI->>Auth: Exchange Code for Session
+    Auth->>UI: Session Created
+    UI->>User: Redirect to /dashboard
+```
+
+### 9.2 Re-Order Flow
+
+Allows users to clone a historical order into the current cart with *current* pricing.
+
+```mermaid
+flowchart TD
+    A[Dashboard / Orders] --> B[View Order Detail]
+    B --> C{Click "Reordenar"}
+    C --> D[Fetch Current Prices (price_config)]
+
+    D --> E{Pricing Available?}
+    E -->|Yes| F[Recalculate Totals]
+    E -->|No| G[Use Fallback Rules]
+
+    F --> H[Add Items to Active Cart]
+    G --> H
+    H --> I[Redirect to Calculator]
+    I --> J[Open Cart Drawer]
+```
+
+````
+
+---
+

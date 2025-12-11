@@ -18,9 +18,9 @@
 | **Icon** | Shopping cart outline |
 | **Action** | None (user navigates to calculator) |
 
-### 1.2 History Empty
+### 1.2 History Empty (Dashboard)
 
-**Location:** QuoteDrawer (History Tab)
+**Location:** QuoteDrawer (History Tab) & `/dashboard`
 
 | Property | Value |
 |:---------|:------|
@@ -29,16 +29,16 @@
 | **Icon** | Clock/history outline |
 | **Action** | None |
 
-### 1.3 No Results (Future)
+### 1.3 No Results (Filters)
 
-**Location:** Search, filters
+**Location:** Dashboard Search / Date Filter
 
 | Property | Value |
 |:---------|:------|
 | **Headline** | "No encontramos resultados" |
-| **Body** | "Intenta con otros términos o filtros" |
+| **Body** | "Intenta con otros términos o fechas" |
 | **Icon** | Search with X |
-| **Action** | Clear filters button |
+| **Action** | "Limpiar filtros" (Secondary Button) |
 
 ---
 
@@ -60,6 +60,7 @@
 |:------|:--------------|
 | Name | "Ingresa tu nombre completo (mínimo 3 caracteres)" |
 | Phone | "Ingresa un número de 10 dígitos" |
+| Email | "Ingresa un correo electrónico válido" |
 | Volume | "Ingresa un volumen válido" |
 | Required | "Este campo es obligatorio" |
 
@@ -80,7 +81,7 @@
 |:---------|:--------|
 | Network error | "No pudimos conectar. Verifica tu conexión e intenta de nuevo." |
 | Server error | "Hubo un problema. Por favor intenta de nuevo." |
-| Validation error | Specific field errors listed |
+| Auth error | "No pudimos iniciar sesión. Verifica tus credenciales." |
 
 ### 2.3 Calculator Error
 
@@ -140,13 +141,15 @@
 | Spinner only | Quick actions (<2s expected) |
 | Spinner + text | Long actions (show "Procesando...", "Guardando...") |
 
-### 4.2 Page/Section Loading (Future)
+### 4.2 Auth & Data Loading (Phase 4A)
+
+**Location:** Login Page, Dashboard
 
 | Property | Value |
 |:---------|:------|
-| **Visual** | Skeleton placeholders |
-| **Areas** | Calculator form, cart items |
-| **Duration** | Until data hydrates |
+| **Visual** | Skeleton placeholders or Centered Spinner |
+| **Text** | "Verificando sesión...", "Cargando historial..." |
+| **Duration** | Until hydration/fetch completes |
 
 ---
 
@@ -168,7 +171,8 @@
 | Scenario | Title | Subtitle |
 |:---------|:------|:---------|
 | Add to cart | "Agregado al pedido" | "Tu cálculo se guardó correctamente." |
-| Form saved (future) | "Guardado" | "Tus cambios se guardaron." |
+| Magic Link Sent | "Enlace enviado" | "Revisa tu correo para iniciar sesión." |
+| Login Success | "Hola de nuevo" | "Has iniciado sesión correctamente." |
 
 ### 5.2 Checkout Success
 

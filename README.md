@@ -1,6 +1,6 @@
 # 🏗️ CEJ Platform (Landing + SaaS)
 
-**A hybrid Next.js platform combining a high-performance landing page with a scalable SaaS OS for concrete order management.**
+**A hybrid Next.js platform combining a high-performance landing page with a scalable SaaS OS for concrete order management. UI language:** Spanish (all user-facing copy, labels, and messages).
 
 ---
 
@@ -8,57 +8,121 @@
 
 **Concreto y Equipos de Juárez (CEJ) evolves into a digital-first platform:**
 
-1. **Lead Generation:** Friction-free calculator for anonymous traffic.
-2. **Order Management:** “CEJ Pro” SaaS for contractors.
+1. **CEJ Landing** – High-conversion landing page with a friction-free concrete calculator that hands off to WhatsApp.
+2. **CEJ Cotizador** – Robust multi-step calculator with cart, expert mode, and local persistence.
+3. **CEJ Pro (SaaS Portal)** – Authenticated portal for contractors to review history, re-order, and eventually manage billing and operations.
+
+The repository **`cej-landing`** is the single codebase that powers all three layers.
 
 ---
 
 ## 2. Architecture & Structure
 
-We follow a strict **Feature-First** and **Component-Folder** architecture.
+We follow a **feature-first, component-folder** architecture, optimized for the Next.js App Router.
 
 ```text
 cej-landing/
-├── app/                     # Next.js App Router (Route Groups)
-│   ├── (marketing)/         # Public landing pages (/, /aviso-de-privacidad)
-│   ├── (app)/               # Functional tools (/cotizador)
-│   └── actions/             # Server Actions (submitLead)
+├── app/                         # Next.js App Router
+│   ├── (marketing)/             # Public landing pages (/, /aviso-de-privacidad)
+│   ├── (app)/                   # Functional tools (e.g. /cotizador)
+│   └── actions/                 # Server Actions (e.g. submitLead)
 ├── components/
-│   ├── Calculator/          # Complex domain components (wizard, modals)
-│   ├── layouts/             # Layout components (Header, Footer, GlobalUI)
-│   └── ui/                  # UI atoms (Button, Input, Card)
-├── config/                  # Business rules and content configuration
-├── hooks/                   # Custom React hooks
+│   ├── Calculator/              # Quote wizard, summary, ticket, modals
+│   ├── layouts/                 # Layouts (Header, Footer, GlobalUI)
+│   ├── QuoteDrawer/             # Cart + quote drawer
+│   └── ui/                      # Atoms (Button, Input, Card, etc.)
+├── config/                      # Business rules, static content config
+├── hooks/                       # Custom React hooks (useCheckoutUI, etc.)
 ├── lib/
-│   ├── schemas/             # Zod validation schemas
-│   ├── tracking/            # Meta CAPI, Pixel, identity management
-│   └── pricing.ts           # Core pricing engine
-├── store/                   # Zustand state management
-├── styles/                  # SCSS tokens and global styles
-└── types/                   # TypeScript type definitions
+│   ├── pricing.ts               # Core pricing engine
+│   ├── tracking/                # Pixel + Meta CAPI + identity
+│   ├── schemas/                 # Zod schemas for payloads and configs
+│   └── monitoring.ts            # Error reporting helpers
+├── store/                       # Zustand store (useCejStore)
+├── styles/                      # SCSS modules + tokens + global styles
+├── tests/                       # Vitest + Playwright tests (unit, integration, e2e)
+└── types/                       # Shared TypeScript types
+
 ```
 
-### Key Patterns
+### Key Architectural Principles
 
-- **Fail-Open:** Lead submission keeps the UX flow even if DB write fails.
-- **Global UI:** Cart state and overlays are mounted once in `components/layouts/GlobalUI`.
-- **Strict Typing:** Database payloads and server actions are validated with Zod schemas.
+- **Fail-Open:** Calculator and lead submission must still complete and open WhatsApp even if Supabase or tracking fail.
+- **Strict Typing:** All critical paths (pricing, persistence, tracking) are typed and validated with Zod.
+- **Global UI Shell:** Cart, quote drawer and feedback toasts are mounted globally so they survive route changes.
+- **Mobile-First:** Layout and performance are optimized for low-end mobile devices first.
+- **No Tailwind:** Styling is implemented via SCSS Modules and design tokens only.
 
-### Component Overview
-
-| **Directory** | **Purpose** |
-| --- | --- |
-| `Calculator/` | Multi-step quote wizard (24 files) |
-| `layouts/` | Header, Footer, GlobalUI, HeroSection |
-| `ui/` | Reusable atoms (Button, Input, Card, Modal) |
-| `FAQ/`, `Services/` | Landing page sections |
-| `QuoteDrawer/` | Cart sidebar |
+For deeper details, see [`docs/ARCHITECTURE.md`].
 
 ---
 
-## 3. Quick Start
+## 3. Core Features
 
-### Installation
+### 3.1 Landing & Calculator
+
+- **Hero + Calculator:** Above-the-fold calculator entry with a clear promise and primary CTA (“Cotizar ahora”).
+- **Wizard Flow:** Step-by-step form capturing:
+  - Volume (m³)
+  - Strength (`f'c`)
+  - Concrete type
+  - Zone / delivery conditions
+- **Summary & Ticket:** Inline summary plus a ticket-style breakdown:
+  - Base concrete
+  - Additives (when expert mode is enabled)
+  - Freight / surcharges
+  - VAT
+  - Total (MXN, formatted)
+
+### 3.2 Cart & Quote Drawer
+
+- Multi-item cart using a global Zustand store.
+- **QuoteDrawer** surfaces current selection:
+  - Accessible from the Smart Bottom Bar on mobile.
+  - Always mounted via `GlobalUI` to avoid losing state.
+
+### 3.3 Lead Submission & WhatsApp Handoff
+
+- Lead data is validated and persisted (when DB available).
+- WhatsApp link is always generated and opened, even when:
+  - Supabase write fails,
+  - Tracking endpoints fail.
+- The WhatsApp prefill includes:
+  - Quote summary,
+  - Final total in MXN,
+  - A lightweight meta description of the order.
+
+### 3.4 Tracking & Marketing Ops
+
+- Client-side Meta Pixel for `PageView`, `ViewContent`, and `Lead`.
+- Server-side **Meta CAPI** for robust event delivery and deduplication.
+- First-party identity cookies (`cej_vid`, `cej_sid`) for session/visitor tracking.
+- JSON-LD schemas for SEO: **Product** and **OfferCatalog**.
+
+### 3.5 SaaS Portal (Phase 4A – Planned)
+
+*(Defined, not yet shipped as a full release.)*
+
+- Supabase Auth (Magic Link).
+- `public.profiles` linked to `auth.users`.
+- `public.orders` for authenticated order history.
+- Dashboard with order list and “Reordenar” action.
+- Data sync to `price_config` as the primary pricing source.
+
+Full details: [`docs/PLAYBOOK_04_SAAS_PORTAL.md`].
+
+---
+
+## 4. Getting Started
+
+### 4.1 Requirements
+
+- Node.js (LTS)
+- pnpm
+- A Supabase project
+- Meta Pixel + CAPI credentials
+
+### 4.2 Setup
 
 ```bash
 pnpm install
@@ -66,71 +130,141 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-### Environment Variables (Detailed)
+By default, the app runs at `http://localhost:3000`.
 
-Required keys for the application to function correctly.
-
-| **Variable** | **Description** |
-| --- | --- |
-| `NEXT_PUBLIC_SITE_URL` | Canonical URL for SEO and Metadata. |
-| `NEXT_PUBLIC_BRAND_NAME` | Used in page titles and default SEO. |
-| `NEXT_PUBLIC_WHATSAPP_NUMBER` | Target number for lead handoff (format: 521...). |
-| `NEXT_PUBLIC_PIXEL_ID` | Meta Pixel ID for browser tracking. |
-| `FB_ACCESS_TOKEN` | Meta CAPI Token (Server-side tracking). |
-| `NEXT_PUBLIC_SUPABASE_URL` | API URL for your Supabase project. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public key for client-side fetches (RLS protected). |
-| `SUPABASE_SERVICE_ROLE_KEY` | **Secret** key for Server Actions (Bypasses RLS). |
-
-### Seeding Pricing Data (Phase 4 Prep)
-
-To populate the `price_config` table in Supabase with the initial pricing matrix:
+### 4.3 Recommended Scripts
 
 ```bash
-# Ensure SUPABASE_SERVICE_ROLE_KEY is set in .env.local
-npx tsx scripts/seed-pricing.ts
+pnpm lint           # ESLint checks
+pnpm test           # Vitest unit/integration tests
+pnpm coverage       # Vitest + v8 coverage report
+pnpm test:e2e       # Playwright e2e tests
+pnpm build          # Production build
+pnpm start          # Start production server
 ```
 
-> Note: The application currently defaults to FALLBACK_PRICING_RULES (local file) if the database connection fails or returns no data. This ensures high availability.
->
+> Note: The e2e suite is designed to be safe for local development and CI. Future versions will add automated axe-core checks for accessibility.
 
 ---
 
-## 4. Documentation
+## 5. Environment Variables
 
-For detailed architecture, database schemas, and the development roadmap, please refer to the `/docs` directory:
+All environment variables are documented here for quick setup.
 
-### Technical Documentation
+| Variable | Type | Description |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | public | Canonical URL used in SEO and metadata. |
+| `NEXT_PUBLIC_BRAND_NAME` | public | Brand name shown in titles and meta tags. |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | public | WhatsApp number used in lead handoff (international format, e.g. `5216XXXXXXXXX`). |
+| `NEXT_PUBLIC_PIXEL_ID` | public | Meta Pixel ID for browser tracking. |
+| `FB_ACCESS_TOKEN` | secret | Meta CAPI access token for server-side events. |
+| `NEXT_PUBLIC_SUPABASE_URL` | public | Supabase project URL. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | public | Supabase anon key used in client-side operations (RLS protected). |
+| `SUPABASE_SERVICE_ROLE_KEY` | secret | Service role key used by Server Actions (bypasses RLS, must stay server-only). |
 
-- [🗺️ **Roadmap & Sprints**](/docs/ROADMAP.md): Project phases, user roles, and execution plan.
-- [🏗️ **Architecture**](/docs/ARCHITECTURE.md): Data flow diagrams, state management, and code conventions.
-- [🗄️ **Database Schema**](/docs/DB_SCHEMA.md): Table definitions, JSONB snapshots, and RLS security policies.
-- [📊 **Pricing Model**](/docs/PRICING_MODEL.md): Math logic, formulas, and business rules.
-- [📈 **Tracking & SEO**](/docs/TRACKING_GUIDE.md): Meta CAPI, Pixel, and Analytics setup.
-- [🚀 **Execution Guide**](/docs/EXECUTION_GUIDE.md): Standards and deployment protocol.
+> Security: Never commit .env.local or any secret keys. All secret variables must be configured at the platform level (e.g. Vercel dashboard).
 
-### UX/UI Documentation
+---
 
-- [🎨 **Design System**](/docs/DESIGN_SYSTEM.md): Tokens, motion, shadows, and responsive behavior.
-- [🧩 **Component Library**](/docs/COMPONENT_LIBRARY.md): UI components, props, variants, and usage.
-- [🔄 **Interaction Patterns**](/docs/INTERACTION_PATTERNS.md): Forms, validation, loading, and feedback.
-- [🗺️ **UX Flows**](/docs/UX_FLOWS.md): User journeys, state machines, and flow diagrams.
-- [📊 **UI States**](/docs/UI_STATES.md): Empty, error, loading, and success states.
-- [🎯 **Iconography**](/docs/ICONOGRAPHY.md): Icon usage, sizing, and accessibility.
-- [♿ **Accessibility**](/docs/ACCESSIBILITY.md): WCAG compliance, patterns, and testing.
+## 6. Pricing Data (Phase 4 Prep)
+
+The system supports **two pricing sources**:
+
+1. **Local fallback:** `FALLBACK_PRICING_RULES` (JSON/TS configuration).
+2. **Remote primary (planned):** `price_config` table in Supabase.
+
+To seed `price_config` in Supabase:
+
+```bash
+# Ensure SUPABASE_SERVICE_ROLE_KEY is set
+npx tsx scripts/seed-pricing.ts
+```
+
+If the database is unreachable or returns no rows, the calculator automatically falls back to local rules to preserve the user experience.
+
+---
+
+## 7. Testing
+
+### 7.1 Unit & Integration (Vitest)
+
+- Core math logic: `lib/pricing.ts`
+- Store behavior: `store/useCejStore`
+- Hooks: `hooks/useCheckoutUI`, `hooks/useQuoteCalculator`
+- Utility functions: number parsing, MXN formatting, WhatsApp URL builder.
+
+### 7.2 End-to-End (Playwright)
+
+- Landing → Calculator → WhatsApp handoff.
+- Multi-step wizard validation.
+- QuoteDrawer and Smart Bottom Bar behavior.
+
+### 7.3 Accessibility (Current & Planned)
+
+Current:
+
+- Manual checks with keyboard navigation and screen readers.
+- Contrast tokens and high-contrast mode (`prefers-contrast: more`) in `styles/_tokens.scss`.
+
+Planned for Phase 4A:
+
+- axe-core integration via `@axe-core/playwright`:
+  - Scan `/`, calculator, and lead form modal.
+  - CI gate: fail on `critical` / `serious` violations.
+
+Details: [`docs/ACCESSIBILITY.md`].
+
+---
+
+## 8. Documentation
+
+Main docs live under `/docs`:
+
+### Technical
+
+- [`docs/ROADMAP.md`](docs/ROADMAP.md) – Phases, sprints, and strategic direction.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) – High-level architecture and data flow.
+- [`docs/DB_SCHEMA.md`](docs/DB_SCHEMA.md) – Tables, JSONB snapshots, and RLS.
+- [`docs/PRICING_MODEL.md`](docs/PRICING_MODEL.md) – Pricing formulas and constraints.
+- [`docs/TRACKING_GUIDE.md`](docs/TRACKING_GUIDE.md) – Pixel, CAPI, and analytics.
+- [`docs/EXECUTION_GUIDE.md`](docs/EXECUTION_GUIDE.md) – Runbook for phases and releases.
+
+### UX / UI
+
+- [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) – Tokens, layout, motion, and responsive behavior.
+- [`docs/COMPONENT_LIBRARY.md`](docs/COMPONENT_LIBRARY.md) – UI components and props.
+- [`docs/INTERACTION_PATTERNS.md`](docs/INTERACTION_PATTERNS.md) – Patterns for forms, loading, errors.
+- [`docs/UX_FLOWS.md`](docs/UX_FLOWS.md) – User journeys and state machines.
+- [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) – A11y patterns and testing.
 
 ### Playbooks
 
-- [🏃 **Sprint 4: SaaS Portal**](/docs/PLAYBOOK_04_SAAS_PORTAL.md): Active development guide.
-- [📁 **Archive**](/docs/archive/): Completed sprint playbooks (00-03).
+- [`docs/PLAYBOOK_04_SAAS_PORTAL.md`](docs/PLAYBOOK_04_SAAS_PORTAL.md) – Phase 4A (SaaS Portal) playbook (Planned).
+- [`docs/archive/`](docs/archive/) – Archived playbooks for Phases 0–3.
 
-## 5. Tech Stack
+---
 
-| **Technology** | **Version** | **Purpose** |
-| --- | --- | --- |
-| **Next.js** | 16.0.7 | App Router + Server Actions |
-| **TypeScript** | 5.9.3 | Strict typing |
-| **React** | 19.2.0 | UI Framework |
-| **Supabase** | 2.87.1 | Postgres + Auth |
-| **Zustand** | 5.0.9 | State management |
-| **Zod** | 3.25.76 | Runtime validation |
-| **SCSS Modules** | - | Design system tokens |
+## 9. Contributing
+
+### 9.1 Guidelines
+
+- Write **TypeScript** everywhere (no `any` in core paths).
+- Respect **UI in Spanish**: all user-facing labels, messages, and CTAs must remain in Spanish.
+- Follow the **SCSS Modules + tokens** pattern (no inline styles except for dynamic coordinates).
+- Before opening a PR:
+  - `pnpm lint`
+  - `pnpm test`
+  - `pnpm test:e2e` (optional locally, required in CI)
+
+### 9.2 Branching
+
+- `main` – Stable, deployable branch.
+- Feature branches – Short-lived, squash-merged into `main` after passing CI.
+
+See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) for more operational details.
+
+---
+
+## 10. License
+
+{TODO: business decision required – define and document project license (e.g., MIT, proprietary).}

@@ -1,15 +1,13 @@
 # Database Schema
 
 The database architecture leverages PostgreSQL (hosted via Supabase) to manage the critical lifecycle of customer data.
-It is designed to support a seamless transition from the current "Phase 2" (anonymous lead generation) to the future "Phase 4" (authenticated SaaS platform).
-
+It supports the hybrid model of "Phase 2" (anonymous lead generation) and "Phase 4" (authenticated SaaS platform).
 The schema prioritizes data integrity for financial calculations and strict privacy controls for user data, ensuring that historical quotes remain immutable even as current price configurations evolve.
 
 ## 1. Entity-Relationship Diagram (Simplified)
 
 The following diagram illustrates the core relationships.
-Notably, the LEADS table operates independently as an ingestion point for anonymous traffic, while PROFILES and ORDERS form the backbone of the authenticated application.
-PRICE_CONFIG acts as a standalone reference table for the calculation engine.
+`LEADS` operates independently for anonymous traffic, while `PROFILES` and `ORDERS` form the backbone of the **CEJ Pro** (SaaS) platform.
 
 ```mermaid
 erDiagram
@@ -21,6 +19,9 @@ erDiagram
     }
     PROFILES {
         uuid id PK "FK auth.users (1:1)"
+        string full_name
+        string email
+        string phone
         string rfc "Tax ID for Billing"
         string address
         string role "client | admin"
@@ -28,9 +29,10 @@ erDiagram
     ORDERS {
         uuid id PK
         uuid user_id FK "-> profiles.id"
-        jsonb items "Line Items Array (Snapshot)"
+        jsonb quote_data "Full Cart Snapshot (Immutable)"
         float total_amount
         string status "draft | confirmed | paid"
+        timestamp created_at
     }
     PRICE_CONFIG {
         string id PK "e.g. concrete_250_direct"
@@ -133,21 +135,15 @@ These tables form the core of the SaaS infrastructure scheduled for Phase 4.
 
 ### Anon Key (Public)
 
-- **Policy**: public read access on `price_config`.
-- Rationale: Pricing information is public marketing data.
-
-    Allowing the anonymous client to fetch this ensures the calculator works for unregistered visitors.
+- **Policy**: Public read access on `price_config`.
+- **Rationale**: Pricing is public marketing data; anonymous calculators must function without login.
 
 ### Service Role (Private/Server)
 
-- **Usage**: Used exclusively within Next.js Server Actions.
-- Rationale: Writing to leads requires bypassing RLS because anonymous users do not "own" rows in a way the database can authenticate.
-
-    The Server Action acts as a trusted gatekeeper, validating input with Zod before writing to the database.
+- **Usage**: Used exclusively within Server Actions (e.g., `submitLead`).
+- **Rationale**: Anonymous writes to `leads` require bypassing RLS as there is no authenticated user context.
 
 ### Auth User (Authenticated)
 
-- **Policy**: CRUD permissions restricted by `user_id`.
-- Rationale: A logged-in contractor can only view, edit, or delete their own orders and profile data.
-
-    They have zero visibility into the data of other users or the general leads pool.
+- **Policy**: CRUD permissions restricted by `user_id` on `profiles` and `orders`.
+- **Rationale**: A logged-in contractor has zero visibility into the data of other users.
