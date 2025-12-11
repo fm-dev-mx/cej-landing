@@ -54,28 +54,26 @@ sequenceDiagram
 
 While the diagram above shows the system boundaries, this flow describes the data journey through the React components:
 
-1. **Calculator Form** (`components/Calculator/CalculatorForm.tsx`) 1
+1. **Calculator Form** (`components/Calculator/CalculatorForm.tsx`)
     - Captures inputs (mode, volume, strength, type, additives).
     - Uses `useQuoteCalculator` to compute a `Quote` object and warnings.
-2. **Cart & History** (`store/useCejStore.ts`) 2
+2. **Cart & History** (`store/useCejStore.ts`)
     - Adds the current quote as a cart item.
     - Maintains history of previous quotes via Zustand persistence.
-3. **Checkout Modal** (`LeadFormModal` + `useCheckoutUI`) 3
+3. **Checkout Modal** (`LeadFormModal` + `useCheckoutUI`)
     - Captures name and phone.
     - Calls `useCheckoutUI.processOrder`.
-4. **Server Action** (`submitLead`) 4
+4. **Server Action** (`submitLead`)
     - Validates payload with `OrderSubmissionSchema`.
     - Stores `quote_data` snapshot in `leads`.
     - Optionally calls Meta CAPI with hashed PII.
-5. **WhatsApp Handoff** 5
+5. **WhatsApp Handoff**
     - Builds a prefilled message including folio, items and total.
     - Opens `wa.me` link for the configured `NEXT_PUBLIC_WHATSAPP_NUMBER`.
 
 ### 2.3 Pricing Engine (Dependency Injection)
 
 We decouple the *calculation logic* from the *price data* to enable dynamic updates without code deployments.
-
-Fragmento de código
 
 ```mermaid
 graph TD
@@ -97,67 +95,74 @@ graph TD
 
 To ensure maintainability during the SaaS scaling phases:
 
-1. Folder-per-Component
-
-    Complex components (such as Header) must live in their own directory containing both .tsx and .module.scss.
-
+1. **Folder-per-Component:** Complex components must live in their own directory.
     - ✅ `components/layouts/header/Header.tsx`
-    - ❌ `components/layouts/Header.tsx` (flat file)
-2. No Typos
-
-    Directory names must be consistent and intentional (ToolShell, not ToolSheel).
-
-3. Barrel Files
-
-    Use index.ts sparingly and mostly for library-style exports, e.g. lib/schemas/index.ts.
-
-4. Colocation
-
-    Tests (.test.ts / .spec.ts) should live next to the file they test.
+    - ❌ `components/layouts/Header.tsx`
+2. **No Typos:** Directory names must be consistent.
+3. **Barrel Files:** Use `index.ts` sparingly (e.g., `lib/schemas/index.ts`).
+4. **Colocation:** Tests live next to the file they test.
 
 ---
 
 ## 4. Core Patterns
 
-4.1 Fail-Open Persistence 6
+### 4.1 Fail-Open Persistence
 
-Lead submission uses:
+Lead submission uses a dual path (DB + CAPI). If Supabase is unreachable, errors are logged via `reportError`, but the action returns `success: true` to prevent blocking the user's WhatsApp handoff.
 
-- **DB path:** Insert into `leads` table.
-- **CAPI path:** Fire Meta CAPI with hashed PII and `event_id`.
+### 4.2 Global UI Orchestrator
 
-If Supabase is not configured or write fails:
+`components/layouts/GlobalUI.tsx` is mounted at `app/layout.tsx` to preserve state (Cart, Toasts) across route transitions.
 
-- Errors are logged with `reportError` / `reportWarning`.
-- The action still returns `success: true` so the WhatsApp handoff is never blocked.
+### 4.3 Domain Separation
 
-4.2 Global UI Orchestrator 7
-
-`components/layouts/GlobalUI.tsx` is mounted once at the root (`app/layout.tsx`) and contains:
-
-- `FeedbackToast`
-- `QuoteDrawer`
-- `SmartBottomBar`
-
-This prevents losing cart state when navigating between:
-
-- Marketing routes (`app/(marketing)/*`)
-- Internal tool routes (`app/(app)/*`, future CEJ Pro)
-
-4.3 Domain Separation 8
-
-- `lib/schemas/calculator.ts`: Input validation for physical and geometric constraints (dimensions, area, thickness, m³).
-- `lib/schemas/orders.ts`: Validation for business payloads (leads, quotes, financials, tracking, privacy).
-- `lib/pricing.ts`: Pricing engine (Min Order Quantity, Rounding, Additives).
-- `app/actions/submitLead.ts`: Server action to persist leads and trigger CAPI.
+- `lib/schemas/*`: Zod definitions.
+- `lib/pricing.ts`: Pure math engine.
+- `app/actions/*`: Server-side mutations.
 
 ---
 
-5. Future Extensions 9
+## 5. Routing Architecture
 
-- **Phase 4 – SaaS Portal (Active)**
-  - Link `leads` and `orders` to authenticated `profiles`.
-  - Enable CEJ Pro dashboards over the same data model.
-- **Phase 5 – Admin & Logistics**
-  - CRUD UI over `price_config`.
-  - Support for seasonal pricing and zone-based freight rules.
+We use Next.js **Route Groups** to separate concerns without affecting the URL structure:
+
+- **`(marketing)`**: Public landing pages (`/`, `/aviso-de-privacidad`). Focus on SEO and conversion.
+- **`(app)`**: Functional tools (`/cotizador`, `/perfil`). Focus on utility and state management.
+- **`app/actions`**: Server-side mutations.
+
+---
+
+## 6. Data Strategy & Persistence
+
+### 6.1 Identity Management (Cookies)
+
+To support the Hybrid Tracking model (Pixel + CAPI) for anonymous users, we manage identity via strictly first-party cookies:
+
+- **`cej_vid` (Visitor ID):**
+  - *Scope:* Persistent (1 year).
+  - *Purpose:* Identifies the device/browser across sessions.
+- **`cej_sid` (Session ID):**
+  - *Scope:* Ephemeral (30 minutes).
+  - *Purpose:* Groups interactions into a single session for attribution.
+- *Implementation:* `lib/tracking/identity.ts`
+
+### 6.2 State Migration Policy (Zustand)
+
+The `useCejStore` utilizes `persist` middleware to save the cart to `localStorage`.
+
+- **Versioning:** The store has a `version` number.
+- **Migration Rule:** When introducing breaking changes to the state shape (e.g., adding `additives` array or Auth fields), you **MUST**:
+    1. Increment the `version` in `useCejStore.ts`.
+    2. Write a migration handler in the `migrate` function to transform the old state to the new schema.
+- *Risk:* Failure to migrate will cause a "Hydration Error" or wipe the user's data.
+
+---
+
+## 7. Monitoring & Error Handling
+
+We use a centralized error reporting utility to maintain the "Fail-Open" philosophy.
+
+- **Utility:** `lib/monitoring.ts` -> `reportError(error, context)`
+- **Usage:**
+  - **Server Actions:** Wrap DB calls in `try/catch` and use `reportError`. Do not throw unless the error is critical to the user (e.g., Invalid Input).
+  - **Client Components:** Use for non-blocking UI failures (e.g., tracking pixel failure).

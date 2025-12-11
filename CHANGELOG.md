@@ -5,15 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - Phase 4: SaaS Portal
+## [0.4] - Phase 4: SaaS Portal (WIP)
+
+**Focus:** User identification, authentication, and recurring order management.
 
 ### Planned
 
 - **Authentication:** Supabase Auth integration (Magic Link).
 - **User Profiles:** Auto-creation of profiles via DB Triggers.
-- **Client Portal:** Order history dashboard.
+- **Client Portal:** Order history dashboard and data synchronization.
 
-## [0.3] - 2025-12-09 (Phase 3: Marketing Ops) WIP
+## [0.3] - 2025-12-10 (Phase 3: Marketing Ops)
 
 **Focus:** Server-side tracking reliability and SEO enrichment.
 

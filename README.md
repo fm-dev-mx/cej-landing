@@ -22,20 +22,18 @@ src/
 ├── app/                 # Next.js App Router
 ├── components/
 │   ├── Calculator/      # Complex domain components
-│   │   ├── Forms/       # Reusable sub-forms (flattened)
-│   │   └── Steps/       # Logical wizard steps
-│   ├── layouts/         # Layout components (Header, GlobalUI, ToolShell)
-│   └── ui/              # UI atoms (Button, Input, Select, etc.)
-├── hooks/               # Custom hooks (checkout, quote engine, identity)
+│   ├── layouts/         # Layout components (Header, GlobalUI)
+│   └── ui/              # UI atoms
+├── hooks/               # Custom hooks
 ├── lib/
-│   ├── schemas/         # Zod definitions (orders, calculator, pricing)
+│   ├── schemas/         # Zod definitions
 │   └── pricing.ts       # Core pricing engine
-└── store/               # Zustand state (cart, drafts, user)
+└── store/               # Zustand state
 ```
 
 ### Key Patterns
 
-- **Fail-Open:** Lead submission keeps the UX flow even if DB write fails (`submitLead`).
+- **Fail-Open:** Lead submission keeps the UX flow even if DB write fails.
 - **Global UI:** Cart state and overlays are mounted once in `components/layouts/GlobalUI`.
 - **Strict Typing:** Database payloads and server actions are validated with Zod schemas.
 
@@ -51,27 +49,32 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-### Environment Variables (essential)
+### Environment Variables (Detailed)
+
+Required keys for the application to function correctly.
+
+| **Variable** | **Description** |
+| --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | Canonical URL for SEO and Metadata. |
+| `NEXT_PUBLIC_BRAND_NAME` | Used in page titles and default SEO. |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER` | Target number for lead handoff (format: 521...). |
+| `NEXT_PUBLIC_PIXEL_ID` | Meta Pixel ID for browser tracking. |
+| `FB_ACCESS_TOKEN` | Meta CAPI Token (Server-side tracking). |
+| `NEXT_PUBLIC_SUPABASE_URL` | API URL for your Supabase project. |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public key for client-side fetches (RLS protected). |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Secret** key for Server Actions (Bypasses RLS). |
+
+### Seeding Pricing Data (Phase 4 Prep)
+
+To populate the `price_config` table in Supabase with the initial pricing matrix:
 
 ```bash
-NEXT_PUBLIC_SITE_URL=
-NEXT_PUBLIC_BRAND_NAME=
-NEXT_PUBLIC_WHATSAPP_NUMBER=
-NEXT_PUBLIC_PIXEL_ID=
-NEXT_PUBLIC_GA_ID=
-
-NEXT_PUBLIC_SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
-```
-
-### Seeding Pricing Data
-
-To populate the `price_config` table in Supabase:
-
-```bash
-# Ensure env vars are set
+# Ensure SUPABASE_SERVICE_ROLE_KEY is set in .env.local
 npx tsx scripts/seed-pricing.ts
 ```
+
+> Note: The application currently defaults to FALLBACK_PRICING_RULES (local file) if the database connection fails or returns no data. This ensures high availability.
+>
 
 ---
 
@@ -82,6 +85,7 @@ For detailed architecture, database schemas, and the development roadmap, please
 - [🗺️ **Roadmap & Sprints**](/docs/ROADMAP.md): Project phases, user roles, and execution plan.
 - [🏗️ **Architecture**](/docs/ARCHITECTURE.md): Data flow diagrams, state management, and code conventions.
 - [🗄️ **Database Schema**](/docs/DB_SCHEMA.md): Table definitions, JSONB snapshots, and RLS security policies.
+- [🎨 **Design System**](/docs/DESIGN_SYSTEM.md): Component tokens, SCSS variables, and component styles.
 - [📘 **Playbooks**](/docs/): Active execution guides (Older phases in `/docs/archive/`).
 - [📊 **Pricing Model**](/docs/PRICING_MODEL.md): Math logic, formulas, and business rules.
 - [📈 **Tracking & SEO**](/docs/TRACKING_GUIDE.md): Meta CAPI, Pixel, and Analytics setup.
