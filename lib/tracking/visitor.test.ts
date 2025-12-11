@@ -1,6 +1,11 @@
-// File: lib/tracking/visitor.test.ts
+// lib/tracking/visitor.test.ts
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { trackLead, trackContact, trackPageView } from './visitor';
+
+// Define the shape of window with fbq for testing purposes
+interface WindowWithFbq extends Window {
+    fbq?: ((...args: unknown[]) => void) & { queue?: unknown[] };
+}
 
 // Mock env
 vi.mock('@/config/env', () => ({
@@ -8,13 +13,13 @@ vi.mock('@/config/env', () => ({
 }));
 
 describe('Visitor/Pixel Tracking', () => {
-    let mockFbq: any;
+    let mockFbq: any; // Kept as any for the mock function itself to allow strict verify calls
 
     beforeEach(() => {
         // Mock window.fbq
         mockFbq = vi.fn();
 
-        // CORRECCIÓN CRÍTICA: 'configurable: true' permite borrar la propiedad después
+        // Configurable: true allows deleting the property later
         Object.defineProperty(window, 'fbq', {
             writable: true,
             configurable: true,
@@ -23,20 +28,20 @@ describe('Visitor/Pixel Tracking', () => {
     });
 
     afterEach(() => {
-        // Cleanup ahora funcionará porque la propiedad es configurable
-        // @ts-ignore
-        delete window.fbq;
+        // Cleanup
+        const win = window as WindowWithFbq;
+        delete win.fbq;
     });
 
     it('does nothing if window.fbq is undefined', () => {
-        // Simular ausencia de fbq
-        // @ts-ignore
-        delete window.fbq;
+        // Simulate absence of fbq
+        const win = window as WindowWithFbq;
+
+        delete win.fbq;
 
         trackPageView();
 
-        // Como fbq no existe, no debería lanzar error ni intentar llamar a nada
-        // (Nota: si el mock se borró bien, esto prueba el "safety check" del código)
+        // Since fbq does not exist, it should not throw error nor call anything
     });
 
     it('tracks PageView correctly', () => {

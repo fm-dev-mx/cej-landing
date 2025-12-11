@@ -1,5 +1,5 @@
-// File: hooks/useQuoteCalculator.ts
-// Description: Hook that validates calculator input and produces a quote + warnings.
+// hooks/useQuoteCalculator.ts
+// Validates calculator input and produces a quote + warnings.
 
 import { useMemo } from "react";
 
@@ -74,7 +74,6 @@ export function useQuoteCalculator(input: CalculatorState) {
         } else {
             // MODE 2: Assisted volume (dimensions/area)
             const hasCofferedSlab = hasCoffered === "yes";
-            let effectiveThicknessCm = 0;
             let coefficient = 0;
 
             if (
@@ -82,8 +81,6 @@ export function useQuoteCalculator(input: CalculatorState) {
                 cofferedSize &&
                 COFFERED_SPECS[cofferedSize]
             ) {
-                effectiveThicknessCm =
-                    COFFERED_SPECS[cofferedSize].totalThicknessCm;
                 coefficient = COFFERED_SPECS[cofferedSize].coefficient;
             }
 

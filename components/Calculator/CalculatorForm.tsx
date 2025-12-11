@@ -1,5 +1,5 @@
-// File: components/Calculator/CalculatorForm.tsx
-// Description: Main calculator orchestrator wiring store state to form steps and summary.
+// components/Calculator/CalculatorForm.tsx
+// Main calculator orchestrator wiring store state to form steps and summary.
 
 "use client";
 
@@ -8,7 +8,6 @@ import { useEffect, useRef } from "react";
 import { useCejStore } from "@/store/useCejStore";
 import { useQuoteCalculator } from "@/hooks/useQuoteCalculator";
 
-import { CalculatorSummary } from "./CalculatorSummary";
 import { ModeSelector } from "./steps/ModeSelector";
 import { Step5Summary } from "./steps/Step5Summary";
 
@@ -31,7 +30,7 @@ export function CalculatorForm() {
     const draft = useCejStore((s) => s.draft);
 
     // Quote engine result
-    const { isValid, error, warning } = useQuoteCalculator(draft);
+    const { error, warning } = useQuoteCalculator(draft);
 
     // Focus management
     const inputsSectionRef = useRef<HTMLDivElement>(null);

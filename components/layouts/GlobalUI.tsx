@@ -20,6 +20,8 @@ export default function GlobalUI() {
     const [isHydrated, setIsHydrated] = useState(false);
 
     useEffect(() => {
+        // Intentionally triggers a re-render to ensure client-side only content
+        // matches the hydration pass.
         setIsHydrated(true);
     }, []);
 

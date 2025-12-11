@@ -1,3 +1,4 @@
+// app/(marketing)/terminos/page.tsx
 import { Metadata } from "next";
 import { BUSINESS_INFO, MIN_M3_BY_TYPE } from "@/config/business";
 import styles from "./Terms.module.scss";
@@ -5,7 +6,7 @@ import styles from "./Terms.module.scss";
 export const metadata: Metadata = {
     title: "Términos y Condiciones | CEJ",
     description: "Condiciones de servicio, uso de calculadora y políticas de entrega.",
-    robots: "noindex, follow", // Usually terms are fine to index, but noindex is safe initially
+    robots: "noindex, follow",
 };
 
 export default function TermsPage() {
@@ -41,7 +42,7 @@ export default function TermsPage() {
                             <li><strong>Servicio de Bomba:</strong> Mínimo {MIN_M3_BY_TYPE.pumped} m³.</li>
                         </ul>
                         <p>
-                            Cualquier pedido por debajo de estas cantidades estará sujeto a disponibilidad y podrá incurrir en cargos adicionales por concepto de "falso flete" o "vacío", los cuales serán informados al momento de la cotización final.
+                            Cualquier pedido por debajo de estas cantidades estará sujeto a disponibilidad y podrá incurrir en cargos adicionales por concepto de &quot;falso flete&quot; o &quot;vacío&quot;, los cuales serán informados al momento de la cotización final.
                         </p>
                     </article>
 

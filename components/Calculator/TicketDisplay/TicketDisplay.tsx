@@ -1,3 +1,4 @@
+// components/Calculator/TicketDisplay/TicketDisplay.tsx
 import { useState, useEffect } from 'react';
 import { QuoteBreakdown } from '@/types/domain';
 import { fmtMXN } from '@/lib/utils';
@@ -16,16 +17,8 @@ export function TicketDisplay({ variant, quote, folio, customerName }: TicketDis
     const isPreview = variant === 'preview';
     const [dateStr, setDateStr] = useState('');
 
-    // If no quote, show empty state
-    if (!quote) {
-        return (
-            <div className={styles.emptyState}>
-                <p>No hay datos de cotización disponibles.</p>
-            </div>
-        );
-    }
-
     // Initialize date on mount
+    // MOVED UP: Hooks must execute unconditionally before any return
     useEffect(() => {
         setDateStr(
             new Date().toLocaleDateString('es-MX', {
@@ -35,6 +28,15 @@ export function TicketDisplay({ variant, quote, folio, customerName }: TicketDis
             })
         );
     }, []);
+
+    // If no quote, show empty state
+    if (!quote) {
+        return (
+            <div className={styles.emptyState}>
+                <p>No hay datos de cotización disponibles.</p>
+            </div>
+        );
+    }
 
     // Avoid NaN/Infinity if subtotal is 0
     const vatPercentage = quote.subtotal > 0 ? Math.round((quote.vat / quote.subtotal) * 100) : 8;

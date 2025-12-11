@@ -1,6 +1,6 @@
 // File: components/Calculator/modals/LeadFormModal.tsx
 // Description: Modal to capture customer data and trigger the checkout flow.
-// Optimized: Resets state on open to ensure data freshness without forcing parent 'key'.
+// Optimized: Resets state on open to ensure data freshness, fixing hook warnings.
 
 "use client";
 
@@ -26,18 +26,16 @@ export function LeadFormModal({
     const user = useCejStore((s) => s.user);
     const { processOrder, isProcessing, error } = useCheckoutUI();
 
-    // Initialize state lazily to avoid unnecessary renders
-    const [name, setName] = useState(() => user.name || "");
-    const [phone, setPhone] = useState(() => user.phone || "");
+    const [name, setName] = useState("");
+    const [phone, setPhone] = useState("");
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [saveMyData, setSaveMyData] = useState(true);
 
-    // Sync: Update local state if store changes OR if modal opens.
-    // This fixes the risk of stale data if the modal is reused without unmounting.
+    // Sync: Update local state from store when modal opens.
     useEffect(() => {
         if (isOpen) {
-            if (user.name) setName(user.name);
-            if (user.phone) setPhone(user.phone);
+            setName(user.name || "");
+            setPhone(user.phone || "");
         }
     }, [isOpen, user.name, user.phone]);
 

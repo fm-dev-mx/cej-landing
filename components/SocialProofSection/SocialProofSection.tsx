@@ -74,7 +74,7 @@ export default function SocialProofSection() {
                   <Card.Body>
                     <div className={styles.quoteIcon} aria-hidden="true">“</div>
                     <blockquote className={styles.quoteText}>
-                      "{t.quote}"
+                      &quot;{t.quote}&quot;
                     </blockquote>
                     <div className={styles.authorBlock}>
                       <div

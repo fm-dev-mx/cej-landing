@@ -1,6 +1,6 @@
-// File: app/actions/submitLead.test.ts
+// app/actions/submitLead.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { submitLead } from './submitLead';
+import { submitLead, type SubmitLeadPayload } from './submitLead';
 import { reportError } from '@/lib/monitoring';
 import { sendToMetaCAPI } from '@/lib/tracking/capi';
 
@@ -64,20 +64,35 @@ vi.mock('@/config/env', () => ({
 }));
 
 describe('Server Action: submitLead', () => {
-    // FIXED: Payload now fully complies with OrderSubmissionSchema AND CustomerSchema
-    const validPayload = {
+    // FIXED: Payload now fully complies with OrderSubmissionSchema and strict types
+    const validPayload: SubmitLeadPayload = {
         name: 'Test User',
         phone: '6561234567',
         visitor_id: 'visitor-123',
         fb_event_id: 'evt-uuid-5678',
+        utm_source: 'google',
+        utm_medium: 'cpc',
         quote: {
             folio: 'WEB-123',
-            items: [],
-            financials: { total: 1000, currency: 'MXN' },
-            metadata: {},
+            items: [
+                {
+                    id: 'item-1',
+                    label: 'Concreto 250',
+                    volume: 5,
+                    service: 'concrete_delivery',
+                    subtotal: 10000,
+                }
+            ],
+            financials: {
+                total: 11600,
+                currency: 'MXN'
+            },
+            metadata: {
+                source: 'web_calculator'
+            },
             customer: {
-                name: 'Test User',     // Added required field
-                phone: '6561234567',   // Added required field
+                name: 'Test User',
+                phone: '6561234567',
                 email: 'test@test.com'
             }
         },
@@ -91,7 +106,13 @@ describe('Server Action: submitLead', () => {
     });
 
     it('returns success on DB insertion', async () => {
-        const result = await submitLead(validPayload as any);
+        const result = await submitLead(validPayload);
+
+        // Debugging: If this fails, log the errors to understand Zod rejection
+        if (result.status === 'error') {
+            console.error('Validation Errors in Test:', result.errors);
+        }
+
         expect(result.status).toBe('success');
         if (result.status === 'success') {
             expect(result.id).toBe('999');
@@ -100,9 +121,10 @@ describe('Server Action: submitLead', () => {
     });
 
     it('returns error when validation fails (Zod)', async () => {
-        const invalidPayload = { ...validPayload, phone: 'too-short' };
+        // Create an invalid payload by using the spread operator but casting strictly for the test setup
+        const invalidPayload = { ...validPayload, phone: 'short' } as SubmitLeadPayload;
 
-        const result = await submitLead(invalidPayload as any);
+        const result = await submitLead(invalidPayload);
 
         expect(result.status).toBe('error');
         if (result.status === 'error') {
@@ -115,7 +137,7 @@ describe('Server Action: submitLead', () => {
         // Simulate DB error
         mockSingle.mockResolvedValue({ data: null, error: { message: 'DB Constraint', code: '23505' } });
 
-        const result = await submitLead(validPayload as any);
+        const result = await submitLead(validPayload);
 
         expect(result.status).toBe('success');
         if (result.status === 'success') {
@@ -130,7 +152,7 @@ describe('Server Action: submitLead', () => {
         // Force an exception inside the try block
         mockInsert.mockImplementationOnce(() => { throw new Error('Catastrophic failure'); });
 
-        const result = await submitLead(validPayload as any);
+        const result = await submitLead(validPayload);
 
         expect(result.status).toBe('success');
         if (result.status === 'success') {
@@ -141,13 +163,12 @@ describe('Server Action: submitLead', () => {
     });
 
     it('correctly hashes PII before sending to CAPI', async () => {
-        await submitLead(validPayload as any);
+        await submitLead(validPayload);
 
         expect(sendToMetaCAPI).toHaveBeenCalled();
         const args = (sendToMetaCAPI as any).mock.calls[0][0];
 
         // Check phone hashing (SHA256 of 6561234567)
-        // 6561234567 -> sha256 -> ...
         expect(args.user_data.ph).toMatch(/^[a-f0-9]{64}$/);
         expect(args.user_data.ph).not.toBe('6561234567');
 

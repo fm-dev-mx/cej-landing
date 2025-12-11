@@ -1,6 +1,6 @@
+// app/(marketing)/aviso-de-privacidad/page.tsx
 import { Metadata } from "next";
 import { BUSINESS_INFO } from "@/config/business";
-import { env } from "@/config/env";
 import styles from "./Privacy.module.scss";
 
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ export default function PrivacyPage() {
 
                 <section className={styles.content}>
                     <p className={styles.intro}>
-                        <strong>{name}</strong> (en adelante "El Responsable"), con domicilio en <strong>{fullAddress}</strong>,
+                        <strong>{name}</strong> (en adelante &quot;El Responsable&quot;), con domicilio en <strong>{fullAddress}</strong>,
                         es el responsable del uso y protección de sus datos personales, y al respecto le informamos lo siguiente:
                     </p>
 

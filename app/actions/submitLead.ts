@@ -57,8 +57,9 @@ function hashData(data: string | undefined): string | undefined {
 
 /**
  * Definition of the input payload using strictly typed OrderPayload for the quote.
+ * Exported to allow type-safe testing.
  */
-type SubmitLeadPayload = {
+export type SubmitLeadPayload = {
     name: string;
     phone: string;
     quote: OrderPayload; // Enforce strict type here
