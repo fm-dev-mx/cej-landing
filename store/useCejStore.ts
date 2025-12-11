@@ -236,7 +236,35 @@ export const useCejStore = create<CejStore>()(
             storage: createJSONStorage(() => localStorage),
             version: 2,
             migrate: (persistedState: unknown, version) => {
-                const state = persistedState as CejStore;
+                // Defensive: validate state has expected shape before casting
+                if (!persistedState || typeof persistedState !== 'object') {
+                    // Corrupted or missing data: reset to safe defaults
+                    return {
+                        cart: [],
+                        history: [],
+                        user: {
+                            visitorId: uuidv4(),
+                            hasConsentedPersistence: true,
+                        },
+                        draft: { ...DEFAULT_CALCULATOR_STATE },
+                    } as PersistedState;
+                }
+
+                const state = persistedState as Partial<PersistedState>;
+
+                // Safe initialization of potentially missing properties
+                if (!state.cart) state.cart = [];
+                if (!state.history) state.history = [];
+                if (!state.user) {
+                    state.user = {
+                        visitorId: uuidv4(),
+                        hasConsentedPersistence: true,
+                    };
+                }
+                if (!state.draft) {
+                    state.draft = { ...DEFAULT_CALCULATOR_STATE };
+                }
+
                 if (version === 0 || version === 1) {
                     // Migración Fase 1 -> Fase 2
                     if (state.draft && !state.draft.additives) {
@@ -244,7 +272,8 @@ export const useCejStore = create<CejStore>()(
                         state.draft.showExpertOptions = false;
                     }
                 }
-                return state;
+
+                return state as PersistedState;
             },
             partialize: (state): PersistedState => ({
                 cart: state.cart,

@@ -20,8 +20,19 @@ export default function GlobalUI() {
     const [isHydrated, setIsHydrated] = useState(false);
 
     useEffect(() => {
-        // Intentionally triggers a re-render to ensure client-side only content
-        // matches the hydration pass.
+        /**
+         * HYDRATION GUARD PATTERN
+         *
+         * This component renders client-only children (QuoteDrawer, SmartBottomBar)
+         * that depend on Zustand's localStorage state. During SSR, localStorage is
+         * undefined, causing a hydration mismatch if we render immediately.
+         *
+         * Solution: Delay rendering until after hydration by setting state in useEffect.
+         * The eslint-disable is intentional - this is the canonical React pattern
+         * for "client-only" rendering, per React docs and Next.js guidance.
+         *
+         * @see https://react.dev/reference/react/useEffect#controlling-a-non-react-widget
+         */
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsHydrated(true);
     }, []);
