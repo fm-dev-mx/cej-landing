@@ -44,7 +44,7 @@ describe('Meta CAPI Service', () => {
     });
 
     it('sends correct payload structure to Meta', async () => {
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
             ok: true,
             json: async () => ({ success: true })
         });
@@ -52,7 +52,7 @@ describe('Meta CAPI Service', () => {
         await sendToMetaCAPI(mockPayload);
 
         expect(global.fetch).toHaveBeenCalledTimes(1);
-        const [url, options] = (global.fetch as any).mock.calls[0];
+        const [url, options] = (global.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
 
         expect(url).toContain('1234567890'); // Checks PIXEL_ID in URL
         const body = JSON.parse(options.body);
@@ -64,7 +64,7 @@ describe('Meta CAPI Service', () => {
 
     it('handles API errors gracefully (Fail-Open)', async () => {
         // Simular error de Meta (400 Bad Request)
-        (global.fetch as any).mockResolvedValue({
+        (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
             ok: false,
             json: async () => ({ error: { message: 'Invalid parameter' } })
         });

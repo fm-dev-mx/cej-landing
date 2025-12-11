@@ -49,7 +49,7 @@ describe('Step5Summary Integration', () => {
         Object.defineProperty(window, 'scrollTo', { value: vi.fn(), writable: true });
 
         // Default Store State Mock
-        (useCejStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector: any) => selector({
+        (useCejStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => selector({
             draft: {},
             resetDraft: vi.fn()
         }));

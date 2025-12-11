@@ -1,6 +1,6 @@
 // File: components/Calculator/Forms/AdditivesForm.test.tsx
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { AdditivesForm } from './AdditivesForm';
 import { useCejStore } from '@/store/useCejStore';
 
@@ -105,7 +105,7 @@ describe('Component: AdditivesForm', () => {
 
         // For this run, we can just assert it renders something empty if we could inject it,
         // but given the file structure, testing the conditional rendering logic:
-        const { container } = render(<AdditivesForm />);
+        render(<AdditivesForm />);
         // If the mock above didn't take effect (due to hoisting), we just check it doesn't crash.
         // To properly test the "empty" case in Vitest with static imports,
         // we'd usually need separate test files or vi.hoisted helpers.

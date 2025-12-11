@@ -1,5 +1,5 @@
 // File: lib/tracking/utm.test.ts
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getOrInitUtmParams } from './utm';
 
 describe('UTM Parsing Logic', () => {

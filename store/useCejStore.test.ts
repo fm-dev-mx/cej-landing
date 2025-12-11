@@ -2,6 +2,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCejStore } from '@/store/useCejStore';
+import type { QuoteBreakdown } from '@/types/domain';
 
 describe('useCejStore (State Management)', () => {
     beforeEach(() => {
@@ -48,13 +49,13 @@ describe('useCejStore (State Management)', () => {
             // or trust Zustand. Here we test the logic via the store's behavior if we could inject old state.
 
             // Mocking the behavior:
-            const oldState: any = {
+            const oldState: unknown = {
                 draft: { m3: '10' } // Missing additives
             };
 
             // Retrieve the persist object to test migrate function directly
             const persistOptions = useCejStore.persist.getOptions();
-            const migratedState = persistOptions.migrate?.(oldState, 1) as any;
+            const migratedState = persistOptions.migrate?.(oldState, 1) as unknown as { draft: { additives: string[], showExpertOptions: boolean, m3: string } };
 
             expect(migratedState.draft.additives).toEqual([]);
             expect(migratedState.draft.showExpertOptions).toBe(false);
@@ -69,7 +70,7 @@ describe('useCejStore (State Management)', () => {
             act(() => {
                 result.current.setMode('assistM3');
                 result.current.setWorkType('slab'); // Label: Losa
-                result.current.addToCart({ total: 100, subtotal: 90 } as any);
+                result.current.addToCart({ total: 100, subtotal: 90 } as unknown as QuoteBreakdown);
             });
 
             expect(result.current.cart[0].config.label).toContain('Losa');
@@ -80,7 +81,7 @@ describe('useCejStore (State Management)', () => {
 
             act(() => {
                 result.current.setMode('knownM3');
-                result.current.addToCart({ total: 100, subtotal: 90 } as any);
+                result.current.addToCart({ total: 100, subtotal: 90 } as unknown as QuoteBreakdown);
             });
 
             expect(result.current.cart[0].config.label).toContain('Volumen Directo');
@@ -89,7 +90,7 @@ describe('useCejStore (State Management)', () => {
         it('editCartItem restores state and removes from cart', () => {
             const { result } = renderHook(() => useCejStore());
             // Add item
-            act(() => result.current.addToCart({ total: 100 } as any));
+            act(() => result.current.addToCart({ total: 100 } as unknown as QuoteBreakdown));
             const id = result.current.cart[0].id;
 
             // Edit item
@@ -101,7 +102,7 @@ describe('useCejStore (State Management)', () => {
 
         it('moveToHistory archives items', () => {
             const { result } = renderHook(() => useCejStore());
-            act(() => result.current.addToCart({ total: 100 } as any));
+            act(() => result.current.addToCart({ total: 100 } as unknown as QuoteBreakdown));
 
             act(() => result.current.moveToHistory());
 

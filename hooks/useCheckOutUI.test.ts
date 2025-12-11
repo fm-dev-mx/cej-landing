@@ -1,4 +1,4 @@
-// File: hooks/useCheckOutUI.test.ts
+// hooks/useCheckOutUI.test.ts
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCheckoutUI, WHATSAPP_DELAY_MS } from './useCheckOutUI';
@@ -17,7 +17,7 @@ vi.mock('@/lib/tracking/visitor', () => ({
 }));
 
 vi.mock('@/store/useCejStore', () => ({
-    useCejStore: (selector: any) => selector({
+    useCejStore: (selector: (state: unknown) => unknown) => selector({
         cart: [{
             id: '1',
             results: { total: 1000, volume: { billedM3: 1 }, concreteType: 'direct' },
@@ -46,15 +46,18 @@ describe('useCheckoutUI', () => {
         vi.clearAllMocks();
         vi.useFakeTimers(); // Enable fake timers to control setTimeout
         vi.stubGlobal('open', vi.fn());
-        // No need to stub crypto anymore as we use uuid package
+        // Silence console.error to keep test output clean from expected error logs
+        vi.spyOn(console, 'error').mockImplementation(() => { });
     });
 
     afterEach(() => {
         vi.useRealTimers(); // Restore timers
+        vi.restoreAllMocks();
     });
 
     it('processes order successfully', async () => {
-        (submitLead as any).mockResolvedValue({ status: 'success', id: '100' });
+        // Use Type-safe mock
+        vi.mocked(submitLead).mockResolvedValue({ status: 'success', id: '100' });
 
         const { result } = renderHook(() => useCheckoutUI());
 
@@ -82,7 +85,7 @@ describe('useCheckoutUI', () => {
     });
 
     it('handles server validation errors', async () => {
-        (submitLead as any).mockResolvedValue({
+        vi.mocked(submitLead).mockResolvedValue({
             status: 'error',
             message: 'Datos inválidos',
             errors: { phone: ['Error'] }
@@ -97,7 +100,11 @@ describe('useCheckoutUI', () => {
             );
         });
 
+        // The hook catches the error and sets state.error
         expect(result.current.error).toContain('Datos inválidos');
         expect(result.current.error).toContain('phone');
+
+        // Ensure console.error was indeed called (proving we silenced a real log)
+        expect(console.error).toHaveBeenCalled();
     });
 });

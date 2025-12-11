@@ -1,10 +1,7 @@
-// File: components/Calculator/modals/LeadFormModal.tsx
-// Description: Modal to capture customer data and trigger the checkout flow.
-// Optimized: Resets state on open to ensure data freshness, fixing hook warnings.
-
+// components/Calculator/modals/LeadFormModal.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useCejStore } from "@/store/useCejStore";
 import { useCheckoutUI } from "@/hooks/useCheckOutUI";
 import { Button } from "@/components/ui/Button/Button";
@@ -26,18 +23,12 @@ export function LeadFormModal({
     const user = useCejStore((s) => s.user);
     const { processOrder, isProcessing, error } = useCheckoutUI();
 
-    const [name, setName] = useState("");
-    const [phone, setPhone] = useState("");
+    // Initial state derived directly from store.
+    // The form component will be reset via the 'key' prop when isOpen changes.
+    const [name, setName] = useState(user.name || "");
+    const [phone, setPhone] = useState(user.phone || "");
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [saveMyData, setSaveMyData] = useState(true);
-
-    // Sync: Update local state from store when modal opens.
-    useEffect(() => {
-        if (isOpen) {
-            setName(user.name || "");
-            setPhone(user.phone || "");
-        }
-    }, [isOpen, user.name, user.phone]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -63,10 +54,16 @@ export function LeadFormModal({
             onClose={onClose}
             title="Finalizar Cotización"
         >
+            {/* Optimization: The 'key' prop ensures this form is fully re-mounted
+                whenever the modal opens. This automatically resets the state
+                (name, phone) using the latest values from the store, eliminating
+                the need for a synchronization useEffect.
+            */}
             <form
                 className={styles.form}
                 onSubmit={handleSubmit}
                 data-testid="lead-form"
+                key={isOpen ? "open" : "closed"}
             >
                 <p className={styles.subtitle}>
                     Ingresa tus datos para generar el ticket oficial y enviarlo a planta.

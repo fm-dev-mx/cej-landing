@@ -1,5 +1,4 @@
 // components/Calculator/TicketDisplay/TicketDisplay.tsx
-import { useState, useEffect } from 'react';
 import { QuoteBreakdown } from '@/types/domain';
 import { fmtMXN } from '@/lib/utils';
 import { env } from '@/config/env';
@@ -15,19 +14,15 @@ interface TicketDisplayProps {
 
 export function TicketDisplay({ variant, quote, folio, customerName }: TicketDisplayProps) {
     const isPreview = variant === 'preview';
-    const [dateStr, setDateStr] = useState('');
 
-    // Initialize date on mount
-    // MOVED UP: Hooks must execute unconditionally before any return
-    useEffect(() => {
-        setDateStr(
-            new Date().toLocaleDateString('es-MX', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            })
-        );
-    }, []);
+    // Optimization: Calculate date directly during render.
+    // We use suppressHydrationWarning on the specific span below to handle server/client mismatches
+    // without triggering a second render via useEffect.
+    const dateStr = new Date().toLocaleDateString('es-MX', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
 
     // If no quote, show empty state
     if (!quote) {
@@ -52,7 +47,10 @@ export function TicketDisplay({ variant, quote, folio, customerName }: TicketDis
 
                     <span className={styles.meta}>{folio ? `Folio: ${folio}` : 'COTIZACIÓN PRELIMINAR'}</span>
 
-                    <span className={styles.meta}>{dateStr || '...'}</span>
+                    {/* Hydration warning suppressed only for this dynamic date element */}
+                    <span className={styles.meta} suppressHydrationWarning>
+                        {dateStr}
+                    </span>
                 </div>
 
                 <hr className={styles.divider} />

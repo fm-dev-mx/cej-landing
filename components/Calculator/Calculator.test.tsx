@@ -49,7 +49,7 @@ const resetStore = () => {
       visitorId: 'test-id',
       hasConsentedPersistence: true
     }
-  } as any);
+  } as unknown as Partial<ReturnType<typeof useCejStore.getState>>);
 };
 
 describe('Calculator UI Integration', () => {

@@ -34,8 +34,8 @@ vi.mock('@/config/content', () => ({
 // Mock UI Card component to simplify the render tree
 vi.mock('@/components/ui/Card/Card', () => ({
     Card: {
-        Root: ({ children, className }: any) => <div data-testid="service-card" className={className}>{children}</div>,
-        Body: ({ children }: any) => <div>{children}</div>
+        Root: ({ children, className }: { children: React.ReactNode; className?: string }) => <div data-testid="service-card" className={className}>{children}</div>,
+        Body: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
     }
 }));
 

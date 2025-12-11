@@ -1,4 +1,4 @@
-// app/actions/submitLead.test.ts
+// Full, final content of app/actions/submitLead.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { submitLead, type SubmitLeadPayload } from './submitLead';
 import { reportError } from '@/lib/monitoring';
@@ -41,7 +41,7 @@ const mockInsert = vi.fn();
 const mockSelect = vi.fn();
 const mockSingle = vi.fn();
 
-// Mock Supabase
+// Mock Supabase with strict chaining structure
 vi.mock('@supabase/supabase-js', () => ({
     createClient: () => ({
         from: () => ({
@@ -64,7 +64,7 @@ vi.mock('@/config/env', () => ({
 }));
 
 describe('Server Action: submitLead', () => {
-    // FIXED: Payload now fully complies with OrderSubmissionSchema and strict types
+    // Typed payload conforming to OrderSubmissionSchema
     const validPayload: SubmitLeadPayload = {
         name: 'Test User',
         phone: '6561234567',
@@ -108,7 +108,6 @@ describe('Server Action: submitLead', () => {
     it('returns success on DB insertion', async () => {
         const result = await submitLead(validPayload);
 
-        // Debugging: If this fails, log the errors to understand Zod rejection
         if (result.status === 'error') {
             console.error('Validation Errors in Test:', result.errors);
         }
@@ -121,7 +120,7 @@ describe('Server Action: submitLead', () => {
     });
 
     it('returns error when validation fails (Zod)', async () => {
-        // Create an invalid payload by using the spread operator but casting strictly for the test setup
+        // Create an invalid payload casting strictly for the test setup
         const invalidPayload = { ...validPayload, phone: 'short' } as SubmitLeadPayload;
 
         const result = await submitLead(invalidPayload);
@@ -166,7 +165,8 @@ describe('Server Action: submitLead', () => {
         await submitLead(validPayload);
 
         expect(sendToMetaCAPI).toHaveBeenCalled();
-        const args = (sendToMetaCAPI as any).mock.calls[0][0];
+        const sendToMetaCAPIMock = vi.mocked(sendToMetaCAPI);
+        const args = sendToMetaCAPIMock.mock.calls[0][0];
 
         // Check phone hashing (SHA256 of 6561234567)
         expect(args.user_data.ph).toMatch(/^[a-f0-9]{64}$/);

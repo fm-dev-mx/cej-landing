@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+// components/Calculator/CalculatorForm.test.tsx
+import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CalculatorForm } from '@/components/Calculator/CalculatorForm';
 import { useCejStore } from '@/store/useCejStore';

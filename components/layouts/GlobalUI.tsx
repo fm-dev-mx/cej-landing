@@ -1,4 +1,4 @@
-// File: components/layouts/GlobalUI.tsx
+// components/layouts/GlobalUI.tsx
 // Description: Global UI wrapper to mount persistent overlays (toast, drawer, bottom bar).
 
 "use client";
@@ -22,6 +22,7 @@ export default function GlobalUI() {
     useEffect(() => {
         // Intentionally triggers a re-render to ensure client-side only content
         // matches the hydration pass.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsHydrated(true);
     }, []);
 

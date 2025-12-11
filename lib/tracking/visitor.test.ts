@@ -13,7 +13,7 @@ vi.mock('@/config/env', () => ({
 }));
 
 describe('Visitor/Pixel Tracking', () => {
-    let mockFbq: any; // Kept as any for the mock function itself to allow strict verify calls
+    let mockFbq: ReturnType<typeof vi.fn>;
 
     beforeEach(() => {
         // Mock window.fbq

@@ -7,7 +7,7 @@ import { useCejStore } from '@/store/useCejStore';
 vi.mock('@/store/useCejStore');
 // Mock Child Components
 vi.mock('@/components/Calculator/modals/LeadFormModal', () => ({
-    LeadFormModal: ({ isOpen }: any) => isOpen ? <div>Lead Modal Open</div> : null
+    LeadFormModal: ({ isOpen }: { isOpen: boolean }) => isOpen ? <div>Lead Modal Open</div> : null
 }));
 
 describe('QuoteDrawer', () => {
@@ -28,7 +28,7 @@ describe('QuoteDrawer', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        (useCejStore as any).mockReturnValue({
+        (useCejStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
             isDrawerOpen: true,
             setDrawerOpen: mockSetDrawerOpen,
             activeTab: 'order',
@@ -42,7 +42,7 @@ describe('QuoteDrawer', () => {
     });
 
     it('does not render if drawer is closed', () => {
-        (useCejStore as any).mockReturnValue({ isDrawerOpen: false });
+        (useCejStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ isDrawerOpen: false });
         const { container } = render(<QuoteDrawer />);
         expect(container).toBeEmptyDOMElement();
     });

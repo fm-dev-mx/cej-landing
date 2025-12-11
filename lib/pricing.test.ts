@@ -47,7 +47,7 @@ const MOCK_RULES: PricingRules = {
                 { minM3: 0, pricePerM3Cents: 220000 } // $2,200
             ]
         }
-    } as any
+    } as PricingRules['base']
 };
 
 describe('Pricing Engine (Core Logic)', () => {
