@@ -158,6 +158,7 @@ export const useCejStore = create<CejStore>()(
                 // Create strict CartItem
                 const newItem: CartItem = {
                     id: uuidv4(),
+                    timestamp: Date.now(),
                     inputs: { ...state.draft, additives: additivesList },
                     results,
                     config: { label }
