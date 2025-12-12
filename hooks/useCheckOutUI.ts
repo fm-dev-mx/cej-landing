@@ -130,19 +130,8 @@ export function useCheckoutUI() {
             // Move current cart to history
             moveToHistory();
 
-            // 4. Build WhatsApp message + open chat
-            const message = generateCartMessage(cart, customer.name, folio);
-
-            // Robustness: Handle missing env var gracefully
-            const phoneNumber = env.NEXT_PUBLIC_WHATSAPP_NUMBER || "";
-            const waUrl = getWhatsAppUrl(phoneNumber, message);
-
-            if (waUrl) {
-                // Use constant delay for predictable UX and testing
-                setTimeout(() => window.open(waUrl, "_blank"), WHATSAPP_DELAY_MS);
-            } else {
-                console.warn("[Checkout] WhatsApp URL missing.");
-            }
+            // 4. Build WhatsApp message for later use (UI will handle opening)
+            // The hook no longer auto-opens WhatsApp to give user control
 
             return true;
         } catch (err: unknown) {

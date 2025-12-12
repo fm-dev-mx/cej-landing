@@ -3,7 +3,7 @@
 import { useCejStore } from '@/store/useCejStore';
 import { SelectionCard } from '@/components/ui/SelectionCard/SelectionCard';
 import { type CalculatorMode } from '@/types/domain';
-import styles from '../CalculatorForm.module.scss';
+import styles from './CalculatorForm.module.scss';
 
 interface Props {
     currentMode: CalculatorMode;

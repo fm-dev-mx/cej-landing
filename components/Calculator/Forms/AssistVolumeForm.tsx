@@ -4,6 +4,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
+import { useState } from "react";
 
 import { useCejStore } from "@/store/useCejStore";
 import { useShallow } from "zustand/react/shallow";
@@ -43,6 +44,7 @@ export function AssistVolumeForm({ error }: Props) {
     );
 
     const update = useCejStore((s) => s.updateDraft);
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
 
     const handleNumeric =
         (field: string) => (e: ChangeEvent<HTMLInputElement>) => {
@@ -52,8 +54,12 @@ export function AssistVolumeForm({ error }: Props) {
             update({ [field]: val });
         };
 
-    const hasSpecificError = (val: string) =>
-        !!error && (!val || parseFloat(val) <= 0);
+    const handleBlur = (field: string) => () => {
+        setTouched((prev) => ({ ...prev, [field]: true }));
+    };
+
+    const hasSpecificError = (field: string, val: string) =>
+        !!touched[field] && !!error && (!val || parseFloat(val) <= 0);
 
     const showManualThickness = hasCoffered !== "yes";
 
@@ -96,18 +102,20 @@ export function AssistVolumeForm({ error }: Props) {
                         placeholder="0.00"
                         value={length}
                         onChange={handleNumeric("length")}
+                        onBlur={handleBlur("length")}
                         inputMode="decimal"
                         variant="dark"
-                        error={hasSpecificError(length)}
+                        error={hasSpecificError("length", length)}
                     />
                     <Input
                         label="Ancho (m)"
                         placeholder="0.00"
                         value={width}
                         onChange={handleNumeric("width")}
+                        onBlur={handleBlur("width")}
                         inputMode="decimal"
                         variant="dark"
-                        error={hasSpecificError(width)}
+                        error={hasSpecificError("width", width)}
                     />
                 </div>
             ) : (
@@ -116,9 +124,10 @@ export function AssistVolumeForm({ error }: Props) {
                     placeholder="0.00"
                     value={area}
                     onChange={handleNumeric("area")}
+                    onBlur={handleBlur("area")}
                     inputMode="decimal"
                     variant="dark"
-                    error={hasSpecificError(area)}
+                    error={hasSpecificError("area", area)}
                 />
             )}
 

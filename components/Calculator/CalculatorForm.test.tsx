@@ -5,7 +5,7 @@ import { CalculatorForm } from '@/components/Calculator/CalculatorForm';
 import { useCejStore } from '@/store/useCejStore';
 
 // We mock child components to focus on the Form Orchestration logic
-vi.mock('@/components/Calculator/steps/ModeSelector', () => ({
+vi.mock('@/components/Calculator/ModeSelector', () => ({
     ModeSelector: ({ currentMode }: { currentMode: string }) => (
         <div data-testid="mode-selector">Mode: {currentMode}</div>
     )
@@ -19,8 +19,8 @@ vi.mock('@/components/Calculator/Forms/WorkTypeSelector', () => ({
     WorkTypeSelector: () => <div data-testid="work-type-selector">WorkType</div>
 }));
 
-vi.mock('@/components/Calculator/steps/Step5Summary', () => ({
-    Step5Summary: () => <div data-testid="summary-ticket">Summary</div>
+vi.mock('@/components/Calculator/QuoteSummary', () => ({
+    QuoteSummary: () => <div data-testid="summary-ticket">Summary</div>
 }));
 
 describe('CalculatorForm (Integration)', () => {

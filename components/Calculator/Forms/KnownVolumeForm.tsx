@@ -4,7 +4,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 
 import { useCejStore } from "@/store/useCejStore";
 import { Input } from "@/components/ui/Input/Input";
@@ -16,6 +16,7 @@ interface Props {
 export function KnownVolumeForm({ hasError }: Props) {
     const m3 = useCejStore((s) => s.draft.m3);
     const updateDraft = useCejStore((s) => s.updateDraft);
+    const [touched, setTouched] = useState(false);
 
     const handleChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>) => {
@@ -26,6 +27,8 @@ export function KnownVolumeForm({ hasError }: Props) {
         [updateDraft]
     );
 
+    const handleBlur = () => setTouched(true);
+
     return (
         <Input
             id="vol-known"
@@ -35,10 +38,11 @@ export function KnownVolumeForm({ hasError }: Props) {
             step={0.5}
             value={m3}
             onChange={handleChange}
+            onBlur={handleBlur}
             isVolume
             inputMode="decimal"
             placeholder="0.0"
-            error={hasError}
+            error={touched && hasError}
         />
     );
 }

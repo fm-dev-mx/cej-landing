@@ -75,8 +75,8 @@ describe('useCheckoutUI', () => {
         expect(success).toBe(true);
         expect(result.current.error).toBeNull();
 
-        // Should pass now that getWhatsAppUrl is mocked
-        expect(window.open).toHaveBeenCalledWith('https://wa.me/mock', '_blank');
+        // Should NOT call window.open automatically anymore
+        expect(window.open).not.toHaveBeenCalled();
 
         // Verify tracking called with uuid from mock
         expect(trackLead).toHaveBeenCalledWith(expect.objectContaining({

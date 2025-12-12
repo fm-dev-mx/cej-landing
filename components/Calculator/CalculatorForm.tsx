@@ -8,8 +8,8 @@ import { useEffect, useRef } from "react";
 import { useCejStore } from "@/store/useCejStore";
 import { useQuoteCalculator } from "@/hooks/useQuoteCalculator";
 
-import { ModeSelector } from "./steps/ModeSelector";
-import { Step5Summary } from "./steps/Step5Summary";
+import { ModeSelector } from "./ModeSelector";
+import { QuoteSummary } from "./QuoteSummary";
 
 import { KnownVolumeForm } from "./Forms/KnownVolumeForm";
 import { WorkTypeSelector } from "./Forms/WorkTypeSelector";
@@ -117,7 +117,7 @@ export function CalculatorForm() {
 
             {/* 5. Summary (ticket-like view) */}
             <div className={styles.summarySection}>
-                <Step5Summary />
+                <QuoteSummary />
             </div>
         </div>
     );

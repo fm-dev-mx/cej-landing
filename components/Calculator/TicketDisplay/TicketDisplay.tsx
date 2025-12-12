@@ -45,12 +45,17 @@ export function TicketDisplay({ variant, quote, folio, customerName }: TicketDis
                 <div className={styles.header}>
                     <span className={styles.brand}>{env.NEXT_PUBLIC_BRAND_NAME}</span>
 
-                    <span className={styles.meta}>{folio ? `Folio: ${folio}` : 'COTIZACIÓN PRELIMINAR'}</span>
-
-                    {/* Hydration warning suppressed only for this dynamic date element */}
-                    <span className={styles.meta} suppressHydrationWarning>
-                        {dateStr}
-                    </span>
+                    <div className={styles.metaCol}>
+                        <span className={styles.meta}>
+                            {folio ? `Folio: ${folio}` : "COTIZACIÓN PRELIMINAR"}
+                        </span>
+                        <span className={styles.meta} suppressHydrationWarning>
+                            {dateStr}
+                        </span>
+                        <span className={styles.metaValidity}>
+                            Vigencia: 7 días
+                        </span>
+                    </div>
                 </div>
 
                 <hr className={styles.divider} />
@@ -66,9 +71,17 @@ export function TicketDisplay({ variant, quote, folio, customerName }: TicketDis
                 {/* Items */}
                 <div className={styles.items}>
                     {quote.breakdownLines.map((line, idx) => (
-                        <div key={idx} className={styles.lineItem} data-type={line.type}>
-                            <span className={styles.itemLabel}>{line.label}</span>
-                            <span className={styles.itemPrice}>{fmtMXN(line.value)}</span>
+                        <div
+                            key={idx}
+                            className={styles.lineItem}
+                            data-type={line.type}
+                        >
+                            <span className={styles.itemLabel}>
+                                {line.label}
+                            </span>
+                            <span className={styles.itemPrice}>
+                                {fmtMXN(line.value)}
+                            </span>
                         </div>
                     ))}
                 </div>
@@ -93,22 +106,18 @@ export function TicketDisplay({ variant, quote, folio, customerName }: TicketDis
                     </div>
                 </div>
 
-                {/* Preview overlay */}
-                {isPreview && (
-                    <div className={styles.previewOverlay}>
-                        <p>Desglose completo disponible al formalizar</p>
-                    </div>
-                )}
+                {/* Footer - Always visible now */}
+                <div className={styles.footer}>
+                    <p className={styles.disclaimerMain}>
+                        ⚠ Cotización preliminar sujeta a visita técnica.
+                    </p>
+                    <p>Precios sujetos a cambio sin previo aviso.</p>
+                    <p>Volumetría final sujeta a verificación en obra.</p>
 
-                {/* Footer */}
-                {!isPreview && (
-                    <div className={styles.footer}>
-                        <p>Precios sujetos a cambio sin previo aviso.</p>
-                        <p>Volumetría final sujeta a verificación en obra.</p>
-
-                        <div className={styles.printOnly}>Generado en {env.NEXT_PUBLIC_SITE_URL}</div>
+                    <div className={styles.printOnly}>
+                        Generado en {env.NEXT_PUBLIC_SITE_URL}
                     </div>
-                )}
+                </div>
             </div>
 
             <div className={styles.perforationBottom} aria-hidden="true" />
