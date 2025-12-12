@@ -245,6 +245,16 @@ Main docs live under `/docs`:
 - [`docs/PLAYBOOK_04_SAAS_PORTAL.md`](docs/PLAYBOOK_04_SAAS_PORTAL.md) – Phase 4A (SaaS Portal) playbook (Planned).
 - [`docs/archive/`](docs/archive/) – Archived playbooks for Phases 0–3.
 
+### Agent Workflows
+
+Standardized workflows for AI agents and developers in `.agent/workflows/`:
+
+- [`code-review.md`](.agent/workflows/code-review.md) – Code review checklist for git diffs.
+- [`documentation-audit.md`](.agent/workflows/documentation-audit.md) – Documentation structure and audit process.
+- [`new-component.md`](.agent/workflows/new-component.md) – Template for creating React components.
+- [`pre-commit.md`](.agent/workflows/pre-commit.md) – Pre-commit validation checklist.
+- [`ux-copy-standards.md`](.agent/workflows/ux-copy-standards.md) – Spanish UI copy and validation patterns.
+
 ---
 
 ## 9. Contributing
