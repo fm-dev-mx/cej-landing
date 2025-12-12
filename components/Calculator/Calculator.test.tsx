@@ -48,7 +48,10 @@ const resetStore = () => {
     user: {
       visitorId: 'test-id',
       hasConsentedPersistence: true
-    }
+    },
+    // Phase 1: Reset progressive disclosure state
+    breakdownViewed: false,
+    submittedQuote: null
   } as unknown as Partial<ReturnType<typeof useCejStore.getState>>);
 };
 
@@ -75,16 +78,16 @@ describe('Calculator UI Integration', () => {
     expect(volInput).toHaveValue(5);
 
     // 3. Check Result (Instant calculation)
-    // We expect the summary to appear with the new Ticket Label
-    expect(screen.getByText('TOTAL')).toBeInTheDocument();
+    // We expect the summary to appear with Total label (compact variant uses 'Total' not 'TOTAL')
+    expect(screen.getByText('Total')).toBeInTheDocument();
 
     // Note: Volume text "5.00 m³" might not be explicitly visible in the new Ticket summary
-    // relying on price/total verification via 'TOTAL' presence is sufficient for integration here.
+    // relying on price/total verification via 'Total' presence is sufficient for integration here.
 
-    // 4. Request Quote (Button text updated to reflect WhatsApp CTA)
-    const addBtn = screen.getByRole('button', { name: /Solicitar/i });
-    expect(addBtn).toBeEnabled();
-    fireEvent.click(addBtn);
+    // 4. Phase 1: First CTA is "Ver Desglose de Cotización"
+    const viewBreakdownBtn = screen.getByRole('button', { name: /Ver Desglose/i });
+    expect(viewBreakdownBtn).toBeEnabled();
+    fireEvent.click(viewBreakdownBtn);
   });
 
   it('completes the flow using Assist Mode (Dimensions)', () => {
@@ -108,13 +111,13 @@ describe('Calculator UI Integration', () => {
     fireEvent.change(widthInput, { target: { value: '5' } });
     fireEvent.change(thickInput, { target: { value: '10' } });
 
-    // Check for updated Total label
-    expect(screen.getByText('TOTAL')).toBeInTheDocument();
+    // Check for updated Total label (compact variant shows "Total")
+    expect(screen.getByText('Total')).toBeInTheDocument();
 
     // 10*5*0.10 = 5m3 * factor. Should be valid.
-    // Button text updated to "Solicitar Cotización"
-    const addBtn = screen.getByRole('button', { name: /Solicitar/i });
-    expect(addBtn).toBeEnabled();
+    // Phase 1: Button text is now "Ver Desglose de Cotización"
+    const viewBreakdownBtn = screen.getByRole('button', { name: /Ver Desglose/i });
+    expect(viewBreakdownBtn).toBeEnabled();
   });
 
   it('shows validation errors in UI', () => {
@@ -129,9 +132,10 @@ describe('Calculator UI Integration', () => {
     const alert = screen.getByRole('alert');
     expect(alert).toBeInTheDocument();
 
-    // Ensure the quote button is NOT present when invalid
-    const addBtn = screen.queryByRole('button', { name: /Solicitar/i });
-    expect(addBtn).not.toBeInTheDocument();
+    // Ensure the quote button is NOT present when invalid (still shows, but disabled)
+    // With Phase 1, button shows but is disabled. Check for empty state hint instead.
+    const emptyHint = screen.queryByText(/Completa los datos/i);
+    expect(emptyHint).toBeInTheDocument();
   });
 
   it('persists state to localStorage and rehydrates on reload', () => {

@@ -184,4 +184,52 @@ describe('useCejStore (State Management)', () => {
             expect(result.current.draft).toEqual(originalDraft);
         });
     });
+    describe('Phase 2: Customer Data & Submission', () => {
+        it('addToCart returns an ID', () => {
+            const { result } = renderHook(() => useCejStore());
+            let id: string = '';
+
+            act(() => {
+                id = result.current.addToCart({ total: 100 } as unknown as QuoteBreakdown);
+            });
+
+            expect(id).toBeDefined();
+            expect(typeof id).toBe('string');
+            expect(id.length).toBeGreaterThan(0);
+        });
+
+        it('updateCartItemCustomer updates the customer info for a specific item', () => {
+            const { result } = renderHook(() => useCejStore());
+            let id: string = '';
+
+            act(() => {
+                id = result.current.addToCart({ total: 100 } as unknown as QuoteBreakdown);
+            });
+
+            const customer = { name: 'Juan Doe', phone: '5512345678' };
+
+            act(() => {
+                result.current.updateCartItemCustomer(id, customer);
+            });
+
+            const item = result.current.cart.find(i => i.id === id);
+            expect(item?.customer).toEqual(customer);
+        });
+
+        it('persists submittedQuote with results', () => {
+            const { result } = renderHook(() => useCejStore());
+            const mockQuote = { total: 500.50 } as QuoteBreakdown;
+
+            act(() => {
+                result.current.setSubmittedQuote({
+                    folio: 'F-100',
+                    name: 'Pepe',
+                    results: mockQuote
+                });
+            });
+
+            expect(result.current.submittedQuote?.folio).toBe('F-100');
+            expect(result.current.submittedQuote?.results.total).toBe(500.50);
+        });
+    });
 });

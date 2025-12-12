@@ -35,6 +35,14 @@ export default function GlobalUI() {
          */
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsHydrated(true);
+
+        // Expose store for E2E testing (development only)
+        if (process.env.NODE_ENV === 'development') {
+            // Dynamic import to avoid bundling store reference in production
+            import('@/store/useCejStore').then(({ useCejStore }) => {
+                (window as unknown as { useCejStore: typeof useCejStore }).useCejStore = useCejStore;
+            });
+        }
     }, []);
 
     if (!isHydrated) return null;

@@ -37,7 +37,8 @@ describe('TicketDisplay', () => {
 
     it('shows volume details', () => {
         render(<TicketDisplay quote={MOCK_QUOTE} variant="full" />);
-        expect(screen.getByText(/5 m³/)).toBeInTheDocument();
+        // Phase 1: Volume now appears in both volumeInfo section and breakdown label
+        expect(screen.getAllByText(/5 m³/).length).toBeGreaterThan(0);
     });
 
     it('handles null quote (Loading/Empty state)', () => {

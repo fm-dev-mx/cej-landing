@@ -15,6 +15,14 @@ import { env } from '@/config/env';
 
 import styles from './CalculatorForm.module.scss';
 
+/**
+ * QuoteSummary - Progressive Disclosure Flow (Phase 1)
+ *
+ * States:
+ * 1. PREVIEW: Shows compact summary, CTA = "Ver Desglose de Cotización"
+ * 2. BREAKDOWN: Shows full breakdown, CTA = "Confirmar y Generar Ticket"
+ * 3. SUBMITTED: Shows ticket with folio, CTA = "Enviar a WhatsApp"
+ */
 export function QuoteSummary() {
     const draft = useCejStore((s) => s.draft);
     const resetDraft = useCejStore((s) => s.resetDraft);
@@ -25,18 +33,25 @@ export function QuoteSummary() {
     const setDrawerOpen = useCejStore((s) => s.setDrawerOpen);
     const setActiveTab = useCejStore((s) => s.setActiveTab);
 
-    // Phase 0 Bugfix: Use global submittedQuote from store instead of local state
-    // This prevents data loss when component re-renders or unmounts
+    // Phase 1: Progressive disclosure state
+    const breakdownViewed = useCejStore((s) => s.breakdownViewed);
+    const setBreakdownViewed = useCejStore((s) => s.setBreakdownViewed);
+
+    // Phase 0: Global submission state
     const submittedQuote = useCejStore((s) => s.submittedQuote);
     const setSubmittedQuote = useCejStore((s) => s.setSubmittedQuote);
     const clearSubmittedQuote = useCejStore((s) => s.clearSubmittedQuote);
+    const updateCartItemCustomer = useCejStore((s) => s.updateCartItemCustomer);
 
-    const { quote, isValid, warning } = useQuoteCalculator(draft);
+    const { quote: currentQuote, isValid, warning } = useQuoteCalculator(draft);
+
+    // If we have a submitted quote, show IT. Otherwise show the live calculator quote.
+    // usage: quote to display
+    const quote = submittedQuote ? submittedQuote.results : currentQuote;
     const { processOrder, isProcessing } = useCheckoutUI();
 
     const [isModalOpen, setModalOpen] = useState(false);
 
-    // Use ref instead of document.querySelector for React best practices
     const ticketRef = useRef<HTMLDivElement>(null);
 
     const scrollToTicket = () => {
@@ -48,25 +63,37 @@ export function QuoteSummary() {
         }, 100);
     };
 
-    const handleSuccess = (folio: string, name: string) => {
-        setSubmittedQuote({ folio, name });
-        setModalOpen(false);
+    // --- Handlers ---
+
+    // Stage 1 -> Stage 2: User clicks "Ver Desglose"
+    const handleViewBreakdown = () => {
+        setBreakdownViewed(true);
         scrollToTicket();
     };
 
-    const onContinue = async () => {
-        // If user contact is already available, skip modal and process directly
+    // Stage 2 -> Stage 3: User confirms and generates ticket
+    const handleConfirmAndGenerate = async () => {
         if (user.name && user.phone) {
             const customer = { name: user.name, phone: user.phone };
 
-            // 1. Move Draft -> Cart (Note: This clears draft!)
-            addToCart(quote);
+            // 1. Add to cart immediately (creates draft -> cart item)
+            // This resets the draft, but we have `quote` (which is currentQuote here)
+            const itemId = addToCart(currentQuote);
 
-            // 2. Process Order from Cart (Note: moveToHistory is NOW in handleWhatsAppClick)
+            // 2. Process order
             const result = await processOrder(customer, false);
 
             if (result.success && result.folio) {
-                setSubmittedQuote({ folio: result.folio, name: user.name });
+                // 3. Update cart item with customer info
+                updateCartItemCustomer(itemId, customer);
+
+                // 4. Set submitted state with RESULTS (to persist view)
+                setSubmittedQuote({
+                    folio: result.folio,
+                    name: user.name,
+                    results: currentQuote
+                });
+
                 scrollToTicket();
             }
         } else {
@@ -74,21 +101,49 @@ export function QuoteSummary() {
         }
     };
 
-    // Phase 0 Bugfix: Move trackContact and moveToHistory to WhatsApp click
-    // This ensures cart is only archived AFTER the user actually clicks WhatsApp
-    const handleWhatsAppClick = () => {
-        // Track the contact event
-        trackContact("WhatsApp");
+    // Stage 3: Modal success callback
+    const handleModalSuccess = (folio: string, name: string) => {
+        // Modal handles processOrder internally.
+        // But we MUST Add to Cart here because it wasn't done yet.
+        // Note: currentQuote is still valid here because addToCart hasn't run yet.
+        const itemId = addToCart(currentQuote);
 
-        // Now it's safe to move cart to history - user has committed to WhatsApp
+        // Update cart item with customer info we just got
+        // Note: user.phone is updated by the modal before calling onSuccess
+        if (name && user.phone) {
+            updateCartItemCustomer(itemId, { name, phone: user.phone });
+        }
+
+        setSubmittedQuote({
+            folio,
+            name,
+            results: currentQuote
+        });
+
+        setModalOpen(false);
+        scrollToTicket();
+    };
+
+    // Stage 3 -> WhatsApp: Move to history only on final click
+    const handleWhatsAppClick = () => {
+        trackContact("WhatsApp");
         moveToHistory();
     };
 
-    // Show empty state only if:
-    // 1. Quote total is 0 (no valid calculation)
-    // 2. No submitted quote exists (not in success state)
-    // 3. Not currently processing (avoid flash during state transition)
-    // 4. Cart is empty (double-check for edge cases)
+    // Reset: Start a new quote
+    const handleReset = () => {
+        clearSubmittedQuote();
+        resetDraft();
+    };
+
+    // Go back from breakdown to preview
+    const handleEditCalculation = () => {
+        setBreakdownViewed(false);
+    };
+
+    // --- Render Logic ---
+
+    // Empty state: No valid calculation yet
     if (quote.total <= 0 && !submittedQuote && !isProcessing && cart.length === 0) {
         return (
             <div className={styles.emptyStateHint}>
@@ -99,10 +154,12 @@ export function QuoteSummary() {
         );
     }
 
-    const handleReset = () => {
-        clearSubmittedQuote();
-        resetDraft();
-    };
+    // Determine current stage
+    const stage: 'preview' | 'breakdown' | 'submitted' = submittedQuote
+        ? 'submitted'
+        : breakdownViewed
+            ? 'breakdown'
+            : 'preview';
 
     const whatsappUrl = submittedQuote
         ? getWhatsAppUrl(
@@ -113,23 +170,23 @@ export function QuoteSummary() {
 
     return (
         <div className={styles.container}>
-            {/* Ticket - Using ref for scroll control and data attribute for test queries */}
+            {/* Ticket Display - Variant changes based on stage */}
             <div
                 className={styles.ticketWrapper}
                 data-ticket-container="true"
                 ref={ticketRef}
             >
                 <TicketDisplay
-                    variant={submittedQuote ? "full" : "preview"}
+                    variant={stage === 'submitted' ? 'full' : stage === 'breakdown' ? 'preview' : 'compact'}
                     quote={quote}
                     folio={submittedQuote?.folio}
                     customerName={submittedQuote?.name}
                 />
             </div>
 
-            {/* CTA Actions - Pre-submit vs Post-submit views */}
+            {/* CTA Actions - Changes based on stage */}
             <div className={styles.field}>
-                {!submittedQuote ? (
+                {stage === 'preview' && (
                     <>
                         {warning && (
                             <div className={styles.warningNote}>
@@ -143,18 +200,55 @@ export function QuoteSummary() {
                         <Button
                             fullWidth
                             variant="primary"
-                            onClick={onContinue}
-                            disabled={!isValid || isProcessing}
+                            onClick={handleViewBreakdown}
+                            disabled={!isValid}
                         >
-                            Solicitar Cotización por WhatsApp ({fmtMXN(quote.total)})
+                            Ver Desglose de Cotización ({fmtMXN(quote.total)})
                         </Button>
 
                         <p className={styles.summaryFooter}>
-                            Continúa para confirmar el pedido, descargar o
-                            reenviar el cálculo.
+                            Revisa el detalle antes de continuar.
                         </p>
                     </>
-                ) : (
+                )}
+
+                {stage === 'breakdown' && (
+                    <>
+                        {warning && (
+                            <div className={styles.warningNote}>
+                                ⚠️{" "}
+                                {warning.code === "BELOW_MINIMUM"
+                                    ? `Pedido mínimo: ${warning.minM3} m³ para ${warning.typeLabel}`
+                                    : `Volumen redondeado a ${warning.billedM3} m³`}
+                            </div>
+                        )}
+
+                        <Button
+                            fullWidth
+                            variant="primary"
+                            onClick={handleConfirmAndGenerate}
+                            disabled={!isValid || isProcessing}
+                            isLoading={isProcessing}
+                            loadingText="Generando ticket..."
+                        >
+                            Confirmar y Generar Ticket
+                        </Button>
+
+                        <button
+                            onClick={handleEditCalculation}
+                            className={styles.editDataBtn}
+                            type="button"
+                        >
+                            ← Editar cálculo
+                        </button>
+
+                        <p className={styles.summaryFooter}>
+                            Al confirmar se generará un folio y podrás enviarlo por WhatsApp.
+                        </p>
+                    </>
+                )}
+
+                {stage === 'submitted' && (
                     <div className={styles.successActions}>
                         {/* Primary Action: WhatsApp */}
                         <Button
@@ -183,17 +277,15 @@ export function QuoteSummary() {
                                 fullWidth
                                 variant="secondary"
                                 onClick={() => {
-                                    // Build canonical shareable URL with folio for tracking
-                                    const shareableUrl = `${window.location.origin}/?ref=shared&folio=${submittedQuote.folio}`;
-
+                                    const folio = submittedQuote!.folio;
+                                    const shareableUrl = `${window.location.origin}/?ref=shared&folio=${folio}`;
                                     if (navigator.share) {
                                         navigator.share({
-                                            title: `Cotización CEJ ${submittedQuote.folio}`,
-                                            text: `Revisa mi cotización de concreto con folio ${submittedQuote.folio}`,
+                                            title: `Cotización CEJ ${folio}`,
+                                            text: `Revisa mi cotización de concreto con folio ${folio}`,
                                             url: shareableUrl,
                                         }).catch(console.error);
                                     } else {
-                                        // Fallback: Copy to clipboard
                                         navigator.clipboard.writeText(shareableUrl);
                                         alert("Link copiado al portapapeles");
                                     }
@@ -203,7 +295,7 @@ export function QuoteSummary() {
                             </Button>
                         </div>
 
-                        {/* User Data Edit: Allow changing contact info */}
+                        {/* User Data Edit */}
                         {user.name && (
                             <button
                                 onClick={() => setModalOpen(true)}
@@ -213,7 +305,7 @@ export function QuoteSummary() {
                             </button>
                         )}
 
-                        {/* Tertiary Actions: History and New Quote */}
+                        {/* Tertiary Actions */}
                         <button
                             onClick={() => {
                                 setActiveTab('history');
@@ -237,7 +329,7 @@ export function QuoteSummary() {
             <LeadFormModal
                 isOpen={isModalOpen}
                 onClose={() => setModalOpen(false)}
-                onSuccess={handleSuccess}
+                onSuccess={handleModalSuccess}
             />
         </div>
     );

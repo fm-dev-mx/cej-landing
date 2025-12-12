@@ -18,7 +18,7 @@ const { mockProcessOrder } = vi.hoisted(() => ({
 vi.mock('@/hooks/useCheckOutUI', () => ({
     useCheckoutUI: vi.fn().mockReturnValue({
         processOrder: mockProcessOrder,
-        isProcessing: false, // Default
+        isProcessing: false,
         error: null
     })
 }));
@@ -42,14 +42,14 @@ vi.mock('@/lib/tracking/visitor', () => ({
 
 // Mock TicketDisplay
 vi.mock('./TicketDisplay/TicketDisplay', () => ({
-    TicketDisplay: ({ folio }: any) => (
-        <div data-testid="ticket-display">
+    TicketDisplay: ({ folio, variant }: { folio?: string; variant: string }) => (
+        <div data-testid="ticket-display" data-variant={variant}>
             {folio || 'PREVIEW'}
         </div>
     )
 }));
 
-describe('QuoteSummary Integration', () => {
+describe('QuoteSummary Integration - Phase 1 Progressive Disclosure', () => {
     const mockScrollIntoView = vi.fn();
 
     beforeEach(() => {
@@ -57,22 +57,29 @@ describe('QuoteSummary Integration', () => {
 
         // Mock scrollIntoView
         window.HTMLElement.prototype.scrollIntoView = mockScrollIntoView;
-        Object.defineProperty(window, 'scrollTo', { value: vi.fn(), writable: true });
+        // Mock getState on useCejStore
+        (useCejStore as unknown as { getState: () => { user: { phone: string } } }).getState = vi.fn().mockReturnValue({
+            user: { phone: '5555555555' }
+        });
 
-        // Default Store State Mock - Phase 0: Added new properties
+        // Default Store State Mock - Phase 1: Added breakdownViewed
         (useCejStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => selector({
             draft: {},
             resetDraft: vi.fn(),
             user: {},
             cart: [],
-            addToCart: vi.fn(),
+            addToCart: vi.fn(() => 'mock-item-id'),
+            updateCartItemCustomer: vi.fn(),
             moveToHistory: vi.fn(),
             setDrawerOpen: vi.fn(),
             setActiveTab: vi.fn(),
-            // Phase 0 Bugfix: New submission slice
+            // Phase 0: Submission slice
             submittedQuote: null,
             setSubmittedQuote: vi.fn(),
-            clearSubmittedQuote: vi.fn()
+            clearSubmittedQuote: vi.fn(),
+            // Phase 1: Progressive disclosure
+            breakdownViewed: false,
+            setBreakdownViewed: vi.fn()
         }));
     });
 
@@ -90,7 +97,7 @@ describe('QuoteSummary Integration', () => {
         expect(screen.getByText(/Completa los datos/i)).toBeDefined();
     });
 
-    it('shows "Solicitar" CTA button when quote is valid', () => {
+    it('shows "Ver Desglose" CTA button in preview stage when quote is valid', () => {
         (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
             quote: {
                 total: 5000,
@@ -103,10 +110,61 @@ describe('QuoteSummary Integration', () => {
         });
 
         render(<QuoteSummary />);
-        expect(screen.getByRole('button', { name: /Solicitar/i })).toBeDefined();
+        expect(screen.getByRole('button', { name: /Ver Desglose/i })).toBeDefined();
     });
 
-    it('opens lead modal on click', () => {
+    it('shows "Confirmar y Generar Ticket" CTA in breakdown stage', () => {
+        // Mock breakdownViewed = true (user clicked "Ver Desglose")
+        (useCejStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => selector({
+            draft: {},
+            resetDraft: vi.fn(),
+            user: {},
+            cart: [],
+            addToCart: vi.fn(() => 'mock-item-id'),
+            updateCartItemCustomer: vi.fn(),
+            moveToHistory: vi.fn(),
+            setDrawerOpen: vi.fn(),
+            setActiveTab: vi.fn(),
+            submittedQuote: null,
+            setSubmittedQuote: vi.fn(),
+            clearSubmittedQuote: vi.fn(),
+            breakdownViewed: true, // User has viewed breakdown
+            setBreakdownViewed: vi.fn()
+        }));
+
+        (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+            quote: {
+                total: 5000,
+                subtotal: 4630,
+                vat: 370,
+                breakdownLines: [{ label: 'Concreto', value: 4630, type: 'base' }]
+            },
+            isValid: true
+        });
+
+        render(<QuoteSummary />);
+        expect(screen.getByRole('button', { name: /Confirmar y Generar Ticket/i })).toBeDefined();
+    });
+
+    it('opens lead modal on "Confirmar y Generar Ticket" click when no user data', () => {
+        // Mock breakdownViewed = true
+        (useCejStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => selector({
+            draft: {},
+            resetDraft: vi.fn(),
+            user: {}, // No user data
+            cart: [],
+            addToCart: vi.fn(() => 'mock-item-id'),
+            updateCartItemCustomer: vi.fn(),
+            moveToHistory: vi.fn(),
+            setDrawerOpen: vi.fn(),
+            setActiveTab: vi.fn(),
+            submittedQuote: null,
+            setSubmittedQuote: vi.fn(),
+            clearSubmittedQuote: vi.fn(),
+            breakdownViewed: true,
+            setBreakdownViewed: vi.fn()
+        }));
+
         (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
             quote: {
                 total: 5000,
@@ -119,7 +177,7 @@ describe('QuoteSummary Integration', () => {
 
         render(<QuoteSummary />);
 
-        const ctaButton = screen.getByRole('button', { name: /Solicitar/i });
+        const ctaButton = screen.getByRole('button', { name: /Confirmar y Generar Ticket/i });
         fireEvent.click(ctaButton);
 
         expect(screen.getByTestId('lead-modal')).toBeDefined();
@@ -137,14 +195,16 @@ describe('QuoteSummary Integration', () => {
             resetDraft: vi.fn(),
             user: {},
             cart: [],
-            addToCart: vi.fn(),
+            addToCart: vi.fn(() => 'mock-item-id'),
+            updateCartItemCustomer: vi.fn(),
             moveToHistory: vi.fn(),
             setDrawerOpen: vi.fn(),
             setActiveTab: vi.fn(),
-            // Dynamic getter that returns current state
             get submittedQuote() { return currentSubmittedQuote; },
             setSubmittedQuote: mockSetSubmittedQuote,
-            clearSubmittedQuote: vi.fn()
+            clearSubmittedQuote: vi.fn(),
+            breakdownViewed: true, // Already viewed breakdown
+            setBreakdownViewed: vi.fn()
         }));
 
         (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -159,14 +219,19 @@ describe('QuoteSummary Integration', () => {
 
         const { rerender } = render(<QuoteSummary />);
 
-        // 1. Open modal
-        fireEvent.click(screen.getByRole('button', { name: /Solicitar/i }));
+        // 1. Click Confirmar
+        fireEvent.click(screen.getByRole('button', { name: /Confirmar y Generar Ticket/i }));
 
         // 2. Simulate success inside modal (this calls setSubmittedQuote)
         fireEvent.click(screen.getByText('Simular Envio'));
 
         // Verify setSubmittedQuote was called
-        expect(mockSetSubmittedQuote).toHaveBeenCalledWith({ folio: 'FOLIO-123', name: 'Test User' });
+        // Verify setSubmittedQuote was called with correct structure including results
+        expect(mockSetSubmittedQuote).toHaveBeenCalledWith(expect.objectContaining({
+            folio: 'FOLIO-123',
+            name: 'Test User',
+            results: expect.anything()
+        }));
 
         // 3. Rerender to pick up the changed state
         rerender(<QuoteSummary />);
@@ -195,26 +260,28 @@ describe('QuoteSummary Integration', () => {
             isValid: true
         });
 
-        // Mock user data existing - Phase 0: Added new properties with stateful submittedQuote
+        // Mock user data existing + breakdownViewed = true
         (useCejStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => selector({
             draft: {},
             resetDraft: vi.fn(),
             user: { name: 'Reuse User', phone: '5555555555' },
             cart: [],
-            addToCart: vi.fn(),
+            addToCart: vi.fn(() => 'mock-item-id'),
+            updateCartItemCustomer: vi.fn(),
             moveToHistory: vi.fn(),
             setDrawerOpen: vi.fn(),
             setActiveTab: vi.fn(),
-            // Dynamic getter that returns current state
             get submittedQuote() { return currentSubmittedQuote; },
             setSubmittedQuote: mockSetSubmittedQuote,
-            clearSubmittedQuote: vi.fn()
+            clearSubmittedQuote: vi.fn(),
+            breakdownViewed: true, // Already viewed
+            setBreakdownViewed: vi.fn()
         }));
 
         const { rerender } = render(<QuoteSummary />);
 
-        // 1. Click Continue
-        fireEvent.click(screen.getByRole('button', { name: /Solicitar/i }));
+        // 1. Click "Confirmar y Generar Ticket"
+        fireEvent.click(screen.getByRole('button', { name: /Confirmar y Generar Ticket/i }));
 
         // 2. Should call processOrder automatically
         await waitFor(() => {
@@ -236,11 +303,9 @@ describe('QuoteSummary Integration', () => {
         expect(screen.getByText(/Finalizar orden en WhatsApp/i)).toBeDefined();
     });
 
-    // --- NEW TEST CASE FOR UX GLITCH ---
-    it('does NOT show empty state (Completa los datos) while isProcessing is true', () => {
-        // 1. Setup: State resembles "Processing":
-        // - quote is reset (total=0) because addToCart cleared it
-        // - submittedData is null (not yet received success)
+    it('does NOT show empty state while isProcessing is true', () => {
+        // Setup: State resembles "Processing":
+        // - quote total is 0 (was reset)
         // - isProcessing is TRUE
         (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
             quote: { total: 0, subtotal: 0, vat: 0, breakdownLines: [] },
@@ -249,18 +314,17 @@ describe('QuoteSummary Integration', () => {
 
         (useCheckoutUI as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
             processOrder: mockProcessOrder,
-            isProcessing: true,  // <--- KEY
+            isProcessing: true,
             error: null
         });
 
         render(<QuoteSummary />);
 
-        // Expectation: The "Completa los datos" overlay/hint should NOT be present.
-        // Instead, valid actions (disabled) or just the container should render.
+        // Expectation: The "Completa los datos" overlay should NOT be present.
         expect(screen.queryByText(/Completa los datos/i)).toBeNull();
 
-        // Optionally verify button is disabled
-        const btn = screen.getByRole('button', { name: /Solicitar/i });
+        // Button should be disabled
+        const btn = screen.getByRole('button', { name: /Ver Desglose/i });
         expect(btn).toBeDisabled();
     });
 });

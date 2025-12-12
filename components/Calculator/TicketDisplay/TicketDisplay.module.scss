@@ -64,6 +64,50 @@
     font-size: 0.9rem;
 }
 
+// Phase 1: Volume info section
+.volumeInfo {
+    margin-bottom: var(--sp-3);
+    padding: var(--sp-2);
+    background: var(--c-surface-dim);
+    border-radius: var(--radius-sm);
+}
+
+.volumeRow {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+}
+
+.volumeNote {
+    font-size: 0.75rem;
+    color: var(--c-muted-strong);
+    margin-top: var(--sp-1);
+}
+
+// Phase 1: Calculation details
+.calculationDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: var(--sp-3);
+    padding: var(--sp-2);
+    background: var(--c-surface-dim);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+}
+
+.calculationLabel {
+    color: var(--c-muted-strong);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.calculationFormula {
+    font-family: var(--font-mono, monospace);
+    color: var(--c-text);
+}
+
 .items {
     display: flex;
     flex-direction: column;
@@ -126,6 +170,61 @@
     font-weight: 600;
     color: var(--c-muted-strong);
     line-height: 0.6;
+}
+
+// Phase 1: Compact variant styles
+.compact {
+    box-shadow: none;
+    filter: none;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--c-surface) 0%, var(--c-surface-dim) 100%);
+}
+
+.compactContent {
+    padding: var(--sp-4);
+    text-align: center;
+}
+
+.compactHeader {
+    margin-bottom: var(--sp-2);
+}
+
+.compactLabel {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--c-muted-strong);
+}
+
+.compactTotal {
+    margin-bottom: var(--sp-2);
+}
+
+.compactTotalLabel {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--c-muted-strong);
+}
+
+.compactTotalValue {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--c-primary);
+    font-family: var(--font-mono, monospace);
+}
+
+.compactMeta {
+    font-size: 0.85rem;
+    color: var(--c-text);
+    margin-bottom: var(--sp-2);
+}
+
+.compactHint {
+    font-size: 0.75rem;
+    color: var(--c-muted);
+    margin: 0;
 }
 
 /* Preview Variant Effects - Removed (Flat design) */

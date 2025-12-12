@@ -10,6 +10,7 @@ import {
     type ConcreteType,
     type CalculatorMode,
     type CartItem,
+    type CustomerInfo,
 } from '@/types/domain';
 import { WORK_TYPES } from '@/config/business';
 
@@ -38,7 +39,8 @@ interface CalculatorSlice {
 interface OrderSlice {
     cart: CartItem[];
     history: CartItem[];
-    addToCart: (quote: QuoteBreakdown) => void;
+    addToCart: (quote: QuoteBreakdown) => string; // Returns the new item ID
+    updateCartItemCustomer: (id: string, customer: CustomerInfo) => void;
     removeFromCart: (id: string) => void;
     editCartItem: (id: string) => void;
     cloneCartItem: (item: CartItem) => void;
@@ -62,15 +64,18 @@ interface IdentitySlice {
 }
 
 // Phase 0 Bugfix: Global submission state to avoid losing data between renders
+// Phase 1: Added breakdownViewed for progressive disclosure
 interface SubmissionSlice {
-    submittedQuote: { folio: string; name: string } | null;
-    setSubmittedQuote: (data: { folio: string; name: string } | null) => void;
+    breakdownViewed: boolean;
+    submittedQuote: { folio: string; name: string; results: QuoteBreakdown } | null;
+    setBreakdownViewed: (viewed: boolean) => void;
+    setSubmittedQuote: (data: { folio: string; name: string; results: QuoteBreakdown } | null) => void;
     clearSubmittedQuote: () => void;
 }
 
 type CejStore = CalculatorSlice & OrderSlice & UISlice & IdentitySlice & SubmissionSlice;
 
-type PersistedState = Pick<CejStore, 'cart' | 'history' | 'user' | 'draft' | 'submittedQuote'>;
+type PersistedState = Pick<CejStore, 'cart' | 'history' | 'user' | 'draft' | 'submittedQuote' | 'breakdownViewed'>;
 
 // --- Store Implementation ---
 
@@ -166,8 +171,9 @@ export const useCejStore = create<CejStore>()(
                 const label = `${workTypeLabel} - f'c ${state.draft.strength} ${additivesCount > 0 ? `(+${additivesCount})` : ''}`;
 
                 // Create strict CartItem
+                const id = uuidv4();
                 const newItem: CartItem = {
-                    id: uuidv4(),
+                    id,
                     timestamp: Date.now(),
                     inputs: { ...state.draft, additives: additivesList },
                     results,
@@ -179,6 +185,16 @@ export const useCejStore = create<CejStore>()(
                     draft: { ...DEFAULT_CALCULATOR_STATE }, // Reset Form
                     isDrawerOpen: true,
                     activeTab: 'order'
+                }));
+
+                return id;
+            },
+
+            updateCartItemCustomer: (id, customer) => {
+                set((state) => ({
+                    cart: state.cart.map(item =>
+                        item.id === id ? { ...item, customer } : item
+                    )
                 }));
             },
 
@@ -261,15 +277,17 @@ export const useCejStore = create<CejStore>()(
                 }
             })),
 
-            // --- Submission Slice (Phase 0 Bugfix) ---
+            // --- Submission Slice (Phase 0 Bugfix + Phase 1 Progressive Disclosure) ---
+            breakdownViewed: false,
             submittedQuote: null,
+            setBreakdownViewed: (viewed) => set({ breakdownViewed: viewed }),
             setSubmittedQuote: (data) => set({ submittedQuote: data }),
-            clearSubmittedQuote: () => set({ submittedQuote: null }),
+            clearSubmittedQuote: () => set({ submittedQuote: null, breakdownViewed: false }),
         }),
         {
             name: 'cej-pro-storage',
             storage: createJSONStorage(() => localStorage),
-            version: 2,
+            version: 4,
             migrate: (persistedState: unknown, version) => {
                 // Defensive: validate state has expected shape before casting
                 if (!persistedState || typeof persistedState !== 'object') {
@@ -283,6 +301,7 @@ export const useCejStore = create<CejStore>()(
                         },
                         draft: { ...DEFAULT_CALCULATOR_STATE },
                         submittedQuote: null,
+                        breakdownViewed: false,
                     } as PersistedState;
                 }
 
@@ -302,10 +321,21 @@ export const useCejStore = create<CejStore>()(
                 }
 
                 if (version === 0 || version === 1) {
-                    // Migration Phase 1 -> Phase 2: Add additives array
+                    // Migration v0/v1 -> v2: Add additives array
                     if (state.draft && !state.draft.additives) {
                         state.draft.additives = [];
                         state.draft.showExpertOptions = false;
+                    }
+                }
+
+                if (version < 4) {
+                    // Migration v2/v3 -> v4: Add progressive disclosure state
+                    if (state.breakdownViewed === undefined) {
+                        state.breakdownViewed = false;
+                    }
+                    // Ensure submittedQuote has results if it exists (or clear it)
+                    if (state.submittedQuote && !state.submittedQuote.results) {
+                        state.submittedQuote = null;
                     }
                 }
 
@@ -316,6 +346,7 @@ export const useCejStore = create<CejStore>()(
                 history: state.history,
                 user: state.user,
                 draft: state.draft,
+                breakdownViewed: state.breakdownViewed,
                 submittedQuote: state.submittedQuote,
             }),
         }

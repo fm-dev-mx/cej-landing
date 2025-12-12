@@ -114,6 +114,11 @@ export default function QuoteDrawer() {
                                         <div className={styles.detailBadge}>
                                             {item.results.concreteType === 'pumped' ? 'Bomba' : 'Directo'}
                                         </div>
+                                        {item.customer && (
+                                            <div className={styles.detailBadgeCustomer}>
+                                                👤 {item.customer.name}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className={styles.itemFooter}>

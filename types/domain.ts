@@ -133,6 +133,7 @@ export type CartItem = {
     config: {
         label: string;
     };
+    customer?: CustomerInfo;
 };
 
 export type CustomerInfo = {

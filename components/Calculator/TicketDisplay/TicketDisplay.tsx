@@ -6,23 +6,21 @@ import { env } from '@/config/env';
 import styles from './TicketDisplay.module.scss';
 
 interface TicketDisplayProps {
-    variant: 'preview' | 'full';
-    quote: QuoteBreakdown | null; // May be null
+    variant: 'compact' | 'preview' | 'full';
+    quote: QuoteBreakdown | null;
     folio?: string;
     customerName?: string;
 }
 
-export function TicketDisplay({ variant: _variant, quote, folio, customerName }: TicketDisplayProps) {
-
-
-    // Optimization: Calculate date directly during render.
-    // We use suppressHydrationWarning on the specific span below to handle server/client mismatches
-    // without triggering a second render via useEffect.
-    const dateStr = new Date().toLocaleDateString('es-MX', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+/**
+ * TicketDisplay - Shows quote information with different levels of detail
+ *
+ * Variants:
+ * - compact: Minimal view with just total and volume (Phase 1 - initial state)
+ * - preview: Full breakdown without folio (Phase 1 - after "Ver Desglose")
+ * - full: Complete ticket with folio and customer info (after submission)
+ */
+export function TicketDisplay({ variant, quote, folio, customerName }: TicketDisplayProps) {
 
     // If no quote, show empty state
     if (!quote) {
@@ -33,8 +31,47 @@ export function TicketDisplay({ variant: _variant, quote, folio, customerName }:
         );
     }
 
+    // Optimization: Calculate date directly during render.
+    const dateStr = new Date().toLocaleDateString('es-MX', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
     // Avoid NaN/Infinity if subtotal is 0
     const vatPercentage = quote.subtotal > 0 ? Math.round((quote.vat / quote.subtotal) * 100) : 8;
+
+    // Compact variant: Simplified summary view
+    if (variant === 'compact') {
+        return (
+            <div className={`${styles.ticket} ${styles.compact}`}>
+                <div className={styles.compactContent}>
+                    <div className={styles.compactHeader}>
+                        <span className={styles.compactLabel}>Cotización Estimada</span>
+                    </div>
+
+                    <div className={styles.compactTotal}>
+                        <span className={styles.compactTotalLabel}>Total</span>
+                        <span className={styles.compactTotalValue}>{fmtMXN(quote.total)}</span>
+                    </div>
+
+                    {quote.volume && (
+                        <div className={styles.compactMeta}>
+                            <span>{quote.volume.billedM3} m³ • {quote.concreteType === 'pumped' ? 'Bomba' : 'Directo'}</span>
+                        </div>
+                    )}
+
+                    <p className={styles.compactHint}>
+                        Haz clic en "Ver Desglose" para revisar el detalle.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    // Preview and Full variants: Full ticket display
+    const showFolio = variant === 'full' && folio;
+    const showCustomer = variant === 'full' && customerName;
 
     return (
         <div className={styles.ticket}>
@@ -47,24 +84,49 @@ export function TicketDisplay({ variant: _variant, quote, folio, customerName }:
 
                     <div className={styles.metaCol}>
                         <span className={styles.meta}>
-                            {folio ? `Folio: ${folio}` : "COTIZACIÓN PRELIMINAR"}
+                            {showFolio ? `Folio: ${folio}` : "COTIZACIÓN PRELIMINAR"}
                         </span>
                         <span className={styles.meta} suppressHydrationWarning>
                             {dateStr}
                         </span>
-                        <span className={styles.metaValidity}>
-                            Vigencia: 7 días
-                        </span>
+                        {showFolio && (
+                            <span className={styles.metaValidity}>
+                                Vigencia: 7 días
+                            </span>
+                        )}
                     </div>
                 </div>
 
                 <hr className={styles.divider} />
 
-                {/* Customer */}
-                {customerName && (
+                {/* Customer - Only in full variant */}
+                {showCustomer && (
                     <div className={styles.customerRow}>
                         <span>Cliente:</span>
                         <strong>{customerName}</strong>
+                    </div>
+                )}
+
+                {/* Volume Info - Always visible in preview/full */}
+                {quote.volume && (
+                    <div className={styles.volumeInfo}>
+                        <div className={styles.volumeRow}>
+                            <span>Volumen</span>
+                            <span>{quote.volume.billedM3} m³</span>
+                        </div>
+                        {quote.volume.requestedM3 !== quote.volume.billedM3 && (
+                            <div className={styles.volumeNote}>
+                                Solicitado: {quote.volume.requestedM3} m³ → Facturado: {quote.volume.billedM3} m³
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Calculation Details - If available */}
+                {quote.calculationDetails && (
+                    <div className={styles.calculationDetails}>
+                        <span className={styles.calculationLabel}>Cálculo:</span>
+                        <span className={styles.calculationFormula}>{quote.calculationDetails.formula}</span>
                     </div>
                 )}
 
@@ -106,7 +168,7 @@ export function TicketDisplay({ variant: _variant, quote, folio, customerName }:
                     </div>
                 </div>
 
-                {/* Footer - Always visible now */}
+                {/* Footer */}
                 <div className={styles.footer}>
                     <p className={styles.disclaimerMain}>
                         ⚠ Cotización preliminar sujeta a visita técnica.
