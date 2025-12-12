@@ -185,6 +185,49 @@
 
 ---
 
+## 5.3 Quote Lifecycle Visual States
+
+### Quote Summary States
+
+| State | Visual Indicator | Actions Available |
+|:------|:-----------------|:------------------|
+| **Empty** | Placeholder text, muted | None |
+| **Compact** | Total + Volume visible | "Ver Desglose" button |
+| **Breakdown** | Full ticket preview | "Solicitar Cotización" button |
+| **Submitted** | Ticket with folio + customer | WhatsApp, PDF, Share, History |
+| **Processing** | Loading spinner | None (disabled) |
+
+### History Item States
+
+| State | Visual | Badge/Tag | Actions |
+|:------|:-------|:----------|:--------|
+| **Cotización** | Standard card | None | Reutilizar |
+| **Contactado** | Standard card | "✓ Contactado" (green) | Reutilizar |
+| **Confirmado** | Highlighted card | "✓ Pedido Confirmado" (accent) | {PLANNED} |
+
+### History Item Styling
+
+```scss
+// History item states
+.historyItem {
+    // Base state (Cotización)
+    border-left: 3px solid var(--c-muted);
+
+    // Contacted state
+    &[data-contacted="true"] {
+        border-left-color: var(--c-success);
+    }
+
+    // Confirmed state (future)
+    &[data-confirmed="true"] {
+        border-left-color: var(--c-accent);
+        background: var(--c-accent-soft);
+    }
+}
+```
+
+---
+
 ## 6. Styling Reference
 
 ### Dark Theme (Calculator, Dark Sections)

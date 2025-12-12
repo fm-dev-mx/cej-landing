@@ -2,47 +2,49 @@
 
 **Scope:** Standardized behaviors for forms, feedback, loading, errors, and navigation.
 **Source of Truth:** `styles/_forms.scss`, `lib/schemas/*.ts`, Component implementations.
+**Related Docs:** [`VALIDATION.md`](./VALIDATION.md), [`COPY_GUIDELINES.md`](./COPY_GUIDELINES.md)
 
 ---
 
 ## 1. Form Validation Patterns
 
-### 1.1 Validation Strategy
+### 1.1 Validation Strategy (Hybrid)
 
-| Type | When | How |
-| --- | --- | --- |
-| **Client-side** | On submit | Zod schema validation |
-| **Field-level** | On blur (optional) | Individual field rules |
-| **Server-side** | On action | Zod + business rules |
+We use a **hybrid validation approach** to balance immediate feedback with user experience:
+
+| Phase | Trigger | Behavior |
+|:------|:--------|:---------|
+| **Initial** | Field untouched | No validation, no errors shown |
+| **On Blur** | User leaves touched field | Validate, show error if invalid |
+| **On Change** | User types in touched field | Clear error if now valid |
+| **On Submit** | Form submission | Validate all, focus first error |
+
+> **Important:** Errors should NEVER appear before the user has interacted with a field. A field is "touched" only after receiving focus and losing it (blur event).
 
 ### 1.2 Error Display Rules
 
+```text
 ┌─────────────────────────────────────────┐
-
 │  Label                                  │
-
 ├─────────────────────────────────────────┤
-
 │  ┌─────────────────────────────────────┐│
-
 │  │ Input with red border              ││
-
 │  └─────────────────────────────────────┘│
-
 │  ⚠️ Mensaje de error (role="alert")     │
-
 └─────────────────────────────────────────┘
+```
 
 **Timing:**
 
-- Error appears immediately after validation fails
+- Error appears only AFTER blur event on touched field
 - Error animates in with `slideDown` (0.2s ease-out)
-- Error persists until field is corrected
+- Error clears immediately when input becomes valid
+- Error persists through re-focus until corrected
 
 **Styling:**
 
-- Border: `-c-error-text` or `-c-error-text-on-dark`
-- Background: Subtle tint (`-c-error-soft`)
+- Border: `--c-error-text` or `--c-error-text-on-dark`
+- Background: Subtle tint (`--c-error-soft`)
 - Focus: Error border maintained, glow uses error color
 
 ### 1.3 Input State Machine
@@ -51,12 +53,51 @@
 stateDiagram-v2
     [*] --> Default
     Default --> Focused: focus
-    Focused --> Default: blur (valid)
-    Focused --> Error: blur (invalid)
-    Error --> Focused: focus
-    Focused --> Disabled: disabled=true
+    Focused --> Touched: blur
+    Touched --> FocusedTouched: focus
+    Touched --> Error: validate (invalid)
+    FocusedTouched --> Touched: blur (valid)
+    FocusedTouched --> Error: blur (invalid)
+    Error --> FocusedError: focus
+    FocusedError --> Touched: blur (valid)
+    FocusedError --> Error: blur (still invalid)
     Default --> Disabled: disabled=true
 ```
+
+### 1.4 Error Focus Management
+
+When form submission fails validation:
+
+1. **Find first invalid field** (in DOM order)
+2. **Scroll into view** with `behavior: 'smooth'`, `block: 'center'`
+3. **Focus the input** programmatically
+4. **Announce error** via `role="alert"` on inline error message
+
+**Implementation:**
+
+```tsx
+const handleSubmit = () => {
+    const result = schema.safeParse(formData);
+
+    if (!result.success) {
+        const firstErrorPath = result.error.issues[0]?.path[0];
+        const errorElement = document.querySelector(`[name="${firstErrorPath}"]`);
+
+        if (errorElement instanceof HTMLElement) {
+            errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            errorElement.focus();
+        }
+        return;
+    }
+    // proceed with submission...
+};
+```
+
+**Do NOT:**
+
+- Auto-focus back to field on blur error (disruptive to tab navigation)
+- Show multiple error dialogs/modals at once
+- Block user from submitting if only warnings exist
 
 ---
 

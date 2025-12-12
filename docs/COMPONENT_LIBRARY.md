@@ -301,6 +301,116 @@
 
 ---
 
+## 9. QuoteSummary
+
+**Path:** `components/Calculator/QuoteSummary.tsx`
+
+### Description
+
+The main quote display component with progressive disclosure pattern. Manages the complete quote lifecycle from empty state through submission and post-checkout actions.
+
+### Props
+
+| Prop | Type | Default | Description |
+|:-----|:-----|:--------|:------------|
+| — | — | — | Connected component (reads from `useCejStore`) |
+
+### States
+
+| State | Display | Primary CTA |
+|:------|:--------|:------------|
+| **Empty** | Placeholder message | None |
+| **Compact** | Total + Volume badge | "Ver Desglose" |
+| **Breakdown** | Full TicketDisplay (preview) | "Solicitar Cotización" |
+| **Processing** | Loading spinner | Disabled |
+| **Submitted** | Full TicketDisplay (with folio) | "Continuar en WhatsApp" |
+
+### Behavior
+
+- Uses `breakdownViewed` state for progressive disclosure
+- Opens `LeadFormModal` for checkout flow
+- After submission, displays post-checkout CTAs (WhatsApp, PDF, Share, History, New)
+- Calls `moveToHistory()` and `trackContact()` on WhatsApp click
+
+### Usage
+
+```tsx
+// Used inside CalculatorForm
+<QuoteSummary />
+```
+
+> **Note:** This is a connected component. It reads from `useCejStore` for draft, quote results, and submission state.
+
+---
+
+## 10. TicketDisplay
+
+**Path:** `components/Calculator/TicketDisplay/TicketDisplay.tsx`
+
+### Description
+
+Renders the visual ticket/receipt with quote breakdown. Used by QuoteSummary and can be used for print/PDF generation.
+
+### Props
+
+| Prop | Type | Required | Description |
+|:-----|:-----|:---------|:------------|
+| `variant` | `'compact' \| 'preview' \| 'full'` | ✅ | Display mode |
+| `quote` | `QuoteBreakdown \| null` | ✅ | Quote data |
+| `folio` | `string` | ❌ | Order folio (only in `full` variant) |
+| `customerName` | `string` | ❌ | Customer name (only in `full` variant) |
+
+### Variants
+
+| Variant | Shows | Use Case |
+|:--------|:------|:---------|
+| `compact` | Total + Volume only | Initial progressive disclosure state |
+| `preview` | Full breakdown, no folio | After "Ver Desglose", before submission |
+| `full` | Complete ticket with folio + customer | After successful submission |
+
+### Sections (preview/full)
+
+1. **Header:** Brand name, folio/preliminary label, date, validity
+2. **Customer:** Customer name (full variant only)
+3. **Volume Info:** Billed volume, requested vs billed delta
+4. **Calculation Details:** Formula and factor used
+5. **Line Items:** Base concrete, additives, surcharges
+6. **Totals:** Subtotal, IVA, Grand Total
+7. **Footer:** Disclaimers and print URL
+
+### Number Formatting
+
+- All volume values use `.toFixed(2)` for consistent display
+- All currency values use `fmtMXN()` utility
+
+### Usage
+
+```tsx
+// Compact view (initial state)
+<TicketDisplay variant="compact" quote={quoteResults} />
+
+// Preview (after "Ver Desglose")
+<TicketDisplay variant="preview" quote={quoteResults} />
+
+// Full ticket (after submission)
+<TicketDisplay
+    variant="full"
+    quote={submittedQuote.results}
+    folio={submittedQuote.folio}
+    customerName={submittedQuote.name}
+/>
+```
+
+### Print Styles
+
+The component includes print-specific styles:
+
+- `.printOnly` class for elements visible only when printing
+- Perforations hidden in print
+- Optimized for A4/Letter paper
+
+---
+
 ## Component Guidelines
 
 ### Do's ✅

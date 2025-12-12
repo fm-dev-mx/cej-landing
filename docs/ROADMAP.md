@@ -58,17 +58,36 @@ Tracking is more robust across platforms (including iOS), and the site is better
 
 ---
 
-### 🏃 Sprint 4: SaaS Portal (Phase 4A – Planned)
+### 🏃 Sprint 4: SaaS Portal (Phase 4A – In Progress)
 
 **Goal:** User identification, recurring orders, and quality assurance.
+
+#### 4.1 UX Refinements (In Progress)
+
+- [x] **Progressive Disclosure:** QuoteSummary with compact → breakdown → submitted states
+- [x] **Validation Fixes:** Spanish error messages for all Zod schemas
+- [x] **Number Formatting:** Consistent `.toFixed(2)` for volume display
+- [x] **Documentation:** VALIDATION.md, COPY_GUIDELINES.md, updated UX_FLOWS.md
+- [ ] **Validation Timing:** Implement hybrid on-blur validation (prevent premature errors)
+- [ ] **Form Compactness:** CSS refinements for "Ayúdame a calcular" flow
+- [ ] **Error Focus:** Auto-focus first invalid field on form submit
+
+#### 4.2 History & Orders (Planned)
+
+- [x] **Quote History:** Local history via `useCejStore.history`
+- [x] **Reutilizar:** `loadQuote()` to restore historical quotes
+- [ ] **Quote States:** Visual differentiation (Cotización vs Contactado vs Confirmado)
+- [ ] **Contact Channels:** Phone call CTA alongside WhatsApp {PLANNED}
+- [ ] **SLA Display:** Time-based contact expectation messages {PLANNED}
+
+#### 4.3 SaaS Infrastructure (Planned)
 
 - [ ] **Data Sync:** Migrate from static `FALLBACK_PRICING_RULES` to live `price_config` table in Supabase.
 - [ ] **Auth:** Supabase Auth integration (Magic Link).
 - [ ] **Profiles:** User profile management (`public.profiles`).
-- [ ] **Order History:** Sync local cart to database for authenticated users.
-- [ ] **Features:** Implement "Re-order" (clone previous order) functionality.
-- [ ] **Infrastructure:** Automated Accessibility Testing (axe-core integration via Playwright).
-- [ ] **Documentation:** Complete Design System & Interaction Patterns for the SaaS layer.
+- [ ] **Order Sync:** Sync local cart to database for authenticated users.
+- [ ] **Re-order:** Clone previous order with current pricing.
+- [ ] **A11y Testing:** Automated axe-core integration via Playwright.
 
 **Outcome (expected):**
 The system gains an authenticated dashboard where recurring customers can view and re-order, and QA is reinforced with automated A11y checks.

@@ -235,6 +235,9 @@ Main docs live under `/docs`:
 - [`docs/COMPONENT_LIBRARY.md`](docs/COMPONENT_LIBRARY.md) – UI components and props.
 - [`docs/INTERACTION_PATTERNS.md`](docs/INTERACTION_PATTERNS.md) – Patterns for forms, loading, errors.
 - [`docs/UX_FLOWS.md`](docs/UX_FLOWS.md) – User journeys and state machines.
+- [`docs/UI_STATES.md`](docs/UI_STATES.md) – Empty, error, loading, and success states.
+- [`docs/VALIDATION.md`](docs/VALIDATION.md) – Validation timing, error focus, and field rules.
+- [`docs/COPY_GUIDELINES.md`](docs/COPY_GUIDELINES.md) – All UI text, messages, and labels (Spanish).
 - [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) – A11y patterns and testing.
 
 ### Playbooks
