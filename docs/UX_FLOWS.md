@@ -164,7 +164,7 @@ sequenceDiagram
 
 ### 3.3 Fail-Open Pattern
 
-```
+```text
 Normal Path:
   User → Form → Server → DB ✓ → CAPI ✓ → WhatsApp
 
@@ -341,8 +341,8 @@ Allows users to clone a historical order into the current cart with *current* pr
 ```mermaid
 flowchart TD
     A[Dashboard / Orders] --> B[View Order Detail]
-    B --> C{Click "Reordenar"}
-    C --> D[Fetch Current Prices (price_config)]
+    B --> C[Click - Reordenar]
+    C --> D[Fetch Current Prices - price_config]
 
     D --> E{Pricing Available?}
     E -->|Yes| F[Recalculate Totals]
@@ -353,8 +353,3 @@ flowchart TD
     H --> I[Redirect to Calculator]
     I --> J[Open Cart Drawer]
 ```
-
-````
-
----
-

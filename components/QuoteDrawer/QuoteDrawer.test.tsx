@@ -33,11 +33,15 @@ describe('QuoteDrawer', () => {
             setDrawerOpen: mockSetDrawerOpen,
             activeTab: 'order',
             setActiveTab: vi.fn(),
+            // Phase 0 Bugfix: Add new properties
+            isProcessingOrder: false,
+            submittedQuote: null,
             cart: [mockCartItem],
             history: [],
             removeFromCart: mockRemove,
             editCartItem: mockEdit,
             cloneCartItem: vi.fn(),
+            loadQuote: vi.fn(),
         });
     });
 

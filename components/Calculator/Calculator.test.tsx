@@ -81,8 +81,8 @@ describe('Calculator UI Integration', () => {
     // Note: Volume text "5.00 m³" might not be explicitly visible in the new Ticket summary
     // relying on price/total verification via 'TOTAL' presence is sufficient for integration here.
 
-    // 4. Add to Cart (Button text updated)
-    const addBtn = screen.getByRole('button', { name: /Ver Cotización Formal/i });
+    // 4. Request Quote (Button text updated to reflect WhatsApp CTA)
+    const addBtn = screen.getByRole('button', { name: /Solicitar/i });
     expect(addBtn).toBeEnabled();
     fireEvent.click(addBtn);
   });
@@ -112,8 +112,8 @@ describe('Calculator UI Integration', () => {
     expect(screen.getByText('TOTAL')).toBeInTheDocument();
 
     // 10*5*0.10 = 5m3 * factor. Should be valid.
-    // Button text updated
-    const addBtn = screen.getByRole('button', { name: /Ver Cotización Formal/i });
+    // Button text updated to "Solicitar Cotización"
+    const addBtn = screen.getByRole('button', { name: /Solicitar/i });
     expect(addBtn).toBeEnabled();
   });
 
@@ -129,8 +129,8 @@ describe('Calculator UI Integration', () => {
     const alert = screen.getByRole('alert');
     expect(alert).toBeInTheDocument();
 
-    // Ensure the new button is NOT present
-    const addBtn = screen.queryByRole('button', { name: /Ver Cotización Formal/i });
+    // Ensure the quote button is NOT present when invalid
+    const addBtn = screen.queryByRole('button', { name: /Solicitar/i });
     expect(addBtn).not.toBeInTheDocument();
   });
 

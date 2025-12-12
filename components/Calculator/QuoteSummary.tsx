@@ -8,6 +8,7 @@ import { useCheckoutUI } from '@/hooks/useCheckOutUI';
 import { TicketDisplay } from './TicketDisplay/TicketDisplay';
 import { LeadFormModal } from './modals/LeadFormModal';
 import { Button } from '@/components/ui/Button/Button';
+import { trackContact } from '@/lib/tracking/visitor';
 
 import { fmtMXN, getWhatsAppUrl } from '@/lib/utils';
 import { env } from '@/config/env';
@@ -18,31 +19,27 @@ export function QuoteSummary() {
     const draft = useCejStore((s) => s.draft);
     const resetDraft = useCejStore((s) => s.resetDraft);
     const user = useCejStore((s) => s.user);
+    const cart = useCejStore((s) => s.cart);
+    const addToCart = useCejStore((s) => s.addToCart);
+    const moveToHistory = useCejStore((s) => s.moveToHistory);
+    const setDrawerOpen = useCejStore((s) => s.setDrawerOpen);
+    const setActiveTab = useCejStore((s) => s.setActiveTab);
+
+    // Phase 0 Bugfix: Use global submittedQuote from store instead of local state
+    // This prevents data loss when component re-renders or unmounts
+    const submittedQuote = useCejStore((s) => s.submittedQuote);
+    const setSubmittedQuote = useCejStore((s) => s.setSubmittedQuote);
+    const clearSubmittedQuote = useCejStore((s) => s.clearSubmittedQuote);
 
     const { quote, isValid, warning } = useQuoteCalculator(draft);
     const { processOrder, isProcessing } = useCheckoutUI();
 
     const [isModalOpen, setModalOpen] = useState(false);
-    const [submittedData, setSubmittedData] = useState<{
-        folio: string;
-        name: string;
-    } | null>(null);
 
     // Use ref instead of document.querySelector for React best practices
     const ticketRef = useRef<HTMLDivElement>(null);
 
-    if (quote.total <= 0) {
-        return (
-            <div className={styles.emptyStateHint}>
-                <p className={styles.hint}>
-                    Completa los datos para ver la cotización.
-                </p>
-            </div>
-        );
-    }
-
     const scrollToTicket = () => {
-        // Timeout ensures rendering allows smooth scroll, but using ref targets the specific element securely
         setTimeout(() => {
             ticketRef.current?.scrollIntoView({
                 behavior: "smooth",
@@ -52,65 +49,90 @@ export function QuoteSummary() {
     };
 
     const handleSuccess = (folio: string, name: string) => {
-        setSubmittedData({ folio, name });
+        setSubmittedQuote({ folio, name });
         setModalOpen(false);
         scrollToTicket();
     };
 
     const onContinue = async () => {
-        // Reuse data if available
+        // If user contact is already available, skip modal and process directly
         if (user.name && user.phone) {
             const customer = { name: user.name, phone: user.phone };
-            const success = await processOrder(customer, false);
-            if (success) {
-                // Pre-filled by store, opening purely to confirm/verify details
-                setModalOpen(true);
+
+            // 1. Move Draft -> Cart (Note: This clears draft!)
+            addToCart(quote);
+
+            // 2. Process Order from Cart (Note: moveToHistory is NOW in handleWhatsAppClick)
+            const result = await processOrder(customer, false);
+
+            if (result.success && result.folio) {
+                setSubmittedQuote({ folio: result.folio, name: user.name });
+                scrollToTicket();
             }
         } else {
             setModalOpen(true);
         }
     };
 
+    // Phase 0 Bugfix: Move trackContact and moveToHistory to WhatsApp click
+    // This ensures cart is only archived AFTER the user actually clicks WhatsApp
+    const handleWhatsAppClick = () => {
+        // Track the contact event
+        trackContact("WhatsApp");
+
+        // Now it's safe to move cart to history - user has committed to WhatsApp
+        moveToHistory();
+    };
+
+    // Show empty state only if:
+    // 1. Quote total is 0 (no valid calculation)
+    // 2. No submitted quote exists (not in success state)
+    // 3. Not currently processing (avoid flash during state transition)
+    // 4. Cart is empty (double-check for edge cases)
+    if (quote.total <= 0 && !submittedQuote && !isProcessing && cart.length === 0) {
+        return (
+            <div className={styles.emptyStateHint}>
+                <p className={styles.hint}>
+                    Completa los datos para ver la cotización.
+                </p>
+            </div>
+        );
+    }
+
     const handleReset = () => {
-        setSubmittedData(null);
+        clearSubmittedQuote();
         resetDraft();
     };
 
-    const whatsappUrl = submittedData
+    const whatsappUrl = submittedQuote
         ? getWhatsAppUrl(
             env.NEXT_PUBLIC_WHATSAPP_NUMBER,
-            `Hola, soy ${submittedData.name}. Acabo de generar la cotización Folio: ${submittedData.folio}. Me gustaría proceder con el pedido.`
+            `Hola, soy ${submittedQuote.name}. Acabo de generar la cotización Folio: ${submittedQuote.folio}. Me gustaría proceder con el pedido.`
         )
         : undefined;
 
     return (
         <div className={styles.container}>
-            {/* Ticket - Added ref and kept data attribute for tests */}
+            {/* Ticket - Using ref for scroll control and data attribute for test queries */}
             <div
-                style={{ marginBlock: "2rem" }}
+                className={styles.ticketWrapper}
                 data-ticket-container="true"
                 ref={ticketRef}
             >
                 <TicketDisplay
-                    variant={submittedData ? "full" : "preview"}
+                    variant={submittedQuote ? "full" : "preview"}
                     quote={quote}
-                    folio={submittedData?.folio}
-                    customerName={submittedData?.name}
+                    folio={submittedQuote?.folio}
+                    customerName={submittedQuote?.name}
                 />
             </div>
 
-            {/* Actions */}
+            {/* CTA Actions - Pre-submit vs Post-submit views */}
             <div className={styles.field}>
-                {!submittedData ? (
+                {!submittedQuote ? (
                     <>
                         {warning && (
-                            <div
-                                className={styles.note}
-                                style={{
-                                    textAlign: "center",
-                                    marginBottom: "1rem",
-                                }}
-                            >
+                            <div className={styles.warningNote}>
                                 ⚠️{" "}
                                 {warning.code === "BELOW_MINIMUM"
                                     ? "Pedido mínimo ajustado"
@@ -124,7 +146,7 @@ export function QuoteSummary() {
                             onClick={onContinue}
                             disabled={!isValid || isProcessing}
                         >
-                            Continuar con mi cotización ({fmtMXN(quote.total)})
+                            Solicitar Cotización por WhatsApp ({fmtMXN(quote.total)})
                         </Button>
 
                         <p className={styles.summaryFooter}>
@@ -133,71 +155,78 @@ export function QuoteSummary() {
                         </p>
                     </>
                 ) : (
-                    <div
-                        style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: "0.75rem",
-                        }}
-                    >
-                        {/* Primary: WhatsApp */}
+                    <div className={styles.successActions}>
+                        {/* Primary Action: WhatsApp */}
                         <Button
                             fullWidth
                             variant="whatsapp"
                             href={whatsappUrl}
                             target="_blank"
+                            onClick={handleWhatsAppClick}
                         >
-                            Enviar por WhatsApp al equipo CEJ
+                            Finalizar orden en WhatsApp
                         </Button>
-                        <p
-                            className={styles.hint}
-                            style={{ textAlign: "center", margin: 0 }}
-                        >
-                            Envío instantáneo al equipo de ventas
+                        <p className={styles.successHint}>
+                            Se abrirá un chat con nuestro equipo de ventas.
                         </p>
 
-                        {/* Secondary Actions Row */}
-                        <div
-                            style={{
-                                display: "grid",
-                                gridTemplateColumns: "1fr 1fr",
-                                gap: "0.75rem",
-                                marginTop: "0.5rem",
-                            }}
-                        >
+                        {/* Secondary Actions: Print and Share */}
+                        <div className={styles.gridActions}>
                             <Button
                                 fullWidth
                                 variant="secondary"
-                                onClick={() => alert("Próximamente: PDF")}
+                                onClick={() => window.print()}
                             >
                                 📄 Descargar PDF
                             </Button>
                             <Button
                                 fullWidth
                                 variant="secondary"
-                                onClick={() => alert("Próximamente: Compartir")}
+                                onClick={() => {
+                                    // Build canonical shareable URL with folio for tracking
+                                    const shareableUrl = `${window.location.origin}/?ref=shared&folio=${submittedQuote.folio}`;
+
+                                    if (navigator.share) {
+                                        navigator.share({
+                                            title: `Cotización CEJ ${submittedQuote.folio}`,
+                                            text: `Revisa mi cotización de concreto con folio ${submittedQuote.folio}`,
+                                            url: shareableUrl,
+                                        }).catch(console.error);
+                                    } else {
+                                        // Fallback: Copy to clipboard
+                                        navigator.clipboard.writeText(shareableUrl);
+                                        alert("Link copiado al portapapeles");
+                                    }
+                                }}
                             >
                                 🔗 Compartir
                             </Button>
                         </div>
 
-                        {/* Tertiary: History */}
+                        {/* User Data Edit: Allow changing contact info */}
+                        {user.name && (
+                            <button
+                                onClick={() => setModalOpen(true)}
+                                className={styles.editDataBtn}
+                            >
+                                ¿No eres {user.name}? Editar mis datos
+                            </button>
+                        )}
+
+                        {/* Tertiary Actions: History and New Quote */}
                         <button
-                            onClick={() => alert("Próximamente: Historial")}
-                            className={styles.textBtnPrimary}
-                            style={{ display: "block", margin: "0.5rem auto" }}
+                            onClick={() => {
+                                setActiveTab('history');
+                                setDrawerOpen(true);
+                            }}
+                            className={styles.historyBtn}
                         >
-                            📂 Ver mis cotizaciones
+                            📂 Ver historial de cotizaciones
                         </button>
 
                         <button
                             onClick={handleReset}
-                            className={styles.textBtn}
-                            style={{
-                                display: "block",
-                                margin: "0 auto",
-                                fontSize: "0.85rem",
-                            }}
+                            className={styles.newQuoteBtn}
                         >
                             Nueva Cotización
                         </button>

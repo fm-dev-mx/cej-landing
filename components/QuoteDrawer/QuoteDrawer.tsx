@@ -12,8 +12,11 @@ export default function QuoteDrawer() {
     const {
         isDrawerOpen, setDrawerOpen,
         activeTab, setActiveTab,
+        isProcessingOrder,
+
         cart, history,
-        removeFromCart, editCartItem, cloneCartItem
+        removeFromCart, editCartItem, loadQuote,
+        submittedQuote,
     } = useCejStore();
 
     const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
@@ -28,7 +31,7 @@ export default function QuoteDrawer() {
     };
 
     const handleClone = (item: CartItem) => {
-        cloneCartItem(item);
+        loadQuote(item);
     };
 
     const formatDate = (ts: number) => {
@@ -36,6 +39,11 @@ export default function QuoteDrawer() {
             month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
         });
     };
+
+    // Phase 0 Bugfix: Show loading state instead of empty state during processing
+    const showLoading = isProcessingOrder && activeTab === 'order' && cart.length === 0;
+    // Also check if we just submitted - cart might be empty but quote exists
+    const justSubmitted = submittedQuote && activeTab === 'order' && cart.length === 0;
 
     return (
         <>
@@ -61,7 +69,19 @@ export default function QuoteDrawer() {
                 </header>
 
                 <div className={styles.body}>
-                    {listData.length === 0 ? (
+                    {showLoading ? (
+                        <div className={styles.emptyState}>
+                            <p>Procesando tu pedido...</p>
+                        </div>
+                    ) : justSubmitted ? (
+                        <div className={styles.emptyState}>
+                            <p>✅ Cotización generada: {submittedQuote.folio}</p>
+                            <p>Regresa a la calculadora para ver el ticket.</p>
+                            <button onClick={() => setDrawerOpen(false)} className={styles.linkBtn}>
+                                Ver ticket
+                            </button>
+                        </div>
+                    ) : listData.length === 0 ? (
                         <div className={styles.emptyState}>
                             <p>
                                 {activeTab === 'order'

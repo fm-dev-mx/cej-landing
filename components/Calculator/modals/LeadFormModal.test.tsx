@@ -98,8 +98,8 @@ describe('LeadFormModal', () => {
 
     it('calls processOrder and onSuccess when submission is successful', async () => {
         const user = userEvent.setup();
-        // Setup mock to return true (success)
-        mockProcessOrder.mockResolvedValue(true);
+        // Setup mock to return success object with folio
+        mockProcessOrder.mockResolvedValue({ success: true, folio: 'WEB-NEW' });
 
         render(
             <LeadFormModal
@@ -130,8 +130,8 @@ describe('LeadFormModal', () => {
 
     it('does NOT call onSuccess if processOrder fails', async () => {
         const user = userEvent.setup();
-        // Setup mock to return false (fail)
-        mockProcessOrder.mockResolvedValue(false);
+        // Setup mock to return failure object
+        mockProcessOrder.mockResolvedValue({ success: false });
 
         render(
             <LeadFormModal

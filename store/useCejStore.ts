@@ -44,13 +44,16 @@ interface OrderSlice {
     cloneCartItem: (item: CartItem) => void;
     clearCart: () => void;
     moveToHistory: () => void;
+    loadQuote: (item: CartItem) => void;
 }
 
 interface UISlice {
     isDrawerOpen: boolean;
     activeTab: 'order' | 'history';
+    isProcessingOrder: boolean;
     setDrawerOpen: (isOpen: boolean) => void;
     setActiveTab: (tab: 'order' | 'history') => void;
+    setProcessingOrder: (isProcessing: boolean) => void;
 }
 
 interface IdentitySlice {
@@ -58,9 +61,16 @@ interface IdentitySlice {
     updateUserContact: (contact: { name: string; phone: string; save: boolean }) => void;
 }
 
-type CejStore = CalculatorSlice & OrderSlice & UISlice & IdentitySlice;
+// Phase 0 Bugfix: Global submission state to avoid losing data between renders
+interface SubmissionSlice {
+    submittedQuote: { folio: string; name: string } | null;
+    setSubmittedQuote: (data: { folio: string; name: string } | null) => void;
+    clearSubmittedQuote: () => void;
+}
 
-type PersistedState = Pick<CejStore, 'cart' | 'history' | 'user' | 'draft'>;
+type CejStore = CalculatorSlice & OrderSlice & UISlice & IdentitySlice & SubmissionSlice;
+
+type PersistedState = Pick<CejStore, 'cart' | 'history' | 'user' | 'draft' | 'submittedQuote'>;
 
 // --- Store Implementation ---
 
@@ -211,11 +221,31 @@ export const useCejStore = create<CejStore>()(
                 cart: []
             })),
 
+            /**
+             * Restores a quote from history into the draft.
+             * Closes the drawer and switches to order tab so user can edit and resubmit.
+             * Note: Does NOT add to cart automatically - user must review and request quote again.
+             */
+            loadQuote: (item) => {
+                set((state) => ({
+                    draft: { ...item.inputs },
+                    // Reset to order view so next time they open drawer they see cart
+                    activeTab: 'order',
+                    isDrawerOpen: false
+                }));
+                // Scroll to calculator for better UX (like cloneCartItem)
+                if (typeof document !== 'undefined') {
+                    document.getElementById('calculator-section')?.scrollIntoView({ behavior: 'smooth' });
+                }
+            },
+
             // --- UI Slice ---
             isDrawerOpen: false,
             activeTab: 'order',
+            isProcessingOrder: false,
             setDrawerOpen: (isOpen) => set({ isDrawerOpen: isOpen }),
             setActiveTab: (tab) => set({ activeTab: tab }),
+            setProcessingOrder: (isProcessing) => set({ isProcessingOrder: isProcessing }),
 
             // --- Identity Slice ---
             user: {
@@ -230,6 +260,11 @@ export const useCejStore = create<CejStore>()(
                     hasConsentedPersistence: save
                 }
             })),
+
+            // --- Submission Slice (Phase 0 Bugfix) ---
+            submittedQuote: null,
+            setSubmittedQuote: (data) => set({ submittedQuote: data }),
+            clearSubmittedQuote: () => set({ submittedQuote: null }),
         }),
         {
             name: 'cej-pro-storage',
@@ -247,6 +282,7 @@ export const useCejStore = create<CejStore>()(
                             hasConsentedPersistence: true,
                         },
                         draft: { ...DEFAULT_CALCULATOR_STATE },
+                        submittedQuote: null,
                     } as PersistedState;
                 }
 
@@ -266,7 +302,7 @@ export const useCejStore = create<CejStore>()(
                 }
 
                 if (version === 0 || version === 1) {
-                    // Migración Fase 1 -> Fase 2
+                    // Migration Phase 1 -> Phase 2: Add additives array
                     if (state.draft && !state.draft.additives) {
                         state.draft.additives = [];
                         state.draft.showExpertOptions = false;
@@ -279,7 +315,8 @@ export const useCejStore = create<CejStore>()(
                 cart: state.cart,
                 history: state.history,
                 user: state.user,
-                draft: state.draft
+                draft: state.draft,
+                submittedQuote: state.submittedQuote,
             }),
         }
     )

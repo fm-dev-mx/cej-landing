@@ -8,13 +8,10 @@ import { v4 as uuidv4 } from "uuid";
 import { useCejStore } from "@/store/useCejStore";
 import { useIdentity } from "@/hooks/useIdentity";
 import { submitLead } from "@/app/actions/submitLead";
-import { trackLead, trackContact } from "@/lib/tracking/visitor";
+import { trackLead } from "@/lib/tracking/visitor";
 import {
     generateQuoteId,
-    generateCartMessage,
-    getWhatsAppUrl,
 } from "@/lib/utils";
-import { env } from "@/config/env";
 
 import type { CustomerInfo, OrderPayload } from "@/types/domain";
 
@@ -34,7 +31,8 @@ export function useCheckoutUI() {
 
     const cart = useCejStore((s) => s.cart);
     const updateUserContact = useCejStore((s) => s.updateUserContact);
-    const moveToHistory = useCejStore((s) => s.moveToHistory);
+    // Note: moveToHistory has been moved to the WhatsApp click handler
+    // to fix the race condition where cart was emptied before user saw it.
     const identity = useIdentity();
 
     /**
@@ -43,12 +41,12 @@ export function useCheckoutUI() {
      * - Builds a quote payload from the current cart.
      * - Fires browser-side Pixel event with event_id.
      * - Sends server-side CAPI call through submitLead.
-     * - Opens WhatsApp with a prefilled message.
+     * - Returns success status and generated folio for UI display.
      */
     const processOrder = async (
         customer: CustomerInfo,
         saveContact: boolean
-    ): Promise<boolean> => {
+    ): Promise<{ success: boolean; folio?: string }> => {
         setState({ isProcessing: true, error: null });
 
         try {
@@ -124,28 +122,42 @@ export function useCheckoutUI() {
                 throw new Error(result.message || "Error al procesar el pedido.");
             }
 
-            // Secondary event: contact via WhatsApp (no deduplication needed)
-            trackContact("WhatsApp");
+            // NOTE: trackContact and moveToHistory are NO LONGER called here.
+            // These should be triggered when the user actually clicks the WhatsApp link,
+            // not during order processing. This fixes the race condition where cart
+            // was being emptied before the user could see it.
 
-            // Move current cart to history
-            moveToHistory();
-
-            // 4. Build WhatsApp message for later use (UI will handle opening)
-            // The hook no longer auto-opens WhatsApp to give user control
-
-            return true;
+            // 4. Return success with the generated folio for UI display
+            // The UI can now show the actual folio instead of a placeholder
+            return { success: true, folio };
         } catch (err: unknown) {
-            console.error(err);
+            console.error("Critical error in processOrder (Fail-Open triggered):", err);
 
-            const message = err instanceof Error
-                ? err.message
-                : "Hubo un problema. Por favor intenta de nuevo.";
+            // Distinguish between validation errors (user-facing) and network errors (fail-open)
+            const errorMessage = err instanceof Error ? err.message : "Error al procesar el pedido.";
+            const isValidationError = errorMessage.includes("Verifique los siguientes campos");
 
+            if (isValidationError) {
+                // Validation errors: Show to user, do NOT proceed to WhatsApp
+                setState({
+                    isProcessing: false,
+                    error: errorMessage,
+                });
+                return { success: false };
+            }
+
+            // FAIL-OPEN: If Supabase/CAPI fails (network issue), still allow WhatsApp.
+            // We generate a temporary offline folio to ensure the UX completion.
+            const offlineFolio = `OFFLINE-${Date.now().toString(36).toUpperCase()}`;
+
+            // We track the error internally but do not block the UI
             setState({
                 isProcessing: false,
-                error: message,
+                error: null, // Clear error so UI shows successful completion
             });
-            return false;
+
+            // Allow flow to continue
+            return { success: true, folio: offlineFolio };
         } finally {
             setState((prev) => ({ ...prev, isProcessing: false }));
         }

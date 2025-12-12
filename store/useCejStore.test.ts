@@ -2,7 +2,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCejStore } from '@/store/useCejStore';
-import type { QuoteBreakdown } from '@/types/domain';
+import type { QuoteBreakdown, CartItem } from '@/types/domain';
+import { DEFAULT_CALCULATOR_STATE } from '@/types/domain';
 
 describe('useCejStore (State Management)', () => {
     beforeEach(() => {
@@ -41,13 +42,6 @@ describe('useCejStore (State Management)', () => {
 
     describe('Migration & Persistence', () => {
         it('migrates old state (v1 -> v2) by adding additives array', () => {
-            // We need to access the 'migrate' function from the persist options
-            // Since it's internal to the middleware, we simulate a migration scenario
-            // by inspecting the implementation of the persist middleware config.
-
-            // However, a simpler way in unit tests is to manually invoke the migrate logic if exported,
-            // or trust Zustand. Here we test the logic via the store's behavior if we could inject old state.
-
             // Mocking the behavior:
             const oldState: unknown = {
                 draft: { m3: '10' } // Missing additives
@@ -108,6 +102,86 @@ describe('useCejStore (State Management)', () => {
 
             expect(result.current.cart).toHaveLength(0);
             expect(result.current.history).toHaveLength(1);
+        });
+    });
+
+    // NEW TESTS: Sprint 3 - History & Sharing feature
+    describe('loadQuote (Critical - Missing Coverage)', () => {
+        it('restores quote from history into draft', () => {
+            const { result } = renderHook(() => useCejStore());
+
+            const mockItem: CartItem = {
+                id: 'hist-1',
+                timestamp: Date.now(),
+                inputs: {
+                    ...DEFAULT_CALCULATOR_STATE,
+                    m3: '10',
+                    strength: '250',
+                    type: 'pumped'
+                },
+                results: {} as QuoteBreakdown,
+                config: { label: 'Historic Quote' }
+            };
+
+            act(() => {
+                useCejStore.setState({
+                    history: [mockItem],
+                    isDrawerOpen: true,
+                    activeTab: 'history'
+                });
+                result.current.loadQuote(mockItem);
+            });
+
+            expect(result.current.draft.m3).toBe('10');
+            expect(result.current.draft.strength).toBe('250');
+            expect(result.current.draft.type).toBe('pumped');
+            expect(result.current.isDrawerOpen).toBe(false);
+            expect(result.current.activeTab).toBe('order');
+        });
+    });
+
+    describe('cloneCartItem', () => {
+        it('loads item into draft and closes drawer', () => {
+            const { result } = renderHook(() => useCejStore());
+
+            const mockItem: CartItem = {
+                id: 'clone-1',
+                timestamp: Date.now(),
+                inputs: {
+                    ...DEFAULT_CALCULATOR_STATE,
+                    m3: '7',
+                    strength: '300',
+                    type: 'pumped'
+                },
+                results: {} as QuoteBreakdown,
+                config: { label: 'Clone Test' }
+            };
+
+            act(() => {
+                useCejStore.setState({ isDrawerOpen: true });
+                result.current.cloneCartItem(mockItem);
+            });
+
+            expect(result.current.draft.m3).toBe('7');
+            expect(result.current.draft.strength).toBe('300');
+            expect(result.current.isDrawerOpen).toBe(false);
+        });
+
+        it('does nothing if item has no inputs', () => {
+            const { result } = renderHook(() => useCejStore());
+
+            const originalDraft = result.current.draft;
+            const mockItemNoInputs = {
+                id: 'no-inputs',
+                timestamp: Date.now(),
+                inputs: undefined as any,
+                results: {} as QuoteBreakdown,
+                config: { label: 'No Inputs' }
+            };
+
+            act(() => result.current.cloneCartItem(mockItemNoInputs));
+
+            expect(result.current.draft).toEqual(originalDraft);
         });
     });
 });

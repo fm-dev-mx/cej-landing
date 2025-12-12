@@ -8,8 +8,8 @@
 
 **Concreto y Equipos de Juárez (CEJ) evolves into a digital-first platform:**
 
-1. **CEJ Landing** – High-conversion landing page with a friction-free concrete calculator that hands off to WhatsApp.
-2. **CEJ Cotizador** – Robust multi-step calculator with cart, expert mode, and local persistence.
+1. **CEJ Landing** (`/`) – Public conversion tool. High-speed, simplified wizard for visitors. Generates preliminary tickets and drives leads to WhatsApp.
+2. **CEJ Cotizador** (`/cotizador`) – Internal sales tool. Expert-mode always on, designed for staff to generate formal PDF proposals and negotiate complex orders.
 3. **CEJ Pro (SaaS Portal)** – Authenticated portal for contractors to review history, re-order, and eventually manage billing and operations.
 
 The repository **`cej-landing`** is the single codebase that powers all three layers.
@@ -101,7 +101,7 @@ For deeper details, see [`docs/ARCHITECTURE.md`].
 
 ### 3.5 SaaS Portal (Phase 4A – Planned)
 
-*(Defined, not yet shipped as a full release.)*
+> *(Defined, not yet shipped as a full release.)*
 
 - Supabase Auth (Magic Link).
 - `public.profiles` linked to `auth.users`.

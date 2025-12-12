@@ -61,91 +61,74 @@ describe('Calculator Navigation & Button Logic', () => {
     const input = screen.getByLabelText(/Volumen total/i);
 
     // Initially, button should NOT be there (hint is shown instead)
-    // Updated selector to match new button text
-    const addBtnInitial = screen.queryByRole('button', { name: /Ver Cotización Formal/i });
+    const addBtnInitial = screen.queryByRole('button', { name: /Solicitar Cotización/i });
     expect(addBtnInitial).not.toBeInTheDocument();
 
-    // Check for the hint text (assuming this text hasn't changed, based on logs it passed before)
-    // If "Completa los datos" was also changed, this might need update, but logs suggest it passed.
-    // Based on provided logs, I don't see "Completa los datos" in the visible DOM of the failure,
-    // but the failure was on getByRole later. Assuming this text is still correct for empty state.
-    // If it fails, check CalculatorSummary.tsx for the empty state text.
-
+    // Check for the hint text
     // Simulate user typing '0'
     fireEvent.change(input, { target: { value: '0' } });
-    expect(screen.queryByRole('button', { name: /Ver Cotización Formal/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Solicitar Cotización/i })).not.toBeInTheDocument();
 
     // Simulate user typing '5'
     fireEvent.change(input, { target: { value: '5' } });
 
     // Now button should appear and be enabled
-    const addBtn = screen.getByRole('button', { name: /Ver Cotización Formal/i });
+    const addBtn = screen.getByRole('button', { name: /Solicitar Cotización/i });
     expect(addBtn).toBeEnabled();
   });
 
   it('Mode switching resets/adjusts form correctly', () => {
+    // ... existing content ...
     render(<Calculator />);
-
-    // Flow A: Known Volume
     const radioKnown = screen.getByRole('radio', { name: /Sé la cantidad/i });
     fireEvent.click(radioKnown);
-
     expect(screen.getByLabelText(/Volumen total/i)).toBeInTheDocument();
 
-    // Flow B: Assist
+    // ... existing content ...
     const radioAssist = screen.getByRole('radio', { name: /Ayúdame a calcular/i });
     fireEvent.click(radioAssist);
-
-    // Should show Work Type selector
     expect(screen.getByText(/Tipo de Obra/i)).toBeInTheDocument();
   });
 
   it('Step 3 (Assist): Validates thickness correctly for Solid vs Coffered', () => {
     render(<Calculator />);
-
-    // Select Assist Mode
     fireEvent.click(screen.getByRole('radio', { name: /Ayúdame a calcular/i }));
 
-    // Select Slab (Losa) to trigger thickness logic
     const workTypeSelect = screen.getByRole('combobox', { name: /Tipo de Obra/i });
     fireEvent.change(workTypeSelect, { target: { value: 'slab' } });
 
-    // Inputs
     const lengthInput = screen.getByLabelText('Largo (m)');
     const widthInput = screen.getByLabelText('Ancho (m)');
 
     // Initially button hidden
-    expect(screen.queryByRole('button', { name: /Ver Cotización Formal/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Solicitar Cotización/i })).not.toBeInTheDocument();
 
     fireEvent.change(lengthInput, { target: { value: '10' } });
     fireEvent.change(widthInput, { target: { value: '5' } });
 
-    // --- ESCENARIO A: Losa Sólida ---
+    // --- SCENARIO A: Solid Slab ---
     fireEvent.click(screen.getByRole('radio', { name: /Sólida/i }));
 
-    // El input de grosor debe aparecer
     const thicknessInput = screen.getByLabelText('Grosor (cm)');
     expect(thicknessInput).toBeVisible();
 
-    // Vacío -> Button hidden
+    // Empty -> Button hidden
     fireEvent.change(thicknessInput, { target: { value: '' } });
-    expect(screen.queryByRole('button', { name: /Ver Cotización Formal/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Solicitar Cotización/i })).not.toBeInTheDocument();
 
-    // Lleno -> Button appears
+    // Filled -> Button appears
     fireEvent.change(thicknessInput, { target: { value: '10' } });
-    expect(screen.getByRole('button', { name: /Ver Cotización Formal/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Solicitar Cotización/i })).toBeEnabled();
 
-    // --- ESCENARIO B: Losa Aligerada ---
+    // --- SCENARIO B: Coffered Slab ---
     fireEvent.click(screen.getByRole('radio', { name: /Aligerada/i }));
 
-    // El input de grosor manual NO debe estar
     expect(screen.queryByLabelText('Grosor (cm)')).not.toBeInTheDocument();
 
-    // Select a size (e.g., 7 cm default or clicked)
     const radio7cm = screen.getByRole('radio', { name: /7 cm/i });
     fireEvent.click(radio7cm);
 
-    // Should be valid now (measures + coffered selection)
-    expect(screen.getByRole('button', { name: /Ver Cotización Formal/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Solicitar Cotización/i })).toBeEnabled();
+
   });
 });

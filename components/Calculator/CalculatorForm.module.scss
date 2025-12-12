@@ -278,3 +278,78 @@
         transform: translateY(0);
     }
 }
+
+/* --- QuoteSummary Actions --- */
+.ticketWrapper {
+    margin-block: 2rem;
+}
+
+.warningNote {
+    @extend .note;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.successActions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.successHint {
+    @extend .hint;
+    text-align: center;
+    margin: 0;
+}
+
+.gridActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.textBtn {
+    background: none;
+    border: none;
+    color: var(--c-muted-on-dark);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease;
+
+    &:hover {
+        color: white;
+    }
+}
+
+.textBtnPrimary {
+    @extend .textBtn;
+    color: var(--c-accent);
+    font-weight: 600;
+
+    &:hover {
+        color: #fff;
+    }
+}
+
+.editDataBtn {
+    @extend .textBtn;
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+}
+
+.historyBtn {
+    @extend .textBtnPrimary;
+    display: block;
+    margin: 0.5rem auto;
+}
+
+.newQuoteBtn {
+    @extend .textBtn;
+    display: block;
+    margin: 0 auto;
+    font-size: 0.85rem;
+}

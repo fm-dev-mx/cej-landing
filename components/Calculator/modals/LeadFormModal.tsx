@@ -34,14 +34,15 @@ export function LeadFormModal({
         e.preventDefault();
 
         // Pass the data to the checkout hook
-        const success = await processOrder(
+        // Pass the data to the checkout hook
+        const result = await processOrder(
             { name, phone },
             saveMyData
         );
 
-        if (success) {
-            const tempFolio = "WEB-NEW";
-            if (onSuccess) onSuccess(tempFolio, name);
+        if (result.success) {
+            const finalFolio = result.folio || "WEB-NEW";
+            if (onSuccess) onSuccess(finalFolio, name);
         }
     };
 

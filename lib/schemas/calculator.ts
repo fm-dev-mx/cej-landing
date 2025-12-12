@@ -27,13 +27,15 @@ export const createKnownVolumeSchema = () => {
 
 /**
  * Schema for volume calculation based on dimensions.
+ * Note: Validation uses meters (m) as base unit, but error messages show centimeters (cm)
+ * for user clarity (0.1m = 10cm minimum dimension).
  */
 export const DimensionsSchema = z.object({
     length: numericString.pipe(
-        z.number().min(0.1, "El valor debe ser al menos 0.1 m").max(1000)
+        z.number().min(0.1, "Mínimo 10 cm").max(1000)
     ),
     width: numericString.pipe(
-        z.number().min(0.1, "El valor debe ser al menos 0.1 m").max(1000)
+        z.number().min(0.1, "Mínimo 10 cm").max(1000)
     ),
     thickness: numericString.pipe(z.number().min(1).max(200)),
 });

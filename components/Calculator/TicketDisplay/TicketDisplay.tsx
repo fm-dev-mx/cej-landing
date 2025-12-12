@@ -12,8 +12,8 @@ interface TicketDisplayProps {
     customerName?: string;
 }
 
-export function TicketDisplay({ variant, quote, folio, customerName }: TicketDisplayProps) {
-    const isPreview = variant === 'preview';
+export function TicketDisplay({ variant: _variant, quote, folio, customerName }: TicketDisplayProps) {
+
 
     // Optimization: Calculate date directly during render.
     // We use suppressHydrationWarning on the specific span below to handle server/client mismatches
@@ -37,7 +37,7 @@ export function TicketDisplay({ variant, quote, folio, customerName }: TicketDis
     const vatPercentage = quote.subtotal > 0 ? Math.round((quote.vat / quote.subtotal) * 100) : 8;
 
     return (
-        <div className={`${styles.ticket} ${styles[variant]}`}>
+        <div className={styles.ticket}>
             <div className={styles.perforationTop} aria-hidden="true" />
 
             <div className={styles.content}>
@@ -61,7 +61,7 @@ export function TicketDisplay({ variant, quote, folio, customerName }: TicketDis
                 <hr className={styles.divider} />
 
                 {/* Customer */}
-                {!isPreview && customerName && (
+                {customerName && (
                     <div className={styles.customerRow}>
                         <span>Cliente:</span>
                         <strong>{customerName}</strong>

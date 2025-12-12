@@ -72,7 +72,8 @@ describe('useCheckoutUI', () => {
         // FIX: Advance time exactly by the constant used in implementation
         vi.advanceTimersByTime(WHATSAPP_DELAY_MS);
 
-        expect(success).toBe(true);
+        // Updated expectation: processOrder now returns { success, folio }
+        expect(success).toEqual({ success: true, folio: 'FOLIO-MOCK' });
         expect(result.current.error).toBeNull();
 
         // Should NOT call window.open automatically anymore

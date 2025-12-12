@@ -128,57 +128,70 @@
     line-height: 0.6;
 }
 
-/* Preview Variant Effects */
-.preview {
-
-    .items,
-    .totals {
-        opacity: 0.6; // Fade out content
-        user-select: none;
-    }
-
-    .previewOverlay {
-        position: absolute;
-        inset: 50% 0 0 0; // Cover bottom half
-        background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 80%);
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        padding-bottom: var(--sp-6);
-        z-index: 10;
-
-        p {
-            background: var(--c-accent);
-            color: var(--c-primary-dark);
-            font-weight: 700;
-            font-family: var(--font-sans);
-            padding: 0.25rem 0.75rem;
-            border-radius: 99px;
-            font-size: 0.75rem;
-            box-shadow: var(--shadow-sm);
-        }
-    }
-}
+/* Preview Variant Effects - Removed (Flat design) */
 
 /* Print Styles */
 .printOnly {
     display: none;
+    margin-top: var(--sp-4);
+    font-size: 0.75rem;
+    color: var(--c-text-tertiary);
+    text-align: center;
 }
 
 @media print {
-    .printOnly {
-        display: block;
+
+    /* Hide everything global first */
+    :global(body > *),
+    :global(nav),
+    :global(footer),
+    :global(button) {
+        visibility: hidden;
     }
 
-    /* Hide everything except the ticket */
-    :global(body > *:not(.ticket-root)) {
-        display: none !important;
+    /* But make the ticket visible */
+    :global(body) {
+        margin: 0;
+        padding: 0;
     }
 
     .ticket {
+        visibility: visible;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
         box-shadow: none;
-        max-width: 100%;
-        border: 1px solid var(--c-text);
+        background: white;
+        color: black;
+        border: none;
+        max-width: none;
+        transform: none !important;
+        /* No rotation */
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .ticket * {
+        visibility: visible;
+    }
+
+    .header {
+        background: black;
+        color: white;
+    }
+
+    .printOnly {
+        display: block;
+        visibility: visible;
+    }
+
+    /* Hide decorative perforations when printing */
+    .perforationTop,
+    .perforationBottom {
+        display: none;
     }
 }
 
