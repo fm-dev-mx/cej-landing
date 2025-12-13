@@ -120,13 +120,16 @@ describe('Calculator UI Integration', () => {
     expect(viewBreakdownBtn).toBeEnabled();
   });
 
-  it('shows validation errors in UI', () => {
+  it('shows validation errors in UI (after blur)', () => {
     render(<Calculator />);
 
     fireEvent.click(screen.getByRole('radio', { name: /Sé la cantidad/i }));
 
     const volInput = screen.getByLabelText(/Volumen total/i);
     fireEvent.change(volInput, { target: { value: '0' } });
+
+    // Hybrid validation: error only shows after blur (touched state)
+    fireEvent.blur(volInput);
 
     // Check for error message
     const alert = screen.getByRole('alert');

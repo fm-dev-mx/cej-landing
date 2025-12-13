@@ -32,18 +32,24 @@ export const createKnownVolumeSchema = () => {
  */
 export const DimensionsSchema = z.object({
     length: numericString.pipe(
-        z.number().min(0.1, "Mínimo 10 cm").max(1000)
+        z.number().min(0.1, "Mínimo 10 cm").max(1000, "Máximo 1000 m")
     ),
     width: numericString.pipe(
-        z.number().min(0.1, "Mínimo 10 cm").max(1000)
+        z.number().min(0.1, "Mínimo 10 cm").max(1000, "Máximo 1000 m")
     ),
-    thickness: numericString.pipe(z.number().min(1).max(200)),
+    thickness: numericString.pipe(
+        z.number().min(1, "Ingresa un grosor válido (1-200 cm)").max(200, "Máximo 200 cm")
+    ),
 });
 
 /**
  * Schema for volume calculation based on area.
  */
 export const AreaSchema = z.object({
-    area: numericString.pipe(z.number().min(1).max(20000)),
-    thickness: numericString.pipe(z.number().min(1).max(200)),
+    area: numericString.pipe(
+        z.number().min(1, "Ingresa un área mayor a 0 m²").max(20000, "Máximo 20,000 m²")
+    ),
+    thickness: numericString.pipe(
+        z.number().min(1, "Ingresa un grosor válido (1-200 cm)").max(200, "Máximo 200 cm")
+    ),
 });

@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useCejStore } from "@/store/useCejStore";
 import { useQuoteCalculator } from "@/hooks/useQuoteCalculator";
@@ -32,6 +32,19 @@ export function CalculatorForm() {
     // Quote engine result
     const { error, warning } = useQuoteCalculator(draft);
 
+    // Track if user has interacted with any field (hybrid validation)
+    const [hasTouchedAnyField, setHasTouchedAnyField] = useState(false);
+
+    // Callback for child forms to notify when a field is touched
+    const handleFieldTouched = useCallback(() => {
+        setHasTouchedAnyField(true);
+    }, []);
+
+    // Reset touched state when mode changes
+    useEffect(() => {
+        setHasTouchedAnyField(false);
+    }, [draft.mode]);
+
     // Focus management
     const inputsSectionRef = useRef<HTMLDivElement>(null);
     const specsSectionRef = useRef<HTMLDivElement>(null);
@@ -58,7 +71,10 @@ export function CalculatorForm() {
             <div ref={inputsSectionRef}>
                 {draft.mode === "knownM3" ? (
                     <div className={styles.field}>
-                        <KnownVolumeForm hasError={!!error} />
+                        <KnownVolumeForm
+                            hasError={!!error}
+                            onFieldTouched={handleFieldTouched}
+                        />
                     </div>
                 ) : (
                     <>
@@ -68,7 +84,10 @@ export function CalculatorForm() {
 
                         {draft.workType && (
                             <div className={styles.field}>
-                                <AssistVolumeForm error={error} />
+                                <AssistVolumeForm
+                                    error={error}
+                                    onFieldTouched={handleFieldTouched}
+                                />
                             </div>
                         )}
                     </>
@@ -91,8 +110,8 @@ export function CalculatorForm() {
                 </div>
             )}
 
-            {/* 4. Feedback & warnings */}
-            {error && (
+            {/* 4. Feedback & warnings (only after user interaction) */}
+            {error && hasTouchedAnyField && (
                 <div className={styles.error} role="alert">
                     {error}
                 </div>

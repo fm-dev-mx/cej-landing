@@ -116,7 +116,7 @@ export function TicketDisplay({ variant, quote, folio, customerName }: TicketDis
                         </div>
                         {quote.volume.requestedM3 !== quote.volume.billedM3 && (
                             <div className={styles.volumeNote}>
-                                Solicitado: {quote.volume.requestedM3} m³ → Facturado: {quote.volume.billedM3} m³
+                                Solicitado: {quote.volume.requestedM3.toFixed(2)} m³ → Facturado: {quote.volume.billedM3.toFixed(2)} m³
                             </div>
                         )}
                     </div>

@@ -16,9 +16,10 @@ import styles from "../CalculatorForm.module.scss";
 
 interface Props {
     error?: string | null;
+    onFieldTouched?: (field: string) => void;
 }
 
-export function AssistVolumeForm({ error }: Props) {
+export function AssistVolumeForm({ error, onFieldTouched }: Props) {
     const {
         volumeMode,
         length,
@@ -56,6 +57,7 @@ export function AssistVolumeForm({ error }: Props) {
 
     const handleBlur = (field: string) => () => {
         setTouched((prev) => ({ ...prev, [field]: true }));
+        onFieldTouched?.(field);
     };
 
     const hasSpecificError = (field: string, val: string) =>

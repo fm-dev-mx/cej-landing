@@ -11,9 +11,10 @@ import { Input } from "@/components/ui/Input/Input";
 
 interface Props {
     hasError?: boolean;
+    onFieldTouched?: () => void;
 }
 
-export function KnownVolumeForm({ hasError }: Props) {
+export function KnownVolumeForm({ hasError, onFieldTouched }: Props) {
     const m3 = useCejStore((s) => s.draft.m3);
     const updateDraft = useCejStore((s) => s.updateDraft);
     const [touched, setTouched] = useState(false);
@@ -27,7 +28,10 @@ export function KnownVolumeForm({ hasError }: Props) {
         [updateDraft]
     );
 
-    const handleBlur = () => setTouched(true);
+    const handleBlur = () => {
+        setTouched(true);
+        onFieldTouched?.();
+    };
 
     return (
         <Input
