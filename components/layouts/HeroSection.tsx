@@ -58,10 +58,9 @@ export default function HeroSection({
             </span>
           </h1>
 
-          <p
-            className={styles.hero__lead}
-            dangerouslySetInnerHTML={{ __html: content.lead }}
-          />
+          <p className={styles.hero__lead}>
+            Suministro confiable de <strong>concreto y servicio de bombeo</strong> para contratistas y particulares. Evita desperdicios con nuestro cálculo de volumetría exacto.
+          </p>
 
           <ul className={styles.hero__features}>
             {content.features.map((feature, idx) => (

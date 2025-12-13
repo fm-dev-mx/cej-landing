@@ -6,6 +6,11 @@
   display: block;
 }
 
+/* Main content wrapper: ensures content clears fixed header */
+.mainContent {
+  padding-top: var(--header-h);
+}
+
 /* Visually hidden skip link until focused */
 .layout__skip-link {
   position: absolute;

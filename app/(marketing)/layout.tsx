@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import Header from "@/components/layouts/header/Header";
 import Footer from "@/components/layouts/Footer";
 import { generateLocalBusinessSchema } from "@/lib/seo";
+import styles from "@/components/layouts/Layout.module.scss";
 
 export default function MarketingLayout({
     children,
@@ -21,8 +22,7 @@ export default function MarketingLayout({
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
             <Header />
-            {/* NOTE: top padding ensures content does not go under fixed header */}
-            <main style={{ paddingTop: "var(--header-h)" }}>{children}</main>
+            <main className={styles.mainContent}>{children}</main>
             <Footer />
         </>
     );

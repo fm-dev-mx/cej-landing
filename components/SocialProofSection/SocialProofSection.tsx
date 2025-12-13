@@ -70,7 +70,7 @@ export default function SocialProofSection() {
 
             <div className={styles.testimonialsGrid}>
               {testimonials.map((t) => (
-                <Card.Root key={t.id} variant="outline" className="bg-white/50">
+                <Card.Root key={t.id} variant="outline" className={styles.testimonialCard}>
                   <Card.Body>
                     <div className={styles.quoteIcon} aria-hidden="true">“</div>
                     <blockquote className={styles.quoteText}>
