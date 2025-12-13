@@ -119,7 +119,7 @@
 
 | Code | Message |
 |:-----|:--------|
-| `BELOW_MINIMUM` | "Nota: El pedido mínimo es {minM3} m³. Se ajustará el precio." |
+| `BELOW_MINIMUM` | "El pedido mínimo para {tipo} es de {min} m³." (2m³ Directo, 3m³ Bomba) |
 | `ROUNDING_POLICY` | "El volumen se ajusta a múltiplos de 0.5 m³." |
 
 ---

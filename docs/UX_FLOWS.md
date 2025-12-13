@@ -33,6 +33,12 @@ graph LR
 | **Sé los m³** | `knownM3` | User knows exact volume | Direct to volume input |
 | **Ayúdame a calcular** | `assistM3` | User needs dimension help | Work type selector |
 
+> **Smart Pre-fill:** When switching to `knownM3`, the system automatically presets:
+>
+> - Strength: **250 kg/cm²**
+> - Service Type: **Directo**
+> - Clears any dimension data to prevent conflicts.
+
 ### 1.3 Assist Mode Sub-Flow
 
 ```mermaid
@@ -497,14 +503,14 @@ For the "Ayúdame a calcular" flow, apply these UX best practices:
 └─────────────────────────────────────┘
 ```
 
-### 11.3 CSS Recommendations
+### 11.3 CSS Implementation
 
 ```scss
 // Compact grid for dimension inputs
 .compactGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--sp-3); // Reduced from --sp-4
+    gap: 1rem; // Reduced from 1.5rem
 }
 
 // Tighter field spacing in assist mode

@@ -261,8 +261,8 @@ sequenceDiagram
 
 | **State** | **Visual** | **ARIA** |
 | --- | --- | --- |
-| Off (Básico) | Thumb left | `aria-pressed="false"` |
-| On (+Aditivos) | Thumb right | `aria-pressed="true"` |
+| Off (Básico) | "▸ Agregar Aditivos" | `aria-expanded="false"` |
+| On (+Aditivos) | "▾ Ocultar Aditivos" | `aria-expanded="true"` |
 
 ---
 
