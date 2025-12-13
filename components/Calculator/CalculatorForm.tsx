@@ -60,6 +60,25 @@ export function CalculatorForm() {
         }
     }, [draft.mode]);
 
+    const assistVolumeRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (draft.workType && assistVolumeRef.current) {
+            // Tiny timeout to ensure DOM render before scroll/focus
+            setTimeout(() => {
+                assistVolumeRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                });
+                // Optional: find first input inside to focus?
+                const firstInput = assistVolumeRef.current?.querySelector('input, select');
+                if (firstInput instanceof HTMLElement) {
+                    firstInput.focus();
+                }
+            }, 100);
+        }
+    }, [draft.workType]);
+
     /**
      * Focus the first invalid input field.
      * Called when user attempts to proceed with validation errors.
@@ -80,6 +99,22 @@ export function CalculatorForm() {
             invalidInput.focus();
         }
     }, []);
+
+    const submittedQuote = useCejStore((s) => s.submittedQuote);
+
+    // If a quote is already submitted, hide the calculator form and only show the summary (ticket)
+    if (submittedQuote) {
+        return (
+            <div className={styles.container} ref={formContainerRef}>
+                <div className={styles.summarySection}>
+                    <QuoteSummary
+                        hasError={false}
+                        onFocusError={focusFirstInvalidInput}
+                    />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.container} ref={formContainerRef}>
@@ -105,7 +140,7 @@ export function CalculatorForm() {
                         </div>
 
                         {draft.workType && (
-                            <div className={styles.field}>
+                            <div className={`${styles.field} ${styles.animateFadeIn}`} ref={assistVolumeRef}>
                                 <AssistVolumeForm
                                     error={error}
                                     onFieldTouched={handleFieldTouched}
@@ -123,6 +158,16 @@ export function CalculatorForm() {
                     ref={specsSectionRef}
                 >
                     <SpecsForm />
+                    {/* Additives Toggle */}
+                    <div className={`${styles.field} ${styles.additivesContainer}`}>
+                        <button
+                            type="button"
+                            onClick={() => useCejStore.getState().setExpertMode(!draft.showExpertOptions)}
+                            className={styles.toggleButton}
+                        >
+                            <span>{draft.showExpertOptions ? "▾ Ocultar Aditivos" : "▸ Agregar Aditivos"}</span>
+                        </button>
+                    </div>
 
                     {draft.showExpertOptions && (
                         <div className={styles.animateFadeIn}>
@@ -131,6 +176,8 @@ export function CalculatorForm() {
                     )}
                 </div>
             )}
+
+            <div className={styles.fieldWithSeparator}></div>
 
             {/* 4. Feedback & warnings (only after user interaction) */}
             {error && hasTouchedAnyField && (
@@ -143,8 +190,10 @@ export function CalculatorForm() {
                 <div className={styles.note}>
                     {warning.code === "BELOW_MINIMUM" && (
                         <span>
-                            Nota: El pedido mínimo es {warning.minM3} m³. Se
-                            ajustará el precio.
+                            {warning.typeLabel?.toLowerCase().includes("bomba")
+                                ? `⚠️ El pedido mínimo para concreto bombeado es de 3 m³.`
+                                : `⚠️ El pedido mínimo para tiro directo es de 2 m³.`
+                            }
                         </span>
                     )}
 
@@ -162,6 +211,7 @@ export function CalculatorForm() {
                     hasError={!!error}
                     onFocusError={focusFirstInvalidInput}
                 />
+
             </div>
         </div>
     );

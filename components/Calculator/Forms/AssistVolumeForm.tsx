@@ -135,9 +135,9 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
 
             {/* Manual thickness (non-coffered slabs) */}
             {showManualThickness && (
-                <div style={{ marginTop: "1rem" }}>
+                <div className={styles.spacingTop}>
                     <Input
-                        label="Grosor (cm)"
+                        label={workType === 'slab' ? "Espesor de Losa (cm)" : "Grosor (cm)"}
                         placeholder="10"
                         value={
                             volumeMode === "dimensions"
@@ -188,12 +188,7 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                     </div>
 
                     {hasCoffered === "yes" && (
-                        <div
-                            style={{
-                                marginTop: "1rem",
-                                animation: "fadeIn 0.3s",
-                            }}
-                        >
+                        <div className={`${styles.spacingTop} ${styles.animateFadeIn}`}>
                             <label className={styles.cofferLabel}>
                                 Medida del Casetón
                             </label>

@@ -26,7 +26,15 @@ import type {
     QuoteWarning,
 } from "@/types/domain";
 
-export function useQuoteCalculator(input: CalculatorState) {
+export interface QuoteCalculatorResult {
+    quote: QuoteBreakdown;
+    rawVolume: number;
+    isValid: boolean;
+    error: string | null;
+    warning: QuoteWarning;
+}
+
+export function useQuoteCalculator(input: CalculatorState): QuoteCalculatorResult {
     const {
         mode,
         m3,

@@ -32,8 +32,7 @@
 .fieldWithSeparator {
     @extend .field;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 1.5rem;
-    margin-top: 1rem;
+    padding-top: 1rem;
 }
 
 .hint {
@@ -222,8 +221,8 @@
 .note {
     font-size: var(--fs-xs);
     color: var(--c-info-text-on-dark);
-    text-align: right;
-    margin-top: 0.5rem;
+    text-align: center;
+    margin-block: 0.5rem;
     opacity: 0.9;
 }
 
@@ -274,7 +273,7 @@
     text-align: center;
 }
 
-/* Animations */
+/* --- Animations --- */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -289,7 +288,7 @@
 
 /* --- QuoteSummary Actions --- */
 .ticketWrapper {
-    margin-block: 2rem;
+    margin-bottom: 2rem;
 }
 
 .warningNote {
@@ -360,4 +359,42 @@
     display: block;
     margin: 0 auto;
     font-size: 0.85rem;
+}
+
+/* --- Selector Active State --- */
+.selectorActive {
+    :global(select) {
+        background-color: rgba(0, 0, 0, 0.8) !important;
+        border-color: var(--c-info-text-on-dark) !important;
+        opacity: 1 !important;
+        color: white !important;
+        box-shadow: 0 0 0 1px var(--c-info-text-on-dark) !important;
+    }
+}
+
+.additivesContainer {
+    margin-top: 1rem;
+    padding-left: 1rem;
+}
+
+.toggleButton {
+    @extend .textBtnPrimary;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+
+    &:hover {
+        color: var(--c-accent);
+        text-decoration: none;
+    }
+}
+
+.animateFadeIn {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.spacingTop {
+    margin-top: 1rem;
 }

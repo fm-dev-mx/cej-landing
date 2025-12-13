@@ -1,27 +1,27 @@
 // components/Calculator/TicketDisplay/TicketDisplay.tsx
-import { QuoteBreakdown } from '@/types/domain';
+import { QuoteBreakdown, QuoteWarning } from '@/types/domain';
 import { fmtMXN } from '@/lib/utils';
 import { env } from '@/config/env';
-
 import styles from './TicketDisplay.module.scss';
+
 
 interface TicketDisplayProps {
     variant: 'compact' | 'preview' | 'full';
     quote: QuoteBreakdown | null;
     folio?: string;
     customerName?: string;
+    warning?: QuoteWarning | null;
 }
 
 /**
  * TicketDisplay - Shows quote information with different levels of detail
- *
- * Variants:
- * - compact: Minimal view with just total and volume (Phase 1 - initial state)
- * - preview: Full breakdown without folio (Phase 1 - after "Ver Desglose")
- * - full: Complete ticket with folio and customer info (after submission)
- */
-export function TicketDisplay({ variant, quote, folio, customerName }: TicketDisplayProps) {
-
+*
+* Variants:
+* - compact: Minimal view with just total and volume (Phase 1 - initial state)
+* - preview: Full breakdown without folio (Phase 1 - after "Ver Desglose")
+* - full: Complete ticket with folio and customer info (after submission)
+*/
+export function TicketDisplay({ variant, quote, folio, customerName, warning }: TicketDisplayProps) {
     // If no quote, show empty state
     if (!quote) {
         return (
@@ -64,6 +64,17 @@ export function TicketDisplay({ variant, quote, folio, customerName }: TicketDis
                     <p className={styles.compactHint}>
                         Haz clic en "Ver Desglose" para revisar el detalle.
                     </p>
+
+                    {warning && (
+                        <div className={styles.warningNote}>
+                            ℹ️{" "}
+                            {warning.code === "BELOW_MINIMUM"
+                                ? "Pedido mínimo ajustado"
+                                : "Volumen redondeado"}
+                        </div>
+                    )}
+
+
                 </div>
             </div>
         );

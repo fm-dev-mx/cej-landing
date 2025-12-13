@@ -194,7 +194,7 @@
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--c-muted-strong);
+    color: var(--c-text);
 }
 
 .compactTotal {
@@ -204,7 +204,7 @@
 .compactTotalLabel {
     display: block;
     font-size: 0.8rem;
-    color: var(--c-muted-strong);
+    color: var(--c-text);
 }
 
 .compactTotalValue {
@@ -312,4 +312,11 @@
 .perforationBottom {
     bottom: -10px;
     background-image: linear-gradient(135deg, transparent 33.333%, var(--c-surface) 33.333%, var(--c-surface) 66.667%, transparent 66.667%), linear-gradient(-135deg, transparent 33.333%, var(--c-surface) 33.333%, var(--c-surface) 66.667%, transparent 66.667%);
+}
+
+.warningNote {
+    font-size: 0.75rem;
+    color: var(--c-info-text-on-dark-light);
+    text-align: center;
+    margin: 1rem;
 }

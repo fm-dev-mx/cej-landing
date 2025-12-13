@@ -1,6 +1,6 @@
-// components/ProcessSection/ProcessSection.tsx
 import { LANDING_CONTENT } from "@/config/content";
 import { Card } from "@/components/ui/Card/Card";
+import Image from "next/image";
 import styles from "./ProcessSection.module.scss";
 
 export default function ProcessSection() {
@@ -19,18 +19,19 @@ export default function ProcessSection() {
         <ol className={styles.stepsGrid}>
           {steps.map((step, index) => (
             <li key={step.id} className={styles.stepWrapper}>
-              {/* Connector Line Logic handled via CSS on stepWrapper */}
-              <div className={styles.connector} aria-hidden="true" />
-
               <Card.Root variant="surface" className={styles.stepCard}>
-                <Card.Body className={styles.cardBody}>
-                  <div className={styles.iconWrapper}>
-                    <span className={styles.icon} aria-hidden="true">
-                      {step.icon}
-                    </span>
-                    <span className={styles.stepNumber}>{index + 1}</span>
-                  </div>
+                <div className={styles.imageWrapper}>
+                  <Image
+                    src={step.imageSrc}
+                    alt={step.imageAlt}
+                    fill
+                    className={styles.stepImage}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                  />
+                  <div className={styles.stepBadge}>{index + 1}</div>
+                </div>
 
+                <Card.Body className={styles.cardBody}>
                   <h3 className={styles.stepTitle}>{step.title}</h3>
                   <p className={styles.stepDesc}>{step.desc}</p>
                 </Card.Body>

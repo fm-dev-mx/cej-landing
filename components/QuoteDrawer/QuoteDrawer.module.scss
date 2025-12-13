@@ -107,12 +107,16 @@
     flex-direction: column;
     gap: 0.5rem;
     position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
 
     // Left border accent for history items
     border-left: 3px solid var(--c-border);
 
     &:hover {
         border-left-color: var(--c-accent);
+        box-shadow: var(--shadow-md);
+        transform: translateX(2px);
     }
 }
 

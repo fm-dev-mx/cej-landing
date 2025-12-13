@@ -24,10 +24,10 @@ export function AdditivesForm() {
     if (additives.length === 0) return null;
 
     return (
-        <div className={styles.fieldWithSeparator} data-testid="additives-form">
+        <div className={styles.additivesContainer} data-testid="additives-form">
             <label className={styles.label}>
                 Aditivos y Extras{" "}
-                <span className={styles.labelOptional}>(Opcional)</span>
+                <span className={styles.labelOptional}></span>
             </label>
 
             <div className={styles.selectionGrid}>

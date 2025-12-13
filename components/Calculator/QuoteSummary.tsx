@@ -189,6 +189,7 @@ export function QuoteSummary({ hasError, onFocusError }: QuoteSummaryProps) {
                     quote={quote}
                     folio={submittedQuote?.folio}
                     customerName={submittedQuote?.name}
+                    warning={warning}
                 />
             </div>
 
@@ -196,22 +197,17 @@ export function QuoteSummary({ hasError, onFocusError }: QuoteSummaryProps) {
             <div className={styles.field}>
                 {stage === 'preview' && (
                     <>
-                        {warning && (
-                            <div className={styles.warningNote}>
-                                ⚠️{" "}
-                                {warning.code === "BELOW_MINIMUM"
-                                    ? "Pedido mínimo ajustado"
-                                    : "Volumen redondeado"}
-                            </div>
-                        )}
-
                         <Button
                             fullWidth
                             variant="primary"
                             onClick={handleViewBreakdown}
                             disabled={!isValid}
                         >
-                            Ver Desglose de Cotización ({fmtMXN(quote.total)})
+                            {
+                                draft.mode === 'knownM3'
+                                    ? 'Revisar cotización'
+                                    : 'Ver resultado'
+                            }
                         </Button>
 
                         <p className={styles.summaryFooter}>
@@ -239,7 +235,7 @@ export function QuoteSummary({ hasError, onFocusError }: QuoteSummaryProps) {
                             isLoading={isProcessing}
                             loadingText="Generando ticket..."
                         >
-                            Confirmar y Generar Ticket
+                            Finalizar Cotización
                         </Button>
 
                         <button

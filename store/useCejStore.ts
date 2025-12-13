@@ -98,8 +98,19 @@ export const useCejStore = create<CejStore>()(
                     if (mode === 'knownM3') {
                         nextDraft.workType = null;
                         nextDraft.hasCoffered = 'no';
+                        // Smart Pre-fill: Standardize values for direct entry
+                        nextDraft.strength = '250';
+                        nextDraft.type = 'direct';
+                        // Clear assist data
+                        nextDraft.length = '';
+                        nextDraft.width = '';
+                        nextDraft.area = '';
                     } else {
                         nextDraft.m3 = '';
+                        // Reset assist data to force fresh start
+                        nextDraft.length = '';
+                        nextDraft.width = '';
+                        nextDraft.area = '';
                     }
                     return { draft: nextDraft };
                 });
@@ -213,7 +224,14 @@ export const useCejStore = create<CejStore>()(
                         isDrawerOpen: false,
                     });
                     if (typeof document !== 'undefined') {
-                        document.getElementById('calculator-section')?.scrollIntoView({ behavior: 'smooth' });
+                        const el = document.getElementById('calculator-section');
+                        if (el) {
+                            el.scrollIntoView({ behavior: 'smooth' });
+                            // Trigger flash animation
+                            el.classList.remove('highlight-flash');
+                            void el.offsetWidth; // trigger reflow
+                            el.classList.add('highlight-flash');
+                        }
                     }
                 }
             },
@@ -225,7 +243,14 @@ export const useCejStore = create<CejStore>()(
                         isDrawerOpen: false,
                     });
                     if (typeof document !== 'undefined') {
-                        document.getElementById('calculator-section')?.scrollIntoView({ behavior: 'smooth' });
+                        const el = document.getElementById('calculator-section');
+                        if (el) {
+                            el.scrollIntoView({ behavior: 'smooth' });
+                            // Trigger flash animation
+                            el.classList.remove('highlight-flash');
+                            void el.offsetWidth; // trigger reflow
+                            el.classList.add('highlight-flash');
+                        }
                     }
                 }
             },

@@ -35,6 +35,7 @@ export function WorkTypeSelector() {
                 value={workType || ""}
                 onChange={handleChange}
                 variant="dark"
+                className={workType ? styles.selectorActive : undefined}
             >
                 <option value="" disabled>
                     Selecciona una opción...

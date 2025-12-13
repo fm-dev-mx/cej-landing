@@ -19,7 +19,8 @@ export interface ProcessStep {
     id: string;
     title: string;
     desc: string;
-    icon: string;
+    imageSrc: string;
+    imageAlt: string;
 }
 
 export interface FaqItem {
@@ -183,25 +184,29 @@ export const LANDING_CONTENT = {
                 id: "calc",
                 title: "1. Cotiza y Calcula",
                 desc: "Usa nuestra calculadora online para estimar el volumen y precio al instante, o mándanos tus medidas.",
-                icon: "Tp" // Tp maps to calculator/phone conceptually
+                imageSrc: "https://placehold.co/600x400.png?text=Cotiza+y+Calcula",
+                imageAlt: "Persona usando calculadora en celular"
             },
             {
                 id: "book",
                 title: "2. Programa tu Pedido",
                 desc: "Aparta fecha y hora con un anticipo mínimo ($1,000 MXN). Asegura tu lugar en la agenda.",
-                icon: "Cal"
+                imageSrc: "https://placehold.co/600x400.png?text=Programa+Pedido",
+                imageAlt: "Calendario de obra marcado"
             },
             {
                 id: "verify",
                 title: "3. Visita Técnica",
                 desc: "Un experto va a tu obra (sin costo) para verificar accesos y rectificar medidas para evitar errores.",
-                icon: "Eng"
+                imageSrc: "https://placehold.co/600x400.png?text=Visita+Tecnica",
+                imageAlt: "Ingeniero tomando medidas en obra"
             },
             {
                 id: "pay",
                 title: "4. Recibe y Construye",
                 desc: "La olla llega puntual. Liquidación contra entrega y soporte durante el vaciado.",
-                icon: "Truck"
+                imageSrc: "https://placehold.co/600x400.png?text=Recibe+y+Construye",
+                imageAlt: "Camión revolvedora descargando concreto"
             }
         ] as ProcessStep[]
     },
