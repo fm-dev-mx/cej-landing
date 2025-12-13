@@ -68,7 +68,7 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
     return (
         <>
             {/* Volume mode switch (dimensions vs area) */}
-            <div className={styles.field}>
+            <div className={styles.fieldCompact}>
                 <label className={styles.label}>Método de cálculo</label>
 
                 <div className={styles.radioRow}>

@@ -48,6 +48,7 @@ export function CalculatorForm() {
     // Focus management
     const inputsSectionRef = useRef<HTMLDivElement>(null);
     const specsSectionRef = useRef<HTMLDivElement>(null);
+    const formContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (draft.mode && inputsSectionRef.current) {
@@ -59,8 +60,29 @@ export function CalculatorForm() {
         }
     }, [draft.mode]);
 
+    /**
+     * Focus the first invalid input field.
+     * Called when user attempts to proceed with validation errors.
+     */
+    const focusFirstInvalidInput = useCallback(() => {
+        if (!formContainerRef.current) return;
+
+        // Mark all fields as touched to show errors
+        setHasTouchedAnyField(true);
+
+        // Find first input with aria-invalid="true" or first empty required input
+        const invalidInput = formContainerRef.current.querySelector<HTMLElement>(
+            'input[aria-invalid="true"], input:invalid'
+        );
+
+        if (invalidInput) {
+            invalidInput.scrollIntoView({ behavior: "smooth", block: "center" });
+            invalidInput.focus();
+        }
+    }, []);
+
     return (
-        <div className={styles.container}>
+        <div className={styles.container} ref={formContainerRef}>
             {/* 1. Mode selection */}
             <div className={styles.field}>
                 <label className={styles.label}>¿Cómo quieres cotizar?</label>
@@ -136,7 +158,10 @@ export function CalculatorForm() {
 
             {/* 5. Summary (ticket-like view) */}
             <div className={styles.summarySection}>
-                <QuoteSummary />
+                <QuoteSummary
+                    hasError={!!error}
+                    onFocusError={focusFirstInvalidInput}
+                />
             </div>
         </div>
     );

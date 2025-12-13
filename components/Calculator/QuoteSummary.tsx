@@ -23,7 +23,15 @@ import styles from './CalculatorForm.module.scss';
  * 2. BREAKDOWN: Shows full breakdown, CTA = "Confirmar y Generar Ticket"
  * 3. SUBMITTED: Shows ticket with folio, CTA = "Enviar a WhatsApp"
  */
-export function QuoteSummary() {
+
+interface QuoteSummaryProps {
+    /** Whether the calculator form has validation errors */
+    hasError?: boolean;
+    /** Callback to focus the first invalid input field */
+    onFocusError?: () => void;
+}
+
+export function QuoteSummary({ hasError, onFocusError }: QuoteSummaryProps) {
     const draft = useCejStore((s) => s.draft);
     const resetDraft = useCejStore((s) => s.resetDraft);
     const user = useCejStore((s) => s.user);

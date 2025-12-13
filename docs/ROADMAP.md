@@ -69,8 +69,8 @@ Tracking is more robust across platforms (including iOS), and the site is better
 - [x] **Number Formatting:** Consistent `.toFixed(2)` for volume display
 - [x] **Documentation:** VALIDATION.md, COPY_GUIDELINES.md, updated UX_FLOWS.md
 - [x] **Validation Timing:** Implement hybrid on-blur validation (prevent premature errors)
-- [ ] **Form Compactness:** CSS refinements for "Ayúdame a calcular" flow
-- [ ] **Error Focus:** Auto-focus first invalid field on form submit
+- [x] **Form Compactness:** CSS refinements for "Ayúdame a calcular" flow
+- [x] **Error Focus:** Auto-focus first invalid field on form submit
 
 #### 4.2 History & Orders (Planned)
 
