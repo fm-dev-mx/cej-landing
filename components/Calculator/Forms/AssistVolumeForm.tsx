@@ -64,8 +64,6 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
     const hasSpecificError = (field: string, val: string) =>
         !!touched[field] && !!error && (!val || parseFloat(val) <= 0);
 
-    const showManualThickness = hasCoffered !== "yes";
-
     return (
         <>
             {/* Volume mode switch (dimensions vs area) */}

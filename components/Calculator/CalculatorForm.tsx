@@ -34,7 +34,7 @@ export function CalculatorForm() {
 
     // URL Deep Linking for shared quotes (Local history lookup)
     const searchParams = useSearchParams();
-    const folioParam = searchParams.get('folio');
+    const folioParam = searchParams?.get('folio');
     const setSubmittedQuote = useCejStore((s) => s.setSubmittedQuote);
     const history = useCejStore((s) => s.history);
     const cart = useCejStore((s) => s.cart);
@@ -65,11 +65,15 @@ export function CalculatorForm() {
     }, []);
 
     // Reset touched state instantly when mode changes to prevent error flash
+    // Reset touched state when mode changes
     const prevMode = useRef(draft.mode);
-    if (draft.mode !== prevMode.current) {
-        setHasTouchedAnyField(false);
-        prevMode.current = draft.mode;
-    }
+
+    useEffect(() => {
+        if (draft.mode !== prevMode.current) {
+            setHasTouchedAnyField(false);
+            prevMode.current = draft.mode;
+        }
+    }, [draft.mode]);
 
     // Focus management
     const inputsSectionRef = useRef<HTMLDivElement>(null);

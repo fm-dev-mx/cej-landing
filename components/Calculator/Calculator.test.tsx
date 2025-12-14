@@ -84,8 +84,8 @@ describe('Calculator UI Integration', () => {
     // Note: Volume text "5.00 m³" might not be explicitly visible in the new Ticket summary
     // relying on price/total verification via 'Total' presence is sufficient for integration here.
 
-    // 4. Phase 1: First CTA is "Ver Desglose de Cotización"
-    const viewBreakdownBtn = screen.getByRole('button', { name: /Ver Desglose/i });
+    // 4. Phase 1: First CTA is "Verificar datos"
+    const viewBreakdownBtn = screen.getByRole('button', { name: /Verificar datos/i });
     expect(viewBreakdownBtn).toBeEnabled();
     fireEvent.click(viewBreakdownBtn);
   });
@@ -105,7 +105,7 @@ describe('Calculator UI Integration', () => {
     // Inputs
     const lengthInput = screen.getByLabelText('Largo (m)');
     const widthInput = screen.getByLabelText('Ancho (m)');
-    const thickInput = screen.getByLabelText('Grosor (cm)');
+    const thickInput = screen.getByLabelText('Espesor Total de Losa (cm)');
 
     fireEvent.change(lengthInput, { target: { value: '10' } });
     fireEvent.change(widthInput, { target: { value: '5' } });
@@ -116,7 +116,7 @@ describe('Calculator UI Integration', () => {
 
     // 10*5*0.10 = 5m3 * factor. Should be valid.
     // Phase 1: Button text is now "Ver Desglose de Cotización"
-    const viewBreakdownBtn = screen.getByRole('button', { name: /Ver Desglose/i });
+    const viewBreakdownBtn = screen.getByRole('button', { name: /Verificar datos/i });
     expect(viewBreakdownBtn).toBeEnabled();
   });
 
@@ -132,8 +132,9 @@ describe('Calculator UI Integration', () => {
     fireEvent.blur(volInput);
 
     // Check for error message
-    const alert = screen.getByRole('alert');
-    expect(alert).toBeInTheDocument();
+    const alerts = screen.getAllByRole('alert');
+    expect(alerts.length).toBeGreaterThan(0);
+    expect(alerts[0]).toBeInTheDocument();
 
     // Ensure the quote button is NOT present when invalid (still shows, but disabled)
     // With Phase 1, button shows but is disabled. Check for empty state hint instead.

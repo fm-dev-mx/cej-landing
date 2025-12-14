@@ -31,8 +31,9 @@ interface QuoteSummaryProps {
     onFocusError?: () => void;
 }
 
-export function QuoteSummary({ hasError, onFocusError }: QuoteSummaryProps) {
+export function QuoteSummary({ }: QuoteSummaryProps) {
     const draft = useCejStore((s) => s.draft);
+    // Unused props removed: hasError, onFocusError
     const resetDraft = useCejStore((s) => s.resetDraft);
     const user = useCejStore((s) => s.user);
     const cart = useCejStore((s) => s.cart);

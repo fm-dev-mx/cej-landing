@@ -77,7 +77,7 @@ describe('useQuoteCalculator Logic', () => {
         const input = {
             ...DEFAULT_CALCULATOR_STATE,
             mode: 'knownM3' as const,
-            m3: '0.2', // Very small volume (below minimums)
+            m3: '1.5', // Small volume (below minimums)
             type: 'direct' as const
         };
 

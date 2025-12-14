@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCejStore } from '@/store/useCejStore';
-import type { QuoteBreakdown, CartItem } from '@/types/domain';
+import type { QuoteBreakdown, CartItem, CalculatorState } from '@/types/domain';
 import { DEFAULT_CALCULATOR_STATE } from '@/types/domain';
 
 describe('useCejStore (State Management)', () => {
@@ -174,7 +174,7 @@ describe('useCejStore (State Management)', () => {
             const mockItemNoInputs = {
                 id: 'no-inputs',
                 timestamp: Date.now(),
-                inputs: undefined as any,
+                inputs: undefined as unknown as CalculatorState,
                 results: {} as QuoteBreakdown,
                 config: { label: 'No Inputs' }
             };

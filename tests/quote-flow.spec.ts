@@ -29,7 +29,7 @@ test.describe('Quote Flow & Progressive Disclosure', () => {
         };
 
         await page.evaluate((quote) => {
-            // @ts-ignore
+            // @ts-expect-error - we are extending window manually for E2E
             const store = window.useCejStore;
             if (!store) throw new Error('Store not exposed on window');
 
