@@ -25,9 +25,33 @@ import styles from "./CalculatorForm.module.scss";
  * - Connects the Zustand store draft to individual form sections.
  * - Manages focus when mode changes.
  * - Shows validation errors, warnings and summary (ticket-style).
+ * - Shows validation errors, warnings and summary (ticket-style).
  */
+import { useSearchParams } from 'next/navigation';
+
 export function CalculatorForm() {
     const draft = useCejStore((s) => s.draft);
+
+    // URL Deep Linking for shared quotes (Local history lookup)
+    const searchParams = useSearchParams();
+    const folioParam = searchParams.get('folio');
+    const setSubmittedQuote = useCejStore((s) => s.setSubmittedQuote);
+    const history = useCejStore((s) => s.history);
+    const cart = useCejStore((s) => s.cart);
+
+    useEffect(() => {
+        if (!folioParam) return;
+        // Try to find the quote in local storage (history or active cart)
+        const item = history.find(i => i.folio === folioParam) || cart.find(i => i.folio === folioParam);
+
+        if (item) {
+            setSubmittedQuote({
+                folio: item.folio!,
+                name: item.customer?.name || "Cliente",
+                results: item.results
+            });
+        }
+    }, [folioParam, history, cart, setSubmittedQuote]);
 
     // Quote engine result
     const { error, warning } = useQuoteCalculator(draft);
@@ -40,10 +64,12 @@ export function CalculatorForm() {
         setHasTouchedAnyField(true);
     }, []);
 
-    // Reset touched state when mode changes
-    useEffect(() => {
+    // Reset touched state instantly when mode changes to prevent error flash
+    const prevMode = useRef(draft.mode);
+    if (draft.mode !== prevMode.current) {
         setHasTouchedAnyField(false);
-    }, [draft.mode]);
+        prevMode.current = draft.mode;
+    }
 
     // Focus management
     const inputsSectionRef = useRef<HTMLDivElement>(null);
@@ -52,11 +78,13 @@ export function CalculatorForm() {
 
     useEffect(() => {
         if (draft.mode && inputsSectionRef.current) {
-            const firstInput =
-                inputsSectionRef.current.querySelector("input, select");
-            if (firstInput instanceof HTMLElement) {
-                firstInput.focus();
-            }
+            // Tiny timeout to let React render the new form branch
+            setTimeout(() => {
+                const firstInput = inputsSectionRef.current?.querySelector("input, select");
+                if (firstInput instanceof HTMLElement) {
+                    firstInput.focus();
+                }
+            }, 50);
         }
     }, [draft.mode]);
 
@@ -64,16 +92,16 @@ export function CalculatorForm() {
 
     useEffect(() => {
         if (draft.workType && assistVolumeRef.current) {
-            // Tiny timeout to ensure DOM render before scroll/focus
+            // Soft scroll to the new section
             setTimeout(() => {
                 assistVolumeRef.current?.scrollIntoView({
                     behavior: "smooth",
-                    block: "center",
+                    block: "nearest", // Changed from 'center' to avoid jumping
                 });
-                // Optional: find first input inside to focus?
+
                 const firstInput = assistVolumeRef.current?.querySelector('input, select');
                 if (firstInput instanceof HTMLElement) {
-                    firstInput.focus();
+                    firstInput.focus({ preventScroll: true });
                 }
             }, 100);
         }

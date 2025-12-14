@@ -1,6 +1,7 @@
 // components/Calculator/Calculator.tsx
 'use client';
 
+import { Suspense } from 'react';
 import { CalculatorForm } from './CalculatorForm';
 import styles from './Calculator.module.scss';
 
@@ -25,8 +26,11 @@ export default function Calculator() {
           </div>
         </header>
 
+
         <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
-          <CalculatorForm />
+          <Suspense fallback={<div className={styles.suspenseFallback}>Cargando...</div>}>
+            <CalculatorForm />
+          </Suspense>
         </form>
       </div>
     </section>

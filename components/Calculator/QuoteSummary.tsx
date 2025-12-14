@@ -50,6 +50,7 @@ export function QuoteSummary({ hasError, onFocusError }: QuoteSummaryProps) {
     const setSubmittedQuote = useCejStore((s) => s.setSubmittedQuote);
     const clearSubmittedQuote = useCejStore((s) => s.clearSubmittedQuote);
     const updateCartItemCustomer = useCejStore((s) => s.updateCartItemCustomer);
+    const updateCartItemFolio = useCejStore((s) => s.updateCartItemFolio);
 
     const { quote: currentQuote, isValid, warning } = useQuoteCalculator(draft);
 
@@ -94,6 +95,7 @@ export function QuoteSummary({ hasError, onFocusError }: QuoteSummaryProps) {
             if (result.success && result.folio) {
                 // 3. Update cart item with customer info
                 updateCartItemCustomer(itemId, customer);
+                updateCartItemFolio(itemId, result.folio);
 
                 // 4. Set submitted state with RESULTS (to persist view)
                 setSubmittedQuote({
@@ -120,6 +122,7 @@ export function QuoteSummary({ hasError, onFocusError }: QuoteSummaryProps) {
         // Note: user.phone is updated by the modal before calling onSuccess
         if (name && user.phone) {
             updateCartItemCustomer(itemId, { name, phone: user.phone });
+            updateCartItemFolio(itemId, folio);
         }
 
         setSubmittedQuote({
@@ -205,8 +208,8 @@ export function QuoteSummary({ hasError, onFocusError }: QuoteSummaryProps) {
                         >
                             {
                                 draft.mode === 'knownM3'
-                                    ? 'Revisar cotización'
-                                    : 'Ver resultado'
+                                    ? 'Verificar datos'
+                                    : 'Verificar datos'
                             }
                         </Button>
 
@@ -222,7 +225,7 @@ export function QuoteSummary({ hasError, onFocusError }: QuoteSummaryProps) {
                             <div className={styles.warningNote}>
                                 ⚠️{" "}
                                 {warning.code === "BELOW_MINIMUM"
-                                    ? `Pedido mínimo: ${warning.minM3} m³ para ${warning.typeLabel}`
+                                    ? `Nota: El pedido mínimo para ${warning.typeLabel} es de ${warning.minM3} m³. Se ajustará el precio.`
                                     : `Volumen redondeado a ${warning.billedM3} m³`}
                             </div>
                         )}

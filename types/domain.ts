@@ -33,8 +33,8 @@ export type WorkTypeConfig = {
 export type CalculatorState = {
     mode: CalculatorMode;
     volumeMode: AssistVolumeMode;
-    strength: Strength;
-    type: ConcreteType;
+    strength: Strength | null;
+    type: ConcreteType | null;
     m3: string;
     workType: WorkTypeId | null;
     length: string;
@@ -53,8 +53,8 @@ export type CalculatorState = {
 export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
     mode: 'knownM3',
     volumeMode: 'dimensions',
-    strength: '200',
-    type: 'direct',
+    strength: null, // Force user selection
+    type: null,     // Force user selection
     m3: '',
     workType: null,
     length: '',
@@ -134,6 +134,7 @@ export type CartItem = {
         label: string;
     };
     customer?: CustomerInfo;
+    folio?: string;
 };
 
 export type CustomerInfo = {

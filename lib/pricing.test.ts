@@ -1,6 +1,6 @@
 // lib/pricing.test.ts
 import { describe, it, expect } from 'vitest';
-import { calcQuote, normalizeVolume, roundUpToStep, toPesos } from '@/lib/pricing';
+import { calcQuote, normalizeVolume, roundUpToStep, toPesos, calcVolumeFromArea, calcVolumeFromDimensions } from '@/lib/pricing';
 import type { PricingRules } from '@/lib/schemas/pricing';
 
 // --- Constants & Mocks ---
@@ -184,6 +184,125 @@ describe('Pricing Engine (Core Logic)', () => {
             }, MOCK_RULES);
 
             expect(quote.unitPricePerM3).toBe(1900);
+        });
+    });
+});
+
+describe('Volume Calculation (Geometric)', () => {
+
+    describe('calcVolumeFromArea', () => {
+
+        it('calculates solid slab volume correctly (with solidSlab factor)', () => {
+            // 20m² * 12cm thickness * 0.98 (solidSlab factor) = 20 * 0.12 * 0.98 = 2.352m³
+            const volume = calcVolumeFromArea({
+                areaM2: 20,
+                hasCofferedSlab: false,
+                cofferedSize: null,
+                manualThicknessCm: 12
+            });
+
+            expect(volume).toBeCloseTo(2.352, 2);
+        });
+
+        it('calculates coffered slab volume with standard compression layer', () => {
+            // 20m² with 7cm cassette (coef 0.085). Standard 5cm compression included.
+            const volume = calcVolumeFromArea({
+                areaM2: 20,
+                hasCofferedSlab: true,
+                cofferedSize: '7',
+                manualThicknessCm: undefined // Uses standard coefficient
+            });
+
+            // 20 * 0.085 = 1.7
+            expect(volume).toBeCloseTo(1.7, 1);
+        });
+
+        it('calculates coffered slab with CUSTOM compression layer (edge case)', () => {
+            // 20m² with 7cm cassette (coef 0.085), custom 6cm compression.
+            // Formula: area * (ribsFactor + newCompression)
+            // ribsFactor = 0.085 - 0.05 = 0.035
+            // newCompression = 6 / 100 = 0.06
+            // Total factor = 0.035 + 0.06 = 0.095
+            // Volume = 20 * 0.095 = 1.9
+            const volume = calcVolumeFromArea({
+                areaM2: 20,
+                hasCofferedSlab: true,
+                cofferedSize: '7',
+                manualThicknessCm: 6
+            });
+
+            expect(volume).toBeCloseTo(1.9, 2);
+        });
+
+        it('calculates coffered slab with 10cm compression layer override', () => {
+            // 20m² with 7cm cassette, 10cm compression override.
+            // ribsFactor = 0.085 - 0.05 = 0.035
+            // newCompression = 10 / 100 = 0.10
+            // Total factor = 0.135
+            // Volume = 20 * 0.135 = 2.7
+            const volume = calcVolumeFromArea({
+                areaM2: 20,
+                hasCofferedSlab: true,
+                cofferedSize: '7',
+                manualThicknessCm: 10
+            });
+
+            expect(volume).toBeCloseTo(2.7, 2);
+        });
+
+        it('returns 0 for zero or negative area', () => {
+            expect(calcVolumeFromArea({
+                areaM2: 0,
+                hasCofferedSlab: false,
+                cofferedSize: null,
+                manualThicknessCm: 10
+            })).toBe(0);
+
+            expect(calcVolumeFromArea({
+                areaM2: -5,
+                hasCofferedSlab: false,
+                cofferedSize: null,
+                manualThicknessCm: 10
+            })).toBe(0);
+        });
+
+        it('returns 0 for solid slab with zero thickness', () => {
+            expect(calcVolumeFromArea({
+                areaM2: 20,
+                hasCofferedSlab: false,
+                cofferedSize: null,
+                manualThicknessCm: 0
+            })).toBe(0);
+        });
+    });
+
+    describe('calcVolumeFromDimensions', () => {
+
+        it('calculates volume from length × width × thickness (with solidSlab factor)', () => {
+            // 5m × 4m = 20m², 10cm thick * 0.98 = 20 * 0.1 * 0.98 = 1.96m³
+            const volume = calcVolumeFromDimensions({
+                lengthM: 5,
+                widthM: 4,
+                hasCofferedSlab: false,
+                cofferedSize: null,
+                manualThicknessCm: 10
+            });
+
+            expect(volume).toBeCloseTo(1.96, 2);
+        });
+
+        it('delegates coffered slab calculation to calcVolumeFromArea', () => {
+            // 5m × 4m = 20m², coffered 7cm with 5cm compression
+            const volume = calcVolumeFromDimensions({
+                lengthM: 5,
+                widthM: 4,
+                hasCofferedSlab: true,
+                cofferedSize: '7',
+                manualThicknessCm: undefined
+            });
+
+            // Same as calcVolumeFromArea test: 20 * 0.085 = 1.7
+            expect(volume).toBeCloseTo(1.7, 1);
         });
     });
 });

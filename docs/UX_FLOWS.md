@@ -33,11 +33,10 @@ graph LR
 | **Sé los m³** | `knownM3` | User knows exact volume | Direct to volume input |
 | **Ayúdame a calcular** | `assistM3` | User needs dimension help | Work type selector |
 
-> **Smart Pre-fill:** When switching to `knownM3`, the system automatically presets:
+> **Smart Pre-fill & Persistence:**
 >
-> - Strength: **250 kg/cm²**
-> - Service Type: **Directo**
-> - Clears any dimension data to prevent conflicts.
+> - **Strength & Service Type:** Reset to empty in `knownM3` to force conscious selection specific to the volume.
+> - **Data Persistence:** Dimension inputs (Assist Mode) and Direct Volume (Known Mode) are *preserved independently*. Switching modes does not clear the other mode's data, enabling seamless toggling.
 
 ### 1.3 Assist Mode Sub-Flow
 
@@ -75,6 +74,17 @@ stateDiagram-v2
     SpecsReady --> SummaryReady: selectSpecs
     SummaryReady --> AddedToCart: addToCart()
 ```
+
+### 1.5 Deep Linking & Shared Quotes
+
+Users can share or restore a specific quote using the `folio` URL parameter.
+
+- **URL Format:** `/?folio=WEB-YYYYMMDD-XXXX`
+- **Behavior:**
+  1. System initializes and checks URL parameters.
+  2. Lookups the `folio` in local History and Active Cart.
+  3. **If found:** Automatically validates and displays the **Submitted Ticket** view.
+  4. **If not found:** Loads default calculator state (cross-device sharing requires Phase 4 SaaS).
 
 ---
 
@@ -436,7 +446,7 @@ Items in `history: CartItem[]` can be distinguished by metadata:
 | `id` | ✅ | ✅ | ✅ |
 | `timestamp` | ✅ | ✅ | ✅ |
 | `customer` | ❌ | ✅ | ✅ |
-| `folio` | ❌ | ✅ (via submittedQuote) | ✅ |
+| `folio` | ❌ | ✅ (via CartItem) | ✅ |
 | `contactedAt` | ❌ | ❌ | ✅ {PLANNED} |
 
 ### 10.4 Contact SLA {SLA_CONTACTO}

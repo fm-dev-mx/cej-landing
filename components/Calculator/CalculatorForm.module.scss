@@ -364,11 +364,17 @@
 /* --- Selector Active State --- */
 .selectorActive {
     :global(select) {
-        background-color: rgba(0, 0, 0, 0.8) !important;
-        border-color: var(--c-info-text-on-dark) !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border-color: var(--c-accent) !important;
         opacity: 1 !important;
         color: white !important;
-        box-shadow: 0 0 0 1px var(--c-info-text-on-dark) !important;
+        box-shadow: 0 0 0 1px var(--c-accent) !important;
+        font-weight: 600;
+
+        option {
+            background-color: #1e1e1e;
+            /* Ensure options are readable */
+        }
     }
 }
 
@@ -397,4 +403,24 @@
 
 .spacingTop {
     margin-top: 1rem;
+}
+
+/* Compression Layer Override Section */
+.compressionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.compressionNote {
+    text-align: left;
+    margin: 0;
+    opacity: 0.8;
+}
+
+.label {
+    font-size: var(--fs-sm);
+    color: var(--c-muted-on-dark);
+    font-weight: 600;
 }

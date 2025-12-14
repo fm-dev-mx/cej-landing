@@ -278,3 +278,20 @@
 - Don't leave empty states without guidance
 - Don't show multiple error types simultaneously
 - Don't auto-dismiss critical errors
+
+### 5.4 Calculator Compact View
+
+**Location:** `TicketDisplay.tsx` (variant='compact')
+
+| Property | Value |
+|:---------|:------|
+| **Background** | Light/Premium Surface (Subtle radial gradient + `#f8fafc`) |
+| **Price** | High Contrast: Dark Navy (`#0f172a`), 2.25rem, Extra Bold |
+| **Typography** | Modern sans-serif, improved readability for labels |
+| **Interaction** | "Ver Desglose" button reveals full details |
+
+**Transitions & Animations:**
+
+- **Mode Switch:** Synchronous state reset prevents validation flicker.
+- **Progressive Reveal:** New form sections appear with `.animateFadeIn` (300ms ease-out).
+- **Auto-Scroll:** Smooth scroll to new sections using `block: "nearest"` to avoid disorientation.

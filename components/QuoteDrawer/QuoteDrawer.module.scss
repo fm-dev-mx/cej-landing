@@ -102,42 +102,55 @@
     background: var(--c-surface);
     border: 1px solid var(--c-border);
     border-radius: var(--radius);
-    padding: var(--sp-3);
+    padding: var(--sp-4);
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     position: relative;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    /* Subtle start */
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
-    // Left border accent for history items
-    border-left: 3px solid var(--c-border);
+    // Left border indicator
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 12px;
+        bottom: 12px;
+        width: 3px;
+        background: var(--c-border);
+        border-radius: 0 3px 3px 0;
+        transition: background 0.2s ease;
+    }
 
     &:hover {
-        border-left-color: var(--c-accent);
-        box-shadow: var(--shadow-md);
-        transform: translateX(2px);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        /* Elevated feel */
+        border-color: rgba(0, 0, 0, 0.1);
+
+        &::before {
+            background: var(--c-accent);
+        }
     }
 }
 
 .itemHeader {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: center;
     font-size: 0.8rem;
-    margin-bottom: 0.25rem;
-}
-
-.itemTitle {
-    font-weight: 700;
-    color: var(--c-text);
-    font-size: 0.95rem;
+    padding-left: 0.5rem;
+    /* Space for border */
 }
 
 .itemDate {
-    color: var(--c-muted);
+    color: #94a3b8;
     font-size: 0.7rem;
-    white-space: nowrap;
+    background: rgba(0, 0, 0, 0.03);
+    padding: 2px 6px;
+    border-radius: 4px;
 }
 
 .itemDetails {

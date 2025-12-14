@@ -46,6 +46,7 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
 
     const update = useCejStore((s) => s.updateDraft);
     const [touched, setTouched] = useState<Record<string, boolean>>({});
+    const [showOverride, setShowOverride] = useState(false);
 
     const handleNumeric =
         (field: string) => (e: ChangeEvent<HTMLInputElement>) => {
@@ -133,27 +134,58 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                 />
             )}
 
-            {/* Manual thickness (non-coffered slabs) */}
-            {showManualThickness && (
-                <div className={styles.spacingTop}>
-                    <Input
-                        label={workType === 'slab' ? "Espesor de Losa (cm)" : "Grosor (cm)"}
-                        placeholder="10"
-                        value={
-                            volumeMode === "dimensions"
-                                ? thicknessByDims
-                                : thicknessByArea
-                        }
-                        onChange={handleNumeric(
-                            volumeMode === "dimensions"
-                                ? "thicknessByDims"
-                                : "thicknessByArea"
+            {/* Manual thickness / Compression Layer Logic */}
+            <div className={styles.spacingTop}>
+                {workType === 'slab' && hasCoffered === 'yes' ? (
+                    // Logic for Coffered Slab (Aligerada)
+                    <div className={styles.fieldCompact}>
+                        <div className={styles.compressionHeader}>
+                            <span className={styles.label}>Capa de Compresión</span>
+                            {!showOverride && (
+                                <button
+                                    type="button"
+                                    onClick={() => setShowOverride(true)}
+                                    className={styles.editDataBtn}
+                                >
+                                    Modificar
+                                </button>
+                            )}
+                        </div>
+
+                        {!showOverride ? (
+                            <div className={`${styles.note} ${styles.compressionNote}`}>
+                                Incluye capa estándar de <strong>5 cm</strong>.
+                            </div>
+                        ) : (
+                            <div className={styles.animateFadeIn}>
+                                <Input
+                                    label="Grosor Capa Compresión (cm)"
+                                    placeholder="5"
+                                    value={volumeMode === "dimensions" ? thicknessByDims : thicknessByArea}
+                                    onChange={handleNumeric(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea")}
+                                    inputMode="decimal"
+                                    variant="dark"
+                                    error={hasSpecificError(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea", volumeMode === "dimensions" ? thicknessByDims : thicknessByArea)}
+                                />
+                                <p className={styles.hint}>
+                                    El espesor estándar es de 5cm. Solo modifica si tu proyecto estructural requiere un espesor mayor.
+                                </p>
+                            </div>
                         )}
+                    </div>
+                ) : (
+                    // Logic for Standard/Solid Slabs or other types
+                    <Input
+                        label={workType === 'slab' ? "Espesor Total de Losa (cm)" : "Grosor (cm)"}
+                        placeholder={workType === 'slab' ? "10" : "10"}
+                        value={volumeMode === "dimensions" ? thicknessByDims : thicknessByArea}
+                        onChange={handleNumeric(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea")}
                         inputMode="decimal"
                         variant="dark"
+                        error={hasSpecificError(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea", volumeMode === "dimensions" ? thicknessByDims : thicknessByArea)}
                     />
-                </div>
-            )}
+                )}
+            </div>
 
             {/* Slab type and coffered configuration */}
             {workType === "slab" && (
@@ -166,7 +198,15 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                                 type="radio"
                                 name="isCoffered"
                                 checked={hasCoffered === "no"}
-                                onChange={() => update({ hasCoffered: "no" })}
+                                onChange={() => {
+                                    update({
+                                        hasCoffered: "no",
+                                        // Reset to standard slab thickness defaults
+                                        thicknessByDims: "12",
+                                        thicknessByArea: "12"
+                                    });
+                                    setShowOverride(false);
+                                }}
                             />
                             <span>Sólida (Maciza)</span>
                         </label>
@@ -176,12 +216,16 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                                 type="radio"
                                 name="isCoffered"
                                 checked={hasCoffered === "yes"}
-                                onChange={() =>
+                                onChange={() => {
                                     update({
                                         hasCoffered: "yes",
                                         cofferedSize: "7",
-                                    })
-                                }
+                                        // Reset to standard compression layer (5cm) for Coffered
+                                        thicknessByDims: "5",
+                                        thicknessByArea: "5"
+                                    });
+                                    setShowOverride(false);
+                                }}
                             />
                             <span>Aligerada (Casetón)</span>
                         </label>

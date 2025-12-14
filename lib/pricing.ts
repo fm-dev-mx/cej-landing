@@ -93,7 +93,18 @@ export function calcVolumeFromArea(input: SlabAreaInput): number {
 
     if (hasCofferedSlab && cofferedSize) {
         const spec = COFFERED_SPECS[cofferedSize];
-        return spec ? areaM2 * spec.coefficient : 0;
+        if (!spec) return 0;
+
+        // Smart Logic: If manual thickness is provided (e.g. 6cm compression),
+        // we recalculate factor: Ribs (Base - 0.05) + New Compression.
+        if (manualThicknessCm && manualThicknessCm > 0) {
+            const STANDARD_COMPRESSION_M = 0.05; // 5cm standard capability
+            const ribsFactor = Math.max(0, spec.coefficient - STANDARD_COMPRESSION_M);
+            const newCompressionFactor = manualThicknessCm / 100;
+            return areaM2 * (ribsFactor + newCompressionFactor);
+        }
+
+        return areaM2 * spec.coefficient;
     }
 
     const thicknessCm = manualThicknessCm ?? 0;
@@ -133,6 +144,16 @@ export function calcQuote(
     pricingRules: PricingRules = DEFAULT_PRICING_RULES
 ): QuoteBreakdown {
     const { strength, type, additives } = inputState;
+
+    // Fail safe if mandatory fields are missing (e.g. during mode switch)
+    if (!strength || !type) {
+        return {
+            ...EMPTY_QUOTE,
+            strength: '200', // Default fallback for UI safety
+            concreteType: 'direct'
+        };
+    }
+
     const volume = normalizeVolume(inputVolume, type, pricingRules);
 
     if (volume.billedM3 <= 0) {

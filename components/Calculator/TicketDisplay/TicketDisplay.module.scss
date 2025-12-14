@@ -174,57 +174,87 @@
 
 // Phase 1: Compact variant styles
 .compact {
-    box-shadow: none;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     filter: none;
-    border: 1px solid var(--c-border);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
-    background: linear-gradient(135deg, var(--c-surface) 0%, var(--c-surface-dim) 100%);
+    /* Light background with subtle mosaic pattern */
+    background-color: #f8fafc;
+    background-image:
+        radial-gradient(#e2e8f0 1px, transparent 1px),
+        radial-gradient(#e2e8f0 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    overflow: hidden;
+    position: relative;
+    max-width: 320px;
+    /* Force it to be a bit tighter */
 }
 
 .compactContent {
-    padding: var(--sp-4);
+    padding: var(--sp-5);
     text-align: center;
+    position: relative;
+    z-index: 1;
 }
 
 .compactHeader {
-    margin-bottom: var(--sp-2);
+    margin-bottom: var(--sp-3);
+    padding-bottom: var(--sp-2);
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.1);
 }
 
 .compactLabel {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--c-text);
+    letter-spacing: 0.15em;
+    color: #64748b;
+    /* Slate-500 */
+    font-weight: 700;
 }
 
 .compactTotal {
-    margin-bottom: var(--sp-2);
+    margin-bottom: var(--sp-3);
 }
 
 .compactTotalLabel {
     display: block;
-    font-size: 0.8rem;
-    color: var(--c-text);
+    font-size: 0.85rem;
+    color: #475569;
+    /* Slate-600 */
+    margin-bottom: 0.25rem;
 }
 
 .compactTotalValue {
     display: block;
-    font-size: 1.75rem;
+    font-size: 2.25rem;
     font-weight: 800;
-    color: var(--c-primary);
+    color: #0f172a;
+    /* Slate-900 - High Contrast */
     font-family: var(--font-mono, monospace);
+    letter-spacing: -0.05rem;
+    line-height: 1;
 }
 
 .compactMeta {
-    font-size: 0.85rem;
-    color: var(--c-text);
-    margin-bottom: var(--sp-2);
+    font-size: 0.9rem;
+    color: #334155;
+    /* Slate-700 */
+    margin-bottom: var(--sp-3);
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.5);
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 99px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .compactHint {
     font-size: 0.75rem;
-    color: var(--c-muted);
+    color: #94a3b8;
+    /* Slate-400 */
     margin: 0;
+    font-style: italic;
 }
 
 /* Preview Variant Effects - Removed (Flat design) */

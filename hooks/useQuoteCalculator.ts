@@ -92,22 +92,16 @@ export function useQuoteCalculator(input: CalculatorState): QuoteCalculatorResul
                 coefficient = COFFERED_SPECS[cofferedSize].coefficient;
             }
 
-            // For coffered slabs we use a dummy thickness for schema validation
-            const dummyThickness = "12";
-
+            // We now validate thickness even for coffered slabs (compression layer)
             if (volumeMode === "dimensions") {
-                const inputThickness = hasCofferedSlab
-                    ? dummyThickness
-                    : thicknessByDims;
-
                 const parse = DimensionsSchema.safeParse({
                     length,
                     width,
-                    thickness: inputThickness,
+                    thickness: thicknessByDims,
                 });
 
                 if (!parse.success) {
-                    if (length || width || inputThickness) {
+                    if (length || width || thicknessByDims) {
                         error =
                             parse.error.issues[0]?.message ??
                             "Medidas inválidas.";
@@ -120,7 +114,7 @@ export function useQuoteCalculator(input: CalculatorState): QuoteCalculatorResul
                     rawRequested = calcVolumeFromDimensions({
                         lengthM: l,
                         widthM: w,
-                        manualThicknessCm: hasCofferedSlab ? 0 : t,
+                        manualThicknessCm: t,
                         hasCofferedSlab,
                         cofferedSize,
                     });
@@ -128,10 +122,12 @@ export function useQuoteCalculator(input: CalculatorState): QuoteCalculatorResul
                     const areaM2 = l * w;
 
                     if (hasCofferedSlab) {
+                        // Formula: Area * (Ribs + Compression)
+                        // Verify pricing logic handles this override
                         calculationDetails = {
                             formula: `${areaM2.toFixed(
                                 2
-                            )} m² × ${coefficient} (Coef. Aporte)`,
+                            )} m² (Losa Aligerada)`,
                             factorUsed: coefficient,
                         };
                     } else {
@@ -146,13 +142,9 @@ export function useQuoteCalculator(input: CalculatorState): QuoteCalculatorResul
                 }
             } else {
                 // volumeMode === 'area'
-                const inputThickness = hasCofferedSlab
-                    ? dummyThickness
-                    : thicknessByArea;
-
                 const parse = AreaSchema.safeParse({
                     area,
-                    thickness: inputThickness,
+                    thickness: thicknessByArea,
                 });
 
                 if (!parse.success) {
@@ -163,7 +155,7 @@ export function useQuoteCalculator(input: CalculatorState): QuoteCalculatorResul
 
                     rawRequested = calcVolumeFromArea({
                         areaM2: a,
-                        manualThicknessCm: hasCofferedSlab ? 0 : t,
+                        manualThicknessCm: t,
                         hasCofferedSlab,
                         cofferedSize,
                     });
@@ -191,6 +183,11 @@ export function useQuoteCalculator(input: CalculatorState): QuoteCalculatorResul
             return { ...emptyResult, error };
         }
 
+        // Validate Strength/Type selection (null check)
+        if (!strength || !type) {
+            return { ...emptyResult, error: "Selecciona resistencia y servicio." };
+        }
+
         // Compute quote using engine
         const quote = calcQuote(rawRequested, {
             strength,
@@ -210,7 +207,7 @@ export function useQuoteCalculator(input: CalculatorState): QuoteCalculatorResul
 
         let warning: QuoteWarning = null;
         const typeLabel =
-            CONCRETE_TYPES.find((t) => t.value === type)?.label ?? type;
+            CONCRETE_TYPES.find((t) => t.value === type)?.label ?? type ?? "Concreto";
 
         if (isBelowMinimum) {
             warning = {

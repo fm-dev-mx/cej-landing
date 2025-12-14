@@ -36,10 +36,11 @@ export function SpecsForm() {
                 </label>
                 <Select
                     id="strength-select"
-                    value={strength}
+                    value={strength || ""}
                     onChange={handleStrength}
                     variant="dark"
                 >
+                    <option value="" disabled>Selecciona...</option>
                     {STRENGTHS.map((s) => (
                         <option key={s} value={s}>
                             {s} kg/cm²
@@ -57,10 +58,11 @@ export function SpecsForm() {
                 </label>
                 <Select
                     id="service-select"
-                    value={type}
+                    value={type || ""}
                     onChange={handleType}
                     variant="dark"
                 >
+                    <option value="" disabled>Selecciona...</option>
                     {CONCRETE_TYPES.map((t) => (
                         <option key={t.value} value={t.value}>
                             {t.label}

@@ -41,6 +41,7 @@ interface OrderSlice {
     history: CartItem[];
     addToCart: (quote: QuoteBreakdown) => string; // Returns the new item ID
     updateCartItemCustomer: (id: string, customer: CustomerInfo) => void;
+    updateCartItemFolio: (id: string, folio: string) => void;
     removeFromCart: (id: string) => void;
     editCartItem: (id: string) => void;
     cloneCartItem: (item: CartItem) => void;
@@ -98,19 +99,17 @@ export const useCejStore = create<CejStore>()(
                     if (mode === 'knownM3') {
                         nextDraft.workType = null;
                         nextDraft.hasCoffered = 'no';
-                        // Smart Pre-fill: Standardize values for direct entry
-                        nextDraft.strength = '250';
-                        nextDraft.type = 'direct';
-                        // Clear assist data
-                        nextDraft.length = '';
-                        nextDraft.width = '';
-                        nextDraft.area = '';
+                        // Smart Pre-fill: REMOVED to force explicit selection
+                        nextDraft.strength = null;
+                        nextDraft.type = null;
+
+                        // Note: We no longer clear assist data here to preserve it
+                        // if user switches back and forth.
                     } else {
-                        nextDraft.m3 = '';
-                        // Reset assist data to force fresh start
-                        nextDraft.length = '';
-                        nextDraft.width = '';
-                        nextDraft.area = '';
+                        // Switching to Assist Mode
+                        // We preserve 'm3' (direct volume) input in case they switch back.
+                        // Ideally we should reset workType if it was never set?
+                        // workType is already preserved in draft unless we clear it.
                     }
                     return { draft: nextDraft };
                 });
@@ -120,7 +119,7 @@ export const useCejStore = create<CejStore>()(
                 set((state) => {
                     if (!workType) return { draft: { ...state.draft, workType: null } };
                     const config = WORK_TYPES.find(w => w.id === workType);
-                    const recommendedType: ConcreteType = workType === 'slab' ? 'pumped' : state.draft.type;
+                    const recommendedType: ConcreteType | null = workType === 'slab' ? 'pumped' : state.draft.type;
 
                     return {
                         draft: {
@@ -205,6 +204,14 @@ export const useCejStore = create<CejStore>()(
                 set((state) => ({
                     cart: state.cart.map(item =>
                         item.id === id ? { ...item, customer } : item
+                    )
+                }));
+            },
+
+            updateCartItemFolio: (id, folio) => {
+                set((state) => ({
+                    cart: state.cart.map(item =>
+                        item.id === id ? { ...item, folio } : item
                     )
                 }));
             },
