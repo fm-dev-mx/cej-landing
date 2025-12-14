@@ -78,7 +78,8 @@ describe('useQuoteCalculator Logic', () => {
             ...DEFAULT_CALCULATOR_STATE,
             mode: 'knownM3' as const,
             m3: '1.5', // Small volume (below minimums)
-            type: 'direct' as const
+            type: 'direct' as const,
+            strength: '250' as const
         };
 
         const { result } = renderHook(() => useQuoteCalculator(input));

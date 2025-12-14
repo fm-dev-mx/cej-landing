@@ -54,25 +54,20 @@ export function CalculatorForm() {
     }, [folioParam, history, cart, setSubmittedQuote]);
 
     // Quote engine result
-    const { error, warning } = useQuoteCalculator(draft);
+    const { error, warning, rawVolume } = useQuoteCalculator(draft);
 
-    // Track if user has interacted with any field (hybrid validation)
-    const [hasTouchedAnyField, setHasTouchedAnyField] = useState(false);
+    // Track touched state relative to the current mode (Derived State pattern)
+    // When mode changes, this state will not match, implicitly resetting 'hasTouchedAnyField' to false.
+    const [touchedState, setTouchedState] = useState<{ mode: string | null; touched: boolean }>({
+        mode: draft.mode,
+        touched: false,
+    });
+
+    const hasTouchedAnyField = touchedState.mode === draft.mode && touchedState.touched;
 
     // Callback for child forms to notify when a field is touched
     const handleFieldTouched = useCallback(() => {
-        setHasTouchedAnyField(true);
-    }, []);
-
-    // Reset touched state instantly when mode changes to prevent error flash
-    // Reset touched state when mode changes
-    const prevMode = useRef(draft.mode);
-
-    useEffect(() => {
-        if (draft.mode !== prevMode.current) {
-            setHasTouchedAnyField(false);
-            prevMode.current = draft.mode;
-        }
+        setTouchedState({ mode: draft.mode, touched: true });
     }, [draft.mode]);
 
     // Focus management
@@ -119,7 +114,7 @@ export function CalculatorForm() {
         if (!formContainerRef.current) return;
 
         // Mark all fields as touched to show errors
-        setHasTouchedAnyField(true);
+        setTouchedState({ mode: draft.mode, touched: true });
 
         // Find first input with aria-invalid="true" or first empty required input
         const invalidInput = formContainerRef.current.querySelector<HTMLElement>(
@@ -130,7 +125,7 @@ export function CalculatorForm() {
             invalidInput.scrollIntoView({ behavior: "smooth", block: "center" });
             invalidInput.focus();
         }
-    }, []);
+    }, [draft.mode]);
 
     const submittedQuote = useCejStore((s) => s.submittedQuote);
 
@@ -161,7 +156,7 @@ export function CalculatorForm() {
                 {draft.mode === "knownM3" ? (
                     <div className={styles.field}>
                         <KnownVolumeForm
-                            hasError={!!error}
+                            hasError={!!error && rawVolume <= 0}
                             onFieldTouched={handleFieldTouched}
                         />
                     </div>

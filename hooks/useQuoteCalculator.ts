@@ -185,7 +185,7 @@ export function useQuoteCalculator(input: CalculatorState): QuoteCalculatorResul
 
         // Validate Strength/Type selection (null check)
         if (!strength || !type) {
-            return { ...emptyResult, error: "Selecciona resistencia y servicio." };
+            return { ...emptyResult, rawVolume: rawRequested, error: "Selecciona resistencia y servicio." };
         }
 
         // Compute quote using engine
