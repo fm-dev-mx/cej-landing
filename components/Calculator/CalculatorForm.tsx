@@ -78,13 +78,14 @@ export function CalculatorForm() {
 
     useEffect(() => {
         if (draft.mode && inputsSectionRef.current) {
-            // Tiny timeout to let React render the new form branch
-            setTimeout(() => {
+            // Use requestAnimationFrame for smoother timing after render
+            requestAnimationFrame(() => {
                 const firstInput = inputsSectionRef.current?.querySelector("input, select");
                 if (firstInput instanceof HTMLElement) {
-                    firstInput.focus();
+                    // Prevent scroll to avoid jumping the whole page
+                    firstInput.focus({ preventScroll: true });
                 }
-            }, 50);
+            });
         }
     }, [draft.mode]);
 
@@ -92,18 +93,17 @@ export function CalculatorForm() {
 
     useEffect(() => {
         if (draft.workType && assistVolumeRef.current) {
-            // Soft scroll to the new section
-            setTimeout(() => {
+            requestAnimationFrame(() => {
                 assistVolumeRef.current?.scrollIntoView({
                     behavior: "smooth",
-                    block: "nearest", // Changed from 'center' to avoid jumping
+                    block: "nearest",
                 });
 
                 const firstInput = assistVolumeRef.current?.querySelector('input, select');
                 if (firstInput instanceof HTMLElement) {
                     firstInput.focus({ preventScroll: true });
                 }
-            }, 100);
+            });
         }
     }, [draft.workType]);
 

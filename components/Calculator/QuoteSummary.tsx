@@ -301,7 +301,7 @@ export function QuoteSummary({ hasError, onFocusError }: QuoteSummaryProps) {
                         {user.name && (
                             <button
                                 onClick={() => setModalOpen(true)}
-                                className={styles.editDataBtn}
+                                className={styles.editQuoteDataBtn}
                             >
                                 ¿No eres {user.name}? Editar mis datos
                             </button>

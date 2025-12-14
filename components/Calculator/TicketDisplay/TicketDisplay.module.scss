@@ -16,6 +16,12 @@
     line-height: 1.4;
     transition: transform 0.3s ease;
 
+    // Watermark / paper texture
+    background-image:
+        radial-gradient(circle at center, rgba(0, 0, 0, 0.02) 2px, transparent 2px),
+        linear-gradient(to bottom right, rgba(0, 0, 0, 0.01) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.01) 50%, rgba(0, 0, 0, 0.01) 75%, transparent 75%);
+    background-size: 20px 20px, 40px 40px;
+
     &.preview {
         transform: rotate(-1deg); // Slight "draft" angle
     }

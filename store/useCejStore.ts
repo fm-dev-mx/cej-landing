@@ -27,6 +27,8 @@ interface UserState {
 
 interface CalculatorSlice {
     draft: CalculatorState;
+    // Persist forms when switching modes
+    savedDrafts: Partial<Record<CalculatorMode, CalculatorState>>;
     resetDraft: () => void;
     updateDraft: (updates: Partial<CalculatorState>) => void;
     setMode: (mode: CalculatorMode) => void;
@@ -76,7 +78,7 @@ interface SubmissionSlice {
 
 type CejStore = CalculatorSlice & OrderSlice & UISlice & IdentitySlice & SubmissionSlice;
 
-type PersistedState = Pick<CejStore, 'cart' | 'history' | 'user' | 'draft' | 'submittedQuote' | 'breakdownViewed'>;
+type PersistedState = Pick<CejStore, 'cart' | 'history' | 'user' | 'draft' | 'savedDrafts' | 'submittedQuote' | 'breakdownViewed'>;
 
 // --- Store Implementation ---
 
@@ -85,8 +87,9 @@ export const useCejStore = create<CejStore>()(
         (set, get) => ({
             // --- Calculator Slice ---
             draft: { ...DEFAULT_CALCULATOR_STATE },
+            savedDrafts: {},
 
-            resetDraft: () => set({ draft: { ...DEFAULT_CALCULATOR_STATE } }),
+            resetDraft: () => set({ draft: { ...DEFAULT_CALCULATOR_STATE }, savedDrafts: {} }),
 
             updateDraft: (updates) => set((state) => ({
                 draft: { ...state.draft, ...updates }
@@ -94,24 +97,39 @@ export const useCejStore = create<CejStore>()(
 
             setMode: (mode) => {
                 set((state) => {
-                    const nextDraft = { ...state.draft, mode };
-                    // Reset fields relevant to the new mode
+                    const currentMode = state.draft.mode;
+
+                    // 1. Save current state to savedDrafts
+                    const updatedSavedDrafts = {
+                        ...state.savedDrafts,
+                        [currentMode]: { ...state.draft }
+                    };
+
+                    // 2. Check if we have a saved state for the NEW mode
+                    const savedState = updatedSavedDrafts[mode];
+
+                    if (savedState) {
+                        // Restore saved state but ensure mode is correct
+                        return {
+                            draft: { ...savedState, mode },
+                            savedDrafts: updatedSavedDrafts
+                        };
+                    }
+
+                    // 3. Initialize fresh state for new mode (if no saved state)
+                    const nextDraft = { ...DEFAULT_CALCULATOR_STATE, mode };
+
+                    // Pre-configuration based on mode defaults
                     if (mode === 'knownM3') {
                         nextDraft.workType = null;
                         nextDraft.hasCoffered = 'no';
-                        // Smart Pre-fill: REMOVED to force explicit selection
-                        nextDraft.strength = null;
-                        nextDraft.type = null;
-
-                        // Note: We no longer clear assist data here to preserve it
-                        // if user switches back and forth.
-                    } else {
-                        // Switching to Assist Mode
-                        // We preserve 'm3' (direct volume) input in case they switch back.
-                        // Ideally we should reset workType if it was never set?
-                        // workType is already preserved in draft unless we clear it.
                     }
-                    return { draft: nextDraft };
+                    // For assistM3, we leave defaults (workType=null, etc)
+
+                    return {
+                        draft: nextDraft,
+                        savedDrafts: updatedSavedDrafts
+                    };
                 });
             },
 
@@ -332,6 +350,7 @@ export const useCejStore = create<CejStore>()(
                             hasConsentedPersistence: true,
                         },
                         draft: { ...DEFAULT_CALCULATOR_STATE },
+                        savedDrafts: {},
                         submittedQuote: null,
                         breakdownViewed: false,
                     } as PersistedState;
@@ -378,6 +397,7 @@ export const useCejStore = create<CejStore>()(
                 history: state.history,
                 user: state.user,
                 draft: state.draft,
+                savedDrafts: state.savedDrafts,
                 breakdownViewed: state.breakdownViewed,
                 submittedQuote: state.submittedQuote,
             }),
