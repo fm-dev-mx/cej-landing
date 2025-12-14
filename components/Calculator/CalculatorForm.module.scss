@@ -173,6 +173,7 @@
         font-weight: 500;
         transition: all 0.2s ease;
         font-size: 0.9rem;
+        text-align: center;
     }
 
     &:has(input:checked) span {
@@ -202,16 +203,17 @@
 .error {
     font-size: var(--fs-sm);
     color: var(--c-error-text-on-dark);
-    padding: 0.5rem;
-    border-radius: var(--radius);
+    padding: var(--sp-1);
+    border-radius: var(--radius-sm);
     background: rgba(239, 68, 68, 0.1);
-    margin-top: var(--sp-4);
-    border: 1px solid rgba(239, 68, 68, 0.2);
+    margin-block: var(--sp-4);
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    place-self: center;
+    font-weight: 300;
+    min-width: 20rem;
     justify-content: center;
-    font-weight: 500;
 
     &::before {
         content: '⚠️';
@@ -345,7 +347,13 @@
 .editDataBtn {
     @extend .textBtn;
     font-size: 0.8rem;
-    margin-top: 0.5rem;
+    text-align: right;
+}
+
+.editQuoteDataBtn {
+    @extend .editDataBtn;
+    font-size: 1rem;
+    text-align: center;
 }
 
 .historyBtn {
@@ -408,8 +416,7 @@
 /* Compression Layer Override Section */
 .compressionHeader {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    place-content: space-between;
     margin-bottom: 0.5rem;
 }
 
@@ -423,4 +430,19 @@
     font-size: var(--fs-sm);
     color: var(--c-muted-on-dark);
     font-weight: 600;
+}
+
+/* --- Helper Text for Form Fields --- */
+.fieldWithHelper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.helperText {
+    font-size: 0.75rem;
+    color: var(--c-muted-on-dark);
+    opacity: 0.7;
+    margin: 0.25rem 0 0 0;
+    font-style: italic;
 }

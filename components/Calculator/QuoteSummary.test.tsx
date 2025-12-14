@@ -70,6 +70,7 @@ describe('QuoteSummary Integration - Phase 1 Progressive Disclosure', () => {
             cart: [],
             addToCart: vi.fn(() => 'mock-item-id'),
             updateCartItemCustomer: vi.fn(),
+            updateCartItemFolio: vi.fn(),
             moveToHistory: vi.fn(),
             setDrawerOpen: vi.fn(),
             setActiveTab: vi.fn(),
@@ -110,7 +111,7 @@ describe('QuoteSummary Integration - Phase 1 Progressive Disclosure', () => {
         });
 
         render(<QuoteSummary />);
-        expect(screen.getByRole('button', { name: /Ver Desglose/i })).toBeDefined();
+        expect(screen.getByRole('button', { name: /Verificar datos/i })).toBeDefined();
     });
 
     it('shows "Confirmar y Generar Ticket" CTA in breakdown stage', () => {
@@ -143,7 +144,7 @@ describe('QuoteSummary Integration - Phase 1 Progressive Disclosure', () => {
         });
 
         render(<QuoteSummary />);
-        expect(screen.getByRole('button', { name: /Confirmar y Generar Ticket/i })).toBeDefined();
+        expect(screen.getByRole('button', { name: /Finalizar Cotización/i })).toBeDefined();
     });
 
     it('opens lead modal on "Confirmar y Generar Ticket" click when no user data', () => {
@@ -177,7 +178,7 @@ describe('QuoteSummary Integration - Phase 1 Progressive Disclosure', () => {
 
         render(<QuoteSummary />);
 
-        const ctaButton = screen.getByRole('button', { name: /Confirmar y Generar Ticket/i });
+        const ctaButton = screen.getByRole('button', { name: /Finalizar Cotización/i });
         fireEvent.click(ctaButton);
 
         expect(screen.getByTestId('lead-modal')).toBeDefined();
@@ -220,7 +221,7 @@ describe('QuoteSummary Integration - Phase 1 Progressive Disclosure', () => {
         const { rerender } = render(<QuoteSummary />);
 
         // 1. Click Confirmar
-        fireEvent.click(screen.getByRole('button', { name: /Confirmar y Generar Ticket/i }));
+        fireEvent.click(screen.getByRole('button', { name: /Finalizar Cotización/i }));
 
         // 2. Simulate success inside modal (this calls setSubmittedQuote)
         fireEvent.click(screen.getByText('Simular Envio'));
@@ -268,6 +269,7 @@ describe('QuoteSummary Integration - Phase 1 Progressive Disclosure', () => {
             cart: [],
             addToCart: vi.fn(() => 'mock-item-id'),
             updateCartItemCustomer: vi.fn(),
+            updateCartItemFolio: vi.fn(),
             moveToHistory: vi.fn(),
             setDrawerOpen: vi.fn(),
             setActiveTab: vi.fn(),
@@ -281,7 +283,7 @@ describe('QuoteSummary Integration - Phase 1 Progressive Disclosure', () => {
         const { rerender } = render(<QuoteSummary />);
 
         // 1. Click "Confirmar y Generar Ticket"
-        fireEvent.click(screen.getByRole('button', { name: /Confirmar y Generar Ticket/i }));
+        fireEvent.click(screen.getByRole('button', { name: /Finalizar Cotización/i }));
 
         // 2. Should call processOrder automatically
         await waitFor(() => {
@@ -324,7 +326,7 @@ describe('QuoteSummary Integration - Phase 1 Progressive Disclosure', () => {
         expect(screen.queryByText(/Completa los datos/i)).toBeNull();
 
         // Button should be disabled
-        const btn = screen.getByRole('button', { name: /Ver Desglose/i });
+        const btn = screen.getByRole('button', { name: /Verificar datos/i });
         expect(btn).toBeDisabled();
     });
 });

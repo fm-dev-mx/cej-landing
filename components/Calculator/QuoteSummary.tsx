@@ -190,6 +190,7 @@ export function QuoteSummary({ hasError, onFocusError }: QuoteSummaryProps) {
                 <TicketDisplay
                     variant={stage === 'submitted' ? 'full' : stage === 'breakdown' ? 'preview' : 'compact'}
                     quote={quote}
+                    isValidQuote={isValid}
                     folio={submittedQuote?.folio}
                     customerName={submittedQuote?.name}
                     warning={warning}
@@ -214,21 +215,15 @@ export function QuoteSummary({ hasError, onFocusError }: QuoteSummaryProps) {
                         </Button>
 
                         <p className={styles.summaryFooter}>
-                            Revisa el detalle antes de continuar.
+                            {isValid
+                                ? 'Revisa el detalle antes de continuar.'
+                                : 'Ingresa el volumen para continuar.'}
                         </p>
                     </>
                 )}
 
                 {stage === 'breakdown' && (
                     <>
-                        {warning && (
-                            <div className={styles.warningNote}>
-                                ⚠️{" "}
-                                {warning.code === "BELOW_MINIMUM"
-                                    ? `Nota: El pedido mínimo para ${warning.typeLabel} es de ${warning.minM3} m³. Se ajustará el precio.`
-                                    : `Volumen redondeado a ${warning.billedM3} m³`}
-                            </div>
-                        )}
 
                         <Button
                             fullWidth
@@ -243,7 +238,7 @@ export function QuoteSummary({ hasError, onFocusError }: QuoteSummaryProps) {
 
                         <button
                             onClick={handleEditCalculation}
-                            className={styles.editDataBtn}
+                            className={styles.editQuoteDataBtn}
                             type="button"
                         >
                             ← Editar cálculo

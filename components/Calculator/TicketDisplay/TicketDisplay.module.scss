@@ -7,7 +7,7 @@
     /* Ink color */
     width: 100%;
     max-width: 380px;
-    margin: 0 auto;
+    margin: 1rem auto;
     position: relative;
     box-shadow: var(--shadow-md);
     filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
@@ -188,6 +188,8 @@
     overflow: hidden;
     position: relative;
     max-width: 320px;
+    border-radius: 10% 10% 80% 90% / 90% 90% 10% 10%;
+
     /* Force it to be a bit tighter */
 }
 
@@ -255,6 +257,17 @@
     /* Slate-400 */
     margin: 0;
     font-style: italic;
+}
+
+// Placeholder text shown when quote is invalid (no volume entered)
+.compactPlaceholder {
+    display: block;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--c-text);
+    font-family: var(--font-sans);
+    line-height: 1.4;
+    padding: var(--sp-2) 0;
 }
 
 /* Preview Variant Effects - Removed (Flat design) */

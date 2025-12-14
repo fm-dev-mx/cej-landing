@@ -141,7 +141,13 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                     <div className={styles.fieldCompact}>
                         <div className={styles.compressionHeader}>
                             <span className={styles.label}>Capa de Compresión</span>
-                            {!showOverride && (
+                        </div>
+
+                        {!showOverride ? (
+                            <>
+                                <div className={`${styles.note} ${styles.compressionNote}`}>
+                                    Incluye capa estándar de <strong>5 cm</strong>.
+                                </div>
                                 <button
                                     type="button"
                                     onClick={() => setShowOverride(true)}
@@ -149,13 +155,7 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                                 >
                                     Modificar
                                 </button>
-                            )}
-                        </div>
-
-                        {!showOverride ? (
-                            <div className={`${styles.note} ${styles.compressionNote}`}>
-                                Incluye capa estándar de <strong>5 cm</strong>.
-                            </div>
+                            </>
                         ) : (
                             <div className={styles.animateFadeIn}>
                                 <Input

@@ -8,6 +8,8 @@ import styles from './TicketDisplay.module.scss';
 interface TicketDisplayProps {
     variant: 'compact' | 'preview' | 'full';
     quote: QuoteBreakdown | null;
+    /** Indicates if the quote has valid data (volume > 0, required inputs satisfied) */
+    isValidQuote?: boolean;
     folio?: string;
     customerName?: string;
     warning?: QuoteWarning | null;
@@ -21,7 +23,7 @@ interface TicketDisplayProps {
 * - preview: Full breakdown without folio (Phase 1 - after "Ver Desglose")
 * - full: Complete ticket with folio and customer info (after submission)
 */
-export function TicketDisplay({ variant, quote, folio, customerName, warning }: TicketDisplayProps) {
+export function TicketDisplay({ variant, quote, isValidQuote = true, folio, customerName, warning }: TicketDisplayProps) {
     // If no quote, show empty state
     if (!quote) {
         return (
@@ -52,20 +54,30 @@ export function TicketDisplay({ variant, quote, folio, customerName, warning }: 
 
                     <div className={styles.compactTotal}>
                         <span className={styles.compactTotalLabel}>Total</span>
-                        <span className={styles.compactTotalValue}>{fmtMXN(quote.total)}</span>
+                        {isValidQuote ? (
+                            <span className={styles.compactTotalValue}>{fmtMXN(quote.total)}</span>
+                        ) : (
+                            <span className={styles.compactPlaceholder}>
+                                Ingresa el volumen para ver el total
+                            </span>
+                        )}
                     </div>
 
-                    {quote.volume && (
+                    {/* Only show meta info when quote is valid */}
+                    {isValidQuote && quote.volume && (
                         <div className={styles.compactMeta}>
                             <span>{quote.volume.billedM3} m³ • {quote.concreteType === 'pumped' ? 'Bomba' : 'Directo'}</span>
                         </div>
                     )}
 
                     <p className={styles.compactHint}>
-                        Haz clic en "Ver Desglose" para revisar el detalle.
+                        {isValidQuote
+                            ? 'Haz clic en "Verificar datos" para revisar el detalle.'
+                            : 'Completa los datos del formulario para generar tu cotización.'}
                     </p>
 
-                    {warning && (
+                    {/* Only show warning when quote is valid */}
+                    {isValidQuote && warning && (
                         <div className={styles.warningNote}>
                             ℹ️{" "}
                             {warning.code === "BELOW_MINIMUM"

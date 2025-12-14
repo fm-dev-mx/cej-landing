@@ -8,6 +8,7 @@ import { useCallback, useState } from "react";
 
 import { useCejStore } from "@/store/useCejStore";
 import { Input } from "@/components/ui/Input/Input";
+import styles from "../CalculatorForm.module.scss";
 
 interface Props {
     hasError?: boolean;
@@ -33,20 +34,32 @@ export function KnownVolumeForm({ hasError, onFieldTouched }: Props) {
         onFieldTouched?.();
     };
 
+    // Determine which message to show (interaction-based)
+    const showError = touched && hasError;
+    const errorMessage = showError ? "El volumen debe ser mayor a 0 m³" : undefined;
+
     return (
-        <Input
-            id="vol-known"
-            label="Volumen Total (m³)"
-            type="number"
-            min={0}
-            step={0.5}
-            value={m3}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            isVolume
-            inputMode="decimal"
-            placeholder="0.0"
-            error={touched && hasError}
-        />
+        <div className={styles.fieldWithHelper}>
+            <Input
+                id="vol-known"
+                label="Volumen Total (m³)"
+                type="number"
+                min={0}
+                step={0.5}
+                value={m3}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                isVolume
+                inputMode="decimal"
+                placeholder="0.0"
+                error={errorMessage}
+            />
+            {/* Show guidance text only before interaction and when there's no error */}
+            {!touched && !hasError && (
+                <p className={styles.helperText}>
+                    Ingresa el volumen en m³ para calcular tu cotización
+                </p>
+            )}
+        </div>
     );
 }
