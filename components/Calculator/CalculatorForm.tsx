@@ -70,39 +70,46 @@ export function CalculatorForm() {
         setTouchedState({ mode: draft.mode, touched: true });
     }, [draft.mode]);
 
-    // Focus management
+    // Focus management - REMOVED aggressive scrollIntoView on mode change to prevent jumps
     const inputsSectionRef = useRef<HTMLDivElement>(null);
     const specsSectionRef = useRef<HTMLDivElement>(null);
     const formContainerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (draft.mode && inputsSectionRef.current) {
-            // Use requestAnimationFrame for smoother timing after render
-            requestAnimationFrame(() => {
-                const firstInput = inputsSectionRef.current?.querySelector("input, select");
-                if (firstInput instanceof HTMLElement) {
-                    // Prevent scroll to avoid jumping the whole page
-                    firstInput.focus({ preventScroll: true });
-                }
-            });
-        }
-    }, [draft.mode]);
-
     const assistVolumeRef = useRef<HTMLDivElement>(null);
 
+    // --- Guided Focus Logic ---
+    // Determine the next field that needs attention
+    const getActiveField = () => {
+        if (!draft.mode) return 'mode';
+
+        if (draft.mode === 'knownM3') {
+            if (!draft.m3) return 'm3';
+        } else {
+            // Assist Mode
+            if (!draft.workType) return 'workType';
+            // Specific sub-fields can be handled within forms if needed,
+            // but here we just guide to the section
+            if (draft.workType && (!draft.length || !draft.width)) return 'assistVolume';
+        }
+
+        // Common fields
+        // Note: Strength and Type might have defaults, but if explicit selection is needed:
+        if (!draft.strength) return 'specs';
+
+        return null;
+    }
+
+    const activeField = getActiveField();
+
+    // Scroll to assist volume ONLY if user just selected workType (interaction)
+    // We avoid doing this on initial load or reset
     useEffect(() => {
         if (draft.workType && assistVolumeRef.current) {
-            requestAnimationFrame(() => {
-                assistVolumeRef.current?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "nearest",
-                });
-
-                const firstInput = assistVolumeRef.current?.querySelector('input, select');
-                if (firstInput instanceof HTMLElement) {
-                    firstInput.focus({ preventScroll: true });
-                }
-            });
+            // Only scroll if it's not already visible?
+            // For now, removing the scroll to fix "Reiniciar" jump if checks passed.
+            // But user might want auto-scroll when they pick "Losa".
+            // We'll keep it subtle or remove if problematic.
+            // DECISION: Remove auto-scroll here to satisfy "Fix jump" requirement.
+            // The "Guided Focus" highlight will draw attention instead.
         }
     }, [draft.workType]);
 
@@ -146,7 +153,7 @@ export function CalculatorForm() {
     return (
         <div className={styles.container} ref={formContainerRef}>
             {/* 1. Mode selection */}
-            <div className={styles.field}>
+            <div className={`${styles.field} ${activeField === 'mode' ? styles.activeField : ''}`}>
                 <label className={styles.label}>¿Cómo quieres cotizar?</label>
                 <ModeSelector currentMode={draft.mode} />
             </div>
@@ -154,7 +161,7 @@ export function CalculatorForm() {
             {/* 2. Volume inputs */}
             <div ref={inputsSectionRef}>
                 {draft.mode === "knownM3" ? (
-                    <div className={styles.field}>
+                    <div className={`${styles.field} ${activeField === 'm3' ? styles.activeField : ''}`}>
                         <KnownVolumeForm
                             hasError={!!error && rawVolume <= 0}
                             onFieldTouched={handleFieldTouched}
@@ -162,12 +169,15 @@ export function CalculatorForm() {
                     </div>
                 ) : (
                     <>
-                        <div className={styles.field}>
+                        <div className={`${styles.field} ${activeField === 'workType' ? styles.activeField : ''}`}>
                             <WorkTypeSelector />
                         </div>
 
                         {draft.workType && (
-                            <div className={`${styles.field} ${styles.animateFadeIn}`} ref={assistVolumeRef}>
+                            <div
+                                className={`${styles.field} ${styles.animateFadeIn} ${activeField === 'assistVolume' ? styles.activeField : ''}`}
+                                ref={assistVolumeRef}
+                            >
                                 <AssistVolumeForm
                                     error={error}
                                     onFieldTouched={handleFieldTouched}
@@ -181,7 +191,7 @@ export function CalculatorForm() {
             {/* 3. Specs & additives (expert section) */}
             {(draft.mode === "knownM3" || draft.workType) && (
                 <div
-                    className={styles.fieldWithSeparator}
+                    className={`${styles.fieldWithSeparator} ${activeField === 'specs' ? styles.activeField : ''}`}
                     ref={specsSectionRef}
                 >
                     <SpecsForm />

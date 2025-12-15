@@ -6,48 +6,41 @@ import { useCejStore } from '@/store/useCejStore';
 import { useQuoteCalculator } from '@/hooks/useQuoteCalculator';
 import { useCheckoutUI } from '@/hooks/useCheckOutUI';
 import { TicketDisplay } from './TicketDisplay/TicketDisplay';
-import { LeadFormModal } from './modals/LeadFormModal';
+import { SchedulingModal } from './modals/SchedulingModal';
 import { Button } from '@/components/ui/Button/Button';
 import { trackContact } from '@/lib/tracking/visitor';
 
-import { fmtMXN, getWhatsAppUrl } from '@/lib/utils';
+import { getWhatsAppUrl } from '@/lib/utils';
 import { env } from '@/config/env';
 import { getCalculatorSteps } from '@/lib/progress';
 
 import styles from './CalculatorForm.module.scss';
 
 /**
- * QuoteSummary - Progressive Disclosure Flow (Phase 1)
+ * QuoteSummary - Streamlined Flow
  *
  * States:
- * 1. PREVIEW: Shows compact summary, CTA = "Ver Desglose de Cotización"
- * 2. BREAKDOWN: Shows full breakdown, CTA = "Confirmar y Generar Ticket"
- * 3. SUBMITTED: Shows ticket with folio, CTA = "Enviar a WhatsApp"
+ * 1. PREVIEW (Default): Shows compact progress guide. CTA = "Ver Total"
+ * 2. TICKET + ACTIONS: Shows full breakdown + Actions (Programar, Descargar, Compartir).
+ * 3. SUBMITTED: Shows ticket with folio + Success Actions.
  */
 
 interface QuoteSummaryProps {
-    /** Whether the calculator form has validation errors */
     hasError?: boolean;
-    /** Callback to focus the first invalid input field */
     onFocusError?: () => void;
 }
 
 export function QuoteSummary({ }: QuoteSummaryProps) {
     const draft = useCejStore((s) => s.draft);
-    // Unused props removed: hasError, onFocusError
     const resetDraft = useCejStore((s) => s.resetDraft);
     const user = useCejStore((s) => s.user);
-    const cart = useCejStore((s) => s.cart);
     const addToCart = useCejStore((s) => s.addToCart);
     const moveToHistory = useCejStore((s) => s.moveToHistory);
-    const setDrawerOpen = useCejStore((s) => s.setDrawerOpen);
-    const setActiveTab = useCejStore((s) => s.setActiveTab);
 
-    // Phase 1: Progressive disclosure state
+    // State
     const breakdownViewed = useCejStore((s) => s.breakdownViewed);
     const setBreakdownViewed = useCejStore((s) => s.setBreakdownViewed);
 
-    // Phase 0: Global submission state
     const submittedQuote = useCejStore((s) => s.submittedQuote);
     const setSubmittedQuote = useCejStore((s) => s.setSubmittedQuote);
     const clearSubmittedQuote = useCejStore((s) => s.clearSubmittedQuote);
@@ -56,72 +49,35 @@ export function QuoteSummary({ }: QuoteSummaryProps) {
 
     const { quote: currentQuote, isValid, warning } = useQuoteCalculator(draft);
 
-    // If we have a submitted quote, show IT. Otherwise show the live calculator quote.
-    // usage: quote to display
+    // Display Quote: Submitted one OR Current Draft
     const quote = submittedQuote ? submittedQuote.results : currentQuote;
     const { processOrder, isProcessing } = useCheckoutUI();
 
-    const [isModalOpen, setModalOpen] = useState(false);
-
+    const [isSchedulingOpen, setSchedulingOpen] = useState(false);
     const ticketRef = useRef<HTMLDivElement>(null);
 
     const scrollToTicket = () => {
         setTimeout(() => {
             ticketRef.current?.scrollIntoView({
                 behavior: "smooth",
-                block: "center",
+                block: "start", // Align to top of ticket for better view
             });
         }, 100);
     };
 
     // --- Handlers ---
 
-    // Stage 1 -> Stage 2: User clicks "Ver Desglose"
+    // 1. "Ver Total" click
     const handleViewBreakdown = () => {
         setBreakdownViewed(true);
         scrollToTicket();
     };
 
-    // Stage 2 -> Stage 3: User confirms and generates ticket
-    const handleConfirmAndGenerate = async () => {
-        if (user.name && user.phone) {
-            const customer = { name: user.name, phone: user.phone };
+    // 2. Schedule Modal Success
+    const handleSchedulingSuccess = (folio: string, name: string) => {
+        // Need to ensure item is in cart and updated
+        const itemId = addToCart(currentQuote, false);
 
-            // 1. Add to cart immediately (creates draft -> cart item)
-            // This resets the draft, but we have `quote` (which is currentQuote here)
-            const itemId = addToCart(currentQuote, false); // false = do NOT open drawer
-
-            // 2. Process order
-            const result = await processOrder(customer, false);
-
-            if (result.success && result.folio) {
-                // 3. Update cart item with customer info
-                updateCartItemCustomer(itemId, customer);
-                updateCartItemFolio(itemId, result.folio);
-
-                // 4. Set submitted state with RESULTS (to persist view)
-                setSubmittedQuote({
-                    folio: result.folio,
-                    name: user.name,
-                    results: currentQuote
-                });
-
-                scrollToTicket();
-            }
-        } else {
-            setModalOpen(true);
-        }
-    };
-
-    // Stage 3: Modal success callback
-    const handleModalSuccess = (folio: string, name: string) => {
-        // Modal handles processOrder internally.
-        // But we MUST Add to Cart here because it wasn't done yet.
-        // Note: currentQuote is still valid here because addToCart hasn't run yet.
-        const itemId = addToCart(currentQuote, false); // false = do NOT open drawer
-
-        // Update cart item with customer info we just got
-        // Note: user.phone is updated by the modal before calling onSuccess
         if (name && user.phone) {
             updateCartItemCustomer(itemId, { name, phone: user.phone });
             updateCartItemFolio(itemId, folio);
@@ -133,34 +89,24 @@ export function QuoteSummary({ }: QuoteSummaryProps) {
             results: currentQuote
         });
 
-        setModalOpen(false);
-        scrollToTicket();
+        setSchedulingOpen(false);
+        // scrollToTicket(); // Already there usually
     };
 
-    // Stage 3 -> WhatsApp: Move to history only on final click
     const handleWhatsAppClick = () => {
         trackContact("WhatsApp");
         moveToHistory();
     };
 
-    // Reset: Start a new quote (Full Reset)
     const handleReset = () => {
         clearSubmittedQuote();
         resetDraft();
+        setBreakdownViewed(false);
     };
 
-    // Reset ONLY the current mode (Keep other mode draft safe)
-    const setMode = useCejStore((s) => s.setMode);
     const handleResetCurrentMode = () => {
-        // To reset current mode, we can re-set the mode to itself.
-        // The store logic 'setMode' handles initializing fresh state if not found.
-        // However, if we want to FORCE reset, we might need a specific action.
-        // Currently 'resetDraft' resets everything.
-        // Let's use `updateDraft` to reset fields manually or add a store action.
-        // Quick fix: clear specific fields based on mode.
-
+        // Soft reset logic
         if (draft.mode === 'knownM3') {
-            // Reset knownM3 fields
             useCejStore.getState().updateDraft({
                 m3: '',
                 strength: null,
@@ -168,61 +114,54 @@ export function QuoteSummary({ }: QuoteSummaryProps) {
                 additives: []
             });
         } else {
-            // Reset assist fields
             useCejStore.getState().updateDraft({
-                workType: null,
+                workType: null, // This triggers the layout shift if not handled in CSS
                 length: '',
                 width: '',
                 area: '',
                 m3: '',
-                // We don't reset strength/type here usually unless we want full reset of flow
                 strength: null,
                 type: null,
                 additives: [],
-                // Reset specs
                 hasCoffered: undefined,
                 cofferedSize: undefined,
                 thicknessByDims: undefined,
-                thicknessByArea: undefined // Or keep defaults
+                thicknessByArea: undefined
             });
         }
         setBreakdownViewed(false);
     };
 
-    // Go back from breakdown to preview
     const handleEditCalculation = () => {
         setBreakdownViewed(false);
+        // Scroll up to inputs?
     };
 
     // --- Render Logic ---
 
-    // Early return removed to allow TicketDisplay (Compact) to render the Progress Guide
-    // validation logic is now handled inside TicketDisplay
-
-    // Determine current stage
-    const stage: 'preview' | 'breakdown' | 'submitted' = submittedQuote
+    const stage: 'preview' | 'actions' | 'submitted' = submittedQuote
         ? 'submitted'
         : breakdownViewed
-            ? 'breakdown'
+            ? 'actions'
             : 'preview';
 
     const whatsappUrl = submittedQuote
         ? getWhatsAppUrl(
             env.NEXT_PUBLIC_WHATSAPP_NUMBER,
-            `Hola, soy ${submittedQuote.name}. Acabo de generar la cotización Folio: ${submittedQuote.folio}. Me gustaría proceder con el pedido.`
+            `Hola, soy ${submittedQuote.name}. Folio confirmación: ${submittedQuote.folio}.`
         )
         : undefined;
 
     return (
         <div className={styles.container}>
-            {/* Ticket Display - Variant changes based on stage */}
+            {/* Ticket Display */}
             <div
                 className={styles.ticketWrapper}
                 data-ticket-container="true"
                 ref={ticketRef}
             >
                 <TicketDisplay
-                    variant={stage === 'submitted' ? 'full' : stage === 'breakdown' ? 'preview' : 'compact'}
+                    variant={stage === 'submitted' ? 'full' : stage === 'actions' ? 'preview' : 'compact'}
                     quote={quote}
                     isValidQuote={isValid}
                     folio={submittedQuote?.folio}
@@ -233,8 +172,10 @@ export function QuoteSummary({ }: QuoteSummaryProps) {
                 />
             </div>
 
-            {/* CTA Actions - Changes based on stage */}
+            {/* CTA Interaction Area */}
             <div className={styles.field}>
+
+                {/* 1. Initial State: "Ver Total" */}
                 {stage === 'preview' && (
                     <>
                         <Button
@@ -254,37 +195,65 @@ export function QuoteSummary({ }: QuoteSummaryProps) {
                     </>
                 )}
 
-                {stage === 'breakdown' && (
-                    <>
+                {/* 2. Ticket Visible + Actions */}
+                {stage === 'actions' && (
+                    <div className={styles.animateFadeIn}>
+                        <div className={styles.successActions}>
+                            {/* Primary: Programar / Agendar */}
+                            <Button
+                                fullWidth
+                                variant="primary"
+                                onClick={() => setSchedulingOpen(true)}
+                                isLoading={isProcessing}
+                            >
+                                📅 Programar Pedido
+                            </Button>
 
-                        <Button
-                            fullWidth
-                            variant="primary"
-                            onClick={handleConfirmAndGenerate}
-                            disabled={!isValid || isProcessing}
-                            isLoading={isProcessing}
-                            loadingText="Generando ticket..."
-                        >
-                            Finalizar Cotización
-                        </Button>
+                            <p className={styles.summaryFooter}>
+                                Agenda tu entrega o recibe asistencia personalizada.
+                            </p>
 
-                        <button
-                            onClick={handleEditCalculation}
-                            className={styles.editQuoteDataBtn}
-                            type="button"
-                        >
-                            ← Editar cálculo
-                        </button>
+                            {/* Secondary Actions Grid */}
+                            <div className={styles.gridActions}>
+                                <Button
+                                    fullWidth
+                                    variant="secondary"
+                                    onClick={() => window.print()}
+                                >
+                                    📄 Descargar PDF
+                                </Button>
+                                <Button
+                                    fullWidth
+                                    variant="secondary"
+                                    onClick={() => {
+                                        const url = window.location.href; // Simple share
+                                        navigator.clipboard.writeText(url);
+                                        alert("Enlace copiado");
+                                    }}
+                                >
+                                    🔗 Compartir
+                                </Button>
+                            </div>
 
-                        <p className={styles.summaryFooter}>
-                            Al confirmar se generará un folio y podrás enviarlo por WhatsApp.
-                        </p>
-                    </>
+                            {/* Edit / Back */}
+                            <button
+                                onClick={handleEditCalculation}
+                                className={styles.editQuoteDataBtn}
+                                type="button"
+                            >
+                                ← Editar cálculo
+                            </button>
+                        </div>
+                    </div>
                 )}
 
+                {/* 3. Submitted / Success State */}
                 {stage === 'submitted' && (
                     <div className={styles.successActions}>
-                        {/* Primary Action: WhatsApp */}
+                        <div className={styles.note}>
+                            ✅ Tu solicitud ha sido registrada.
+                        </div>
+
                         <Button
                             fullWidth
                             variant="whatsapp"
@@ -292,63 +261,18 @@ export function QuoteSummary({ }: QuoteSummaryProps) {
                             target="_blank"
                             onClick={handleWhatsAppClick}
                         >
-                            Finalizar orden en WhatsApp
+                            Ir al chat de Ventas
                         </Button>
-                        <p className={styles.successHint}>
-                            Se abrirá un chat con nuestro equipo de ventas.
-                        </p>
 
-                        {/* Secondary Actions: Print and Share */}
                         <div className={styles.gridActions}>
                             <Button
                                 fullWidth
                                 variant="secondary"
                                 onClick={() => window.print()}
                             >
-                                📄 Descargar PDF
-                            </Button>
-                            <Button
-                                fullWidth
-                                variant="secondary"
-                                onClick={() => {
-                                    const folio = submittedQuote!.folio;
-                                    const shareableUrl = `${window.location.origin}/?ref=shared&folio=${folio}`;
-                                    if (navigator.share) {
-                                        navigator.share({
-                                            title: `Cotización CEJ ${folio}`,
-                                            text: `Revisa mi cotización de concreto con folio ${folio}`,
-                                            url: shareableUrl,
-                                        }).catch(console.error);
-                                    } else {
-                                        navigator.clipboard.writeText(shareableUrl);
-                                        alert("Link copiado al portapapeles");
-                                    }
-                                }}
-                            >
-                                🔗 Compartir
+                                📄 Guardar PDF
                             </Button>
                         </div>
-
-                        {/* User Data Edit */}
-                        {user.name && (
-                            <button
-                                onClick={() => setModalOpen(true)}
-                                className={styles.editQuoteDataBtn}
-                            >
-                                ¿No eres {user.name}? Editar mis datos
-                            </button>
-                        )}
-
-                        {/* Tertiary Actions */}
-                        <button
-                            onClick={() => {
-                                setActiveTab('history');
-                                setDrawerOpen(true);
-                            }}
-                            className={styles.historyBtn}
-                        >
-                            📂 Ver historial de cotizaciones
-                        </button>
 
                         <button
                             onClick={handleReset}
@@ -360,10 +284,10 @@ export function QuoteSummary({ }: QuoteSummaryProps) {
                 )}
             </div>
 
-            <LeadFormModal
-                isOpen={isModalOpen}
-                onClose={() => setModalOpen(false)}
-                onSuccess={handleModalSuccess}
+            <SchedulingModal
+                isOpen={isSchedulingOpen}
+                onClose={() => setSchedulingOpen(false)}
+                onSuccess={handleSchedulingSuccess}
             />
         </div>
     );

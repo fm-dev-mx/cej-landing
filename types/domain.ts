@@ -165,6 +165,11 @@ export type OrderPayload = {
         utm_source?: string;
         utm_medium?: string;
         userAgent?: string;
+        // Scheduling Details
+        deliveryAddress?: string;
+        deliveryDate?: string;
+        deliveryTime?: string;
+        notes?: string;
     };
 };
 

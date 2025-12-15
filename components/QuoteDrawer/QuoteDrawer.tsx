@@ -5,7 +5,7 @@ import { useCejStore } from '@/store/useCejStore';
 import { type CartItem } from '@/types/domain';
 import { fmtMXN } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
-import { LeadFormModal } from '@/components/Calculator/modals/LeadFormModal';
+import { SchedulingModal } from '@/components/Calculator/modals/SchedulingModal';
 import styles from './QuoteDrawer.module.scss';
 
 export default function QuoteDrawer() {
@@ -195,7 +195,7 @@ export default function QuoteDrawer() {
                 )}
             </aside>
 
-            <LeadFormModal
+            <SchedulingModal
                 isOpen={isLeadModalOpen}
                 onClose={() => setIsLeadModalOpen(false)}
             />
