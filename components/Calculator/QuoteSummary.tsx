@@ -28,9 +28,10 @@ import styles from './CalculatorForm.module.scss';
 interface QuoteSummaryProps {
     hasError?: boolean;
     onFocusError?: () => void;
+    onScrollToTop?: () => void;
 }
 
-export function QuoteSummary({ }: QuoteSummaryProps) {
+export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
     const draft = useCejStore((s) => s.draft);
     const resetDraft = useCejStore((s) => s.resetDraft);
     const user = useCejStore((s) => s.user);
@@ -130,6 +131,9 @@ export function QuoteSummary({ }: QuoteSummaryProps) {
             });
         }
         setBreakdownViewed(false);
+
+        // Scroll to top after React commits the DOM update (layout shift)
+        onScrollToTop?.();
     };
 
     const handleEditCalculation = () => {

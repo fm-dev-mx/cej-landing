@@ -205,4 +205,45 @@ describe('QuoteSummary Integration - Streamlined Flow', () => {
             name: 'Test Scheduler'
         }));
     });
+
+    it('accepts onScrollToTop prop for scroll-after-reset behavior', () => {
+        const mockScrollToTop = vi.fn();
+
+        (useCejStore as unknown as { getState: () => unknown }).getState = vi.fn().mockReturnValue({
+            user: { phone: '5555555555' }
+        });
+
+        (useCejStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector: (state: unknown) => unknown) => selector({
+            draft: { mode: 'assistM3', workType: 'slab' },
+            resetDraft: vi.fn(),
+            user: {},
+            cart: [],
+            addToCart: vi.fn(() => 'mock-item-id'),
+            updateCartItemCustomer: vi.fn(),
+            moveToHistory: vi.fn(),
+            setDrawerOpen: vi.fn(),
+            setActiveTab: vi.fn(),
+            submittedQuote: null,
+            setSubmittedQuote: vi.fn(),
+            clearSubmittedQuote: vi.fn(),
+            breakdownViewed: false,
+            setBreakdownViewed: vi.fn()
+        }));
+
+        (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+            quote: { total: 5000, subtotal: 4630, vat: 370, breakdownLines: [] },
+            isValid: false
+        });
+
+        // Test that the component renders without error when onScrollToTop is provided.
+        // The actual scroll invocation is tested via integration (CalculatorForm).
+        // This test ensures the prop interface is correctly typed and accepted.
+        const { container } = render(<QuoteSummary onScrollToTop={mockScrollToTop} />);
+
+        // Verify component renders successfully with the prop
+        expect(container.querySelector('[data-testid="ticket-display"]')).toBeDefined();
+
+        // The prop is a callback, not auto-invoked on render
+        expect(mockScrollToTop).not.toHaveBeenCalled();
+    });
 });

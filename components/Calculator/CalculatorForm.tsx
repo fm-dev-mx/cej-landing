@@ -4,6 +4,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from 'next/navigation';
 
 import { useCejStore } from "@/store/useCejStore";
 import { useQuoteCalculator } from "@/hooks/useQuoteCalculator";
@@ -25,9 +26,9 @@ import styles from "./CalculatorForm.module.scss";
  * - Connects the Zustand store draft to individual form sections.
  * - Manages focus when mode changes.
  * - Shows validation errors, warnings and summary (ticket-style).
- * - Shows validation errors, warnings and summary (ticket-style).
+
  */
-import { useSearchParams } from 'next/navigation';
+
 
 export function CalculatorForm() {
     const draft = useCejStore((s) => s.draft);
@@ -75,6 +76,26 @@ export function CalculatorForm() {
     const specsSectionRef = useRef<HTMLDivElement>(null);
     const formContainerRef = useRef<HTMLDivElement>(null);
     const assistVolumeRef = useRef<HTMLDivElement>(null);
+
+    // Scroll to top of calculator SECTION (title), respecting prefers-reduced-motion
+    const scrollToCalcTop = useCallback(() => {
+        // Target the parent section element with the title
+        const sectionEl = document.getElementById('calculator-section');
+        if (!sectionEl) return;
+
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const targetY = sectionEl.getBoundingClientRect().top + window.scrollY - 80;
+
+        // Use double rAF to ensure DOM has committed after state update
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                window.scrollTo({
+                    top: targetY,
+                    behavior: prefersReduced ? 'auto' : 'smooth'
+                });
+            });
+        });
+    }, []);
 
     // --- Guided Focus Logic ---
     // Determine the next field that needs attention
@@ -144,6 +165,7 @@ export function CalculatorForm() {
                     <QuoteSummary
                         hasError={false}
                         onFocusError={focusFirstInvalidInput}
+                        onScrollToTop={scrollToCalcTop}
                     />
                 </div>
             </div>
@@ -247,6 +269,7 @@ export function CalculatorForm() {
                 <QuoteSummary
                     hasError={!!error}
                     onFocusError={focusFirstInvalidInput}
+                    onScrollToTop={scrollToCalcTop}
                 />
 
             </div>
