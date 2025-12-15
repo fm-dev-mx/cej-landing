@@ -1,49 +1,63 @@
-// components/ui/Input/Input.tsx
-import { InputHTMLAttributes, forwardRef, useId } from 'react';
-import styles from './Input.module.scss';
+import { InputHTMLAttributes, forwardRef, useId } from "react";
+import styles from "./Input.module.scss";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   isVolume?: boolean;
   label?: string;
-  variant?: 'dark' | 'light';
+  variant?: "dark" | "light";
   error?: boolean | string;
   /** Visual unit suffix displayed inside the input (e.g., "m", "cm", "m²") */
   suffix?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, isVolume, label, id, variant = 'dark', error, suffix, ...props }, ref) => {
-    // Generate a unique ID for the error message if one isn't provided
+  ({ className, isVolume, label, id, variant = "dark", error, suffix, ...props }, ref) => {
+    // Generate a stable ID for label + error association
     const internalId = useId();
     const inputId = id || internalId;
 
     const hasError = Boolean(error);
-    const errorMessage = typeof error === 'string' ? error : null;
+    const errorMessage = typeof error === "string" ? error : null;
     const errorId = errorMessage ? `${inputId}-error` : undefined;
+
+    // Merge any external aria-describedby with our error id
+    const externalDescribedBy = props["aria-describedby"];
+    const describedBy =
+      [externalDescribedBy, errorId].filter(Boolean).join(" ") || undefined;
 
     const containerClass = [
       styles.container,
       styles[variant],
-      hasError ? styles.hasError : ''
-    ].filter(Boolean).join(' ');
+      hasError ? styles.hasError : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const wrapperClass = [
+      styles.inputWrapper,
+      styles[variant], // Critical: keep theme even when label is not rendered
+      hasError ? styles.hasError : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
 
     const inputClasses = [
       styles.input,
-      isVolume ? styles.volumeInput : '',
-      suffix ? styles.hasSuffix : '',
-      className
+      isVolume ? styles.volumeInput : "",
+      suffix ? styles.hasSuffix : "",
+      className,
     ]
       .filter(Boolean)
-      .join(' ');
+      .join(" ");
 
     const inputElement = (
-      <div className={styles.inputWrapper}>
+      <div className={wrapperClass}>
         <input
           ref={ref}
           id={inputId}
           className={inputClasses}
-          aria-invalid={hasError}
-          aria-describedby={errorId}
+          aria-invalid={hasError || undefined}
+          aria-describedby={describedBy}
           {...props}
         />
         {suffix && (
@@ -55,9 +69,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     );
 
     // Atom behavior (input only)
-    if (!label && !errorMessage) {
-      return inputElement;
-    }
+    if (!label && !errorMessage) return inputElement;
 
     // Molecule behavior (Layout + Label + Input + Error)
     return (
@@ -71,11 +83,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {inputElement}
 
         {errorMessage && (
-          <span
-            id={errorId}
-            className={styles.errorMessage}
-            role="alert"
-          >
+          <span id={errorId} className={styles.errorMessage} role="alert">
             {errorMessage}
           </span>
         )}
@@ -84,4 +92,4 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   }
 );
 
-Input.displayName = 'Input';
+Input.displayName = "Input";

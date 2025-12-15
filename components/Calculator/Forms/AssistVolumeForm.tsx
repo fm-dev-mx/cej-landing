@@ -160,7 +160,7 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                         ) : (
                             <div className={styles.animateFadeIn}>
                                 <Input
-                                    label="Grosor Capa Compresión"
+                                    aria-label="Grosor Capa Compresión"
                                     placeholder="5"
                                     suffix="cm"
                                     value={volumeMode === "dimensions" ? thicknessByDims : thicknessByArea}

@@ -1,5 +1,13 @@
 @use "../../styles/mixins" as *;
 
+/*
+  Notes (English):
+  - Fix overlapping inputs by making grid items shrinkable: minmax(0, 1fr) + min-width: 0.
+  - Ensure form controls never overflow their grid cell: width: 100% + box-sizing.
+  - Improve mobile resilience (errors, pills, radio rows) to avoid layout breakage.
+  - Keep UI copy in Spanish.
+*/
+
 /* --- Layout --- */
 .container {
     display: flex;
@@ -7,7 +15,13 @@
     flex: 1;
     position: relative;
     min-height: 600px;
-    /* Prevent layout shift on clear */
+
+    /* Prevent width math surprises inside the calculator */
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
 }
 
 /* --- Active Field Guidance --- */
@@ -18,25 +32,28 @@
     padding: var(--sp-2);
     margin-block: var(--sp-8);
 
+    /* Ensure content sits above the highlight overlays */
+    >* {
+        position: relative;
+        z-index: 1;
+    }
+
     &::before {
-        content: '';
+        content: "";
         position: absolute;
-        top: -0.5rem;
-        left: -0.5rem;
-        right: -0.5rem;
-        bottom: -0.5rem;
+        inset: -0.5rem;
         border: 2px solid var(--c-accent);
         border-radius: calc(var(--radius) + 4px);
         opacity: 0.4;
         pointer-events: none;
         z-index: 0;
-        transition: all 0.3s ease-in;
+        transition: opacity 0.3s ease-in;
         animation: fadeIn 0.6s ease-out;
     }
 
-    /* Optional: Spotlight effect */
+    /* Optional: Spotlight label */
     &::after {
-        content: '✍️ Completa aquí';
+        content: "✍️ Completa aquí";
         position: absolute;
         top: -1.75rem;
         right: 0;
@@ -46,6 +63,8 @@
         opacity: 0.9;
         transition: opacity 0.6s ease-out;
         animation: fadeOut 0.6s ease-out;
+        z-index: 2;
+        pointer-events: none;
     }
 }
 
@@ -94,18 +113,42 @@
 /* --- Grids --- */
 .compactGrid {
     display: grid;
+    /* Key fix: allow columns to shrink without overflowing (prevents overlap) */
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--sp-2);
+    gap: var(--sp-3);
     align-items: start;
     width: 100%;
+    grid-auto-flow: row;
+}
 
-    label {
-        font-size: 0.9rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: block;
+/* Key fix: grid items must be allowed to shrink (otherwise overflow/overlap happens) */
+.compactGrid>* {
+    min-width: 0;
+}
+
+/* Ensure form controls never exceed their cell width */
+.compactGrid :global(input),
+.compactGrid :global(select),
+.compactGrid :global(textarea) {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* Stack earlier on small screens (more reliable than 360px only) */
+@media (max-width: 420px) {
+    .compactGrid {
+        grid-template-columns: 1fr;
     }
+}
+
+.compactGrid label {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
 }
 
 /* Selection Grids (RAM pattern) */
@@ -117,7 +160,12 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: var(--sp-2);
-    /* Reduced from --sp-3 for compactness */
+}
+
+@media (max-width: 420px) {
+    .radioRow {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* --- Radio & Pills Custom UI --- */
@@ -131,13 +179,14 @@
     border: 1px solid rgba(255, 255, 255, 0.15);
     background-color: rgba(255, 255, 255, 0.03);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     min-height: 3rem;
 
     &:hover {
         background-color: rgba(255, 255, 255, 0.06);
     }
 
+    /* Progressive enhancement: :has() is supported in modern browsers */
     &:has(input:checked) {
         background-color: rgba(254, 201, 20, 0.15);
         border-color: var(--c-accent);
@@ -150,7 +199,7 @@
     }
 
     input {
-        /* A11y: Visually hidden but focusable */
+        /* A11y: visually hidden but focusable */
         position: absolute;
         width: 1px;
         height: 1px;
@@ -178,12 +227,18 @@
     display: flex;
     gap: var(--sp-3);
     margin-top: 0.5rem;
+    min-width: 0;
+
+    /* Avoid collisions on narrow widths */
+    flex-wrap: wrap;
 }
 
 .pill {
     position: relative;
-    flex: 1;
+    flex: 1 1 12rem;
+    /* allows wrapping gracefully */
     cursor: pointer;
+    min-width: 0;
 
     input {
         position: absolute;
@@ -206,15 +261,18 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0.6rem;
+        min-height: 2.75rem;
+        padding: 0.5rem 0.75rem;
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 99px;
         color: var(--c-muted-on-dark);
         font-weight: 500;
-        transition: all 0.2s ease;
-        font-size: 0.9rem;
+        transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        font-size: 0.85rem;
         text-align: center;
+        line-height: 1.2;
+        width: 100%;
     }
 
     &:has(input:checked) span {
@@ -253,11 +311,14 @@
     gap: 0.5rem;
     place-self: center;
     font-weight: 300;
-    min-width: 20rem;
     justify-content: center;
 
+    /* Avoid overflow on mobile */
+    width: min(20rem, 100%);
+    max-width: 100%;
+
     &::before {
-        content: '⚠️';
+        content: "⚠️";
     }
 }
 
@@ -269,7 +330,7 @@
     opacity: 0.9;
 }
 
-/* --- Summary Card (Refactored from inline styles) --- */
+/* --- Summary Card --- */
 .summary {
     background-color: rgba(255, 255, 255, 0.05);
     padding: 1.5rem;
@@ -288,6 +349,7 @@
     justify-content: space-between;
     align-items: flex-end;
     margin-bottom: 1rem;
+    gap: var(--sp-2);
 }
 
 .summaryLabel {
@@ -314,29 +376,6 @@
     color: rgba(255, 255, 255, 0.5);
     margin-top: 0.75rem;
     text-align: center;
-}
-
-/* --- Animations --- */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(5px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeOut {
-    from {
-        opacity: 1;
-    }
-
-    to {
-        opacity: 0;
-    }
 }
 
 /* --- QuoteSummary Actions --- */
@@ -367,6 +406,12 @@
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
     margin-top: 0.5rem;
+}
+
+@media (max-width: 420px) {
+    .gridActions {
+        grid-template-columns: 1fr;
+    }
 }
 
 .textBtn {
@@ -432,7 +477,6 @@
 
         option {
             background-color: #1e1e1e;
-            /* Ensure options are readable */
         }
     }
 }
@@ -469,6 +513,7 @@
     display: flex;
     place-content: space-between;
     margin-bottom: 0.5rem;
+    gap: var(--sp-2);
 }
 
 .compressionNote {
@@ -496,4 +541,59 @@
     opacity: 0.7;
     margin: 0.25rem 0 0 0;
     font-style: italic;
+}
+
+/* --- Input with unit helpers (optional but recommended) --- */
+/* Use this wrapper around input + "metros/cm" label to prevent collisions */
+.inputWithUnit {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    min-width: 0;
+}
+
+.inputWithUnit :global(input) {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+}
+
+.unit {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+/* --- Animations --- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+
+    .activeField::before,
+    .activeField::after,
+    .cofferSection,
+    .animateFadeIn {
+        animation: none !important;
+        transition: none !important;
+    }
 }
