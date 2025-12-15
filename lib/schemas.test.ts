@@ -1,5 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { createKnownVolumeSchema, DimensionsSchema } from '@/lib/schemas/calculator';
+import {
+    createKnownVolumeSchema,
+    DimensionsSchema,
+    AreaSchema,
+    MIN_AREA_M2,
+    MIN_LENGTH_M,
+    MAX_LENGTH_M,
+    MIN_WIDTH_M,
+    MAX_WIDTH_M,
+    MIN_THICKNESS_CM,
+    MAX_THICKNESS_CM
+} from '@/lib/schemas/calculator';
 import { PricingRulesSchema } from '@/lib/schemas/pricing';
 
 describe('Validation Schemas (Security & Data Integrity)', () => {
@@ -40,16 +51,130 @@ describe('Validation Schemas (Security & Data Integrity)', () => {
     });
 
     describe('DimensionsSchema', () => {
-        it('enforces logical physical limits', () => {
-            // Thickness > 200cm (2 meters) is likely an error for a slab
-            expect(DimensionsSchema.safeParse({
-                length: '10', width: '10', thickness: '201'
-            }).success).toBe(false);
+        // --- Valid minimum thresholds ---
+        it('allows valid dimensions at minimum thresholds', () => {
+            const result = DimensionsSchema.safeParse({
+                length: String(MIN_LENGTH_M),
+                width: String(MIN_WIDTH_M),
+                thickness: String(MIN_THICKNESS_CM)
+            });
+            expect(result.success).toBe(true);
+        });
 
-            // Length 0
-            expect(DimensionsSchema.safeParse({
+        it('allows valid dimensions above minimum', () => {
+            const result = DimensionsSchema.safeParse({
+                length: '10', width: '10', thickness: '10'
+            });
+            expect(result.success).toBe(true);
+        });
+
+        // --- Maximum limits ---
+        it('allows dimensions at maximum limits', () => {
+            const result = DimensionsSchema.safeParse({
+                length: String(MAX_LENGTH_M),
+                width: String(MAX_WIDTH_M),
+                thickness: String(MAX_THICKNESS_CM)
+            });
+            expect(result.success).toBe(true);
+        });
+
+        // --- Length validation ---
+        it('rejects length below minimum', () => {
+            const result = DimensionsSchema.safeParse({
+                length: '0.05', width: '10', thickness: '10'
+            });
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].message).toMatch(/largo/i);
+            }
+        });
+
+        it('rejects length above maximum', () => {
+            const result = DimensionsSchema.safeParse({
+                length: '1001', width: '10', thickness: '10'
+            });
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].message).toMatch(/Máximo/i);
+            }
+        });
+
+        // --- Width validation ---
+        it('rejects width below minimum', () => {
+            const result = DimensionsSchema.safeParse({
+                length: '10', width: '0.05', thickness: '10'
+            });
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].message).toMatch(/ancho/i);
+            }
+        });
+
+        it('rejects width above maximum', () => {
+            const result = DimensionsSchema.safeParse({
+                length: '10', width: '1001', thickness: '10'
+            });
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].message).toMatch(/Máximo/i);
+            }
+        });
+
+        // --- Thickness validation ---
+        it('rejects thickness below minimum', () => {
+            const result = DimensionsSchema.safeParse({
+                length: '10', width: '10', thickness: '0'
+            });
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].message).toMatch(/grosor/i);
+            }
+        });
+
+        it('rejects thickness above maximum (> 200cm)', () => {
+            const result = DimensionsSchema.safeParse({
+                length: '10', width: '10', thickness: '201'
+            });
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].message).toMatch(/Máximo/i);
+            }
+        });
+
+        // --- Zero/invalid input ---
+        it('rejects zero values for length', () => {
+            const result = DimensionsSchema.safeParse({
                 length: '0', width: '10', thickness: '10'
-            }).success).toBe(false);
+            });
+            expect(result.success).toBe(false);
+        });
+    });
+
+    describe('AreaSchema', () => {
+        it('allows valid area at minimum threshold', () => {
+            const result = AreaSchema.safeParse({ area: '10', thickness: '10' });
+            expect(result.success).toBe(true);
+        });
+
+        it('allows valid area above minimum', () => {
+            const result = AreaSchema.safeParse({ area: '50', thickness: '15' });
+            expect(result.success).toBe(true);
+        });
+
+        it(`rejects area below MIN_AREA_M2 (${MIN_AREA_M2}m²)`, () => {
+            const result = AreaSchema.safeParse({ area: '9', thickness: '10' });
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].message).toMatch(/mínimo/i);
+            }
+        });
+
+        it('rejects area exceeding max limit', () => {
+            const result = AreaSchema.safeParse({ area: '20001', thickness: '10' });
+            expect(result.success).toBe(false);
+            if (!result.success) {
+                expect(result.error.issues[0].message).toMatch(/Máximo/i);
+            }
         });
     });
 

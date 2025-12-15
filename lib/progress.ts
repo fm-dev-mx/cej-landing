@@ -1,5 +1,6 @@
 
 import { CalculatorState } from '@/types/domain';
+import { MIN_AREA_M2, MIN_LENGTH_M, MIN_WIDTH_M, MIN_THICKNESS_CM } from '@/lib/schemas/calculator';
 
 export interface ProgressStep {
     id: string;
@@ -36,9 +37,9 @@ export function getCalculatorSteps(state: CalculatorState): ProgressStep[] {
         // Dimensions check
         let hasDimensions = false;
         if (state.volumeMode === 'dimensions') {
-            hasDimensions = parseFloat(state.length) > 0 && parseFloat(state.width) > 0;
+            hasDimensions = parseFloat(state.length) >= MIN_LENGTH_M && parseFloat(state.width) >= MIN_WIDTH_M;
         } else {
-            hasDimensions = parseFloat(state.area) > 0;
+            hasDimensions = parseFloat(state.area) >= MIN_AREA_M2;
         }
 
         // Refined steps for Assist:
@@ -71,15 +72,15 @@ export function getCalculatorSteps(state: CalculatorState): ProgressStep[] {
             } else {
                 // Solid slab
                 hasSpecs = state.volumeMode === 'dimensions'
-                    ? parseFloat(state.thicknessByDims) > 0
-                    : parseFloat(state.thicknessByArea) > 0;
+                    ? parseFloat(state.thicknessByDims) >= MIN_THICKNESS_CM
+                    : parseFloat(state.thicknessByArea) >= MIN_THICKNESS_CM;
                 specsLabel = 'Ingresa el grosor';
             }
         } else {
             // Other elements usually have thickness input too
             hasSpecs = state.volumeMode === 'dimensions'
-                ? parseFloat(state.thicknessByDims) > 0
-                : parseFloat(state.thicknessByArea) > 0;
+                ? parseFloat(state.thicknessByDims) >= MIN_THICKNESS_CM
+                : parseFloat(state.thicknessByArea) >= MIN_THICKNESS_CM;
             specsLabel = 'Ingresa el grosor';
         }
 

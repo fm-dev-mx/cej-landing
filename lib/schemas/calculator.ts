@@ -4,6 +4,19 @@
 import { z } from "zod";
 
 /**
+ * Minimum area threshold (m²) for valid calculator input.
+ * Shared with progress.ts to ensure consistency.
+ */
+export const MIN_AREA_M2 = 10;
+export const MAX_AREA_M2 = 20000;
+export const MIN_THICKNESS_CM = 1;
+export const MAX_THICKNESS_CM = 200;
+export const MIN_LENGTH_M = 0.1;
+export const MAX_LENGTH_M = 1000;
+export const MIN_WIDTH_M = 0.1;
+export const MAX_WIDTH_M = 1000;
+
+/**
  * Helper schema to sanitise numeric string inputs and convert to number.
  */
 const numericString = z
@@ -32,13 +45,13 @@ export const createKnownVolumeSchema = () => {
  */
 export const DimensionsSchema = z.object({
     length: numericString.pipe(
-        z.number().min(0.1, "Mínimo 10 cm").max(1000, "Máximo 1000 m")
+        z.number().min(MIN_LENGTH_M, "Ingresa un valor válido para el largo").max(MAX_LENGTH_M, "Máximo 1000 m")
     ),
     width: numericString.pipe(
-        z.number().min(0.1, "Mínimo 10 cm").max(1000, "Máximo 1000 m")
+        z.number().min(MIN_WIDTH_M, "Ingresa un valor válido para el ancho").max(MAX_WIDTH_M, "Máximo 1000 m")
     ),
     thickness: numericString.pipe(
-        z.number().min(1, "Ingresa un grosor válido (1-200 cm)").max(200, "Máximo 200 cm")
+        z.number().min(MIN_THICKNESS_CM, "Ingresa un grosor válido (1-200 cm)").max(MAX_THICKNESS_CM, "Máximo 200 cm")
     ),
 });
 
@@ -47,9 +60,9 @@ export const DimensionsSchema = z.object({
  */
 export const AreaSchema = z.object({
     area: numericString.pipe(
-        z.number().min(1, "Ingresa un área mayor a 0 m²").max(20000, "Máximo 20,000 m²")
+        z.number().min(MIN_AREA_M2, `Ingresa un valor válido para el área (mínimo ${MIN_AREA_M2} m²)`).max(MAX_AREA_M2, "Máximo 20,000 m²")
     ),
     thickness: numericString.pipe(
-        z.number().min(1, "Ingresa un grosor válido (1-200 cm)").max(200, "Máximo 200 cm")
+        z.number().min(MIN_THICKNESS_CM, "Ingresa un grosor válido (1-200 cm)").max(MAX_THICKNESS_CM, "Máximo 200 cm")
     ),
 });
