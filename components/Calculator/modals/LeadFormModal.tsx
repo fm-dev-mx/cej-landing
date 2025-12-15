@@ -53,7 +53,7 @@ export function LeadFormModal({
         <ResponsiveDialog
             isOpen={isOpen}
             onClose={onClose}
-            title="Finalizar Cotización"
+            title="Confirmar Datos"
         >
             {/* Optimization: The 'key' prop ensures this form is fully re-mounted
                 whenever the modal opens. This automatically resets the state
@@ -146,11 +146,11 @@ export function LeadFormModal({
                         variant="primary"
                         fullWidth
                         isLoading={isProcessing}
-                        loadingText="Generando..."
+                        loadingText="Confirmando..."
                         disabled={isSubmitDisabled}
                         data-testid="btn-submit-lead"
                     >
-                        Generar Ticket
+                        Confirmar y Continuar
                     </Button>
                 </div>
             </form>

@@ -63,19 +63,23 @@ describe('Calculator Navigation & Button Logic', () => {
     const input = screen.getByLabelText(/Volumen total/i);
 
     // Initially, button should NOT be there (hint is shown instead)
-    const addBtnInitial = screen.queryByRole('button', { name: /Verificar datos/i });
+    const addBtnInitial = screen.queryByRole('button', { name: /Calcular y Verificar/i });
     expect(addBtnInitial).not.toBeInTheDocument();
 
     // Check for the hint text
     // Simulate user typing '0'
     fireEvent.change(input, { target: { value: '0' } });
-    expect(screen.queryByRole('button', { name: /Verificar datos/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Calcular y Verificar/i })).not.toBeInTheDocument();
 
     // Simulate user typing '5'
     fireEvent.change(input, { target: { value: '5' } });
 
-    // Now button should appear and be enabled (Phase 1: "Verificar datos" instead of "Solicitar")
-    const addBtn = screen.getByRole('button', { name: /Verificar datos/i });
+    // Select Strength & Service to make it valid
+    fireEvent.change(screen.getByLabelText(/Resistencia/i), { target: { value: '250' } });
+    fireEvent.change(screen.getByLabelText(/Servicio/i), { target: { value: 'direct' } });
+
+    // Now button should appear and be enabled (Phase 1: "Ver Total" instead of "Solicitar")
+    const addBtn = screen.getByRole('button', { name: /Ver Total/i });
     expect(addBtn).toBeEnabled();
   });
 
@@ -89,7 +93,7 @@ describe('Calculator Navigation & Button Logic', () => {
     // ... existing content ...
     const radioAssist = screen.getByRole('radio', { name: /Ayúdame a calcular/i });
     fireEvent.click(radioAssist);
-    expect(screen.getByText(/Tipo de Obra/i)).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /Tipo de Obra/i })).toBeInTheDocument();
   });
 
   it('Step 3 (Assist): Validates thickness correctly for Solid vs Coffered', () => {
@@ -103,7 +107,7 @@ describe('Calculator Navigation & Button Logic', () => {
     const widthInput = screen.getByLabelText('Ancho (m)');
 
     // Initially button hidden (Phase 1: use "Verificar datos" text)
-    expect(screen.queryByRole('button', { name: /Verificar datos/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Calcular y Verificar/i })).not.toBeInTheDocument();
 
     fireEvent.change(lengthInput, { target: { value: '10' } });
     fireEvent.change(widthInput, { target: { value: '5' } });
@@ -116,11 +120,11 @@ describe('Calculator Navigation & Button Logic', () => {
 
     // Empty -> Button hidden
     fireEvent.change(thicknessInput, { target: { value: '' } });
-    expect(screen.queryByRole('button', { name: /Verificar datos/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Calcular y Verificar/i })).not.toBeInTheDocument();
 
     // Filled -> Button appears
     fireEvent.change(thicknessInput, { target: { value: '10' } });
-    expect(screen.getByRole('button', { name: /Verificar datos/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Ver Total/i })).toBeEnabled();
 
     // --- SCENARIO B: Coffered Slab ---
     fireEvent.click(screen.getByRole('radio', { name: /Aligerada/i }));
@@ -130,7 +134,7 @@ describe('Calculator Navigation & Button Logic', () => {
     const radio7cm = screen.getByRole('radio', { name: /7 cm/i });
     fireEvent.click(radio7cm);
 
-    expect(screen.getByRole('button', { name: /Verificar datos/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Ver Total/i })).toBeEnabled();
 
   });
 });

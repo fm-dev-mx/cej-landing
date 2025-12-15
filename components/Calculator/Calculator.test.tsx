@@ -77,15 +77,19 @@ describe('Calculator UI Integration', () => {
     fireEvent.change(volInput, { target: { value: '5' } });
     expect(volInput).toHaveValue(5);
 
+    // Select Strength & Service to make it valid and show "Todo listo"
+    fireEvent.change(screen.getByLabelText(/Resistencia/i), { target: { value: '250' } });
+    fireEvent.change(screen.getByLabelText(/Servicio/i), { target: { value: 'direct' } });
+
     // 3. Check Result (Instant calculation)
-    // We expect the summary to appear with Total label (compact variant uses 'Total' not 'TOTAL')
-    expect(screen.getByText('Total')).toBeInTheDocument();
+    // We expect the summary to appear with "Ver Total" CTA and "Todo listo" hint (if valid)
+    expect(screen.getByText(/Todo listo/i)).toBeInTheDocument();
 
     // Note: Volume text "5.00 m³" might not be explicitly visible in the new Ticket summary
     // relying on price/total verification via 'Total' presence is sufficient for integration here.
 
-    // 4. Phase 1: First CTA is "Verificar datos"
-    const viewBreakdownBtn = screen.getByRole('button', { name: /Verificar datos/i });
+    // 4. Phase 1: First CTA is "Ver Total"
+    const viewBreakdownBtn = screen.getByRole('button', { name: /Ver Total/i });
     expect(viewBreakdownBtn).toBeEnabled();
     fireEvent.click(viewBreakdownBtn);
   });
@@ -111,12 +115,31 @@ describe('Calculator UI Integration', () => {
     fireEvent.change(widthInput, { target: { value: '5' } });
     fireEvent.change(thickInput, { target: { value: '10' } });
 
-    // Check for updated Total label (compact variant shows "Total")
-    expect(screen.getByText('Total')).toBeInTheDocument();
+    // Select Strength & Service
+    // Note: Strength is implicit or selected? "Selecciona el tipo ajusta automáticamente la resistencia"
+    // Usually Assist logic sets strength defaults?
+    // But Service is required.
+    // Assist mode renders Service selector? Yes.
+    // AssistM3 progress: workType -> dimensions -> specs -> service.
+
+    // We need to verify if Service is visible yet?
+    // With progress guide, is the service selector hidden until active?
+    // No, the selectors are in `AssistantForm` or `CalculatorForm`.
+    // The current implementation of `AssistantForm` renders based on logic.
+    // Let's assume we need to select Service.
+
+    // Check if Service selector is available.
+    const serviceSelect = screen.getByLabelText(/Servicio/i);
+    fireEvent.change(serviceSelect, { target: { value: 'direct' } });
+    const strengthSelect = screen.getByLabelText(/Resistencia/i);
+    fireEvent.change(strengthSelect, { target: { value: '250' } });
+
+    // Check for "Todo listo" hint
+    expect(screen.getByText(/Todo listo/i)).toBeInTheDocument();
 
     // 10*5*0.10 = 5m3 * factor. Should be valid.
-    // Phase 1: Button text is now "Ver Desglose de Cotización"
-    const viewBreakdownBtn = screen.getByRole('button', { name: /Verificar datos/i });
+    // Phase 1: Button text is now "Ver Total"
+    const viewBreakdownBtn = screen.getByRole('button', { name: /Ver Total/i });
     expect(viewBreakdownBtn).toBeEnabled();
   });
 
@@ -138,7 +161,7 @@ describe('Calculator UI Integration', () => {
 
     // Ensure the quote button is NOT present when invalid (still shows, but disabled)
     // With Phase 1, button shows but is disabled. Check for empty state hint instead.
-    const emptyHint = screen.queryByText(/Completa los datos/i);
+    const emptyHint = screen.queryByText(/Te guiaremos paso a paso/i);
     expect(emptyHint).toBeInTheDocument();
   });
 

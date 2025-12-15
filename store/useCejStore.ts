@@ -41,7 +41,7 @@ interface CalculatorSlice {
 interface OrderSlice {
     cart: CartItem[];
     history: CartItem[];
-    addToCart: (quote: QuoteBreakdown) => string; // Returns the new item ID
+    addToCart: (quote: QuoteBreakdown, openDrawer?: boolean) => string; // Returns the new item ID
     updateCartItemCustomer: (id: string, customer: CustomerInfo) => void;
     updateCartItemFolio: (id: string, folio: string) => void;
     removeFromCart: (id: string) => void;
@@ -181,7 +181,7 @@ export const useCejStore = create<CejStore>()(
             cart: [],
             history: [],
 
-            addToCart: (results) => {
+            addToCart: (results, openDrawer = true) => {
                 const state = get();
 
                 // Construct label
@@ -211,7 +211,7 @@ export const useCejStore = create<CejStore>()(
                 set((s) => ({
                     cart: [...s.cart, newItem],
                     draft: { ...DEFAULT_CALCULATOR_STATE }, // Reset Form
-                    isDrawerOpen: true,
+                    isDrawerOpen: openDrawer,
                     activeTab: 'order'
                 }));
 

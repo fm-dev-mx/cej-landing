@@ -95,10 +95,10 @@ describe('QuoteSummary Integration - Phase 1 Progressive Disclosure', () => {
         });
 
         render(<QuoteSummary />);
-        expect(screen.getByText(/Completa los datos/i)).toBeDefined();
+        expect(screen.getByTestId('ticket-display')).toBeInTheDocument();
     });
 
-    it('shows "Ver Desglose" CTA button in preview stage when quote is valid', () => {
+    it('shows "Ver Total" CTA button in preview stage when quote is valid', () => {
         (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
             quote: {
                 total: 5000,
@@ -111,7 +111,7 @@ describe('QuoteSummary Integration - Phase 1 Progressive Disclosure', () => {
         });
 
         render(<QuoteSummary />);
-        expect(screen.getByRole('button', { name: /Verificar datos/i })).toBeDefined();
+        expect(screen.getByRole('button', { name: /Ver Total/i })).toBeDefined();
     });
 
     it('shows "Confirmar y Generar Ticket" CTA in breakdown stage', () => {
@@ -326,7 +326,7 @@ describe('QuoteSummary Integration - Phase 1 Progressive Disclosure', () => {
         expect(screen.queryByText(/Completa los datos/i)).toBeNull();
 
         // Button should be disabled
-        const btn = screen.getByRole('button', { name: /Verificar datos/i });
+        const btn = screen.getByRole('button', { name: /Ver Total/i });
         expect(btn).toBeDisabled();
     });
 });

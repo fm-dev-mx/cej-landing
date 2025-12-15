@@ -12,6 +12,7 @@ import { trackContact } from '@/lib/tracking/visitor';
 
 import { fmtMXN, getWhatsAppUrl } from '@/lib/utils';
 import { env } from '@/config/env';
+import { getCalculatorSteps } from '@/lib/progress';
 
 import styles from './CalculatorForm.module.scss';
 
@@ -88,7 +89,7 @@ export function QuoteSummary({ }: QuoteSummaryProps) {
 
             // 1. Add to cart immediately (creates draft -> cart item)
             // This resets the draft, but we have `quote` (which is currentQuote here)
-            const itemId = addToCart(currentQuote);
+            const itemId = addToCart(currentQuote, false); // false = do NOT open drawer
 
             // 2. Process order
             const result = await processOrder(customer, false);
@@ -117,7 +118,7 @@ export function QuoteSummary({ }: QuoteSummaryProps) {
         // Modal handles processOrder internally.
         // But we MUST Add to Cart here because it wasn't done yet.
         // Note: currentQuote is still valid here because addToCart hasn't run yet.
-        const itemId = addToCart(currentQuote);
+        const itemId = addToCart(currentQuote, false); // false = do NOT open drawer
 
         // Update cart item with customer info we just got
         // Note: user.phone is updated by the modal before calling onSuccess
@@ -142,10 +143,50 @@ export function QuoteSummary({ }: QuoteSummaryProps) {
         moveToHistory();
     };
 
-    // Reset: Start a new quote
+    // Reset: Start a new quote (Full Reset)
     const handleReset = () => {
         clearSubmittedQuote();
         resetDraft();
+    };
+
+    // Reset ONLY the current mode (Keep other mode draft safe)
+    const setMode = useCejStore((s) => s.setMode);
+    const handleResetCurrentMode = () => {
+        // To reset current mode, we can re-set the mode to itself.
+        // The store logic 'setMode' handles initializing fresh state if not found.
+        // However, if we want to FORCE reset, we might need a specific action.
+        // Currently 'resetDraft' resets everything.
+        // Let's use `updateDraft` to reset fields manually or add a store action.
+        // Quick fix: clear specific fields based on mode.
+
+        if (draft.mode === 'knownM3') {
+            // Reset knownM3 fields
+            useCejStore.getState().updateDraft({
+                m3: '',
+                strength: null,
+                type: null,
+                additives: []
+            });
+        } else {
+            // Reset assist fields
+            useCejStore.getState().updateDraft({
+                workType: null,
+                length: '',
+                width: '',
+                area: '',
+                m3: '',
+                // We don't reset strength/type here usually unless we want full reset of flow
+                strength: null,
+                type: null,
+                additives: [],
+                // Reset specs
+                hasCoffered: undefined,
+                cofferedSize: undefined,
+                thicknessByDims: undefined,
+                thicknessByArea: undefined // Or keep defaults
+            });
+        }
+        setBreakdownViewed(false);
     };
 
     // Go back from breakdown to preview
@@ -155,16 +196,8 @@ export function QuoteSummary({ }: QuoteSummaryProps) {
 
     // --- Render Logic ---
 
-    // Empty state: No valid calculation yet
-    if (quote.total <= 0 && !submittedQuote && !isProcessing && cart.length === 0) {
-        return (
-            <div className={styles.emptyStateHint}>
-                <p className={styles.hint}>
-                    Completa los datos para ver la cotización.
-                </p>
-            </div>
-        );
-    }
+    // Early return removed to allow TicketDisplay (Compact) to render the Progress Guide
+    // validation logic is now handled inside TicketDisplay
 
     // Determine current stage
     const stage: 'preview' | 'breakdown' | 'submitted' = submittedQuote
@@ -195,6 +228,8 @@ export function QuoteSummary({ }: QuoteSummaryProps) {
                     folio={submittedQuote?.folio}
                     customerName={submittedQuote?.name}
                     warning={warning}
+                    steps={getCalculatorSteps(draft)}
+                    onReset={handleResetCurrentMode}
                 />
             </div>
 
@@ -208,17 +243,13 @@ export function QuoteSummary({ }: QuoteSummaryProps) {
                             onClick={handleViewBreakdown}
                             disabled={!isValid}
                         >
-                            {
-                                draft.mode === 'knownM3'
-                                    ? 'Verificar datos'
-                                    : 'Verificar datos'
-                            }
+                            Ver Total
                         </Button>
 
                         <p className={styles.summaryFooter}>
                             {isValid
-                                ? 'Revisa el detalle antes de continuar.'
-                                : 'Ingresa el volumen para continuar.'}
+                                ? 'Continúa para ver el detalle de costos.'
+                                : 'Completa los pasos para ver el total.'}
                         </p>
                     </>
                 )}

@@ -20,6 +20,7 @@ export default function QuoteDrawer() {
     } = useCejStore();
 
     const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
     if (!isDrawerOpen) return null;
 
@@ -133,12 +134,33 @@ export default function QuoteDrawer() {
                                                     >
                                                         Editar
                                                     </button>
-                                                    <button
-                                                        className={styles.textBtnDanger}
-                                                        onClick={() => removeFromCart(item.id)}
-                                                    >
-                                                        Borrar
-                                                    </button>
+                                                    {confirmDeleteId === item.id ? (
+                                                        <div className={styles.confirmActions}>
+                                                            <span className={styles.confirmText}>¿Seguro?</span>
+                                                            <button
+                                                                className={styles.textBtnDanger}
+                                                                onClick={() => {
+                                                                    removeFromCart(item.id);
+                                                                    setConfirmDeleteId(null);
+                                                                }}
+                                                            >
+                                                                Sí
+                                                            </button>
+                                                            <button
+                                                                className={styles.textBtnPrimary}
+                                                                onClick={() => setConfirmDeleteId(null)}
+                                                            >
+                                                                No
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            className={styles.textBtnDanger}
+                                                            onClick={() => setConfirmDeleteId(item.id)}
+                                                        >
+                                                            Borrar
+                                                        </button>
+                                                    )}
                                                 </>
                                             ) : (
                                                 <button

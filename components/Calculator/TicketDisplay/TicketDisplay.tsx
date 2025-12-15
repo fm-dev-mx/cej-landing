@@ -13,6 +13,8 @@ interface TicketDisplayProps {
     folio?: string;
     customerName?: string;
     warning?: QuoteWarning | null;
+    steps?: { id: string; label: string; isCompleted: boolean; isActive: boolean }[];
+    onReset?: () => void;
 }
 
 /**
@@ -23,7 +25,7 @@ interface TicketDisplayProps {
 * - preview: Full breakdown without folio (Phase 1 - after "Ver Desglose")
 * - full: Complete ticket with folio and customer info (after submission)
 */
-export function TicketDisplay({ variant, quote, isValidQuote = true, folio, customerName, warning }: TicketDisplayProps) {
+export function TicketDisplay({ variant, quote, isValidQuote = true, folio, customerName, warning, steps, onReset }: TicketDisplayProps) {
     // If no quote, show empty state
     if (!quote) {
         return (
@@ -43,50 +45,50 @@ export function TicketDisplay({ variant, quote, isValidQuote = true, folio, cust
     // Avoid NaN/Infinity if subtotal is 0
     const vatPercentage = quote.subtotal > 0 ? Math.round((quote.vat / quote.subtotal) * 100) : 8;
 
-    // Compact variant: Simplified summary view
+    // Compact variant: Simplified summary view (Progress Guide)
     if (variant === 'compact') {
         return (
             <div className={`${styles.ticket} ${styles.compact}`}>
                 <div className={styles.compactContent}>
                     <div className={styles.compactHeader}>
-                        <span className={styles.compactLabel}>Cotización Estimada</span>
+                        <span className={styles.compactTitle}>
+                            {isValidQuote ? "Listo para ver total" : "Completa la información"}
+                        </span>
+                    </div>
+
+                    {/* Progress Guide List */}
+                    <div className={styles.progressList}>
+                        {steps?.map((step) => (
+                            <div
+                                key={step.id}
+                                className={`${styles.progressStep} ${step.isActive ? styles.active : ''} ${step.isCompleted ? styles.completed : ''}`}
+                            >
+                                <div className={styles.stepIcon}>
+                                    {step.isCompleted ? '✓' : step.isActive ? '➜' : ''}
+                                </div>
+                                <span className={styles.stepLabel}>{step.label}</span>
+                            </div>
+                        ))}
                     </div>
 
                     <div className={styles.compactTotal}>
-                        <span className={styles.compactTotalLabel}>Total</span>
                         {isValidQuote ? (
-                            <span className={styles.compactTotalValue}>{fmtMXN(quote.total)}</span>
+                            <p className={styles.compactHint}>
+                                Todo listo. Haz clic en "Ver Total" para continuar.
+                            </p>
                         ) : (
-                            <span className={styles.compactPlaceholder}>
-                                Ingresa el volumen para ver el total
-                            </span>
+                            <p className={styles.compactHint}>
+                                Te guiaremos paso a paso para obtener tu cotización.
+                            </p>
                         )}
                     </div>
 
-                    {/* Only show meta info when quote is valid */}
-                    {isValidQuote && quote.volume && (
-                        <div className={styles.compactMeta}>
-                            <span>{quote.volume.billedM3} m³ • {quote.concreteType === 'pumped' ? 'Bomba' : 'Directo'}</span>
-                        </div>
+                    {/* Reset Action */}
+                    {onReset && (
+                        <button onClick={onReset} className={styles.resetBtn} type="button">
+                            Reiniciar cálculo
+                        </button>
                     )}
-
-                    <p className={styles.compactHint}>
-                        {isValidQuote
-                            ? 'Haz clic en "Verificar datos" para revisar el detalle.'
-                            : 'Completa los datos del formulario para generar tu cotización.'}
-                    </p>
-
-                    {/* Only show warning when quote is valid */}
-                    {isValidQuote && warning && (
-                        <div className={styles.warningNote}>
-                            ℹ️{" "}
-                            {warning.code === "BELOW_MINIMUM"
-                                ? "Pedido mínimo ajustado"
-                                : "Volumen redondeado"}
-                        </div>
-                    )}
-
-
                 </div>
             </div>
         );

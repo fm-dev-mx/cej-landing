@@ -66,10 +66,39 @@ describe('QuoteDrawer', () => {
         expect(mockEdit).toHaveBeenCalledWith('item-1');
     });
 
-    it('calls removeFromCart when Borrar clicked', () => {
+    it('calls removeFromCart when Borrar clicked and confirmed', () => {
         render(<QuoteDrawer />);
-        fireEvent.click(screen.getByText('Borrar'));
+
+        // 1. Click "Borrar"
+        const deleteBtn = screen.getByText('Borrar');
+        fireEvent.click(deleteBtn);
+
+        // 2. Check for confirmation UI
+        expect(screen.getByText('¿Seguro?')).toBeDefined();
+        const confirmBtn = screen.getByText('Sí');
+
+        // 3. Click "Sí"
+        fireEvent.click(confirmBtn);
+
         expect(mockRemove).toHaveBeenCalledWith('item-1');
+    });
+
+    it('does not call removeFromCart when Borrar is cancelled', () => {
+        render(<QuoteDrawer />);
+
+        // 1. Click "Borrar"
+        const deleteBtn = screen.getByText('Borrar');
+        fireEvent.click(deleteBtn);
+
+        // 2. Click "No" (Cancel)
+        const cancelBtn = screen.getByText('No');
+        fireEvent.click(cancelBtn);
+
+        expect(mockRemove).not.toHaveBeenCalled();
+
+        // 3. UI should reset (Borrar button visible again)
+        expect(screen.getByText('Borrar')).toBeDefined();
+        expect(screen.queryByText('¿Seguro?')).toBeNull();
     });
 
     it('opens lead modal on "Finalizar Pedido"', () => {

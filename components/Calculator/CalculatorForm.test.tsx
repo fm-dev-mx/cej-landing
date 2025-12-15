@@ -37,8 +37,8 @@ describe('CalculatorForm (Integration)', () => {
         expect(screen.getByText(/¿Cómo quieres cotizar?/i)).toBeInTheDocument();
         expect(screen.getByTestId('mode-selector')).toHaveTextContent('Mode: knownM3');
         expect(screen.getByTestId('known-input')).toBeInTheDocument();
-        // Expert options hidden by default
-        expect(screen.queryByText(/Aditivos/i)).not.toBeInTheDocument();
+        // Expert options hidden by default (AdditivesForm should not be in document)
+        expect(screen.queryByTestId('additives-form')).not.toBeInTheDocument();
     });
 
     it('switches layout when mode changes', () => {
