@@ -107,9 +107,9 @@ describe('Calculator UI Integration', () => {
     fireEvent.click(screen.getByRole('radio', { name: /Sólida/i }));
 
     // Inputs
-    const lengthInput = screen.getByLabelText('Largo (m)');
-    const widthInput = screen.getByLabelText('Ancho (m)');
-    const thickInput = screen.getByLabelText('Espesor Total de Losa (cm)');
+    const lengthInput = screen.getByLabelText('Largo');
+    const widthInput = screen.getByLabelText('Ancho');
+    const thickInput = screen.getByLabelText('Espesor Total de Losa');
 
     fireEvent.change(lengthInput, { target: { value: '10' } });
     fireEvent.change(widthInput, { target: { value: '5' } });

@@ -7,10 +7,12 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   variant?: 'dark' | 'light';
   error?: boolean | string;
+  /** Visual unit suffix displayed inside the input (e.g., "m", "cm", "m²") */
+  suffix?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, isVolume, label, id, variant = 'dark', error, ...props }, ref) => {
+  ({ className, isVolume, label, id, variant = 'dark', error, suffix, ...props }, ref) => {
     // Generate a unique ID for the error message if one isn't provided
     const internalId = useId();
     const inputId = id || internalId;
@@ -28,20 +30,28 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputClasses = [
       styles.input,
       isVolume ? styles.volumeInput : '',
+      suffix ? styles.hasSuffix : '',
       className
     ]
       .filter(Boolean)
       .join(' ');
 
     const inputElement = (
-      <input
-        ref={ref}
-        id={inputId}
-        className={inputClasses}
-        aria-invalid={hasError}
-        aria-describedby={errorId}
-        {...props}
-      />
+      <div className={styles.inputWrapper}>
+        <input
+          ref={ref}
+          id={inputId}
+          className={inputClasses}
+          aria-invalid={hasError}
+          aria-describedby={errorId}
+          {...props}
+        />
+        {suffix && (
+          <span className={styles.suffix} aria-hidden="true">
+            {suffix}
+          </span>
+        )}
+      </div>
     );
 
     // Atom behavior (input only)

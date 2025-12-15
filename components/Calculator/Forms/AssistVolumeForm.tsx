@@ -99,8 +99,9 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
             {volumeMode === "dimensions" ? (
                 <div className={styles.compactGrid}>
                     <Input
-                        label="Largo (m)"
+                        label="Largo"
                         placeholder="0.00"
+                        suffix="metros"
                         value={length}
                         onChange={handleNumeric("length")}
                         onBlur={handleBlur("length")}
@@ -109,8 +110,9 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                         error={hasSpecificError("length", length)}
                     />
                     <Input
-                        label="Ancho (m)"
+                        label="Ancho"
                         placeholder="0.00"
+                        suffix="metros"
                         value={width}
                         onChange={handleNumeric("width")}
                         onBlur={handleBlur("width")}
@@ -121,8 +123,9 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                 </div>
             ) : (
                 <Input
-                    label="Área total (m²)"
+                    label="Área total"
                     placeholder="0.00"
+                    suffix="m²"
                     value={area}
                     onChange={handleNumeric("area")}
                     onBlur={handleBlur("area")}
@@ -157,8 +160,9 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                         ) : (
                             <div className={styles.animateFadeIn}>
                                 <Input
-                                    label="Grosor Capa Compresión (cm)"
+                                    label="Grosor Capa Compresión"
                                     placeholder="5"
+                                    suffix="cm"
                                     value={volumeMode === "dimensions" ? thicknessByDims : thicknessByArea}
                                     onChange={handleNumeric(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea")}
                                     inputMode="decimal"
@@ -174,8 +178,9 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                 ) : (
                     // Logic for Standard/Solid Slabs or other types
                     <Input
-                        label={workType === 'slab' ? "Espesor Total de Losa (cm)" : "Grosor (cm)"}
+                        label={workType === 'slab' ? "Espesor Total de Losa" : "Grosor"}
                         placeholder={workType === 'slab' ? "10" : "10"}
+                        suffix="cm"
                         value={volumeMode === "dimensions" ? thicknessByDims : thicknessByArea}
                         onChange={handleNumeric(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea")}
                         inputMode="decimal"

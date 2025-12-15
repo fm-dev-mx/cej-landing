@@ -103,8 +103,8 @@ describe('Calculator Navigation & Button Logic', () => {
     const workTypeSelect = screen.getByRole('combobox', { name: /Tipo de Obra/i });
     fireEvent.change(workTypeSelect, { target: { value: 'slab' } });
 
-    const lengthInput = screen.getByLabelText('Largo (m)');
-    const widthInput = screen.getByLabelText('Ancho (m)');
+    const lengthInput = screen.getByLabelText('Largo');
+    const widthInput = screen.getByLabelText('Ancho');
 
     // Initially button hidden (Phase 1: use "Verificar datos" text)
     expect(screen.queryByRole('button', { name: /Calcular y Verificar/i })).not.toBeInTheDocument();
@@ -115,7 +115,7 @@ describe('Calculator Navigation & Button Logic', () => {
     // --- SCENARIO A: Solid Slab ---
     fireEvent.click(screen.getByRole('radio', { name: /Sólida/i }));
 
-    const thicknessInput = screen.getByLabelText('Espesor Total de Losa (cm)');
+    const thicknessInput = screen.getByLabelText('Espesor Total de Losa');
     expect(thicknessInput).toBeVisible();
 
     // Empty -> Button hidden

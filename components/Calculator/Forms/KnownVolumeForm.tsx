@@ -42,7 +42,7 @@ export function KnownVolumeForm({ hasError, onFieldTouched }: Props) {
         <div className={styles.fieldWithHelper}>
             <Input
                 id="vol-known"
-                label="Volumen Total (m³)"
+                label="Volumen Total"
                 type="number"
                 min={0}
                 step={0.5}
@@ -52,6 +52,7 @@ export function KnownVolumeForm({ hasError, onFieldTouched }: Props) {
                 isVolume
                 inputMode="decimal"
                 placeholder="0.0"
+                suffix="m³"
                 error={errorMessage}
             />
             {/* Show guidance text only before interaction and when there's no error */}

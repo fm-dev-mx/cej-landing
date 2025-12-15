@@ -74,9 +74,61 @@
 
 /* Special modifiers */
 .volumeInput {
-  width: 8rem;
   font-weight: 700;
   font-size: 1.125rem;
   text-align: center;
   padding-inline: 0.5rem;
+
+  // Hide native number spinners for cleaner look
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  // Firefox
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* --- Input Wrapper & Suffix for Units --- */
+.inputWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+
+
+.suffix {
+  position: relative;
+  right: 5rem;
+
+  // Subtle secondary color
+  color: var(--c-muted-on-dark);
+  opacity: 0.6;
+
+  font-size: var(--fs-sm);
+  font-weight: 500;
+
+  // Non-interactive decoration
+  pointer-events: none;
+  user-select: none;
+}
+
+// Padding adjustment when suffix is present
+.hasSuffix {
+  padding-right: 2.75rem;
+}
+
+// Volume input suffix positioning (narrower input, no spinners)
+.volumeInput.hasSuffix {
+  padding-right: 2.25rem;
+  text-align: left;
+  padding-left: 0.75rem;
+}
+
+// Light variant suffix
+.light .suffix {
+  color: var(--c-muted);
 }
