@@ -25,7 +25,7 @@ interface TicketDisplayProps {
 * - preview: Full breakdown without folio (Phase 1 - after "Ver Desglose")
 * - full: Complete ticket with folio and customer info (after submission)
 */
-export function TicketDisplay({ variant, quote, isValidQuote = true, folio, customerName, warning, steps, onReset }: TicketDisplayProps) {
+export function TicketDisplay({ variant, quote, isValidQuote = true, folio, customerName, steps, onReset }: TicketDisplayProps) {
     // If no quote, show empty state
     if (!quote) {
         return (
@@ -74,7 +74,7 @@ export function TicketDisplay({ variant, quote, isValidQuote = true, folio, cust
                     <div className={styles.compactTotal}>
                         {isValidQuote ? (
                             <p className={styles.compactHint}>
-                                Todo listo. Haz clic en "Ver Total" para continuar.
+                                Todo listo. Haz clic en &quot;Ver Total&quot; para continuar.
                             </p>
                         ) : (
                             <p className={styles.compactHint}>

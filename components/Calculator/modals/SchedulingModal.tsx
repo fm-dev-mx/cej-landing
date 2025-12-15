@@ -34,7 +34,7 @@ export function SchedulingModal({
     const [notes, setNotes] = useState("");
 
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
-    const [saveMyData, setSaveMyData] = useState(true);
+    const [saveMyData] = useState(true);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

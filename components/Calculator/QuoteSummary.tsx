@@ -52,7 +52,7 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
 
     // Display Quote: Submitted one OR Current Draft
     const quote = submittedQuote ? submittedQuote.results : currentQuote;
-    const { processOrder, isProcessing } = useCheckoutUI();
+    const { isProcessing } = useCheckoutUI();
 
     const [isSchedulingOpen, setSchedulingOpen] = useState(false);
     const ticketRef = useRef<HTMLDivElement>(null);

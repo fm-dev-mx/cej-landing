@@ -1,10 +1,9 @@
 
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QuoteSummary } from './QuoteSummary';
 import { useCejStore } from '@/store/useCejStore';
 import { useQuoteCalculator } from '@/hooks/useQuoteCalculator';
-import { useCheckoutUI } from '@/hooks/useCheckOutUI';
 
 // Mock dependencies
 vi.mock('@/store/useCejStore');

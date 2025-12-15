@@ -293,12 +293,12 @@ export const useCejStore = create<CejStore>()(
              * Note: Does NOT add to cart automatically - user must review and request quote again.
              */
             loadQuote: (item) => {
-                set((state) => ({
+                set({
                     draft: { ...item.inputs },
                     // Reset to order view so next time they open drawer they see cart
                     activeTab: 'order',
                     isDrawerOpen: false
-                }));
+                });
                 // Scroll to calculator for better UX (like cloneCartItem)
                 if (typeof document !== 'undefined') {
                     document.getElementById('calculator-section')?.scrollIntoView({ behavior: 'smooth' });

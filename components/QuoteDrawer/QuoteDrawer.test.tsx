@@ -6,8 +6,8 @@ import { useCejStore } from '@/store/useCejStore';
 // --- Mocks ---
 vi.mock('@/store/useCejStore');
 // Mock Child Components
-vi.mock('@/components/Calculator/modals/LeadFormModal', () => ({
-    LeadFormModal: ({ isOpen }: { isOpen: boolean }) => isOpen ? <div>Lead Modal Open</div> : null
+vi.mock('@/components/Calculator/modals/SchedulingModal', () => ({
+    SchedulingModal: ({ isOpen }: { isOpen: boolean }) => isOpen ? <div data-testid="scheduling-modal">Programar Pedido</div> : null
 }));
 
 describe('QuoteDrawer', () => {
@@ -101,9 +101,9 @@ describe('QuoteDrawer', () => {
         expect(screen.queryByText('¿Seguro?')).toBeNull();
     });
 
-    it('opens lead modal on "Finalizar Pedido"', () => {
+    it('opens scheduling modal on "Finalizar Pedido"', () => {
         render(<QuoteDrawer />);
         fireEvent.click(screen.getByText('Finalizar Pedido'));
-        expect(screen.getByText('Lead Modal Open')).toBeDefined();
+        expect(screen.getByTestId('scheduling-modal')).toBeDefined();
     });
 });

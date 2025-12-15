@@ -33,7 +33,6 @@ export default function GlobalUI() {
          *
          * @see https://react.dev/reference/react/useEffect#controlling-a-non-react-widget
          */
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsHydrated(true);
 
         // Expose store for E2E testing (development only)
