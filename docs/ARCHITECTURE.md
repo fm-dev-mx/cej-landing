@@ -166,3 +166,43 @@ We use a centralized error reporting utility to maintain the "Fail-Open" philoso
 - **Usage:**
   - **Server Actions:** Wrap DB calls in `try/catch` and use `reportError`. Do not throw unless the error is critical to the user (e.g., Invalid Input).
   - **Client Components:** Use for non-blocking UI failures (e.g., tracking pixel failure).
+
+---
+
+## 8. Architectural Decisions
+
+### 8.1 Repository Pattern (Deferred)
+
+**Decision:** Partial implementation deferred to the start of **Phase 4.3**.
+
+#### Context
+
+The current system (Phase 4A) is simple enough that a Repository layer would introduce unnecessary abstraction ("over-engineering"). However, upcoming requirements for Phase 4B (multi-tenant, complex billing) will mandate better separation of concerns.
+
+#### Rationale
+
+- **Current State:**
+  - Single access point (`submitLead` Server Action).
+  - No logic duplication in queries.
+  - Testability is high with current mocks.
+- **Trigger for Adoption:**
+  - Start of **Phase 4.3**.
+  - OR when **≥ 3 Server Actions** access the same entity (e.g., Orders).
+  - OR when complex caching/invalidation rules are introduced.
+
+#### Implementation Strategy (Phase 4.3)
+
+When triggered, the implementation will focus on specific high-priority domains:
+
+| Domain | Scope | Justification |
+| :--- | :--- | :--- |
+| **Orders** | **In Scope** | Complex CRUD (create, status machine, read). |
+| **Profiles** | **In Scope** | Update logic + PII/Privacy compliance. |
+| **Pricing** | **In Scope** | Read-only adapter (already exists, will formalize). |
+| **Leads** | Out of Scope | Write-only, low complexity. |
+| **Cart** | Out of Scope | Client-side only (Zustand). |
+
+#### Risks
+
+- **Doing it now:** Disruption to Phase 4A velocity; frequent API changes.
+- **Deferring:** Minor refactor cost later, considered acceptable given low current complexity.

@@ -83,6 +83,7 @@ Tracking is more robust across platforms (including iOS), and the site is better
 #### 4.3 SaaS Infrastructure (Planned)
 
 - [ ] **Data Sync:** Migrate from static `FALLBACK_PRICING_RULES` to live `price_config` table in Supabase.
+- [ ] **Repository Layer:** Begin partial implementation for Orders/Profiles (triggered by multi-action complexity).
 - [ ] **Auth:** Supabase Auth integration (Magic Link).
 - [ ] **Profiles:** User profile management (`public.profiles`).
 - [ ] **Order Sync:** Sync local cart to database for authenticated users.

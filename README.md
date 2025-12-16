@@ -223,7 +223,7 @@ Main docs live under `/docs`:
 ### Technical
 
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) – Phases, sprints, and strategic direction.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) – High-level architecture and data flow.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) – High-level architecture, data flow, and key decisions.
 - [`docs/DB_SCHEMA.md`](docs/DB_SCHEMA.md) – Tables, JSONB snapshots, and RLS.
 - [`docs/PRICING_MODEL.md`](docs/PRICING_MODEL.md) – Pricing formulas and constraints.
 - [`docs/TRACKING_GUIDE.md`](docs/TRACKING_GUIDE.md) – Pixel, CAPI, and analytics.
