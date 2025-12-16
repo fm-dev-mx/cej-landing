@@ -45,4 +45,22 @@ describe('TicketDisplay', () => {
         render(<TicketDisplay quote={null} variant="preview" />);
         expect(screen.getByText(/No hay datos de cotización/i)).toBeInTheDocument();
     });
+
+    it('renders compact variant correctly', () => {
+        const mockSteps = [
+            { id: '1', label: 'Paso 1', isCompleted: true, isActive: false },
+            { id: '2', label: 'Paso 2', isCompleted: false, isActive: true },
+            { id: '3', label: 'Paso 3', isCompleted: false, isActive: false },
+        ];
+
+        render(<TicketDisplay quote={MOCK_QUOTE} variant="compact" steps={mockSteps} isValidQuote={false} />);
+
+        // Should show the active step label when not complete
+        // In the mock, Step 2 is active, so it should show "Paso 2" or "Completar" logic?
+        // Logic: const currentLabel = steps?.find(s => s.isActive)?.label || "Completar";
+        expect(screen.getByText('Paso 2')).toBeInTheDocument();
+
+        // Should NOT show the full breakdown
+        expect(screen.queryByText('$10,000.00')).not.toBeInTheDocument();
+    });
 });
