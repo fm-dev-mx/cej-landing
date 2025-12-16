@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { waitForStore } from './test-utils';
 
 /**
  * Drawer Flow E2E Tests
@@ -12,12 +13,12 @@ test.describe('QuoteDrawer Lifecycle', () => {
     test('Edit flow: item stays in cart during edit, updates on save', async ({ page }) => {
         await page.goto('/');
 
+        // Wait for store to be available (fixes WebKit race condition)
+        await waitForStore(page);
+
         // Inject a cart item directly for controlled testing (skip slow UI interaction)
         await page.evaluate(() => {
-            // @ts-expect-error - Store exposed on window in dev mode
-            const store = window.useCejStore;
-            if (!store) throw new Error('Store not exposed');
-
+            const store = (window as any).useCejStore;
             store.setState({
                 cart: [{
                     id: 'e2e-test-item',
@@ -53,7 +54,7 @@ test.describe('QuoteDrawer Lifecycle', () => {
                     },
                     config: { label: 'Volumen Directo - f\'c 250' }
                 }],
-                isDrawerOpen: true, // Open drawer directly
+                isDrawerOpen: true,
                 activeTab: 'order',
                 submittedQuote: null,
                 breakdownViewed: false,
@@ -61,7 +62,7 @@ test.describe('QuoteDrawer Lifecycle', () => {
             });
         });
 
-        // Wait for drawer to render (same pattern as Delete test)
+        // Wait for drawer to render
         const drawer = page.locator('aside');
         await expect(drawer).toBeVisible();
         await expect(drawer.getByText('Volumen Directo')).toBeVisible();
@@ -75,15 +76,13 @@ test.describe('QuoteDrawer Lifecycle', () => {
 
         // Verify editingItemId is set (via store state)
         const editingItemId = await page.evaluate(() => {
-            // @ts-expect-error - Store exposed on window
-            return window.useCejStore?.getState().editingItemId;
+            return (window as any).useCejStore?.getState().editingItemId;
         });
         expect(editingItemId).toBe('e2e-test-item');
 
         // CRITICAL: Verify item is STILL in cart (non-destructive)
         const cartLength = await page.evaluate(() => {
-            // @ts-expect-error - Store exposed on window
-            return window.useCejStore?.getState().cart.length;
+            return (window as any).useCejStore?.getState().cart.length;
         });
         expect(cartLength).toBe(1);
 
@@ -95,12 +94,12 @@ test.describe('QuoteDrawer Lifecycle', () => {
     test('Delete flow: confirmation required, empty state shown after', async ({ page }) => {
         await page.goto('/');
 
+        // Wait for store to be available (fixes WebKit race condition)
+        await waitForStore(page);
+
         // Inject a cart item
         await page.evaluate(() => {
-            // @ts-expect-error - Store exposed on window in dev mode
-            const store = window.useCejStore;
-            if (!store) throw new Error('Store not exposed');
-
+            const store = (window as any).useCejStore;
             store.setState({
                 cart: [{
                     id: 'delete-test-item',
@@ -161,8 +160,7 @@ test.describe('QuoteDrawer Lifecycle', () => {
 
         // 5. Cart should be empty
         const cartLength = await page.evaluate(() => {
-            // @ts-expect-error - Store exposed on window
-            return window.useCejStore?.getState().cart.length;
+            return (window as any).useCejStore?.getState().cart.length;
         });
         expect(cartLength).toBe(0);
     });
@@ -170,12 +168,12 @@ test.describe('QuoteDrawer Lifecycle', () => {
     test('Cancel edit: item remains in cart, editingItemId cleared', async ({ page }) => {
         await page.goto('/');
 
+        // Wait for store to be available (fixes WebKit race condition)
+        await waitForStore(page);
+
         // Inject item and set editing mode (no reload - editingItemId is NOT persisted)
         await page.evaluate(() => {
-            // @ts-expect-error - Store exposed on window
-            const store = window.useCejStore;
-            if (!store) throw new Error('Store not exposed');
-
+            const store = (window as any).useCejStore;
             store.setState({
                 cart: [{
                     id: 'cancel-test-item',
@@ -233,9 +231,6 @@ test.describe('QuoteDrawer Lifecycle', () => {
             });
         });
 
-        // Wait for React to re-render with new state (no reload needed)
-        await page.waitForTimeout(100);
-
         // 1. Edit banner should be visible
         const editBanner = page.locator('[role="status"]', { hasText: /Editando cálculo/i });
         await expect(editBanner).toBeVisible();
@@ -249,15 +244,13 @@ test.describe('QuoteDrawer Lifecycle', () => {
 
         // 4. Cart should still have the item
         const cartLength = await page.evaluate(() => {
-            // @ts-expect-error - Store exposed on window
-            return window.useCejStore?.getState().cart.length;
+            return (window as any).useCejStore?.getState().cart.length;
         });
         expect(cartLength).toBe(1);
 
         // 5. editingItemId should be null
         const editingId = await page.evaluate(() => {
-            // @ts-expect-error - Store exposed on window
-            return window.useCejStore?.getState().editingItemId;
+            return (window as any).useCejStore?.getState().editingItemId;
         });
         expect(editingId).toBeNull();
     });

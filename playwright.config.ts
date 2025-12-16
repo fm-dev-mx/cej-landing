@@ -27,7 +27,7 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: process.env.CI ? [['list'], ['html']] : 'html',
+  reporter: 'list',
 
   /* Shared settings for all the projects below. */
   use: {
@@ -78,7 +78,7 @@ export default defineConfig({
     // Ensure 'npm run build' is executed before running tests in CI pipeline.
     command: 'pnpm run start',
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     timeout: 120 * 1000, // Give Next.js enough time to boot up (2 mins)
     stdout: 'pipe',
     stderr: 'pipe',
