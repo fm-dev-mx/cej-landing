@@ -14,10 +14,19 @@ $glass-border: rgba(255, 255, 255, 0.1);
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  padding-block: var(--sp-8);
+  padding-block: var(--sp-4);
+  /* Reduced from sp-8 for mobile compactness */
   padding-inline: var(--sp-4);
   background-color: var(--c-primary-dark);
   background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
+
+  /* Mobile viewport height fix */
+  @media (max-width: 768px) {
+    min-height: auto;
+    /* Let content dictate height on mobile to prevent large gaps */
+    padding-top: calc(var(--header-h-stuck) + var(--sp-4));
+    padding-bottom: calc(var(--bottom-bar-h) + var(--sp-4));
+  }
 
   @include respond-to('md') {
     min-height: 85svh;

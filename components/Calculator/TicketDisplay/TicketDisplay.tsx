@@ -45,50 +45,44 @@ export function TicketDisplay({ variant, quote, isValidQuote = true, folio, cust
     // Avoid NaN/Infinity if subtotal is 0
     const vatPercentage = quote.subtotal > 0 ? Math.round((quote.vat / quote.subtotal) * 100) : 8;
 
-    // Compact variant: Simplified summary view (Progress Guide)
+    // Compact variant: Simplified summary view (Horizontal Bar)
     if (variant === 'compact') {
+        const currentLabel = steps?.find(s => s.isActive)?.label || "Completar";
+
         return (
             <div className={`${styles.ticket} ${styles.compact}`}>
                 <div className={styles.compactContent}>
-                    <div className={styles.compactHeader}>
+                    {/* Left: Status / Prompt */}
+                    <div className={styles.compactInfo}>
                         <span className={styles.compactTitle}>
-                            {isValidQuote ? "Listo para ver total" : "Completa la información"}
+                            {isValidQuote ? "Todo listo" : currentLabel}
                         </span>
+                        <div className={styles.miniProgress}>
+                            {steps?.map((step) => (
+                                <div
+                                    key={step.id}
+                                    className={`${styles.miniDot} ${step.isCompleted ? styles.completed : ''} ${step.isActive ? styles.active : ''}`}
+                                    aria-hidden="true"
+                                />
+                            ))}
+                        </div>
                     </div>
 
-                    {/* Progress Guide List */}
-                    <div className={styles.progressList}>
-                        {steps?.map((step) => (
-                            <div
-                                key={step.id}
-                                className={`${styles.progressStep} ${step.isActive ? styles.active : ''} ${step.isCompleted ? styles.completed : ''}`}
-                            >
-                                <div className={styles.stepIcon}>
-                                    {step.isCompleted ? '✓' : step.isActive ? '➜' : ''}
-                                </div>
-                                <span className={styles.stepLabel}>{step.label}</span>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className={styles.compactTotal}>
-                        {isValidQuote ? (
-                            <p className={styles.compactHint}>
-                                Todo listo. Haz clic en &quot;Ver Total&quot; para continuar.
-                            </p>
-                        ) : (
-                            <p className={styles.compactHint}>
-                                Te guiaremos paso a paso para obtener tu cotización.
-                            </p>
+                    <div className={styles.resetContainer}>
+                        {/* Reset Action */}
+                        {onReset && (
+                            <button onClick={onReset} className={styles.resetBtn} type="button">
+                                Reiniciar cálculo
+                            </button>
                         )}
                     </div>
 
-                    {/* Reset Action */}
-                    {onReset && (
-                        <button onClick={onReset} className={styles.resetBtn} type="button">
-                            Reiniciar cálculo
-                        </button>
-                    )}
+                    {/* Right: Action Hint */}
+                    <div className={styles.compactAction}>
+                        {isValidQuote && (
+                            <span className={styles.compactHintText}>Continuar ↓</span>
+                        )}
+                    </div>
                 </div>
             </div>
         );
