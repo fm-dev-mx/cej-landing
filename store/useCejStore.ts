@@ -143,6 +143,11 @@ export const useCejStore = create<CejStore>()(
                     const config = WORK_TYPES.find(w => w.id === workType);
                     const recommendedType: ConcreteType | null = workType === 'slab' ? 'pumped' : state.draft.type;
 
+                    // Initialize default thickness to prevent "Required" validation error on hidden inputs
+                    // Slab (Coffered) -> 5cm compression layer
+                    // Others -> 10cm standard thickness
+                    const defaultThickness = workType === 'slab' ? '5' : '10';
+
                     return {
                         draft: {
                             ...state.draft,
@@ -151,6 +156,8 @@ export const useCejStore = create<CejStore>()(
                             type: recommendedType,
                             hasCoffered: workType === 'slab' ? 'yes' : 'no',
                             cofferedSize: workType === 'slab' ? '7' : null,
+                            thicknessByDims: defaultThickness,
+                            thicknessByArea: defaultThickness,
                         }
                     };
                 });

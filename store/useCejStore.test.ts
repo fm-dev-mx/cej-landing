@@ -33,6 +33,20 @@ describe('useCejStore (State Management)', () => {
             expect(result.current.draft.hasCoffered).toBe('no');
         });
 
+        it('initializes default thickness values to prevent validation errors', () => {
+            const { result } = renderHook(() => useCejStore());
+
+            // 1. Slab defaults to 5cm (Aligerada/Compression Layer)
+            act(() => result.current.setWorkType('slab'));
+            expect(result.current.draft.thicknessByDims).toBe('5');
+            expect(result.current.draft.thicknessByArea).toBe('5');
+
+            // 2. Others default to 10cm (Standard)
+            act(() => result.current.setWorkType('lightInteriorFloor'));
+            expect(result.current.draft.thicknessByDims).toBe('10');
+            expect(result.current.draft.thicknessByArea).toBe('10');
+        });
+
         it('clears workType when setting null', () => {
             const { result } = renderHook(() => useCejStore());
             act(() => result.current.setWorkType(null));
