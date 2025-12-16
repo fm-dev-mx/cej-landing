@@ -65,7 +65,7 @@ export function getCalculatorSteps(state: CalculatorState): ProgressStep[] {
         let hasSpecs = false;
         let specsLabel = 'Especificaciones';
 
-        if (state.workType === 'slab') {
+        if (state.volumeMode === 'dimensions' && state.workType === 'slab') {
             if (state.hasCoffered === 'yes') {
                 hasSpecs = !!state.cofferedSize;
                 specsLabel = 'Selecciona medida del casetón';

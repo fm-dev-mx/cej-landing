@@ -42,10 +42,12 @@ interface OrderSlice {
     cart: CartItem[];
     history: CartItem[];
     addToCart: (quote: QuoteBreakdown, openDrawer?: boolean) => string; // Returns the new item ID
+    updateCartItem: (id: string, quote: QuoteBreakdown) => void; // Update existing item in-place
     updateCartItemCustomer: (id: string, customer: CustomerInfo) => void;
     updateCartItemFolio: (id: string, folio: string) => void;
     removeFromCart: (id: string) => void;
     editCartItem: (id: string) => void;
+    cancelEdit: () => void; // Cancel current edit session
     cloneCartItem: (item: CartItem) => void;
     clearCart: () => void;
     moveToHistory: () => void;
@@ -56,9 +58,11 @@ interface UISlice {
     isDrawerOpen: boolean;
     activeTab: 'order' | 'history';
     isProcessingOrder: boolean;
+    editingItemId: string | null; // Track active edit session
     setDrawerOpen: (isOpen: boolean) => void;
     setActiveTab: (tab: 'order' | 'history') => void;
     setProcessingOrder: (isProcessing: boolean) => void;
+    setEditingItemId: (id: string | null) => void;
 }
 
 interface IdentitySlice {
@@ -89,7 +93,7 @@ export const useCejStore = create<CejStore>()(
             draft: { ...DEFAULT_CALCULATOR_STATE },
             savedDrafts: {},
 
-            resetDraft: () => set({ draft: { ...DEFAULT_CALCULATOR_STATE }, savedDrafts: {} }),
+            resetDraft: () => set({ draft: { ...DEFAULT_CALCULATOR_STATE }, savedDrafts: {}, editingItemId: null }),
 
             updateDraft: (updates) => set((state) => ({
                 draft: { ...state.draft, ...updates }
@@ -184,6 +188,43 @@ export const useCejStore = create<CejStore>()(
             addToCart: (results, openDrawer = true) => {
                 const state = get();
 
+                // If editing, update in-place instead of adding new
+                if (state.editingItemId) {
+                    const existingItem = state.cart.find(i => i.id === state.editingItemId);
+                    if (existingItem) {
+                        // Construct updated label
+                        let workTypeLabel = 'Carga Manual';
+                        if (state.draft.mode === 'assistM3' && state.draft.workType) {
+                            const match = WORK_TYPES.find(w => w.id === state.draft.workType);
+                            if (match) workTypeLabel = match.label;
+                        } else if (state.draft.mode === 'knownM3') {
+                            workTypeLabel = 'Volumen Directo';
+                        }
+                        const additivesList = state.draft.additives || [];
+                        const additivesCount = additivesList.length;
+                        const label = `${workTypeLabel} - f'c ${state.draft.strength} ${additivesCount > 0 ? `(+${additivesCount})` : ''}`;
+
+                        const updatedItem: CartItem = {
+                            ...existingItem,
+                            timestamp: Date.now(),
+                            inputs: { ...state.draft, additives: additivesList },
+                            results,
+                            config: { label }
+                        };
+
+                        set({
+                            cart: state.cart.map(item => item.id === state.editingItemId ? updatedItem : item),
+                            draft: { ...DEFAULT_CALCULATOR_STATE },
+                            editingItemId: null,
+                            isDrawerOpen: openDrawer,
+                            activeTab: 'order'
+                        });
+
+                        return state.editingItemId;
+                    }
+                }
+
+                // Default: Add new item
                 // Construct label
                 let workTypeLabel = 'Carga Manual';
                 if (state.draft.mode === 'assistM3' && state.draft.workType) {
@@ -211,11 +252,44 @@ export const useCejStore = create<CejStore>()(
                 set((s) => ({
                     cart: [...s.cart, newItem],
                     draft: { ...DEFAULT_CALCULATOR_STATE }, // Reset Form
+                    editingItemId: null,
                     isDrawerOpen: openDrawer,
                     activeTab: 'order'
                 }));
 
                 return id;
+            },
+
+            updateCartItem: (id, results) => {
+                const state = get();
+                const existingItem = state.cart.find(i => i.id === id);
+                if (!existingItem) return;
+
+                // Construct updated label from current draft
+                let workTypeLabel = 'Carga Manual';
+                if (state.draft.mode === 'assistM3' && state.draft.workType) {
+                    const match = WORK_TYPES.find(w => w.id === state.draft.workType);
+                    if (match) workTypeLabel = match.label;
+                } else if (state.draft.mode === 'knownM3') {
+                    workTypeLabel = 'Volumen Directo';
+                }
+                const additivesList = state.draft.additives || [];
+                const additivesCount = additivesList.length;
+                const label = `${workTypeLabel} - f'c ${state.draft.strength} ${additivesCount > 0 ? `(+${additivesCount})` : ''}`;
+
+                const updatedItem: CartItem = {
+                    ...existingItem,
+                    timestamp: Date.now(),
+                    inputs: { ...state.draft, additives: additivesList },
+                    results,
+                    config: { label }
+                };
+
+                set({
+                    cart: state.cart.map(item => item.id === id ? updatedItem : item),
+                    draft: { ...DEFAULT_CALCULATOR_STATE },
+                    editingItemId: null,
+                });
             },
 
             updateCartItemCustomer: (id, customer) => {
@@ -243,9 +317,10 @@ export const useCejStore = create<CejStore>()(
                 const item = state.cart.find((i) => i.id === id);
 
                 if (item && item.inputs) {
+                    // Non-destructive edit: keep item in cart, mark as editing
                     set({
                         draft: { ...item.inputs },
-                        cart: state.cart.filter((i) => i.id !== id),
+                        editingItemId: id, // Track which item we're editing
                         isDrawerOpen: false,
                     });
                     if (typeof document !== 'undefined') {
@@ -259,6 +334,13 @@ export const useCejStore = create<CejStore>()(
                         }
                     }
                 }
+            },
+
+            cancelEdit: () => {
+                set({
+                    draft: { ...DEFAULT_CALCULATOR_STATE },
+                    editingItemId: null,
+                });
             },
 
             cloneCartItem: (item) => {
@@ -309,9 +391,11 @@ export const useCejStore = create<CejStore>()(
             isDrawerOpen: false,
             activeTab: 'order',
             isProcessingOrder: false,
+            editingItemId: null,
             setDrawerOpen: (isOpen) => set({ isDrawerOpen: isOpen }),
             setActiveTab: (tab) => set({ activeTab: tab }),
             setProcessingOrder: (isProcessing) => set({ isProcessingOrder: isProcessing }),
+            setEditingItemId: (id) => set({ editingItemId: id }),
 
             // --- Identity Slice ---
             user: {
@@ -404,3 +488,9 @@ export const useCejStore = create<CejStore>()(
         }
     )
 );
+
+// Expose store to window for E2E testing (only in browser, non-production)
+if (typeof window !== 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).useCejStore = useCejStore;
+}

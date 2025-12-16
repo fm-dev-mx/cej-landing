@@ -81,7 +81,7 @@ describe('useCejStore (State Management)', () => {
             expect(result.current.cart[0].config.label).toContain('Volumen Directo');
         });
 
-        it('editCartItem restores state and removes from cart', () => {
+        it('editCartItem restores state, keeps item in cart, and sets editingItemId', () => {
             const { result } = renderHook(() => useCejStore());
             // Add item
             act(() => result.current.addToCart({ total: 100 } as unknown as QuoteBreakdown));
@@ -90,8 +90,48 @@ describe('useCejStore (State Management)', () => {
             // Edit item
             act(() => result.current.editCartItem(id));
 
-            expect(result.current.cart).toHaveLength(0);
+            // Non-destructive: item stays in cart
+            expect(result.current.cart).toHaveLength(1);
+            expect(result.current.editingItemId).toBe(id);
             expect(result.current.isDrawerOpen).toBe(false);
+        });
+
+        it('addToCart updates in-place when editingItemId is set', () => {
+            const { result } = renderHook(() => useCejStore());
+
+            // Add initial item
+            act(() => result.current.addToCart({ total: 100 } as unknown as QuoteBreakdown));
+            const id = result.current.cart[0].id;
+
+            // Start editing
+            act(() => result.current.editCartItem(id));
+            expect(result.current.editingItemId).toBe(id);
+
+            // Submit new values (should update, not add)
+            act(() => result.current.addToCart({ total: 200 } as unknown as QuoteBreakdown));
+
+            expect(result.current.cart).toHaveLength(1); // Still 1 item
+            expect(result.current.cart[0].id).toBe(id); // Same ID
+            expect(result.current.cart[0].results.total).toBe(200); // Updated value
+            expect(result.current.editingItemId).toBeNull(); // Cleared
+        });
+
+        it('cancelEdit clears draft and editingItemId without affecting cart', () => {
+            const { result } = renderHook(() => useCejStore());
+
+            // Add item
+            act(() => result.current.addToCart({ total: 100 } as unknown as QuoteBreakdown));
+            const id = result.current.cart[0].id;
+
+            // Start editing
+            act(() => result.current.editCartItem(id));
+
+            // Cancel edit
+            act(() => result.current.cancelEdit());
+
+            expect(result.current.cart).toHaveLength(1); // Item still there
+            expect(result.current.editingItemId).toBeNull();
+            expect(result.current.draft.m3).toBe(''); // Reset to default
         });
 
         it('moveToHistory archives items', () => {

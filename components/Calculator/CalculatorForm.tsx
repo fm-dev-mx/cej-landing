@@ -39,6 +39,8 @@ export function CalculatorForm() {
     const setSubmittedQuote = useCejStore((s) => s.setSubmittedQuote);
     const history = useCejStore((s) => s.history);
     const cart = useCejStore((s) => s.cart);
+    const editingItemId = useCejStore((s) => s.editingItemId);
+    const cancelEdit = useCejStore((s) => s.cancelEdit);
 
     useEffect(() => {
         if (!folioParam) return;
@@ -174,6 +176,24 @@ export function CalculatorForm() {
 
     return (
         <div className={styles.container} ref={formContainerRef}>
+            {/* Edit Mode Banner */}
+            {editingItemId && (
+                <div className={styles.editBanner} role="status">
+                    <span className={styles.editBannerIcon}>✏️</span>
+                    <span>Editando cálculo — tus cambios reemplazarán el item actual.</span>
+                    <button
+                        type="button"
+                        className={styles.editBannerCancel}
+                        onClick={() => {
+                            cancelEdit();
+                            scrollToCalcTop();
+                        }}
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            )}
+
             {/* 1. Mode selection */}
             <div className={`${styles.field} ${activeField === 'mode' ? styles.activeField : ''}`}>
                 <label className={styles.label}>¿Cómo quieres cotizar?</label>

@@ -24,6 +24,45 @@
     }
 }
 
+/* --- Edit Mode Banner --- */
+.editBanner {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-3) var(--sp-4);
+    background: rgba(254, 201, 20, 0.15);
+    border: 1px solid var(--c-accent);
+    border-radius: var(--radius);
+    margin-bottom: var(--sp-4);
+    font-size: var(--fs-sm);
+    color: var(--c-accent);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.editBannerIcon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.editBannerCancel {
+    margin-left: auto;
+    background: none;
+    border: 1px solid var(--c-accent);
+    border-radius: var(--radius-sm);
+    color: var(--c-accent);
+    padding: var(--sp-1) var(--sp-2);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+        background: var(--c-accent);
+        color: var(--c-primary-dark);
+    }
+}
+
 /* --- Active Field Guidance --- */
 .activeField {
     position: relative;
