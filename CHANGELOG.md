@@ -7,12 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased] - Phase 4: SaaS Portal (Planned)
+## [0.4] - 2025-12-15 (Phase 4A: Local Pro)
 
-**Focus:** User identification, authentication, order history, and re-ordering capabilities.
+**Focus:** Local SaaS capabilities, UX Hardening, and Documentation Alignment.
 
-The Phase 4 workstream prepares the transition from an anonymous calculator into **CEJ Pro**, a lightweight SaaS portal for contractors.
-Requirements and tasks are defined, but the code is not yet considered shipped as a tagged release.
+This release marks the completion of the "Local Pro" phase, where the calculator gains memory (History/Drafts) without requiring a login, and aligns the documentation with the production state.
+
+### Added
+
+- **Local History:** Quotes are now persisted in `localStorage` and visible in the QuoteDrawer history tab.
+- **Re-order Flow:** One-click restoration of past quotes into the active calculator state.
+- **Documentation Audit:**
+  - Standardized `ROADMAP.md` to reflect the split between Phase 4A (Local) and Phase 4B (Cloud).
+  - Consolidated `EXECUTION_GUIDE.md` and `README.md`.
+  - Created `PLAYBOOK_04_SAAS_PORTAL.md` focused on the upcoming Cloud/Auth phase.
+
+### Changed
+
+- **Component Structure:**
+  - Refactored `components/layouts/Footer` to its own directory to comply with architectural standards.
+- **UX Refinements:**
+  - Improved error messages (Spanish) and validation timing (on-blur).
+  - Better mobile spacing and "Ayúdame a calcular" progressive disclosure.
+
+---
+
+## [Unreleased] - Phase 4B: Cloud SaaS (Planned)
+
+**Focus:** User identification, authentication, sync, and centralized profiles.
+
+The Phase 4B workstream prepares the transition to a fully authenticated SaaS.
 
 ### Planned – Authentication & Identity
 

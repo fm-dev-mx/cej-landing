@@ -1,129 +1,97 @@
-# Playbook 04: SaaS Portal (Phase 4A – Auth & History)
+# Playbook 04: Cloud SaaS Infrastructure (Phase 4B)
 
-**Status:** Planned (Phase 4A / Sprint 4)
-**Goal:** Transition from anonymous guest checkout to authenticated user accounts with synced order history, while preparing the ground for CEJ Pro.
-
----
-
-## 1. Scope & Objectives
-
-We are introducing the first iteration of the "Client Portal" capabilities.
-
-### 1.1 In Scope (Phase 4A – SaaS Portal MVP)
-
-- **Authentication:** Allow users to Sign Up / Login via Email (Magic Link). OTP is explicitly out of scope for this phase.
-- **Identity / Profiles:** Create a permanent `Profile` record linked to the Auth User.
-- **Order History:** Enable users to view their past Quotes and Orders inside a `/dashboard` area.
-- **Pricing Data Sync:** Migrate the calculator to use Supabase `price_config` as the primary pricing source, keeping `FALLBACK_PRICING_RULES` as a fail-open fallback.
-- **Accessibility & Quality:** Integrate automated accessibility checks (axe-core + Playwright) into the existing E2E suite.
-
-### 1.2 Out of Scope (Phase 4B / Future)
-
-- Advanced CEJ Pro functionality (fulfillment, delivery tracking, invoicing, contractor billing).
-- Multi-tenant / multi-user org-level management.
-- Admin UI for editing price matrices in the browser.
-
-{TODO: business decision required – finalize the exact Phase 4B scope.}
+**Status:** Planned (Sprint 5)
+**Goal:** Transition from "Local Pro" (Phase 4A) to "Cloud Pro" by introducing Authentication and Data Sync.
 
 ---
 
-## 2. Data Architecture
+## 1. Context & Objectives
 
-### 2.1 New Tables (Provisioned in `schema.sql`)
+**Phase 4A (Completed)** delivered a "Local SaaS" experience:
 
-1. **`auth.users` (Supabase Internal):** Handles credentials and sessions.
-2. **`public.profiles`:**
-   - `id`: References `auth.users(id)`.
-   - `full_name`, `email`, `phone`, `rfc`, `address`.
-   - *Security:* RLS enabled (Users can only read/edit their own profile).
-3. **`public.orders`:**
-   - Evolution of the `leads` table for registered users.
-   - Linked to `profiles.id`.
+- Quote History (localStorage).
+- Persistent Cart.
+- Re-order capability (from local history).
 
-### 2.2 The "Trigger" Pattern
+**Phase 4B (This Playbook)** upgrades this to a "Cloud SaaS" experience:
 
-We must ensure every registered user has a corresponding row in `public.profiles`.
-
-- **Mechanism:** Postgres Trigger `on_auth_user_created`.
-- **Action:** Automatically inserts into `public.profiles` using data from `raw_user_meta_data`.
-
-### 2.3 Pricing Configuration
-
-- **Primary Source:** `price_config` table in Supabase (used by the `PricingAdapter` as documented in `ARCHITECTURE.md`).
-- **Fallback:** `FALLBACK_PRICING_RULES` local config, used only when the DB is unreachable or empty.
-- **Goal:** After Phase 4A, all production traffic should read prices from `price_config` under normal conditions.
+- **Authentication:** Users can log in to access their data on any device.
+- **Sync:** Local history is uploaded to the cloud (`public.orders`).
+- **Profiles:** Permanent user identity (`public.profiles`).
 
 ---
 
-## 3. Execution Steps
+## 2. Scope
 
-### Step 0: Pricing Data Sync (`price_config`)
-
-- [ ] Confirm `price_config` schema and seed data using `scripts/seed-pricing.ts`.
-- [ ] Wire `lib/pricing.ts` to use `price_config` as the primary source and `FALLBACK_PRICING_RULES` as fallback only.
-- [ ] Add feature flag or health check behavior if needed to keep the calculator fail-open.
-
-### Step 1: Authentication Infrastructure
-
-- [ ] Install Supabase SSR helpers: `@supabase/ssr`.
-- [ ] Create Auth Hooks: `useUser`, `useSession`.
-- [ ] Create Middleware: Protect routes under `/app/(app)/dashboard`.
-
-### Step 2: Auth UI Components
-
-- [ ] **Login Screen:** Simple form requesting Email.
-- [ ] **Magic Link Handler:** Verify token logic and handle success/error states.
-- [ ] **User Menu:** Update Header to show "Hola, [Name]" when logged in and provide a logout action.
-
-### Step 3: Order History
-
-- [ ] **Sync Logic:** When a user logs in, check if they have local `cart` items or previous `leads` (via cookie matching) and associate them (Optional for MVP).
-- [ ] **Dashboard Page:** List rows from `public.orders` for the current profile.
-- [ ] **Detail View:** Re-use `TicketDisplay` to show order details, including totals and breakdown.
-
-### Step 4: Re-order Feature
-
-- [ ] Add a "Re-order" action in the order details view to clone a previous order into the current cart.
-- [ ] Ensure cloned orders respect the current pricing rules (pull fresh prices from `price_config` instead of copying stale amounts).
-- [ ] Move cloned quotes into the existing cart → QuoteDrawer flow.
-
-### Step 5: Quality & Infrastructure (A11y Automation)
-
-**Goal:** Integrate `axe-core` into Playwright to enforce WCAG 2.1 AA compliance automatically.
-
-**Implementation Specs:**
-
-1. **Dependency:** Install `@axe-core/playwright`.
-2. **New Test:** Create `tests/accessibility.spec.ts`.
-3. **Scope:** The test must scan:
-   - Home Page (`/`)
-   - Calculator Widget (Initial state)
-   - Lead Form Modal (Open state)
-4. **Config:** Fail on `critical` and `serious` violations.
-
-**Acceptance Criteria:**
-
-- [ ] `pnpm test:e2e` runs the accessibility suite.
-- [ ] CI pipeline fails if a violation is detected.
-- [ ] Report provides clear actionable feedback on A11y errors.
-
-### Step 6: Documentation & DX
-
-- [ ] Update `docs/DESIGN_SYSTEM.md` with any new portal-specific components and states.
-- [ ] Update `docs/INTERACTION_PATTERNS.md` and `docs/UX_FLOWS.md` for Auth + Dashboard flows.
-- [ ] Align `docs/ACCESSIBILITY.md` Reduced Motion backlog section with the implemented patterns.
-- [ ] Ensure `README.md` and `docs/ROADMAP.md` reference this playbook as Phase 4A.
+| Feature | Scope | Description |
+| :--- | :--- | :--- |
+| **Auth** | **In Scope** | Magic Link (Email) via Supabase Auth. |
+| **History Sync** | **In Scope** | Upload `localStorage` quotes to `public.orders` on login. |
+| **Live Pricing** | **In Scope** | Switch `lib/pricing.ts` to consume `price_config` (DB). |
+| **Billing** | Out of Scope | Invoicing remains offline/manual for now. |
+| **Multi-User** | Out of Scope | One user = One contractor profile. |
 
 ---
 
-## 4. Exit Criteria
+## 3. Data Architecture
 
-1. User can Sign Up via Magic Link.
-2. User is redirected to `/dashboard` upon login.
-3. `public.profiles` is populated automatically for each authenticated user.
-4. User can logout from the header menu.
-5. User can see a list of previous orders and their details in `/dashboard`.
-6. User can trigger "Re-order" from an existing order and land back in the existing cart/checkout flow.
-7. `price_config` is the primary pricing source in production, with `FALLBACK_PRICING_RULES` used only as a fail-open fallback.
-8. **Quality Gate:** All Auth and Dashboard integration tests pass 100%.
-9. **Accessibility:** Key views (Home, Calculator, Dashboard, Lead Form) pass automated WCAG 2.1 AA checks (axe-core).
+### 3.1 Schemas (Provisioned)
+
+- **`auth.users`:** Identity provider.
+- **`public.profiles`:** Linked 1:1 to `auth.users`. Contains `rfc`, `address`, `phone`.
+- **`public.orders`:** The persistent record of quotes.
+  - Linked to `profiles.id`.
+  - JSONB `snapshot`: Full quote data at time of creation.
+
+### 3.2 Pricing Strategy (Hybrid)
+
+- **Current:** `FALLBACK_PRICING_RULES` (Local FS).
+- **Target:** `price_config` (DB).
+- **Migration:**
+  1. Seed DB with current rules.
+  2. Update `PricingAdapter` to prefer DB, fall back to Local.
+
+---
+
+## 4. Execution Plan
+
+### Step 1: Pricing Data Migration
+
+- [ ] Run `npx tsx scripts/seed-pricing.ts` to populate Supabase.
+- [ ] Verify `lib/pricing.ts` reads from DB when `SUPABASE_Url` is configured.
+
+### Step 2: Authentication (UI)
+
+- [ ] Create `/login` page (Magic Link form).
+- [ ] Add `UserProfileMenu` to Header (Avatar + Logout).
+- [ ] Middleware: Protect `/dashboard`.
+
+### Step 3: Local-to-Cloud Sync
+
+- [ ] **On Login:** Trigger a "Merge" operation.
+- [ ] Read `useCejStore.history` (Local).
+- [ ] POST to `api/sync-history` (Server Action).
+- [ ] Clear Local History after successful sync.
+- [ ] Hydrate Store from `public.orders`.
+
+### Step 4: Dashboard & Re-orders
+
+- [ ] Create `/dashboard/page.tsx`.
+- [ ] Fetch orders via Server Actions (RLS protected).
+- [ ] **Re-order Action:**
+  - Load `order.snapshot` into `useCejStore.draft`.
+  - Redirect to `/calculator` with `mode=edit`.
+  - Ensure pricing is **re-calculated** with current rates (do not respect old prices).
+
+### Step 5: Accessibility Automation
+
+- [ ] Integrate `@axe-core/playwright`.
+- [ ] Add CI check for accessibility violations on critical paths.
+
+---
+
+## 5. Success Criteria
+
+1. **Seamless Upgrade:** A user with local history logs in -> History appears in Dashboard.
+2. **Cross-Device:** User logs in on Mobile, sees quotes created on Desktop.
+3. **Fail-Safe:** If DB is down, Auth pages show maintenance, but Calculator (Public) still works.

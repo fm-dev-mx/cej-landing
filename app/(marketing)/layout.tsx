@@ -4,7 +4,7 @@
 import type { ReactNode } from "react";
 
 import Header from "@/components/layouts/header/Header";
-import Footer from "@/components/layouts/Footer";
+import Footer from "@/components/layouts/Footer/Footer";
 import SkipLink from "@/components/ui/SkipLink/SkipLink";
 import { generateLocalBusinessSchema } from "@/lib/seo";
 import styles from "@/components/layouts/Layout.module.scss";
