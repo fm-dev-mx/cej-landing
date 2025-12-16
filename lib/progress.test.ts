@@ -1,6 +1,6 @@
 
 import { describe, it, expect } from 'vitest';
-import { getCalculatorSteps } from './progress';
+import { getCalculatorSteps, getMissingFields } from './progress';
 import { DEFAULT_CALCULATOR_STATE, CalculatorState } from '@/types/domain';
 
 describe('getCalculatorSteps', () => {
@@ -103,6 +103,68 @@ describe('getCalculatorSteps', () => {
 
             expect(steps[2].isCompleted).toBe(true);
             expect(steps[3]).toMatchObject({ id: 'service', isActive: true });
+        });
+    });
+
+    describe('Bug Regressions', () => {
+        it('Bug 1: Zombie state - Switching Dimensions -> Area leaves stale values should be ignored', () => {
+            // Setup valid Dimensions state but switch to Area (Zombie)
+            const state: CalculatorState = {
+                ...DEFAULT_CALCULATOR_STATE,
+                mode: 'assistM3',
+                workType: 'slab',
+                volumeMode: 'area', // Area mode
+                length: '5', // Stale dimensions
+                width: '4',
+                thicknessByDims: '10',
+                area: '', // Empty area
+                thicknessByArea: '',
+            };
+
+            const steps = getCalculatorSteps(state);
+            // Step 2 (Dimensions/Area) should be active because Area is missing
+            const dimsStep = steps.find(s => s.id === 'dimensions');
+
+            expect(dimsStep?.isCompleted).toBe(false);
+            expect(dimsStep?.isActive).toBe(true);
+        });
+
+        it('Bug 2: Area mode - specific fields missing check', () => {
+            const state: CalculatorState = {
+                ...DEFAULT_CALCULATOR_STATE,
+                mode: 'assistM3',
+                workType: 'slab',
+                volumeMode: 'area',
+                area: '',
+            };
+            // Area missing
+            expect(getMissingFields(state)).toContain('area');
+
+            // Fill area
+            const filledState: CalculatorState = { ...state, area: '50', thicknessByArea: '10' };
+            expect(getMissingFields(filledState)).not.toContain('area');
+        });
+
+        it('Bug 3: Known Quantity - Service step active if partial service data', () => {
+            const state: CalculatorState = {
+                ...DEFAULT_CALCULATOR_STATE,
+                mode: 'knownM3',
+                m3: '5',
+                strength: '250',
+                type: null // Service type missing
+            };
+
+            const steps = getCalculatorSteps(state);
+            const serviceStep = steps.find(s => s.id === 'service');
+
+            // It should be Active (because it is NOT completed)
+            expect(serviceStep?.isActive).toBe(true);
+            expect(serviceStep?.isCompleted).toBe(false);
+
+            // Missing fields should include type
+            const missing = getMissingFields(state);
+            expect(missing).toContain('type');
+            expect(missing).not.toContain('strength');
         });
     });
 });

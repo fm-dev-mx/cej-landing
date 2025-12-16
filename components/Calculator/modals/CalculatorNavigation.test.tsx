@@ -75,8 +75,13 @@ describe('Calculator Navigation & Button Logic', () => {
     fireEvent.change(input, { target: { value: '5' } });
 
     // Select Strength & Service to make it valid
-    fireEvent.change(screen.getByLabelText(/Resistencia/i), { target: { value: '250' } });
-    fireEvent.change(screen.getByLabelText(/Servicio/i), { target: { value: 'direct' } });
+    const strengthTrigger = screen.getByLabelText(/Resistencia/i);
+    fireEvent.click(strengthTrigger);
+    fireEvent.click(screen.getByRole('option', { name: /250 kg\/cm²/i }));
+
+    const serviceTrigger = screen.getByLabelText(/Servicio/i);
+    fireEvent.click(serviceTrigger);
+    fireEvent.click(screen.getByRole('option', { name: /Tiro directo/i }));
 
     // Now button should appear and be enabled (Phase 1: "Ver Total" instead of "Solicitar")
     const addBtn = screen.getByRole('button', { name: /Ver Total/i });
@@ -101,7 +106,8 @@ describe('Calculator Navigation & Button Logic', () => {
     fireEvent.click(screen.getByRole('radio', { name: /Ayúdame a calcular/i }));
 
     const workTypeSelect = screen.getByRole('combobox', { name: /Tipo de Obra/i });
-    fireEvent.change(workTypeSelect, { target: { value: 'slab' } });
+    fireEvent.click(workTypeSelect);
+    fireEvent.click(screen.getByRole('option', { name: /Losa/i }));
 
     const lengthInput = screen.getByLabelText('Largo');
     const widthInput = screen.getByLabelText('Ancho');

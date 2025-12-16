@@ -7,10 +7,10 @@ import type { ChangeEvent } from "react";
 import { useState } from "react";
 
 import { useCejStore } from "@/store/useCejStore";
-import { useShallow } from "zustand/react/shallow";
 
 import { Input } from "@/components/ui/Input/Input";
 import type { CofferedSize } from "@/types/domain";
+import { getMissingFields, type CalculatorFieldId } from "@/lib/progress";
 
 import styles from "../CalculatorForm.module.scss";
 
@@ -19,7 +19,8 @@ interface Props {
     onFieldTouched?: (field: string) => void;
 }
 
-export function AssistVolumeForm({ error, onFieldTouched }: Props) {
+export function AssistVolumeForm({ onFieldTouched }: Props) {
+    const draft = useCejStore((s) => s.draft);
     const {
         volumeMode,
         length,
@@ -30,23 +31,20 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
         workType,
         hasCoffered,
         cofferedSize,
-    } = useCejStore(
-        useShallow((s) => ({
-            volumeMode: s.draft.volumeMode,
-            length: s.draft.length,
-            width: s.draft.width,
-            area: s.draft.area,
-            thicknessByDims: s.draft.thicknessByDims,
-            thicknessByArea: s.draft.thicknessByArea,
-            workType: s.draft.workType,
-            hasCoffered: s.draft.hasCoffered,
-            cofferedSize: s.draft.cofferedSize,
-        }))
-    );
+    } = draft;
 
     const update = useCejStore((s) => s.updateDraft);
-    const [touched, setTouched] = useState<Record<string, boolean>>({});
     const [showOverride, setShowOverride] = useState(false);
+    const missingFields = getMissingFields(draft);
+
+    // We keep touched logic ONLY for field interaction feedback (like analytics or specific UX),
+    // but the requirement "Overlay/indicators must be always active" implies we show missing indicators immediately.
+    // However, showing red boxes everywhere on load is harsh.
+    // Maybe we use a softer indicator or stick to the input 'error' prop which usually means red border.
+    // If we assume the user wants "Live validation", we pass the missing state.
+
+    // Helper to check if field is missing according to "truth".
+    const isMissing = (field: CalculatorFieldId) => missingFields.includes(field);
 
     const handleNumeric =
         (field: string) => (e: ChangeEvent<HTMLInputElement>) => {
@@ -57,12 +55,8 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
         };
 
     const handleBlur = (field: string) => () => {
-        setTouched((prev) => ({ ...prev, [field]: true }));
         onFieldTouched?.(field);
     };
-
-    const hasSpecificError = (field: string, val: string) =>
-        !!touched[field] && !!error && (!val || parseFloat(val) <= 0);
 
     return (
         <>
@@ -77,7 +71,12 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                             name="volume-mode"
                             value="dimensions"
                             checked={volumeMode === "dimensions"}
-                            onChange={() => update({ volumeMode: "dimensions" })}
+                            onChange={() => update({
+                                volumeMode: "dimensions",
+                                // Clear Area fields to prevent zombies
+                                area: '',
+                                thicknessByArea: '10' // Default
+                            })}
                         />
                         <span>Largo × Ancho</span>
                     </label>
@@ -88,7 +87,13 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                             name="volume-mode"
                             value="area"
                             checked={volumeMode === "area"}
-                            onChange={() => update({ volumeMode: "area" })}
+                            onChange={() => update({
+                                volumeMode: "area",
+                                // Clear Dimensions fields to prevent zombies
+                                length: '',
+                                width: '',
+                                thicknessByDims: '10'
+                            })}
                         />
                         <span>Por Área (m²)</span>
                     </label>
@@ -102,23 +107,23 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                         label="Largo"
                         placeholder="0.00"
                         suffix="metros"
-                        value={length}
+                        value={length ?? ""}
                         onChange={handleNumeric("length")}
                         onBlur={handleBlur("length")}
                         inputMode="decimal"
                         variant="dark"
-                        error={hasSpecificError("length", length)}
+                        error={isMissing("length")}
                     />
                     <Input
                         label="Ancho"
                         placeholder="0.00"
                         suffix="metros"
-                        value={width}
+                        value={width ?? ""}
                         onChange={handleNumeric("width")}
                         onBlur={handleBlur("width")}
                         inputMode="decimal"
                         variant="dark"
-                        error={hasSpecificError("width", width)}
+                        error={isMissing("width")}
                     />
                 </div>
             ) : (
@@ -126,12 +131,12 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                     label="Área total"
                     placeholder="0.00"
                     suffix="m²"
-                    value={area}
+                    value={area ?? ""}
                     onChange={handleNumeric("area")}
                     onBlur={handleBlur("area")}
                     inputMode="decimal"
                     variant="dark"
-                    error={hasSpecificError("area", area)}
+                    error={isMissing("area")}
                 />
             )}
 
@@ -163,11 +168,11 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                                     aria-label="Grosor Capa Compresión"
                                     placeholder="5"
                                     suffix="cm"
-                                    value={volumeMode === "dimensions" ? thicknessByDims : thicknessByArea}
+                                    value={(volumeMode === "dimensions" ? thicknessByDims : thicknessByArea) ?? ""}
                                     onChange={handleNumeric(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea")}
                                     inputMode="decimal"
                                     variant="dark"
-                                    error={hasSpecificError(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea", volumeMode === "dimensions" ? thicknessByDims : thicknessByArea)}
+                                    error={isMissing(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea")}
                                 />
                                 <p className={styles.hint}>
                                     El espesor estándar es de 5cm. Solo modifica si tu proyecto estructural requiere un espesor mayor.
@@ -181,11 +186,11 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                         label={workType === 'slab' ? "Espesor Total de Losa" : "Grosor"}
                         placeholder={workType === 'slab' ? "10" : "10"}
                         suffix="cm"
-                        value={volumeMode === "dimensions" ? thicknessByDims : thicknessByArea}
+                        value={(volumeMode === "dimensions" ? thicknessByDims : thicknessByArea) ?? ""}
                         onChange={handleNumeric(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea")}
                         inputMode="decimal"
                         variant="dark"
-                        error={hasSpecificError(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea", volumeMode === "dimensions" ? thicknessByDims : thicknessByArea)}
+                        error={isMissing(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea")}
                     />
                 )}
             </div>
@@ -205,8 +210,8 @@ export function AssistVolumeForm({ error, onFieldTouched }: Props) {
                                     update({
                                         hasCoffered: "no",
                                         // Reset to standard slab thickness defaults
-                                        thicknessByDims: "12",
-                                        thicknessByArea: "12"
+                                        thicknessByDims: "10",
+                                        thicknessByArea: "10"
                                     });
                                     setShowOverride(false);
                                 }}

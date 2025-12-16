@@ -78,8 +78,14 @@ describe('Calculator UI Integration', () => {
     expect(volInput).toHaveValue(5);
 
     // Select Strength & Service to make it valid and show "Todo listo"
-    fireEvent.change(screen.getByLabelText(/Resistencia/i), { target: { value: '250' } });
-    fireEvent.change(screen.getByLabelText(/Servicio/i), { target: { value: 'direct' } });
+    // Select Strength & Service
+    const strengthSelect = screen.getByLabelText(/Resistencia/i);
+    fireEvent.click(strengthSelect);
+    fireEvent.click(screen.getByRole('option', { name: /250 kg\/cm²/i }));
+
+    const serviceSelect = screen.getByLabelText(/Servicio/i);
+    fireEvent.click(serviceSelect);
+    fireEvent.click(screen.getByRole('option', { name: /Tiro directo/i }));
 
     // 3. Check Result (Instant calculation)
     // We expect the summary to appear with "Ver Total" CTA and "Todo listo" hint (if valid)
@@ -101,7 +107,8 @@ describe('Calculator UI Integration', () => {
 
     // Select Work Type (Combobox)
     const select = screen.getByRole('combobox', { name: /Tipo de Obra/i });
-    fireEvent.change(select, { target: { value: 'slab' } });
+    fireEvent.click(select);
+    fireEvent.click(screen.getByRole('option', { name: /Losa/i }));
 
     // Select Solid Slab
     fireEvent.click(screen.getByRole('radio', { name: /Sólida/i }));
@@ -129,10 +136,14 @@ describe('Calculator UI Integration', () => {
     // Let's assume we need to select Service.
 
     // Check if Service selector is available.
+    // Check if Service selector is available.
     const serviceSelect = screen.getByLabelText(/Servicio/i);
-    fireEvent.change(serviceSelect, { target: { value: 'direct' } });
+    fireEvent.click(serviceSelect);
+    fireEvent.click(screen.getByRole('option', { name: /Tiro directo/i }));
+
     const strengthSelect = screen.getByLabelText(/Resistencia/i);
-    fireEvent.change(strengthSelect, { target: { value: '250' } });
+    fireEvent.click(strengthSelect);
+    fireEvent.click(screen.getByRole('option', { name: /250 kg\/cm²/i }));
 
     // Check for "Todo listo" hint
     expect(screen.getByText(/Todo listo/i)).toBeInTheDocument();

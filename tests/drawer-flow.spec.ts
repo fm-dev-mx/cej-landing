@@ -33,8 +33,8 @@ test.describe('QuoteDrawer Lifecycle', () => {
                         length: '',
                         width: '',
                         area: '',
-                        thicknessByDims: '12',
-                        thicknessByArea: '12',
+                        thicknessByDims: '10',
+                        thicknessByArea: '10',
                         hasCoffered: 'no',
                         cofferedSize: '7',
                         showExpertOptions: false
@@ -116,8 +116,8 @@ test.describe('QuoteDrawer Lifecycle', () => {
                         length: '',
                         width: '',
                         area: '',
-                        thicknessByDims: '12',
-                        thicknessByArea: '12',
+                        thicknessByDims: '10',
+                        thicknessByArea: '10',
                         hasCoffered: 'no',
                         cofferedSize: '7',
                         showExpertOptions: false
@@ -191,8 +191,8 @@ test.describe('QuoteDrawer Lifecycle', () => {
                         length: '',
                         width: '',
                         area: '',
-                        thicknessByDims: '12',
-                        thicknessByArea: '12',
+                        thicknessByDims: '10',
+                        thicknessByArea: '10',
                         hasCoffered: 'no',
                         cofferedSize: '7',
                         showExpertOptions: false
@@ -224,8 +224,8 @@ test.describe('QuoteDrawer Lifecycle', () => {
                     length: '',
                     width: '',
                     area: '',
-                    thicknessByDims: '12',
-                    thicknessByArea: '12',
+                    thicknessByDims: '10',
+                    thicknessByArea: '10',
                     hasCoffered: 'no',
                     cofferedSize: '7',
                     showExpertOptions: false

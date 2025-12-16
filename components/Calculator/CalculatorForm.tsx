@@ -116,7 +116,7 @@ export function CalculatorForm() {
 
         // Common fields
         // Note: Strength and Type might have defaults, but if explicit selection is needed:
-        if (!draft.strength) return 'specs';
+        if (!draft.strength || !draft.type) return 'specs';
 
         return null;
     }

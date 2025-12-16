@@ -3,8 +3,6 @@
 
 "use client";
 
-import type { ChangeEvent } from "react";
-
 import { useCejStore } from "@/store/useCejStore";
 import { WORK_TYPES } from "@/config/business";
 import { Select } from "@/components/ui/Select/Select";
@@ -16,7 +14,7 @@ export function WorkTypeSelector() {
     const workType = useCejStore((s) => s.draft.workType);
     const setWorkType = useCejStore((s) => s.setWorkType);
 
-    const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const handleChange = (e: { target: { value: string } }) => {
         const val = e.target.value as WorkTypeId | "";
         setWorkType(val || null);
     };
@@ -25,6 +23,7 @@ export function WorkTypeSelector() {
         <>
             <label
                 htmlFor="work-type-select"
+                id="work-type-label"
                 className={styles.label}
             >
                 Tipo de Obra
@@ -32,20 +31,17 @@ export function WorkTypeSelector() {
 
             <Select
                 id="work-type-select"
+                aria-labelledby="work-type-label"
                 value={workType || ""}
                 onChange={handleChange}
                 variant="dark"
                 className={workType ? styles.selectorActive : undefined}
-            >
-                <option value="" disabled>
-                    Selecciona una opción...
-                </option>
-                {WORK_TYPES.map((w) => (
-                    <option key={w.id} value={w.id}>
-                        {w.label}
-                    </option>
-                ))}
-            </Select>
+                options={[
+                    { label: "Selecciona una opción...", value: "", disabled: true },
+                    ...WORK_TYPES.map(w => ({ label: w.label, value: w.id }))
+                ]}
+                placeholder="Selecciona una opción..."
+            />
 
             <p
                 style={{

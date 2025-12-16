@@ -8,6 +8,7 @@ import { useCallback, useState } from "react";
 
 import { useCejStore } from "@/store/useCejStore";
 import { Input } from "@/components/ui/Input/Input";
+import { getMissingFields } from "@/lib/progress";
 import styles from "../CalculatorForm.module.scss";
 
 interface Props {
@@ -16,9 +17,14 @@ interface Props {
 }
 
 export function KnownVolumeForm({ hasError, onFieldTouched }: Props) {
-    const m3 = useCejStore((s) => s.draft.m3);
+    const draft = useCejStore((s) => s.draft);
+    const m3 = draft.m3;
     const updateDraft = useCejStore((s) => s.updateDraft);
     const [touched, setTouched] = useState(false);
+
+    // Derived missing state
+    const missing = getMissingFields(draft);
+    const isMissing = missing.includes('m3');
 
     const handleChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>) => {
@@ -35,8 +41,10 @@ export function KnownVolumeForm({ hasError, onFieldTouched }: Props) {
     };
 
     // Determine which message to show (interaction-based)
-    const showError = touched && hasError;
-    const errorMessage = showError ? "El volumen debe ser mayor a 0 m³" : undefined;
+    // Determine which message to show
+    // We show the indicator (red border) always if missing, but text message only if touched or external error present
+    const showError = isMissing;
+    const errorMessage = (showError && touched) ? "El volumen debe ser mayor a 0 m³" : showError;
 
     return (
         <div className={styles.fieldWithHelper}>
