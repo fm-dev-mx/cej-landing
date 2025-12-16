@@ -172,7 +172,7 @@ describe('Calculator UI Integration', () => {
 
     // Ensure the quote button is NOT present when invalid (still shows, but disabled)
     // With Phase 1, button shows but is disabled. Check for empty state hint instead.
-    const emptyHint = screen.queryByText(/Te guiaremos paso a paso/i);
+    const emptyHint = screen.queryByText(/Completa los pasos para ver el total/i);
     expect(emptyHint).toBeInTheDocument();
   });
 
