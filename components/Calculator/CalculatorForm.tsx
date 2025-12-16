@@ -74,10 +74,29 @@ export function CalculatorForm() {
     }, [draft.mode]);
 
     // Focus management - REMOVED aggressive scrollIntoView on mode change to prevent jumps
-    const inputsSectionRef = useRef<HTMLDivElement>(null);
+    // const inputsSectionRef = useRef<HTMLDivElement>(null); // Removed unused ref
     const specsSectionRef = useRef<HTMLDivElement>(null);
     const formContainerRef = useRef<HTMLDivElement>(null);
     const assistVolumeRef = useRef<HTMLDivElement>(null);
+
+    // Smooth height transition for volume section
+    const [volumeHeight, setVolumeHeight] = useState<number | undefined>(undefined);
+    const volumeContentRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!volumeContentRef.current) return;
+
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                // Use borderBoxSize if available for better accuracy with paddings, fallback to contentRect
+                const height = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+                setVolumeHeight(height);
+            }
+        });
+
+        observer.observe(volumeContentRef.current);
+        return () => observer.disconnect();
+    }, []);
 
     // Scroll to top of calculator SECTION (title), respecting prefers-reduced-motion
     const scrollToCalcTop = useCallback(() => {
@@ -200,34 +219,39 @@ export function CalculatorForm() {
                 <ModeSelector currentMode={draft.mode} />
             </div>
 
-            {/* 2. Volume inputs */}
-            <div ref={inputsSectionRef}>
-                {draft.mode === "knownM3" ? (
-                    <div className={`${styles.field} ${activeField === 'm3' ? styles.activeField : ''}`}>
-                        <KnownVolumeForm
-                            hasError={!!error && rawVolume <= 0}
-                            onFieldTouched={handleFieldTouched}
-                        />
-                    </div>
-                ) : (
-                    <>
-                        <div className={`${styles.field} ${activeField === 'workType' ? styles.activeField : ''}`}>
-                            <WorkTypeSelector />
+            {/* 2. Volume inputs - Wrapped for smooth height transition */}
+            <div
+                className={styles.volumeSection}
+                style={{ height: volumeHeight ? `${volumeHeight}px` : 'auto' }}
+            >
+                <div ref={volumeContentRef}>
+                    {draft.mode === "knownM3" ? (
+                        <div className={`${styles.field} ${activeField === 'm3' ? styles.activeField : ''}`}>
+                            <KnownVolumeForm
+                                hasError={!!error && rawVolume <= 0}
+                                onFieldTouched={handleFieldTouched}
+                            />
                         </div>
-
-                        {draft.workType && (
-                            <div
-                                className={`${styles.field} ${styles.animateFadeIn} ${activeField === 'assistVolume' ? styles.activeField : ''}`}
-                                ref={assistVolumeRef}
-                            >
-                                <AssistVolumeForm
-                                    error={error}
-                                    onFieldTouched={handleFieldTouched}
-                                />
+                    ) : (
+                        <>
+                            <div className={`${styles.field} ${activeField === 'workType' ? styles.activeField : ''}`}>
+                                <WorkTypeSelector />
                             </div>
-                        )}
-                    </>
-                )}
+
+                            {draft.workType && (
+                                <div
+                                    className={`${styles.field} ${styles.animateFadeIn} ${activeField === 'assistVolume' ? styles.activeField : ''}`}
+                                    ref={assistVolumeRef}
+                                >
+                                    <AssistVolumeForm
+                                        error={error}
+                                        onFieldTouched={handleFieldTouched}
+                                    />
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* 3. Specs & additives (expert section) */}

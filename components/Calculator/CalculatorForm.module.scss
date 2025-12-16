@@ -15,6 +15,8 @@
     flex: 1;
     position: relative;
     min-height: 600px;
+    width: 100%;
+    /* Ensure form never changes width based on content */
 
     /* Prevent width math surprises inside the calculator */
     *,
@@ -22,6 +24,15 @@
     *::after {
         box-sizing: border-box;
     }
+}
+
+/* Stable wrapper for volume inputs to prevent layout shift */
+.volumeSection {
+    /* Stabilize layout: animate height changes instead of jumping */
+    transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: height;
+    width: 100%;
+    /* Prevent internal content from expanding parent */
 }
 
 /* --- Edit Mode Banner --- */
@@ -70,6 +81,8 @@
     background-color: var(--c-bg-focus);
     padding: var(--sp-2);
     margin-block: var(--sp-8);
+    /* Fix overlap: Ensure active field sits above subsequent elements (like dropdowns) */
+    z-index: 10;
 
     /* Ensure content sits above the highlight overlays */
     >* {
@@ -157,6 +170,7 @@
     align-items: start;
     width: 100%;
     grid-auto-flow: row;
+    margin-top: var(--sp-10);
 }
 
 /* Key fix: grid items must be allowed to shrink (otherwise overflow/overlap happens) */
@@ -570,7 +584,8 @@
 .fieldWithHelper {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-12);
 }
 
 .helperText {

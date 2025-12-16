@@ -22,6 +22,8 @@ $glass-border: rgba(255, 255, 255, 0.1);
   @include respond-to('md') {
     min-height: 85svh;
     display: grid;
+    /* FIX: Force grid track to fill container so it doesn't shrink-wrap content */
+    grid-template-columns: minmax(0, 1fr);
     place-items: center;
     padding-top: var(--sp-8);
     justify-content: center;
@@ -32,6 +34,8 @@ $glass-border: rgba(255, 255, 255, 0.1);
   position: relative;
   margin: 0 auto;
   max-width: 640px;
+  width: 100%;
+  /* Ensure full width up to max-width to prevent shrink-wrap in grid center */
   height: auto;
   display: flex;
   flex-direction: column;

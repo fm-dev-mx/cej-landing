@@ -4,6 +4,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CalculatorForm } from '@/components/Calculator/CalculatorForm';
 import { useCejStore } from '@/store/useCejStore';
 
+
+
 // We mock child components to focus on the Form Orchestration logic
 vi.mock('@/components/Calculator/ModeSelector', () => ({
     ModeSelector: ({ currentMode }: { currentMode: string }) => (
