@@ -24,7 +24,7 @@ test.describe('Quote Flow & Progressive Disclosure', () => {
         if (browserName === 'webkit' && !isMobile) {
             // WebKit desktop: Bypass flaky Select UI by setting store directly
             await page.evaluate(() => {
-                const store = (window as any).useCejStore;
+                const store = window.useCejStore!;
                 store.setState({
                     draft: {
                         ...store.getState().draft,
@@ -87,7 +87,7 @@ test.describe('Quote Flow & Progressive Disclosure', () => {
         };
 
         await page.evaluate((quote) => {
-            const store = (window as any).useCejStore;
+            const store = window.useCejStore;
             if (!store) throw new Error('Store not exposed on window');
 
             store.setState({

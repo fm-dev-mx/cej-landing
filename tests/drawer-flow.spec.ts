@@ -18,7 +18,7 @@ test.describe('QuoteDrawer Lifecycle', () => {
 
         // Inject a cart item directly for controlled testing (skip slow UI interaction)
         await page.evaluate(() => {
-            const store = (window as any).useCejStore;
+            const store = window.useCejStore!;
             store.setState({
                 cart: [{
                     id: 'e2e-test-item',
@@ -76,13 +76,13 @@ test.describe('QuoteDrawer Lifecycle', () => {
 
         // Verify editingItemId is set (via store state)
         const editingItemId = await page.evaluate(() => {
-            return (window as any).useCejStore?.getState().editingItemId;
+            return window.useCejStore?.getState().editingItemId;
         });
         expect(editingItemId).toBe('e2e-test-item');
 
         // CRITICAL: Verify item is STILL in cart (non-destructive)
         const cartLength = await page.evaluate(() => {
-            return (window as any).useCejStore?.getState().cart.length;
+            return window.useCejStore?.getState().cart.length;
         });
         expect(cartLength).toBe(1);
 
@@ -99,7 +99,7 @@ test.describe('QuoteDrawer Lifecycle', () => {
 
         // Inject a cart item
         await page.evaluate(() => {
-            const store = (window as any).useCejStore;
+            const store = window.useCejStore!;
             store.setState({
                 cart: [{
                     id: 'delete-test-item',
@@ -160,7 +160,7 @@ test.describe('QuoteDrawer Lifecycle', () => {
 
         // 5. Cart should be empty
         const cartLength = await page.evaluate(() => {
-            return (window as any).useCejStore?.getState().cart.length;
+            return window.useCejStore?.getState().cart.length;
         });
         expect(cartLength).toBe(0);
     });
@@ -173,7 +173,7 @@ test.describe('QuoteDrawer Lifecycle', () => {
 
         // Inject item and set editing mode (no reload - editingItemId is NOT persisted)
         await page.evaluate(() => {
-            const store = (window as any).useCejStore;
+            const store = window.useCejStore!;
             store.setState({
                 cart: [{
                     id: 'cancel-test-item',
@@ -244,13 +244,13 @@ test.describe('QuoteDrawer Lifecycle', () => {
 
         // 4. Cart should still have the item
         const cartLength = await page.evaluate(() => {
-            return (window as any).useCejStore?.getState().cart.length;
+            return window.useCejStore?.getState().cart.length;
         });
         expect(cartLength).toBe(1);
 
         // 5. editingItemId should be null
         const editingId = await page.evaluate(() => {
-            return (window as any).useCejStore?.getState().editingItemId;
+            return window.useCejStore?.getState().editingItemId;
         });
         expect(editingId).toBeNull();
     });
