@@ -26,7 +26,7 @@ export function WorkTypeSelector() {
                 id="work-type-label"
                 className={styles.label}
             >
-                Tipo de Obra
+                ¿Para qué usarás el concreto?
             </label>
 
             <Select

@@ -37,6 +37,13 @@ mockIntersectionObserver.mockReturnValue({
 });
 window.IntersectionObserver = mockIntersectionObserver;
 
+// Mock ResizeObserver
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
 // Helper to reset store
 const resetStore = () => {
   useCejStore.setState({
@@ -71,7 +78,7 @@ describe('Calculator UI Integration', () => {
     fireEvent.click(radioKnown);
 
     // 2. Input Volume
-    const volInput = screen.getByLabelText(/Volumen total/i);
+    const volInput = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
     expect(volInput).toBeInTheDocument();
 
     fireEvent.change(volInput, { target: { value: '5' } });
@@ -88,8 +95,8 @@ describe('Calculator UI Integration', () => {
     fireEvent.click(screen.getByRole('option', { name: /Tiro directo/i }));
 
     // 3. Check Result (Instant calculation)
-    // We expect the summary to appear with "Ver Total" CTA and "Todo listo" hint (if valid)
-    expect(screen.getByText(/Todo listo/i)).toBeInTheDocument();
+    // We expect the summary to appear with "Ver Total" CTA and "Continúa..." hint (if valid)
+    expect(screen.getByText(/Continúa para ver el detalle de costos/i)).toBeInTheDocument();
 
     // Note: Volume text "5.00 m³" might not be explicitly visible in the new Ticket summary
     // relying on price/total verification via 'Total' presence is sufficient for integration here.
@@ -106,7 +113,7 @@ describe('Calculator UI Integration', () => {
     fireEvent.click(screen.getByRole('radio', { name: /Ayúdame a calcular/i }));
 
     // Select Work Type (Combobox)
-    const select = screen.getByRole('combobox', { name: /Tipo de Obra/i });
+    const select = screen.getByRole('combobox', { name: /¿Para qué usarás el concreto?/i });
     fireEvent.click(select);
     fireEvent.click(screen.getByRole('option', { name: /Losa/i }));
 
@@ -145,8 +152,8 @@ describe('Calculator UI Integration', () => {
     fireEvent.click(strengthSelect);
     fireEvent.click(screen.getByRole('option', { name: /250 kg\/cm²/i }));
 
-    // Check for "Todo listo" hint
-    expect(screen.getByText(/Todo listo/i)).toBeInTheDocument();
+    // Check for "Continúa..." hint
+    expect(screen.getByText(/Continúa para ver el detalle de costos/i)).toBeInTheDocument();
 
     // 10*5*0.10 = 5m3 * factor. Should be valid.
     // Phase 1: Button text is now "Ver Total"
@@ -159,7 +166,7 @@ describe('Calculator UI Integration', () => {
 
     fireEvent.click(screen.getByRole('radio', { name: /Sé la cantidad/i }));
 
-    const volInput = screen.getByLabelText(/Volumen total/i);
+    const volInput = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
     fireEvent.change(volInput, { target: { value: '0' } });
 
     // Hybrid validation: error only shows after blur (touched state)
@@ -180,7 +187,7 @@ describe('Calculator UI Integration', () => {
     const { unmount } = render(<Calculator />);
 
     fireEvent.click(screen.getByRole('radio', { name: /Sé la cantidad/i }));
-    const volInput = screen.getByLabelText(/Volumen total/i);
+    const volInput = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
     fireEvent.change(volInput, { target: { value: '7.5' } });
 
     unmount();
@@ -188,7 +195,7 @@ describe('Calculator UI Integration', () => {
     // Re-render: Zustand + LocalStorage should persist this
     render(<Calculator />);
 
-    const volInputRestored = screen.getByLabelText(/Volumen total/i);
+    const volInputRestored = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
     expect(volInputRestored).toBeInTheDocument();
     expect(volInputRestored).toHaveValue(7.5);
   });

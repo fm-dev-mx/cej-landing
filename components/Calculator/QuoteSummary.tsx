@@ -162,22 +162,25 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
     return (
         <div className={styles.container}>
             {/* Ticket Display */}
-            <div
-                className={styles.ticketWrapper}
-                data-ticket-container="true"
-                ref={ticketRef}
-            >
-                <TicketDisplay
-                    variant={stage === 'submitted' ? 'full' : stage === 'actions' ? 'preview' : 'compact'}
-                    quote={quote}
-                    isValidQuote={isValid}
-                    folio={submittedQuote?.folio}
-                    customerName={submittedQuote?.name}
-                    warning={warning}
-                    steps={getCalculatorSteps(draft)}
-                    onReset={handleResetCurrentMode}
-                />
-            </div>
+            {/* Ticket Display - HIDDEN in PREVIEW mode to remove "Stepper" noise */}
+            {stage !== 'preview' && (
+                <div
+                    className={styles.ticketWrapper}
+                    data-ticket-container="true"
+                    ref={ticketRef}
+                >
+                    <TicketDisplay
+                        variant={stage === 'submitted' ? 'full' : 'preview'}
+                        quote={quote}
+                        isValidQuote={isValid}
+                        folio={submittedQuote?.folio}
+                        customerName={submittedQuote?.name}
+                        warning={warning}
+                        steps={getCalculatorSteps(draft)}
+                        onReset={handleResetCurrentMode}
+                    />
+                </div>
+            )}
 
             {/* CTA Interaction Area */}
             <div className={styles.field}>
@@ -189,7 +192,8 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                             fullWidth
                             variant="primary"
                             onClick={handleViewBreakdown}
-                            disabled={!isValid}
+                            // Always enabled. Validation happens on click.
+                            disabled={false}
                         >
                             Ver Total
                         </Button>

@@ -16,10 +16,11 @@ import styles from "../CalculatorForm.module.scss";
 
 interface Props {
     error?: string | null;
+    forceValidation?: boolean;
     onFieldTouched?: (field: string) => void;
 }
 
-export function AssistVolumeForm({ onFieldTouched }: Props) {
+export function AssistVolumeForm({ onFieldTouched, forceValidation }: Props) {
     const draft = useCejStore((s) => s.draft);
     const {
         volumeMode,
@@ -40,11 +41,16 @@ export function AssistVolumeForm({ onFieldTouched }: Props) {
     // We keep touched logic ONLY for field interaction feedback (like analytics or specific UX),
     // but the requirement "Overlay/indicators must be always active" implies we show missing indicators immediately.
     // However, showing red boxes everywhere on load is harsh.
-    // Maybe we use a softer indicator or stick to the input 'error' prop which usually means red border.
-    // If we assume the user wants "Live validation", we pass the missing state.
+    /* Refactor: Only show errors if locally touched or forced by parent submit attempt */
 
     // Helper to check if field is missing according to "truth".
-    const isMissing = (field: CalculatorFieldId) => missingFields.includes(field);
+    const [touchedFields, setTouchedFields] = useState<Record<string, boolean>>({});
+
+    const isMissing = (field: CalculatorFieldId) => {
+        const actuallyMissing = missingFields.includes(field);
+        const isTouched = touchedFields[field] || forceValidation;
+        return actuallyMissing && isTouched;
+    };
 
     const handleNumeric =
         (field: string) => (e: ChangeEvent<HTMLInputElement>) => {
@@ -55,6 +61,7 @@ export function AssistVolumeForm({ onFieldTouched }: Props) {
         };
 
     const handleBlur = (field: string) => () => {
+        setTouchedFields(prev => ({ ...prev, [field]: true }));
         onFieldTouched?.(field);
     };
 

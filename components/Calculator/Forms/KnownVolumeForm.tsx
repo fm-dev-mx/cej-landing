@@ -13,10 +13,11 @@ import styles from "../CalculatorForm.module.scss";
 
 interface Props {
     hasError?: boolean;
+    forceValidation?: boolean;
     onFieldTouched?: () => void;
 }
 
-export function KnownVolumeForm({ hasError, onFieldTouched }: Props) {
+export function KnownVolumeForm({ hasError, forceValidation, onFieldTouched }: Props) {
     const draft = useCejStore((s) => s.draft);
     const m3 = draft.m3;
     const updateDraft = useCejStore((s) => s.updateDraft);
@@ -40,17 +41,18 @@ export function KnownVolumeForm({ hasError, onFieldTouched }: Props) {
         onFieldTouched?.();
     };
 
-    // Determine which message to show (interaction-based)
     // Determine which message to show
     // We show the indicator (red border) always if missing, but text message only if touched or external error present
-    const showError = isMissing;
-    const errorMessage = (showError && touched) ? "El volumen debe ser mayor a 0 m³" : showError;
+    const isTouched = touched || forceValidation;
+    // Fix: Include external hasError (e.g. from calculation engine) in the check
+    const showError = (isMissing || hasError) && isTouched;
+    const errorMessage = showError ? "El volumen debe ser mayor a 0 m³" : undefined;
 
     return (
         <div className={styles.fieldWithHelper}>
             <Input
                 id="vol-known"
-                label="Volumen Total"
+                label="¿Cuánto concreto necesitas?"
                 type="number"
                 min={0}
                 step={0.5}
@@ -64,7 +66,7 @@ export function KnownVolumeForm({ hasError, onFieldTouched }: Props) {
                 error={errorMessage}
             />
             {/* Show guidance text only before interaction and when there's no error */}
-            {!touched && !hasError && (
+            {!isTouched && !hasError && (
                 <p className={styles.helperText}>
                     Ingresa el volumen en m³ para calcular tu cotización
                 </p>

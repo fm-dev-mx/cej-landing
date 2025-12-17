@@ -229,6 +229,7 @@ export function CalculatorForm() {
                         <div className={`${styles.field} ${activeField === 'm3' ? styles.activeField : ''}`}>
                             <KnownVolumeForm
                                 hasError={!!error && rawVolume <= 0}
+                                forceValidation={hasTouchedAnyField}
                                 onFieldTouched={handleFieldTouched}
                             />
                         </div>
@@ -245,6 +246,7 @@ export function CalculatorForm() {
                                 >
                                     <AssistVolumeForm
                                         error={error}
+                                        forceValidation={hasTouchedAnyField}
                                         onFieldTouched={handleFieldTouched}
                                     />
                                 </div>
@@ -263,13 +265,18 @@ export function CalculatorForm() {
                     <SpecsForm />
                     {/* Additives Toggle */}
                     <div className={`${styles.field} ${styles.additivesContainer}`}>
-                        <button
-                            type="button"
-                            onClick={() => useCejStore.getState().setExpertMode(!draft.showExpertOptions)}
-                            className={styles.toggleButton}
-                        >
-                            <span>{draft.showExpertOptions ? "▾ Ocultar Aditivos" : "▸ Agregar Aditivos"}</span>
-                        </button>
+                        <label className={`${styles.toggleButton} ${draft.showExpertOptions ? styles.active : ''}`}>
+                            <input
+                                type="checkbox"
+                                checked={draft.showExpertOptions}
+                                onChange={() => useCejStore.getState().setExpertMode(!draft.showExpertOptions)}
+                                className={styles.toggleInput}
+                            />
+                            <span className={styles.toggleFakeCheckbox} aria-hidden="true" />
+                            <span className={styles.toggleLabel}>
+                                {draft.showExpertOptions ? "Ocultar Aditivos" : "Agregar Aditivos"}
+                            </span>
+                        </label>
                     </div>
 
                     {draft.showExpertOptions && (
@@ -283,11 +290,7 @@ export function CalculatorForm() {
             <div className={styles.fieldWithSeparator}></div>
 
             {/* 4. Feedback & warnings (only after user interaction) */}
-            {error && hasTouchedAnyField && (
-                <div className={styles.error} role="alert">
-                    {error}
-                </div>
-            )}
+            {/* REMOVED: Floating alerts. Using inline validation only. */}
 
             {!error && warning && (
                 <div className={styles.note}>
