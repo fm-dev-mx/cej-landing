@@ -15,8 +15,25 @@ test.describe('Quote Flow & Progressive Disclosure', () => {
         // Wait for store to be available (fixes hydration race condition)
         await waitForStore(page);
 
+        // Ensure clean slate (Playwright usually clears Storage, but Hydration can persist if using existing profile)
+        await page.evaluate(() => {
+            const store = window.useCejStore;
+            if (store) {
+                // Cast to any because exposed types in global.d.ts might be a subset
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const state = store.getState() as any;
+                state.clearSubmittedQuote();
+                state.resetDraft();
+                state.clearCart();
+            }
+        });
+
+        // Allow time for state to flush to DOM
+        await page.waitForTimeout(500);
+
         // 2. Interact with Calculator to ensure it works
-        const m3Input = page.getByLabel('Volumen Total', { exact: true });
+        // Use getByRole for better accessibility validation
+        const m3Input = page.getByRole('spinbutton', { name: /Cuánto concreto necesitas/i });
         await m3Input.fill('10');
 
         // For WebKit (Desktop & Mobile), use direct store manipulation for reliability
@@ -38,23 +55,31 @@ test.describe('Quote Flow & Progressive Disclosure', () => {
             await page.waitForTimeout(100);
         } else {
             // Full UI interaction for all other browsers
-            // Select Strength - with explicit wait and verification
+            // Select Strength - with robust fallback for Firefox/Slow CI
             const strengthCombobox = page.getByRole('combobox', { name: "Resistencia (f'c)" });
-            await strengthCombobox.click();
-            const strengthOption = page.getByRole('option', { name: /250/i });
-            await expect(strengthOption).toBeVisible({ timeout: 3000 });
-            await strengthOption.click();
-            // Verify selection was applied
-            await expect(strengthCombobox).toContainText('250', { timeout: 2000 });
+            await expect(async () => {
+                if (!await page.getByRole('option', { name: /250/i }).isVisible()) {
+                    await strengthCombobox.click();
+                }
+                await expect(page.getByRole('option', { name: /250/i })).toBeVisible({ timeout: 3000 });
+            }).toPass({ timeout: 10000 });
+            await page.getByRole('option', { name: /250/i }).click();
 
-            // Select Service Type - with explicit wait and verification
-            const serviceCombobox = page.getByRole('combobox', { name: 'Servicio' });
-            await serviceCombobox.click();
-            const serviceOption = page.getByRole('option', { name: /Bomba/i });
-            await expect(serviceOption).toBeVisible({ timeout: 3000 });
-            await serviceOption.click();
             // Verify selection was applied
-            await expect(serviceCombobox).toContainText('Bomba', { timeout: 2000 });
+            await expect(strengthCombobox).toContainText('250', { timeout: 3000 });
+
+            // Select Service Type - with robust fallback for Firefox/Slow CI
+            const serviceCombobox = page.getByRole('combobox', { name: 'Servicio' });
+            await expect(async () => {
+                if (!await page.getByRole('option', { name: /Bomba/i }).isVisible()) {
+                    await serviceCombobox.click();
+                }
+                await expect(page.getByRole('option', { name: /Bomba/i })).toBeVisible({ timeout: 3000 });
+            }).toPass({ timeout: 10000 });
+            await page.getByRole('option', { name: /Bomba/i }).click();
+
+            // Verify selection was applied
+            await expect(serviceCombobox).toContainText('Bomba', { timeout: 3000 });
         }
 
         // Wait for button to be ENABLED
