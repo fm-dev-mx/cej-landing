@@ -10,6 +10,10 @@ import path from 'path';
  */
 dotenv.config({ path: path.resolve(__dirname, '.env') });
 
+
+// Ensure critical UI env vars are present for local/CI consistency
+process.env.NEXT_PUBLIC_WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '525512345678';
+
 const PORT = process.env.PORT || 3000;
 const BASE_URL = `http://localhost:${PORT}`;
 

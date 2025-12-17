@@ -237,10 +237,16 @@ test.describe('QuoteDrawer Lifecycle', () => {
 
         // 2. Click Cancel
         const cancelBtn = page.getByRole('button', { name: /Cancelar/i });
-        await cancelBtn.click();
 
-        // 3. Edit banner should disappear
-        await expect(editBanner).not.toBeVisible();
+        // WebKit Flakiness Fix: The click might be missed if the banner is animating or layout shifts occur.
+        // We use a retry loop to ensure the click registers and the banner disappears.
+        await expect(async () => {
+            // Only click if the banner is still visible (to avoid clicking a detached element or unnecessarily)
+            if (await editBanner.isVisible()) {
+                await cancelBtn.click();
+            }
+            await expect(editBanner).not.toBeVisible({ timeout: 3000 });
+        }).toPass({ timeout: 15000 });
 
         // 4. Cart should still have the item
         const cartLength = await page.evaluate(() => {

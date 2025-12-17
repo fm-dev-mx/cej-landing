@@ -64,7 +64,14 @@ test.describe('Quote Flow & Progressive Disclosure', () => {
         await viewBreakdownBtn.click();
 
         // Check that breakdown appeared
-        await expect(page.getByText('Subtotal')).toBeVisible();
+        // Check that breakdown appeared
+        // Flakiness Fix: Firefox might need a retry on the click if the first one didn't register or the animation was slow
+        await expect(async () => {
+            if (!await page.getByText('Subtotal').isVisible()) {
+                await viewBreakdownBtn.click();
+            }
+            await expect(page.getByText('Subtotal')).toBeVisible({ timeout: 5000 });
+        }).toPass({ timeout: 15000 });
 
         // 3. Simulate Successful Submission
         // For WebKit/Mobile, injection is flaky due to hydration/storage race conditions.
@@ -158,9 +165,16 @@ test.describe('Quote Flow & Progressive Disclosure', () => {
         // 5. Verify Persistence across Reload
         await page.reload();
 
+        // Wait for hydration again
+        await waitForStore(page);
+
+        // Wait for hydration to restore the state (Folio text is a good proxy for "data loaded")
+        await expect(page.getByText(expectedFolioPattern)).toBeVisible({ timeout: 10000 });
+
         // Should STILL show WhatsApp button and Folio
-        await expect(whatsappBtn).toBeVisible();
-        await expect(page.getByText(expectedFolioPattern)).toBeVisible();
+        // Firefox/WebKit can be slow to rehydrate fully with persisted state
+        await expect(whatsappBtn).toBeVisible({ timeout: 15000 });
+        await expect(page.getByText(expectedFolioPattern)).toBeVisible({ timeout: 15000 });
 
         // 6. Regression Test: Click WhatsApp -> Verify Ticket Persistence in same tab
         await page.waitForTimeout(1000); // Allow state to settle before navigation

@@ -10,6 +10,8 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_WHATSAPP_NUMBER: "525512345678"
     steps:
       - uses: actions/checkout@v4
 
