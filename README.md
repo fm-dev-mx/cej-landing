@@ -207,18 +207,11 @@ If the database is unreachable or returns no rows, the calculator automatically 
 - Multi-step wizard validation.
 - QuoteDrawer and Smart Bottom Bar behavior.
 
-### 7.3 Accessibility (Current & Planned)
+### 7.3 Accessibility
 
-Current:
-
-- Manual checks with keyboard navigation and screen readers.
-- Contrast tokens and high-contrast mode (`prefers-contrast: more`) in `styles/_tokens.scss`.
-
-Planned for Phase 4A:
-
-- axe-core integration via `@axe-core/playwright`:
-  - Scan `/`, calculator, and lead form modal.
-  - CI gate: fail on `critical` / `serious` violations.
+- **Current:** Manual checks + High-contrast tokens.
+- **Automated:** `axe-core` integration in CI (blocking on 'critical' violations).
+- **Planned:** Full coverage for 'serious' violations and global reduced-motion support.
 
 Details: [`docs/ACCESSIBILITY.md`].
 

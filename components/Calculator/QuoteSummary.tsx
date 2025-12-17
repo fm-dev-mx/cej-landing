@@ -90,6 +90,9 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
             results: currentQuote
         });
 
+        // Ensure the order is moved to history so it appears in the drawer (synced with test expectations)
+        moveToHistory();
+
         setSchedulingOpen(false);
         // scrollToTicket(); // Already there usually
     };

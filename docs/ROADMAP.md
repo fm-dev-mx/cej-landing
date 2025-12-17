@@ -103,7 +103,7 @@ The calculator now provides a complete "Local Pro" experience: users can save qu
 
 #### 5.3 Quality Assurance (Planned)
 
-- [ ] **A11y Testing:** Automated axe-core integration via Playwright.
+- [/] **A11y Testing:** Automated axe-core integration (Critical checks only). Strict mode pending.
 - [ ] **Reduced Motion:** Global `prefers-reduced-motion` support.
 
 **Outcome (expected):**
