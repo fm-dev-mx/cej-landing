@@ -29,7 +29,7 @@
 
 | Feature | Status | Priority | Notes |
 | --- | --- | --- | --- |
-| `prefers-reduced-motion` | ❌ | Medium | Tracked as backlog `A11y-02` (see §6.1) |
+| `prefers-reduced-motion` | ✅ | - | Implemented in `globals.scss` |
 | Skip links | ❌ | Low | Recommended for Phase 4A |
 | Focus trapping (modals) | ⚠️ Partial | High | Needs full focus trap |
 | Landmark regions | ⚠️ Partial | Medium | Header/nav/main/footer refinement |
@@ -273,35 +273,27 @@ Implemented in `_tokens.scss`:
 
 ## 6. Motion & Animation
 
-### 6.1 Reduced Motion (Backlog A11y-02)
+### 6.1 Reduced Motion (✅ Implemented)
 
-**Status:** Not implemented yet (tracked as `A11y-02`).
+**Status:** Implemented in `styles/globals.scss`.
 
-**Scope:**
-
-- Provide a global CSS override for users with `prefers-reduced-motion: reduce`.
-- Minimize or disable non-essential transitions and animations when the preference is enabled.
-
-**Recommended Implementation (to be added in global styles):**
+**Implementation:**
 
 ```scss
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }
-
 ```
 
-**Acceptance Criteria:**
+**Behavior:**
 
-- [ ]  Core flows (landing, calculator, checkout, SaaS dashboard) exhibit no significant motion when `prefers-reduced-motion` is enabled at OS level.
-- [ ]  Manual verification included in §7.1 checklist.
-- [ ]  Once implemented, update `docs/DESIGN_SYSTEM.md#4.5-reduced-motion-support` and `CHANGELOG.md` accordingly.
+- Disables all CSS animations and transitions globally.
+- Sets `scroll-behavior` to `auto` (instant scroll).
+- Applies when user has enabled "Reduce motion" in OS accessibility settings.
 
 ### 6.2 Animation Guidelines
 
