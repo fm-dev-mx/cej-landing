@@ -60,7 +60,7 @@ describe('Calculator Navigation & Button Logic', () => {
     // Select Known Mode
     fireEvent.click(screen.getByRole('radio', { name: /Sé la cantidad/i }));
 
-    const input = screen.getByLabelText(/Volumen total/i);
+    const input = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
 
     // Initially, button should NOT be there (hint is shown instead)
     const addBtnInitial = screen.queryByRole('button', { name: /Calcular y Verificar/i });
@@ -93,19 +93,19 @@ describe('Calculator Navigation & Button Logic', () => {
     render(<Calculator />);
     const radioKnown = screen.getByRole('radio', { name: /Sé la cantidad/i });
     fireEvent.click(radioKnown);
-    expect(screen.getByLabelText(/Volumen total/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/¿Cuánto concreto necesitas?/i)).toBeInTheDocument();
 
     // ... existing content ...
     const radioAssist = screen.getByRole('radio', { name: /Ayúdame a calcular/i });
     fireEvent.click(radioAssist);
-    expect(screen.getByRole('combobox', { name: /Tipo de Obra/i })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /¿Para qué usarás el concreto?/i })).toBeInTheDocument();
   });
 
   it('Step 3 (Assist): Validates thickness correctly for Solid vs Coffered', () => {
     render(<Calculator />);
     fireEvent.click(screen.getByRole('radio', { name: /Ayúdame a calcular/i }));
 
-    const workTypeSelect = screen.getByRole('combobox', { name: /Tipo de Obra/i });
+    const workTypeSelect = screen.getByRole('combobox', { name: /¿Para qué usarás el concreto?/i });
     fireEvent.click(workTypeSelect);
     fireEvent.click(screen.getByRole('option', { name: /Losa/i }));
 
