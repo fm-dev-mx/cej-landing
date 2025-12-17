@@ -1,7 +1,9 @@
 # Playbook 03: Marketing Ops & Data Sync
 
-**Status:** 🏃 ACTIVE (Sprint 3)
-**Goal:** Establish robust server-side tracking (Meta CAPI), enhance SEO visibility, and enable dynamic pricing operations.
+**Status:** ✅ ARCHIVED (Completed – Sprint 3)
+**Goal:** Establish robust server-side tracking (Meta CAPI) and enhance SEO visibility.
+
+> **Archive Note:** This playbook represents the work completed during Sprint 3. The dynamic pricing sync to `price_config` was deferred to Phase 4B. Remaining checklist items are preserved for historical reference.
 
 ## 1. Tracking & Analytics (✅ Implemented)
 

@@ -1,7 +1,9 @@
 # Playbook 00: QA & Infrastructure Hardening
 
-**Status:** IMMEDIATE PRIORITY
+**Status:** ✅ ARCHIVED (Completed – Sprint 1)
 **Goal:** Eliminate technical debt and ensure 100% reliability of the calculation engine before database integration.
+
+> **Archive Note:** This playbook represents the work completed during Sprint 1. The checklist items below were completed but preserved in their original format for historical reference.
 
 ## 1. Scope
 

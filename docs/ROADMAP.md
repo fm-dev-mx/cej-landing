@@ -58,11 +58,11 @@ Tracking is more robust across platforms (including iOS), and the site is better
 
 ---
 
-### 🏃 Sprint 4: SaaS Portal (Phase 4A – In Progress)
+### ✅ Sprint 4: Local Pro (Phase 4A – Completed)
 
-**Goal:** User identification, recurring orders, and quality assurance.
+**Goal:** Local SaaS experience with quote history and UX refinements.
 
-#### 4.1 UX Refinements (In Progress)
+#### 4.1 UX Refinements (Completed)
 
 - [x] **Progressive Disclosure:** QuoteSummary with compact → breakdown → submitted states
 - [x] **Validation Fixes:** Spanish error messages for all Zod schemas
@@ -72,26 +72,42 @@ Tracking is more robust across platforms (including iOS), and the site is better
 - [x] **Form Compactness:** CSS refinements for "Ayúdame a calcular" flow
 - [x] **Error Focus:** Auto-focus first invalid field on form submit
 
-#### 4.2 History & Orders (Planned)
+#### 4.2 History & Orders (Completed)
 
 - [x] **Quote History:** Local history via `useCejStore.history`
 - [x] **Reutilizar:** `loadQuote()` to restore historical quotes
-- [ ] **Quote States:** Visual differentiation (Cotización vs Contactado vs Confirmado)
-- [ ] **Contact Channels:** Phone call CTA alongside WhatsApp {PLANNED}
-- [ ] **SLA Display:** Time-based contact expectation messages {PLANNED}
 
-#### 4.3 SaaS Infrastructure (Planned)
+**Outcome:**
+The calculator now provides a complete "Local Pro" experience: users can save quotes locally, review history, and restore previous quotes without authentication.
+
+---
+
+### 🏃 Sprint 5: Cloud SaaS (Phase 4B – Planned)
+
+**Goal:** User identification, cloud sync, and authenticated dashboard.
+
+#### 5.1 UX Enhancements (Backlog)
+
+- [ ] **Quote States:** Visual differentiation (Cotización vs Contactado vs Confirmado)
+- [ ] **Contact Channels:** Phone call CTA alongside WhatsApp
+- [ ] **SLA Display:** Time-based contact expectation messages
+
+#### 5.2 SaaS Infrastructure (Planned)
 
 - [ ] **Data Sync:** Migrate from static `FALLBACK_PRICING_RULES` to live `price_config` table in Supabase.
 - [ ] **Repository Layer:** Begin partial implementation for Orders/Profiles (triggered by multi-action complexity).
 - [ ] **Auth:** Supabase Auth integration (Magic Link).
 - [ ] **Profiles:** User profile management (`public.profiles`).
 - [ ] **Order Sync:** Sync local cart to database for authenticated users.
-- [ ] **Re-order:** Clone previous order with current pricing.
+- [ ] **Re-order Cloud:** Clone previous order with current pricing (cloud-synced).
+
+#### 5.3 Quality Assurance (Planned)
+
 - [ ] **A11y Testing:** Automated axe-core integration via Playwright.
+- [ ] **Reduced Motion:** Global `prefers-reduced-motion` support.
 
 **Outcome (expected):**
-The system gains an authenticated dashboard where recurring customers can view and re-order, and QA is reinforced with automated A11y checks.
+The system gains an authenticated dashboard where recurring customers can view and re-order across devices, and QA is reinforced with automated A11y checks.
 
 ---
 

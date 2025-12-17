@@ -1,7 +1,7 @@
 # Execution Guide: CEJ Platform
 
 **Status:** Living Document
-**Version:** 2.3 (Phase 3 Completed, Phase 4A Planned)
+**Version:** 2.4 (Phase 4A Completed, Phase 4B Planned)
 
 ---
 
@@ -78,10 +78,11 @@ This table is the authoritative view of project phases and their status. Each ph
 | **1. Data Core** | `docs/archive/PLAYBOOK_01_DATA_CORE.md` | DB persistence & fail-open infra. | ✅ Completed |
 | **2. Engine** | `docs/archive/PLAYBOOK_02_CALC_ENGINE.md` | Expert features (additives, dynamic pricing). | ✅ Completed |
 | **3. Marketing** | `docs/archive/PLAYBOOK_03_MARKETING_OPS.md` | Server-side tracking (CAPI) & SEO. | ✅ Completed |
-| **4A. SaaS Portal** | `docs/PLAYBOOK_04_SAAS_PORTAL.md` | Auth, profiles, order history, pricing data sync, A11y automation. | 📝 Planned |
-| **4B. CEJ Pro** | {TODO: future playbook} | Advanced SaaS operations (billing, contractor accounts, admin tools). | {TODO} |
+| **4A. Local Pro** | *See ROADMAP.md Sprint 4* | Local quote history, UX refinements, persistent cart. | ✅ Completed |
+| **4B. Cloud SaaS** | `docs/PLAYBOOK_04_SAAS_PORTAL.md` | Auth, profiles, cloud sync, A11y automation. | 📅 Planned |
+| **4C. CEJ Pro Ops** | {TODO: future playbook} | Billing, contractor accounts, admin tools. | {TODO} |
 
-> Phase 4B is intentionally underspecified; it requires business input before being decomposed into concrete sprints.
+> Phase 4B is defined in PLAYBOOK_04. Phase 4C requires business input before being decomposed into concrete sprints.
 
 ---
 
@@ -170,20 +171,18 @@ A merge to `main` must not break any of the above.
 
 ---
 
-## 8. Phase 4A – SaaS Portal Execution Notes
+## 8. Phase 4A – Local Pro (Completed)
 
-### 8.1 Scope Clarification
+### 8.1 Delivered Features
 
-Phase 4A is limited to:
+Phase 4A delivered:
 
-- Auth (Magic Link).
-- Profiles.
-- Order history.
-- Re-order.
-- Pricing data sync to Supabase (`price_config`).
-- A11y automation (axe-core).
+- **Quote History:** Local persistence via `useCejStore.history`.
+- **Re-order Flow:** `loadQuote()` to restore historical quotes.
+- **UX Refinements:** Progressive disclosure, hybrid validation, form compactness.
+- **Persistent Cart:** Cart survives page refreshes and route changes.
 
-Anything beyond this (e.g. billing, multi-tenant orgs) belongs to Phase 4B.
+The Cloud SaaS features (Auth, Profiles, cloud sync) belong to Phase 4B.
 
 ### 8.2 Success Criteria
 
@@ -200,7 +199,21 @@ Phase 4A is considered **done** when:
 
 ---
 
-## 9. Future Work: Phase 4B – CEJ Pro
+## 9. Phase 4B – Cloud SaaS (Planned)
+
+Phase 4B scope:
+
+- Auth (Magic Link) + `/login` and `/dashboard` pages.
+- Profiles (`public.profiles`).
+- Cloud order history sync.
+- Pricing data sync to Supabase (`price_config`).
+- A11y automation (axe-core).
+
+See `docs/PLAYBOOK_04_SAAS_PORTAL.md` for full execution plan.
+
+---
+
+## 10. Future Work: Phase 4C – CEJ Pro Ops
 
 Placeholder for future evolution:
 
@@ -208,4 +221,4 @@ Placeholder for future evolution:
 - Order lifecycle tracking,
 - Admin panel.
 
-> {TODO: business decision required – define exact scope and constraints for Phase 4B before implementation.}
+> {TODO: business decision required – define exact scope and constraints for Phase 4C before implementation.}

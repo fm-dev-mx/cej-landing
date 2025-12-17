@@ -99,9 +99,17 @@ For deeper details, see [`docs/ARCHITECTURE.md`].
 - First-party identity cookies (`cej_vid`, `cej_sid`) for session/visitor tracking.
 - JSON-LD schemas for SEO: **Product** and **OfferCatalog**.
 
-### 3.5 SaaS Portal (Phase 4A – Planned)
+### 3.5 Local Pro (Phase 4A – Completed)
 
-> *(Defined, not yet shipped as a full release.)*
+Local SaaS experience without authentication:
+
+- **Quote History:** Persisted locally via `useCejStore.history`.
+- **Re-order Flow:** `loadQuote()` restores previous quotes.
+- **Persistent Cart:** Survives page refreshes and route changes.
+
+### 3.6 Cloud SaaS Portal (Phase 4B – Planned)
+
+> *(Defined, not yet shipped.)*
 
 - Supabase Auth (Magic Link).
 - `public.profiles` linked to `auth.users`.
