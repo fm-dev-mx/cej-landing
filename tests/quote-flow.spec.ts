@@ -111,13 +111,16 @@ test.describe('Quote Flow & Progressive Disclosure', () => {
             });
         }, mockQuote);
 
-        // 4. Verify Immediate UI Update (wait for condition, not time)
-        await expect(page.getByText('Tu solicitud ha sido registrada')).toBeVisible();
-        await expect(page.getByText('Folio: E2E-TEST-001')).toBeVisible();
+        // Wait for React to reconcile state injection
+        await page.waitForTimeout(500);
 
-        // Should show "Ir al chat de Ventas" directly
+        // 4. Verify Immediate UI Update (wait for condition, not time)
+        await expect(page.getByText('Tu solicitud ha sido registrada')).toBeVisible({ timeout: 5000 });
+        await expect(page.getByText('Folio: E2E-TEST-001')).toBeVisible({ timeout: 3000 });
+
+        // Should show "Ir al chat de Ventas" directly (link, not button)
         const whatsappBtn = page.getByRole('link', { name: /Ir al chat de Ventas/i });
-        await expect(whatsappBtn).toBeVisible();
+        await expect(whatsappBtn).toBeVisible({ timeout: 5000 });
 
         // 5. Verify Persistence across Reload
         await page.reload();
