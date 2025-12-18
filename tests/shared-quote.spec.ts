@@ -21,52 +21,42 @@ test.describe('Shared Quote Page', () => {
         await expect(page).toHaveTitle(/no encontrada|not found|could not be found/i);
     });
 
-    test('displays quote details when folio exists', async ({ page, browserName }) => {
-        // NOTE: This test requires a real folio to exist in the test DB.
-        // For CI, you may need to seed the test database or mock the API.
-        // Skipping for now if no test data is available.
+    test('displays quote details when folio exists', async ({ page }) => {
+        // Navigate to the reserved test folio
+        await page.goto('/cotizacion/WEB-00000000-0000');
 
-        // Option 1: Use a known test folio (requires DB seeding)
-        // Option 2: Mock at network level using page.route()
-
-        // Mock the API response for this specific folio
-        await page.route('**/cotizacion/WEB-20251218-1234', async (route) => {
-            // Allow the request to continue - server will handle the response
-            await route.continue();
-        });
-
-        // For a proper E2E test with real data, uncomment below:
-        // await page.goto('/cotizacion/WEB-20251218-1234');
-        // await expect(page.getByText('Tu Cotización')).toBeVisible();
-        // await expect(page.getByText('WEB-20251218-1234')).toBeVisible();
-
-        // For now, just verify the page structure exists
-        test.skip(browserName !== 'chromium', 'Full E2E requires DB seeding - run on chromium only');
+        // Verify page content from mock data
+        await expect(page.getByText('Tu Cotización')).toBeVisible();
+        // Use .first() to avoid strict mode violation (matches title, subtitle, and ticket meta)
+        await expect(page.getByText('WEB-00000000-0000').first()).toBeVisible();
+        await expect(page.getByText('E2E Robot')).toBeVisible();
+        await expect(page.getByText('25,000.00')).toBeVisible(); // Total
     });
 
     test('OG metadata is correctly set for SEO', async ({ page }) => {
-        // Mock a successful quote response at the page level
-        // This would require mocking the server action or having test data
-
-        // For static validation, we can check that the page template works:
-        // Navigate and check meta tags exist (even on 404, some meta should be present)
-        await page.goto('/cotizacion/WEB-20251218-0000');
+        // Navigate to the test folio
+        await page.goto('/cotizacion/WEB-00000000-0000');
 
         // Check that robots meta is set to noindex for privacy
-        // Use .first() to avoid strict mode violation if multiple tags exist
         const robotsMeta = await page.locator('meta[name="robots"]').first().getAttribute('content');
         expect(robotsMeta).toContain('noindex');
+
+        // Check OpenGraph title - explicitly look for meta tag
+        const ogTitle = await page.locator('meta[property="og:title"]').getAttribute('content');
+        expect(ogTitle).toContain('WEB-00000000-0000');
     });
 
-    test('print button triggers print dialog', async () => {
-        // This test would need a valid quote to render the actions
-        // Skip for now as it requires DB data
-        test.skip(true, 'Requires DB seeding with test quote data');
+    test('print button triggers print dialog', async ({ page, browserName }) => {
+        await page.goto('/cotizacion/WEB-00000000-0000');
 
-        // await page.goto('/cotizacion/VALID-FOLIO');
-        // const printButton = page.getByRole('button', { name: /Descargar PDF/i });
-        // await expect(printButton).toBeVisible();
-        // We can't easily test window.print() in Playwright, but we can verify button exists
+        const printButton = page.getByRole('button', { name: /Descargar PDF/i });
+        await expect(printButton).toBeVisible();
+
+        // window.print() can hang the test or close the target in some browsers (e.g. Firefox)
+        if (browserName === 'chromium') {
+            // In Chromium we can usually click safely if we don't wait for dialog
+            await printButton.click();
+        }
     });
 
     test('share URL format is correct', async () => {

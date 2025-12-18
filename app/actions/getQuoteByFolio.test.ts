@@ -34,7 +34,8 @@ vi.mock('@/config/env', () => ({
     env: {
         NEXT_PUBLIC_SUPABASE_URL: 'https://mock.supabase.co',
         SUPABASE_SERVICE_ROLE_KEY: 'mock-service-role-key',
-    }
+    },
+    isProd: false,
 }));
 
 // Dynamic import to ensure mocks are applied first

@@ -5,7 +5,7 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
-import { env } from "@/config/env";
+import { env, isProd } from "@/config/env";
 import { reportError } from "@/lib/monitoring";
 import type { Database, QuoteSnapshot } from "@/types/database";
 import { FolioParamSchema } from "@/lib/schemas/orders";
@@ -45,6 +45,33 @@ export async function getQuoteByFolio(folio: string): Promise<QuoteSnapshot | nu
             return null;
         }
         const validFolio = parseResult.data;
+
+        // 1.5 Handle Test Folio for E2E validation (non-production only)
+        if (!isProd && validFolio === "WEB-00000000-0000") {
+            return {
+                folio: "WEB-00000000-0000",
+                customer: { name: "E2E Robot", phone: "******8888" },
+                financials: {
+                    total: 25000,
+                    subtotal: 21551.72,
+                    vat: 3448.28,
+                    currency: "MXN"
+                },
+                items: [
+                    {
+                        id: "e2e-item-1",
+                        label: "Concreto f'c 250 - Bomba",
+                        volume: 10,
+                        service: "pumped",
+                        subtotal: 21551.72
+                    }
+                ],
+                breakdownLines: [
+                    { label: "Subtotal", value: 21551.72, type: "base" },
+                    { label: "IVA (16%)", value: 3448.28, type: "additive" }
+                ]
+            };
+        }
 
         if (!supabase) {
             console.warn("SUPABASE_NOT_CONFIGURED: Shared quote lookup failed.");
