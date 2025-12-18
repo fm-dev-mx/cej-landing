@@ -67,12 +67,12 @@
 
 .secondaryActions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: var(--sp-4);
     margin-top: var(--sp-6);
 
-    @media (max-width: 640px) {
-        grid-template-columns: 1fr;
+    @include respond-to("sm") {
+        grid-template-columns: 1fr 1fr;
     }
 }
 

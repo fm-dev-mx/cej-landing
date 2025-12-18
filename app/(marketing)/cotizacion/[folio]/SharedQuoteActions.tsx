@@ -7,10 +7,9 @@ import styles from './SharedQuote.module.scss';
 
 interface SharedQuoteActionsProps {
     whatsappUrl?: string;
-    folio: string;
 }
 
-export function SharedQuoteActions({ whatsappUrl, folio }: SharedQuoteActionsProps) {
+export function SharedQuoteActions({ whatsappUrl }: SharedQuoteActionsProps) {
     const handleWhatsAppClick = () => {
         trackContact("WhatsApp");
     };

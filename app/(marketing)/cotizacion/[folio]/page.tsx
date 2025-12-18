@@ -88,7 +88,6 @@ export default async function SharedQuotePage({ params }: Props) {
                 <section className={styles.actions}>
                     <SharedQuoteActions
                         whatsappUrl={whatsappUrl}
-                        folio={folio}
                     />
 
                     <div className={styles.trustBanner}>
