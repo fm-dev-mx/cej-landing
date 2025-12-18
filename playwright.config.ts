@@ -22,6 +22,8 @@ const BASE_URL = `http://localhost:${PORT}`;
  */
 export default defineConfig({
   testDir: './tests',
+  /* Match only .spec.ts files to avoid conflict with Vitest unit tests (.test.ts) */
+  testMatch: '**/*.spec.ts',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

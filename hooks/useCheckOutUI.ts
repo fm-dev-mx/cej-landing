@@ -12,6 +12,7 @@ import { trackLead } from "@/lib/tracking/visitor";
 import {
     generateQuoteId,
 } from "@/lib/utils";
+import { reportError } from "@/lib/monitoring";
 
 import type { CustomerInfo, OrderPayload } from "@/types/domain";
 
@@ -131,7 +132,7 @@ export function useCheckoutUI() {
             // The UI can now show the actual folio instead of a placeholder
             return { success: true, folio };
         } catch (err: unknown) {
-            console.error("Critical error in processOrder (Fail-Open triggered):", err);
+            reportError(err, { context: "useCheckoutUI.processOrder", customerPhone: customer.phone });
 
             // Distinguish between validation errors (user-facing) and network errors (fail-open)
             const errorMessage = err instanceof Error ? err.message : "Error al procesar el pedido.";

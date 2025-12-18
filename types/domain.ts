@@ -85,6 +85,12 @@ export type QuoteLineItem = {
     type: 'base' | 'additive' | 'surcharge';
 };
 
+export type PricingSnapshot = {
+    rules_version: number;
+    timestamp: number;
+    rules_applied: PricingRules;
+};
+
 export type QuoteBreakdown = {
     volume: NormalizedVolume;
     strength: Strength;
@@ -104,6 +110,7 @@ export type QuoteBreakdown = {
         formula: string;
         factorUsed?: number;
     };
+    pricingSnapshot?: PricingSnapshot; // New for Snapshot Pattern
 };
 
 export type QuoteWarning =
@@ -124,7 +131,106 @@ export type QuoteWarning =
     }
     | null;
 
-// --- 4. Order & Cart ---
+// --- 4. OMS Entities & Domain ---
+
+export type OrderStatus =
+    | 'Pendiente volumetría'
+    | 'Confirmado'
+    | 'En Proceso'
+    | 'Finalizado'
+    | 'Cancelado';
+
+export type PaymentStatus =
+    | 'Pendiente de Pago'
+    | 'Parcial'
+    | 'Pagado'
+    | 'Cancelado';
+
+export type Client = {
+    id: string;
+    type: 'individual' | 'business';
+    legalName: string; // Razón Social o Nombre Completo
+    rfc?: string;
+    phone: string;
+    email: string;
+    billingAddress?: {
+        street: string;
+        exteriorNumber: string;
+        interiorNumber?: string;
+        colony: string;
+        city: string;
+        state: string;
+        zipCode: string;
+    };
+};
+
+export type Location = {
+    address: string;
+    coordinates?: {
+        lat: number;
+        lng: number;
+    };
+};
+
+export type Seller = {
+    id: string;
+    name: string;
+    email?: string;
+};
+
+export type OrderFinancials = {
+    subtotal: number;
+    vat: number;
+    total: number;
+    deposit: number; // Anticipo
+    balance: number; // Saldo Pendiente
+    currency: string;
+};
+
+export type OrderItem = {
+    id: string;
+    product_id: string;
+    label: string;
+    quantity: number;
+    unitPrice: number;
+    subtotal: number;
+    snapshot: {
+        inputs: CalculatorState;
+        results: QuoteBreakdown;
+    };
+};
+
+export type Order = {
+    id: string;
+    folio: string;
+    createdAt: number;
+    updatedAt: number;
+    scheduledDate?: string;
+    client: Client;
+    deliveryLocation: Location;
+    seller?: Seller;
+    items: OrderItem[];
+    financials: OrderFinancials;
+    status: OrderStatus;
+    paymentStatus: PaymentStatus;
+    notes?: string;
+};
+
+// --- 5. Catalog Abstraction ---
+
+export type ProductType = 'concrete' | 'additive' | 'service';
+
+export type Product = {
+    id: string;
+    type: ProductType;
+    label: string;
+    description?: string;
+    active: boolean;
+    metadata?: Record<string, unknown>;
+};
+
+// --- 6. Legacy / Compatibility ---
+
 export type CartItem = {
     id: string;
     timestamp: number;
@@ -173,7 +279,7 @@ export type OrderPayload = {
     };
 };
 
-// --- 5. Meta CAPI ---
+// --- 7. Meta CAPI ---
 
 /**
  * Structure for Meta CAPI User Data.

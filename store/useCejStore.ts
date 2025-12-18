@@ -3,439 +3,41 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import {
-    type CalculatorState,
-    type QuoteBreakdown,
-    DEFAULT_CALCULATOR_STATE,
-    type WorkTypeId,
-    type ConcreteType,
-    type CalculatorMode,
-    type CartItem,
-    type CustomerInfo,
+    DEFAULT_CALCULATOR_STATE
 } from '@/types/domain';
-import { WORK_TYPES } from '@/config/business';
 
-// --- Types ---
+// Import Slices
+import { type CalculatorSlice, createCalculatorSlice } from './slices/calculatorSlice';
+import { type CartSlice, createCartSlice } from './slices/cartSlice';
+import { type UISlice, createUISlice } from './slices/uiSlice';
+import { type UserSlice, createUserSlice } from './slices/userSlice';
+import { type SubmissionSlice, createSubmissionSlice } from './slices/submissionSlice';
+import { type OrderSlice, createOrderSlice } from './slices/ordersSlice';
 
-interface UserState {
-    visitorId: string;
-    name?: string;
-    phone?: string;
-    hasConsentedPersistence: boolean;
-}
+export type CejStore = CalculatorSlice & CartSlice & UISlice & UserSlice & SubmissionSlice & OrderSlice;
 
-// --- Slices Interfaces ---
-
-interface CalculatorSlice {
-    draft: CalculatorState;
-    // Persist forms when switching modes
-    savedDrafts: Partial<Record<CalculatorMode, CalculatorState>>;
-    resetDraft: () => void;
-    updateDraft: (updates: Partial<CalculatorState>) => void;
-    setMode: (mode: CalculatorMode) => void;
-    setWorkType: (id: WorkTypeId | null) => void;
-    // Phase 2 Actions
-    toggleAdditive: (id: string) => void;
-    setExpertMode: (isActive: boolean) => void;
-}
-
-interface OrderSlice {
-    cart: CartItem[];
-    history: CartItem[];
-    addToCart: (quote: QuoteBreakdown, openDrawer?: boolean) => string; // Returns the new item ID
-    updateCartItem: (id: string, quote: QuoteBreakdown) => void; // Update existing item in-place
-    updateCartItemCustomer: (id: string, customer: CustomerInfo) => void;
-    updateCartItemFolio: (id: string, folio: string) => void;
-    removeFromCart: (id: string) => void;
-    editCartItem: (id: string) => void;
-    cancelEdit: () => void; // Cancel current edit session
-    cloneCartItem: (item: CartItem) => void;
-    clearCart: () => void;
-    moveToHistory: () => void;
-    loadQuote: (item: CartItem) => void;
-}
-
-interface UISlice {
-    isDrawerOpen: boolean;
-    activeTab: 'order' | 'history';
-    isProcessingOrder: boolean;
-    editingItemId: string | null; // Track active edit session
-    setDrawerOpen: (isOpen: boolean) => void;
-    setActiveTab: (tab: 'order' | 'history') => void;
-    setProcessingOrder: (isProcessing: boolean) => void;
-    setEditingItemId: (id: string | null) => void;
-}
-
-interface IdentitySlice {
-    user: UserState;
-    updateUserContact: (contact: { name: string; phone: string; save: boolean }) => void;
-}
-
-// Phase 0 Bugfix: Global submission state to avoid losing data between renders
-// Phase 1: Added breakdownViewed for progressive disclosure
-interface SubmissionSlice {
-    breakdownViewed: boolean;
-    submittedQuote: { folio: string; name: string; results: QuoteBreakdown } | null;
-    setBreakdownViewed: (viewed: boolean) => void;
-    setSubmittedQuote: (data: { folio: string; name: string; results: QuoteBreakdown } | null) => void;
-    clearSubmittedQuote: () => void;
-}
-
-type CejStore = CalculatorSlice & OrderSlice & UISlice & IdentitySlice & SubmissionSlice;
-
-type PersistedState = Pick<CejStore, 'cart' | 'history' | 'user' | 'draft' | 'savedDrafts' | 'submittedQuote' | 'breakdownViewed'>;
-
-// --- Store Implementation ---
+type PersistedState = Pick<CejStore, 'cart' | 'history' | 'user' | 'draft' | 'savedDrafts' | 'submittedQuote' | 'breakdownViewed' | 'orders'>;
 
 export const useCejStore = create<CejStore>()(
     persist(
-        (set, get) => ({
-            // --- Calculator Slice ---
-            draft: { ...DEFAULT_CALCULATOR_STATE },
-            savedDrafts: {},
-
-            resetDraft: () => set({ draft: { ...DEFAULT_CALCULATOR_STATE }, savedDrafts: {}, editingItemId: null }),
-
-            updateDraft: (updates) => set((state) => ({
-                draft: { ...state.draft, ...updates }
-            })),
-
-            setMode: (mode) => {
-                set((state) => {
-                    const currentMode = state.draft.mode;
-
-                    // 1. Save current state to savedDrafts
-                    const updatedSavedDrafts = {
-                        ...state.savedDrafts,
-                        [currentMode]: { ...state.draft }
-                    };
-
-                    // 2. Check if we have a saved state for the NEW mode
-                    const savedState = updatedSavedDrafts[mode];
-
-                    if (savedState) {
-                        // Restore saved state but ensure mode is correct
-                        return {
-                            draft: { ...savedState, mode },
-                            savedDrafts: updatedSavedDrafts
-                        };
-                    }
-
-                    // 3. Initialize fresh state for new mode (if no saved state)
-                    const nextDraft = { ...DEFAULT_CALCULATOR_STATE, mode };
-
-                    // Pre-configuration based on mode defaults
-                    if (mode === 'knownM3') {
-                        nextDraft.workType = null;
-                        nextDraft.hasCoffered = 'no';
-                    }
-                    // For assistM3, we leave defaults (workType=null, etc)
-
-                    return {
-                        draft: nextDraft,
-                        savedDrafts: updatedSavedDrafts
-                    };
-                });
-            },
-
-            setWorkType: (workType) => {
-                set((state) => {
-                    if (!workType) return { draft: { ...state.draft, workType: null } };
-                    const config = WORK_TYPES.find(w => w.id === workType);
-                    const recommendedType: ConcreteType | null = workType === 'slab' ? 'pumped' : state.draft.type;
-
-                    // Initialize default thickness to prevent "Required" validation error on hidden inputs
-                    // Slab (Coffered) -> 5cm compression layer
-                    // Others -> 10cm standard thickness
-                    const defaultThickness = workType === 'slab' ? '5' : '10';
-
-                    return {
-                        draft: {
-                            ...state.draft,
-                            workType,
-                            strength: config ? config.recommendedStrength : state.draft.strength,
-                            type: recommendedType,
-                            hasCoffered: workType === 'slab' ? 'yes' : 'no',
-                            cofferedSize: workType === 'slab' ? '7' : null,
-                            thicknessByDims: defaultThickness,
-                            thicknessByArea: defaultThickness,
-                        }
-                    };
-                });
-            },
-
-            // Safe Additive Toggle
-            toggleAdditive: (id) => {
-                set((state) => {
-                    // Safety: Ensure array exists
-                    const current = state.draft.additives || [];
-                    const exists = current.includes(id);
-                    const next = exists
-                        ? current.filter(a => a !== id)
-                        : [...current, id];
-                    return { draft: { ...state.draft, additives: next } };
-                });
-            },
-
-            // Safe Expert Mode
-            setExpertMode: (isActive) => {
-                set((state) => ({
-                    draft: {
-                        ...state.draft,
-                        showExpertOptions: isActive,
-                        // Clear additives if disabling expert mode
-                        additives: isActive ? (state.draft.additives || []) : []
-                    }
-                }));
-            },
-
-            // --- Order Slice ---
-            cart: [],
-            history: [],
-
-            addToCart: (results, openDrawer = true) => {
-                const state = get();
-
-                // If editing, update in-place instead of adding new
-                if (state.editingItemId) {
-                    const existingItem = state.cart.find(i => i.id === state.editingItemId);
-                    if (existingItem) {
-                        // Construct updated label
-                        let workTypeLabel = 'Carga Manual';
-                        if (state.draft.mode === 'assistM3' && state.draft.workType) {
-                            const match = WORK_TYPES.find(w => w.id === state.draft.workType);
-                            if (match) workTypeLabel = match.label;
-                        } else if (state.draft.mode === 'knownM3') {
-                            workTypeLabel = 'Volumen Directo';
-                        }
-                        const additivesList = state.draft.additives || [];
-                        const additivesCount = additivesList.length;
-                        const label = `${workTypeLabel} - f'c ${state.draft.strength} ${additivesCount > 0 ? `(+${additivesCount})` : ''}`;
-
-                        const updatedItem: CartItem = {
-                            ...existingItem,
-                            timestamp: Date.now(),
-                            inputs: { ...state.draft, additives: additivesList },
-                            results,
-                            config: { label }
-                        };
-
-                        set({
-                            cart: state.cart.map(item => item.id === state.editingItemId ? updatedItem : item),
-                            draft: { ...DEFAULT_CALCULATOR_STATE },
-                            editingItemId: null,
-                            isDrawerOpen: openDrawer,
-                            activeTab: 'order'
-                        });
-
-                        return state.editingItemId;
-                    }
-                }
-
-                // Default: Add new item
-                // Construct label
-                let workTypeLabel = 'Carga Manual';
-                if (state.draft.mode === 'assistM3' && state.draft.workType) {
-                    const match = WORK_TYPES.find(w => w.id === state.draft.workType);
-                    if (match) workTypeLabel = match.label;
-                } else if (state.draft.mode === 'knownM3') {
-                    workTypeLabel = 'Volumen Directo';
-                }
-
-                const additivesList = state.draft.additives || [];
-                const additivesCount = additivesList.length;
-
-                const label = `${workTypeLabel} - f'c ${state.draft.strength} ${additivesCount > 0 ? `(+${additivesCount})` : ''}`;
-
-                // Create strict CartItem
-                const id = uuidv4();
-                const newItem: CartItem = {
-                    id,
-                    timestamp: Date.now(),
-                    inputs: { ...state.draft, additives: additivesList },
-                    results,
-                    config: { label }
-                };
-
-                set((s) => ({
-                    cart: [...s.cart, newItem],
-                    draft: { ...DEFAULT_CALCULATOR_STATE }, // Reset Form
-                    editingItemId: null,
-                    isDrawerOpen: openDrawer,
-                    activeTab: 'order'
-                }));
-
-                return id;
-            },
-
-            updateCartItem: (id, results) => {
-                const state = get();
-                const existingItem = state.cart.find(i => i.id === id);
-                if (!existingItem) return;
-
-                // Construct updated label from current draft
-                let workTypeLabel = 'Carga Manual';
-                if (state.draft.mode === 'assistM3' && state.draft.workType) {
-                    const match = WORK_TYPES.find(w => w.id === state.draft.workType);
-                    if (match) workTypeLabel = match.label;
-                } else if (state.draft.mode === 'knownM3') {
-                    workTypeLabel = 'Volumen Directo';
-                }
-                const additivesList = state.draft.additives || [];
-                const additivesCount = additivesList.length;
-                const label = `${workTypeLabel} - f'c ${state.draft.strength} ${additivesCount > 0 ? `(+${additivesCount})` : ''}`;
-
-                const updatedItem: CartItem = {
-                    ...existingItem,
-                    timestamp: Date.now(),
-                    inputs: { ...state.draft, additives: additivesList },
-                    results,
-                    config: { label }
-                };
-
-                set({
-                    cart: state.cart.map(item => item.id === id ? updatedItem : item),
-                    draft: { ...DEFAULT_CALCULATOR_STATE },
-                    editingItemId: null,
-                });
-            },
-
-            updateCartItemCustomer: (id, customer) => {
-                set((state) => ({
-                    cart: state.cart.map(item =>
-                        item.id === id ? { ...item, customer } : item
-                    )
-                }));
-            },
-
-            updateCartItemFolio: (id, folio) => {
-                set((state) => ({
-                    cart: state.cart.map(item =>
-                        item.id === id ? { ...item, folio } : item
-                    )
-                }));
-            },
-
-            removeFromCart: (id) => set((state) => ({
-                cart: state.cart.filter((item) => item.id !== id)
-            })),
-
-            editCartItem: (id) => {
-                const state = get();
-                const item = state.cart.find((i) => i.id === id);
-
-                if (item && item.inputs) {
-                    // Non-destructive edit: keep item in cart, mark as editing
-                    set({
-                        draft: { ...item.inputs },
-                        editingItemId: id, // Track which item we're editing
-                        isDrawerOpen: false,
-                    });
-                    if (typeof document !== 'undefined') {
-                        const el = document.getElementById('calculator-section');
-                        if (el) {
-                            el.scrollIntoView({ behavior: 'smooth' });
-                            // Trigger flash animation
-                            el.classList.remove('highlight-flash');
-                            void el.offsetWidth; // trigger reflow
-                            el.classList.add('highlight-flash');
-                        }
-                    }
-                }
-            },
-
-            cancelEdit: () => {
-                set({
-                    draft: { ...DEFAULT_CALCULATOR_STATE },
-                    editingItemId: null,
-                });
-            },
-
-            cloneCartItem: (item) => {
-                if (item.inputs) {
-                    set({
-                        draft: { ...item.inputs },
-                        isDrawerOpen: false,
-                    });
-                    if (typeof document !== 'undefined') {
-                        const el = document.getElementById('calculator-section');
-                        if (el) {
-                            el.scrollIntoView({ behavior: 'smooth' });
-                            // Trigger flash animation
-                            el.classList.remove('highlight-flash');
-                            void el.offsetWidth; // trigger reflow
-                            el.classList.add('highlight-flash');
-                        }
-                    }
-                }
-            },
-
-            clearCart: () => set({ cart: [] }),
-
-            moveToHistory: () => set((state) => ({
-                history: [...state.cart, ...state.history].slice(0, 50),
-                cart: []
-            })),
-
-            /**
-             * Restores a quote from history into the draft.
-             * Closes the drawer and switches to order tab so user can edit and resubmit.
-             * Note: Does NOT add to cart automatically - user must review and request quote again.
-             */
-            loadQuote: (item) => {
-                set({
-                    draft: { ...item.inputs },
-                    // Reset to order view so next time they open drawer they see cart
-                    activeTab: 'order',
-                    isDrawerOpen: false
-                });
-                // Scroll to calculator for better UX (like cloneCartItem)
-                if (typeof document !== 'undefined') {
-                    document.getElementById('calculator-section')?.scrollIntoView({ behavior: 'smooth' });
-                }
-            },
-
-            // --- UI Slice ---
-            isDrawerOpen: false,
-            activeTab: 'order',
-            isProcessingOrder: false,
-            editingItemId: null,
-            setDrawerOpen: (isOpen) => set({ isDrawerOpen: isOpen }),
-            setActiveTab: (tab) => set({ activeTab: tab }),
-            setProcessingOrder: (isProcessing) => set({ isProcessingOrder: isProcessing }),
-            setEditingItemId: (id) => set({ editingItemId: id }),
-
-            // --- Identity Slice ---
-            user: {
-                visitorId: uuidv4(),
-                hasConsentedPersistence: true,
-            },
-            updateUserContact: ({ name, phone, save }) => set((state) => ({
-                user: {
-                    ...state.user,
-                    name: save ? name : state.user.name,
-                    phone: save ? phone : state.user.phone,
-                    hasConsentedPersistence: save
-                }
-            })),
-
-            // --- Submission Slice (Phase 0 Bugfix + Phase 1 Progressive Disclosure) ---
-            breakdownViewed: false,
-            submittedQuote: null,
-            setBreakdownViewed: (viewed) => set({ breakdownViewed: viewed }),
-            setSubmittedQuote: (data) => set({ submittedQuote: data }),
-            clearSubmittedQuote: () => set({ submittedQuote: null, breakdownViewed: false }),
+        (set, get, api) => ({
+            ...createCalculatorSlice(set, get, api),
+            ...createCartSlice(set, get, api),
+            ...createUISlice(set, get, api),
+            ...createUserSlice(set, get, api),
+            ...createSubmissionSlice(set, get, api),
+            ...createOrderSlice(set, get, api),
         }),
         {
             name: 'cej-pro-storage',
             storage: createJSONStorage(() => localStorage),
-            version: 4,
+            version: 5, // Bumped for OMS structural changes
             migrate: (persistedState: unknown, version) => {
-                // Defensive: validate state has expected shape before casting
                 if (!persistedState || typeof persistedState !== 'object') {
-                    // Corrupted or missing data: reset to safe defaults
                     return {
                         cart: [],
                         history: [],
+                        orders: [],
                         user: {
                             visitorId: uuidv4(),
                             hasConsentedPersistence: true,
@@ -449,9 +51,9 @@ export const useCejStore = create<CejStore>()(
 
                 const state = persistedState as Partial<PersistedState>;
 
-                // Safe initialization of potentially missing properties
                 if (!state.cart) state.cart = [];
                 if (!state.history) state.history = [];
+                if (!state.orders) state.orders = [];
                 if (!state.user) {
                     state.user = {
                         visitorId: uuidv4(),
@@ -481,6 +83,11 @@ export const useCejStore = create<CejStore>()(
                     }
                 }
 
+                // Migration v4 -> v5: Structural OMS updates (orders array added)
+                if (version < 5) {
+                    if (!state.orders) state.orders = [];
+                }
+
                 return state as PersistedState;
             },
             partialize: (state): PersistedState => ({
@@ -491,13 +98,13 @@ export const useCejStore = create<CejStore>()(
                 savedDrafts: state.savedDrafts,
                 breakdownViewed: state.breakdownViewed,
                 submittedQuote: state.submittedQuote,
+                orders: state.orders,
             }),
         }
     )
 );
 
-// Expose store to window for E2E testing (only in browser, non-production)
+// Expose store to window for E2E testing
 if (typeof window !== 'undefined') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).useCejStore = useCejStore;
+    (window as unknown as { useCejStore: unknown }).useCejStore = useCejStore;
 }

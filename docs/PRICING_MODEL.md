@@ -105,3 +105,24 @@ Uses a "Contribution Coefficient" (Coeficiente de Aporte) based on the styrofoam
 Pure geometric calculation without waste factors applied automatically.
 
 - *Formula:* $V = L \times W \times H$
+
+## 4. Integrity & History (Snapshot Pattern)
+
+To ensure operational reliability in a real-world business environment, we implement a **Snapshot Pattern** for all quotes and orders.
+
+### 4.1 Price Immutability
+
+When an item is added to the cart or an order is created, the system captures a `pricingSnapshot` that includes:
+
+- **`rules_version`**: The internal version of the `PricingRules`.
+- **`timestamp`**: Exact moment of calculation.
+- **`rules_applied`**: A full copy of the prices used.
+
+### 4.2 Handling Price Changes
+
+If the business updates prices in `config/business.ts` (e.g., from $v1$ to $v2$):
+
+- **New Calculations**: Use $v2$.
+- **Existing Cart Items**: Retain $v1$ prices. The user will see a warning message: *"Base prices have changed since this quote was created."*. We need to define a policy for this.
+- **Edits to Old Items**: The system detects the version mismatch and warns the staff/user: *"Base prices have changed since this quote was created."*. We need to define a policy for this.
+- **Persisted Orders**: Always use their original snapshot for reporting and balance calculation.

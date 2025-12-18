@@ -60,3 +60,23 @@ sequenceDiagram
 - **Phase 2:** Authentication gating (Employee Login).
 - **Phase 3:** PDF Generation engine (`@react-pdf/renderer` or server-side).
 - **Phase 4:** CRM Integration (HubSpot/Odoo sync).
+
+## 5. OMS Operations (New)
+
+### 5.1 Order Edition Flow
+
+Staff can edit any order in the "Pendiente" or "Confirmado" stage.
+
+1. **Load Order**: Loads the historical snapshot into the expert calculator.
+2. **Modify**: Adjust volume, additives, or specific project requirements.
+3. **Re-calculate**: The system generates a *new* breakdown but warns if the base prices have changed since the original creation (using the Snapshot Pattern).
+4. **Update**: Persists the changes and updates the folio's `updatedAt` timestamp.
+
+### 5.2 Status Transitions
+
+| From Status | To Status | Trigger |
+| :--- | :--- | :--- |
+| `Pendiente volumetría` | `Confirmado` | Visita técnica realizada y anticipo recibido. |
+| `Confirmado` | `En Proceso` | Carga programada en planta. |
+| `En Proceso` | `Finalizado` | Entrega completada y saldo liquidado. |
+| Any | `Cancelado` | Desistimiento del cliente o falta de pago. |
