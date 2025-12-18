@@ -88,5 +88,10 @@ export default defineConfig({
     timeout: 120 * 1000, // Give Next.js enough time to boot up (2 mins)
     stdout: 'pipe',
     stderr: 'pipe',
+    env: {
+      ...process.env,
+      // Enable E2E mock data (e.g., test folio WEB-00000000-0000)
+      ENABLE_E2E_MOCKS: 'true',
+    },
   },
 });

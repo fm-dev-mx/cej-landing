@@ -30,6 +30,9 @@ const envSchema = z.object({
 
     // --- PHASE 3: Marketing Ops (Server Secrets) ---
     FB_ACCESS_TOKEN: z.string().optional(),
+
+    // --- E2E Testing Support ---
+    ENABLE_E2E_MOCKS: z.string().optional(),
 });
 
 const processEnv = {
@@ -45,6 +48,7 @@ const processEnv = {
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     MONITORING_WEBHOOK_URL: process.env.MONITORING_WEBHOOK_URL,
     FB_ACCESS_TOKEN: process.env.FB_ACCESS_TOKEN,
+    ENABLE_E2E_MOCKS: process.env.ENABLE_E2E_MOCKS,
 };
 
 // Validación segura (no lanza excepción, devuelve success: false)
