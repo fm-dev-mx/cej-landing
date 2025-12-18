@@ -14,7 +14,8 @@ export function getCloudinaryUrl(url: string, type: 'image' | 'video' = 'image')
 
     if (type === 'video') {
         // Return a very small local fallback or a static placeholder if video isn't needed
-        return 'https://placehold.co/1920x1080/021a36/ffffff?text=Video+Dev+Placeholder';
+        // Use .png format to avoid Next.js SVG security warnings
+        return 'https://placehold.co/1920x1080/021a36/ffffff.png?text=Video+Dev+Placeholder';
     }
 
     // Replace Cloudinary image with placehold.co
@@ -26,5 +27,6 @@ export function getCloudinaryUrl(url: string, type: 'image' | 'video' = 'image')
     const filename = parts[parts.length - 1]?.split('.')[0] || 'Image';
     const cleanFilename = filename.replace(/_/g, '+');
 
-    return `https://placehold.co/800x600/021a36/ffffff?text=${cleanFilename}`;
+    // Use .png format to avoid Next.js SVG security warnings with dangerouslyAllowSVG
+    return `https://placehold.co/800x600/021a36/ffffff.png?text=${cleanFilename}`;
 }
