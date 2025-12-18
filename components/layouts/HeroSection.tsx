@@ -1,8 +1,9 @@
 // components/layouts/HeroSection.tsx
 
-import { env } from "@/config/env";
+import { env, isProd } from "@/config/env";
 import { LANDING_CONTENT } from "@/config/content";
 import { getWhatsAppUrl } from "@/lib/utils";
+import { getCloudinaryUrl } from "@/lib/cloudinary";
 import styles from "./HeroSection.module.scss";
 
 type HeroSectionProps = {
@@ -11,11 +12,13 @@ type HeroSectionProps = {
 };
 
 export default function HeroSection({
-  videoSrc = "https://res.cloudinary.com/dwtk0d2dj/video/upload/v1763502599/hero-bg_vluny8.mp4",
-  fallbackImage = "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763502640/hero-fallback_yokvg7.jpg",
+  videoSrc = getCloudinaryUrl("https://res.cloudinary.com/dwtk0d2dj/video/upload/v1763502599/hero-bg_vluny8.mp4", 'video'),
+  fallbackImage = getCloudinaryUrl("https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763502640/hero-fallback_yokvg7.jpg"),
 }: HeroSectionProps) {
   const whatsappNumber = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   const content = LANDING_CONTENT.hero;
+
+  const showVideo = isProd && videoSrc && !videoSrc.includes('placehold.co');
 
   const whatsappHref = getWhatsAppUrl(
     whatsappNumber,
@@ -27,7 +30,7 @@ export default function HeroSection({
       {/* Background Layer */}
       <div className={styles.hero__background} aria-hidden="true">
         <div className={styles.hero__overlay} />
-        {videoSrc ? (
+        {showVideo ? (
           <video
             className={styles.hero__video}
             autoPlay
@@ -38,6 +41,11 @@ export default function HeroSection({
           >
             <source src={videoSrc} type="video/mp4" />
           </video>
+        ) : fallbackImage ? (
+          <div
+            className={styles.hero__imageFallback}
+            style={{ "--hero-fallback": `url(${fallbackImage})` } as React.CSSProperties}
+          />
         ) : (
           <div className={styles.hero__imagePlaceholder} />
         )}

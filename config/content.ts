@@ -1,4 +1,5 @@
 // config/content.ts
+import { getCloudinaryUrl } from "@/lib/cloudinary";
 
 export interface ServiceItem {
     id: string;
@@ -133,7 +134,7 @@ export const LANDING_CONTENT = {
                 location: "Zona Industrial",
                 category: "Piso Pulido",
                 imageAlt: "Colado de piso de concreto industrial con bomba pluma en nave maquiladora",
-                imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/maquila_culguq.jpg"
+                imageUrl: getCloudinaryUrl("https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/maquila_culguq.jpg")
             },
             {
                 id: "work2",
@@ -141,7 +142,7 @@ export const LANDING_CONTENT = {
                 location: "Valle del Sol",
                 category: "Zapatas y Losas",
                 imageAlt: "Camión revolvedora vertiendo concreto en cimentación de casa habitación",
-                imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673427/complejo_residencial_q3dxfu.jpg"
+                imageUrl: getCloudinaryUrl("https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673427/complejo_residencial_q3dxfu.jpg")
             },
             {
                 id: "work3",
@@ -149,7 +150,7 @@ export const LANDING_CONTENT = {
                 location: "Av. Las Torres",
                 category: "Concreto Estampado",
                 imageAlt: "Preparación de armado para colado de estacionamiento comercial en Ciudad Juárez",
-                imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/zona_industrial_gu16sr.jpg"
+                imageUrl: getCloudinaryUrl("https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/zona_industrial_gu16sr.jpg")
             }
         ] as WorkItem[],
         testimonials: [

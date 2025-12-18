@@ -4,7 +4,7 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 
-import { env } from "@/config/env";
+import { env, isPreview, isDev, APP_ENV } from "@/config/env";
 import { SEO_CONTENT } from "@/config/content";
 
 import "../styles/globals.scss";
@@ -34,13 +34,15 @@ export default function RootLayout({
     children,
 }: Readonly<{ children: React.ReactNode }>) {
     const pixelId = env.NEXT_PUBLIC_PIXEL_ID;
-    const isProduction = process.env.NODE_ENV === "production";
+
+    // Tracking is enabled in Production and Preview, but NOT in local Development.
+    const enableTracking = !isDev;
 
     return (
         <html lang="es-MX">
             <body className="app-root">
                 {/* Google Analytics + GTM */}
-                {isProduction && GA_MEASUREMENT_ID && (
+                {enableTracking && GA_MEASUREMENT_ID && (
                     <>
                         <Script
                             src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
@@ -53,6 +55,8 @@ export default function RootLayout({
                                 gtag('js', new Date());
                                 gtag('config', '${GA_MEASUREMENT_ID}', {
                                   page_path: window.location.pathname,
+                                  environment: '${APP_ENV}',
+                                  is_preview: ${isPreview}
                                 });
                             `}
                         </Script>
@@ -60,7 +64,7 @@ export default function RootLayout({
                 )}
 
                 {/* Meta / Facebook Pixel */}
-                {isProduction && pixelId && (
+                {enableTracking && pixelId && (
                     <Script id="fb-pixel" strategy="afterInteractive">
                         {`
                             !function(f,b,e,v,n,t,s)

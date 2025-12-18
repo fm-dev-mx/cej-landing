@@ -63,6 +63,17 @@ export const env = parsed.success
     ? parsed.data
     : (processEnv as unknown as z.infer<typeof envSchema>);
 
+// --- Environment Detection ---
+export const IS_VERCEL = !!process.env.VERCEL;
+export const VERCEL_ENV = process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.VERCEL_ENV || 'development';
+export const NODE_ENV = process.env.NODE_ENV || 'development';
+
+export const isProd = VERCEL_ENV === 'production' || NODE_ENV === 'production';
+export const isPreview = VERCEL_ENV === 'preview';
+export const isDev = !isProd && !isPreview;
+
+export const APP_ENV = isProd ? 'production' : isPreview ? 'preview' : 'development';
+
 // --- Runtime Integrity Check ---
 // Verifica configuración crítica en runtime (servidor)
 if (process.env.NODE_ENV === 'production') {

@@ -174,7 +174,24 @@ All environment variables are documented here for quick setup.
 
 ---
 
-## 6. Pricing Data (Phase 4 Prep)
+## 6. Environment Rules (Dev-Safe)
+
+To minimize operational costs and keep analytics data clean, the application behaves differently based on the environment:
+
+| Feature | local (Development) | preview (Staging) | production |
+| --- | --- | --- | --- |
+| **Cloudinary** | MOCKED (placehold.co) | MOCKED (placehold.co) | **REAL** |
+| **Video Background** | DISABLED | DISABLED | **ENABLED** |
+| **Google Analytics** | DISABLED | **ENABLED** (env: preview) | **ENABLED** (env: production) |
+| **Meta Pixel** | DISABLED | **ENABLED** | **ENABLED** |
+
+### How to test Cloudinary/Analytics locally?
+
+If you absolutely need to test these features in `localhost`, you can temporarily force `isProd` in `config/env.ts` or set `NEXT_PUBLIC_VERCEL_ENV=production` in your `.env.local` (caution: this will consume Cloudinary credits).
+
+---
+
+## 7. Pricing Data (Phase 4 Prep)
 
 The system supports **two pricing sources**:
 
@@ -192,7 +209,7 @@ If the database is unreachable or returns no rows, the calculator automatically 
 
 ---
 
-## 7. Testing
+## 8. Testing
 
 ### 7.1 Unit & Integration (Vitest)
 
@@ -217,7 +234,7 @@ Details: [`docs/ACCESSIBILITY.md`].
 
 ---
 
-## 8. Documentation
+## 9. Documentation
 
 Main docs live under `/docs`:
 
@@ -258,7 +275,7 @@ Standardized workflows for AI agents and developers in `.agent/workflows/`:
 
 ---
 
-## 9. Contributing
+## 10. Contributing
 
 ### 9.1 Guidelines
 
@@ -279,6 +296,6 @@ See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) for more operational details.
 
 ---
 
-## 10. License
+## 11. License
 
 {TODO: business decision required – define and document project license (e.g., MIT, proprietary).}
