@@ -1,4 +1,5 @@
 import { StateCreator } from 'zustand';
+import { UISlice } from './uiSlice';
 import {
     type CalculatorState,
     type CalculatorMode,
@@ -19,11 +20,15 @@ export interface CalculatorSlice {
     setExpertMode: (isActive: boolean) => void;
 }
 
-export const createCalculatorSlice: StateCreator<CalculatorSlice, [], [], CalculatorSlice> = (set) => ({
+export const createCalculatorSlice: StateCreator<CalculatorSlice & UISlice, [], [], CalculatorSlice> = (set) => ({
     draft: { ...DEFAULT_CALCULATOR_STATE },
     savedDrafts: {},
 
-    resetDraft: () => set({ draft: { ...DEFAULT_CALCULATOR_STATE }, savedDrafts: {} }),
+    resetDraft: () => set({
+        draft: { ...DEFAULT_CALCULATOR_STATE },
+        savedDrafts: {},
+        editingItemId: null
+    }),
 
     updateDraft: (updates) => set((state) => ({
         draft: { ...state.draft, ...updates }

@@ -21,6 +21,7 @@ interface ExposedCejStore {
             folio?: string;
         }>;
         draft: Record<string, unknown>;
+        submittedQuote?: { folio?: string };
         [key: string]: unknown;
     };
     setState: (partial: Record<string, unknown>) => void;

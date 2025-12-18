@@ -428,6 +428,10 @@
     margin: 0;
 }
 
+.versionAlertPrompt {
+    margin-bottom: var(--sp-2);
+}
+
 .gridActions {
     display: grid;
     grid-template-columns: 1fr 1fr;

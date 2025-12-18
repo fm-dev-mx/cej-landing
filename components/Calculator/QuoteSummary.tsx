@@ -13,6 +13,7 @@ import { trackContact } from '@/lib/tracking/visitor';
 import { getWhatsAppUrl } from '@/lib/utils';
 import { env } from '@/config/env';
 import { getCalculatorSteps } from '@/lib/progress';
+import { FALLBACK_PRICING_RULES } from '@/config/business';
 
 import styles from './CalculatorForm.module.scss';
 
@@ -90,11 +91,7 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
             results: currentQuote
         });
 
-        // Ensure the order is moved to history so it appears in the drawer (synced with test expectations)
-        moveToHistory();
-
         setSchedulingOpen(false);
-        // scrollToTicket(); // Already there usually
     };
 
     const handleWhatsAppClick = () => {
@@ -159,6 +156,8 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
         )
         : undefined;
 
+    const isVersionMismatch = quote?.pricingSnapshot && quote.pricingSnapshot.rules_version < FALLBACK_PRICING_RULES.version;
+
     return (
         <div className={styles.container}>
             {/* Ticket Display */}
@@ -210,6 +209,19 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                 {stage === 'actions' && (
                     <div className={styles.animateFadeIn}>
                         <div className={styles.successActions}>
+                            {/* Recalculate Prompt if Version Mismatch */}
+                            {isVersionMismatch && (
+                                <div className={styles.versionAlertPrompt}>
+                                    <Button
+                                        fullWidth
+                                        variant="secondary"
+                                        onClick={handleViewBreakdown} // Re-trigger calculation
+                                    >
+                                        🔄 Actualizar a precios actuales
+                                    </Button>
+                                </div>
+                            )}
+
                             {/* Primary: Programar / Agendar */}
                             <Button
                                 fullWidth
@@ -300,6 +312,6 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                 onClose={() => setSchedulingOpen(false)}
                 onSuccess={handleSchedulingSuccess}
             />
-        </div>
+        </div >
     );
 }

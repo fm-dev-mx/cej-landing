@@ -402,3 +402,36 @@ $glass-border-hover: rgba(255, 255, 255, 0.2);
     text-align: center;
     margin: 1rem;
 }
+
+// Version Alert (Price Mismatch)
+.versionAlert {
+    display: flex;
+    gap: var(--sp-3);
+    padding: var(--sp-3);
+    background-color: var(--c-warning-soft);
+    border-bottom: 2px solid var(--c-warning);
+    color: var(--c-error-text);
+    font-family: var(--font-sans);
+    line-height: 1.3;
+}
+
+.alertIcon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.alertContent {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+
+    strong {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+    }
+
+    p {
+        font-size: 0.75rem;
+        margin: 0;
+    }
+}

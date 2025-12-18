@@ -1,7 +1,7 @@
-// components/Calculator/TicketDisplay/TicketDisplay.tsx
 import { QuoteBreakdown, QuoteWarning } from '@/types/domain';
 import { fmtMXN } from '@/lib/utils';
 import { env } from '@/config/env';
+import { FALLBACK_PRICING_RULES } from '@/config/business';
 import styles from './TicketDisplay.module.scss';
 
 
@@ -95,6 +95,17 @@ export function TicketDisplay({ variant, quote, isValidQuote = true, folio, cust
     return (
         <div className={styles.ticket}>
             <div className={styles.perforationTop} aria-hidden="true" />
+
+            {/* Price Mismatch Alert */}
+            {quote.pricingSnapshot && quote.pricingSnapshot.rules_version < FALLBACK_PRICING_RULES.version && (
+                <div className={styles.versionAlert} role="alert">
+                    <span className={styles.alertIcon}>⚠</span>
+                    <div className={styles.alertContent}>
+                        <strong>Precios actualizados</strong>
+                        <p>Los costos base han cambiado desde que se creó esta cotización.</p>
+                    </div>
+                </div>
+            )}
 
             <div className={styles.content}>
                 {/* Header */}

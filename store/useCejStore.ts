@@ -104,7 +104,11 @@ export const useCejStore = create<CejStore>()(
     )
 );
 
-// Expose store to window for E2E testing
-if (typeof window !== 'undefined') {
+// Expose store to window for E2E testing (Non-production, E2E mode, or localhost)
+if (typeof window !== 'undefined' && (
+    process.env.NODE_ENV !== 'production' ||
+    process.env.NEXT_PUBLIC_E2E === 'true' ||
+    window.location.hostname === 'localhost'
+)) {
     (window as unknown as { useCejStore: unknown }).useCejStore = useCejStore;
 }

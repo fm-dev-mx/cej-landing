@@ -211,6 +211,11 @@ export function calcQuote(
         subtotal: toPesos(subtotalCents),
         vat: toPesos(vatCents),
         total: toPesos(totalCents),
-        breakdownLines
+        breakdownLines,
+        pricingSnapshot: {
+            rules_version: pricingRules.version,
+            timestamp: Date.now(),
+            rules_applied: pricingRules
+        }
     };
 }
