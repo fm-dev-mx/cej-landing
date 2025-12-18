@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from 'next/navigation';
 
 import { useCejStore } from "@/store/useCejStore";
@@ -30,6 +30,15 @@ import styles from "./CalculatorForm.module.scss";
  */
 
 
+import { useCalculatorUI } from "@/hooks/useCalculatorUI";
+
+/**
+ * CalculatorForm
+ *
+ * - Connects the Zustand store draft to individual form sections.
+ * - Manages focus when mode changes (via useCalculatorUI hook).
+ * - Shows validation errors, warnings and summary (ticket-style).
+ */
 export function CalculatorForm() {
     const draft = useCejStore((s) => s.draft);
 
@@ -44,7 +53,6 @@ export function CalculatorForm() {
 
     useEffect(() => {
         if (!folioParam) return;
-        // Try to find the quote in local storage (history or active cart)
         const item = history.find(i => i.folio === folioParam) || cart.find(i => i.folio === folioParam);
 
         if (item) {
@@ -56,28 +64,19 @@ export function CalculatorForm() {
         }
     }, [folioParam, history, cart, setSubmittedQuote]);
 
+    // UI Orchestration hook
+    const {
+        formContainerRef,
+        assistVolumeRef,
+        hasTouchedAnyField,
+        handleFieldTouched,
+        scrollToCalcTop,
+        focusFirstInvalidInput,
+        activeField
+    } = useCalculatorUI(draft);
+
     // Quote engine result
     const { error, warning, rawVolume } = useQuoteCalculator(draft);
-
-    // Track touched state relative to the current mode (Derived State pattern)
-    // When mode changes, this state will not match, implicitly resetting 'hasTouchedAnyField' to false.
-    const [touchedState, setTouchedState] = useState<{ mode: string | null; touched: boolean }>({
-        mode: draft.mode,
-        touched: false,
-    });
-
-    const hasTouchedAnyField = touchedState.mode === draft.mode && touchedState.touched;
-
-    // Callback for child forms to notify when a field is touched
-    const handleFieldTouched = useCallback(() => {
-        setTouchedState({ mode: draft.mode, touched: true });
-    }, [draft.mode]);
-
-    // Focus management - REMOVED aggressive scrollIntoView on mode change to prevent jumps
-    // const inputsSectionRef = useRef<HTMLDivElement>(null); // Removed unused ref
-    const specsSectionRef = useRef<HTMLDivElement>(null);
-    const formContainerRef = useRef<HTMLDivElement>(null);
-    const assistVolumeRef = useRef<HTMLDivElement>(null);
 
     // Smooth height transition for volume section
     const [volumeHeight, setVolumeHeight] = useState<number | undefined>(undefined);
@@ -88,7 +87,6 @@ export function CalculatorForm() {
 
         const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
-                // Use borderBoxSize if available for better accuracy with paddings, fallback to contentRect
                 const height = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
                 setVolumeHeight(height);
             }
@@ -97,84 +95,6 @@ export function CalculatorForm() {
         observer.observe(volumeContentRef.current);
         return () => observer.disconnect();
     }, []);
-
-    // Scroll to top of calculator SECTION (title), respecting prefers-reduced-motion
-    const scrollToCalcTop = useCallback(() => {
-        // Target the parent section element with the title
-        const sectionEl = document.getElementById('calculator-section');
-        if (!sectionEl) return;
-
-        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const targetY = sectionEl.getBoundingClientRect().top + window.scrollY - 80;
-
-        // Use double rAF to ensure DOM has committed after state update
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                window.scrollTo({
-                    top: targetY,
-                    behavior: prefersReduced ? 'auto' : 'smooth'
-                });
-            });
-        });
-    }, []);
-
-    // --- Guided Focus Logic ---
-    // Determine the next field that needs attention
-    const getActiveField = () => {
-        if (!draft.mode) return 'mode';
-
-        if (draft.mode === 'knownM3') {
-            if (!draft.m3) return 'm3';
-        } else {
-            // Assist Mode
-            if (!draft.workType) return 'workType';
-            // Specific sub-fields can be handled within forms if needed,
-            // but here we just guide to the section
-            if (draft.workType && (!draft.length || !draft.width)) return 'assistVolume';
-        }
-
-        // Common fields
-        // Note: Strength and Type might have defaults, but if explicit selection is needed:
-        if (!draft.strength || !draft.type) return 'specs';
-
-        return null;
-    }
-
-    const activeField = getActiveField();
-
-    // Scroll to assist volume ONLY if user just selected workType (interaction)
-    // We avoid doing this on initial load or reset
-    useEffect(() => {
-        if (draft.workType && assistVolumeRef.current) {
-            // Only scroll if it's not already visible?
-            // For now, removing the scroll to fix "Reiniciar" jump if checks passed.
-            // But user might want auto-scroll when they pick "Losa".
-            // We'll keep it subtle or remove if problematic.
-            // DECISION: Remove auto-scroll here to satisfy "Fix jump" requirement.
-            // The "Guided Focus" highlight will draw attention instead.
-        }
-    }, [draft.workType]);
-
-    /**
-     * Focus the first invalid input field.
-     * Called when user attempts to proceed with validation errors.
-     */
-    const focusFirstInvalidInput = useCallback(() => {
-        if (!formContainerRef.current) return;
-
-        // Mark all fields as touched to show errors
-        setTouchedState({ mode: draft.mode, touched: true });
-
-        // Find first input with aria-invalid="true" or first empty required input
-        const invalidInput = formContainerRef.current.querySelector<HTMLElement>(
-            'input[aria-invalid="true"], input:invalid'
-        );
-
-        if (invalidInput) {
-            invalidInput.scrollIntoView({ behavior: "smooth", block: "center" });
-            invalidInput.focus();
-        }
-    }, [draft.mode]);
 
     const submittedQuote = useCejStore((s) => s.submittedQuote);
 
@@ -260,7 +180,6 @@ export function CalculatorForm() {
             {(draft.mode === "knownM3" || draft.workType) && (
                 <div
                     className={`${styles.fieldWithSeparator} ${activeField === 'specs' ? styles.activeField : ''}`}
-                    ref={specsSectionRef}
                 >
                     <SpecsForm />
                     {/* Additives Toggle */}

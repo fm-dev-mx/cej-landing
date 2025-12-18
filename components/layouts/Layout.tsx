@@ -1,7 +1,7 @@
 // components/layouts/Layout.tsx
 
 import type { ReactNode } from "react";
-import Header from "./header/Header";
+import Header from "./Header/Header";
 import Footer from "./Footer/Footer";
 import styles from "./Layout.module.scss";
 

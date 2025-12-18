@@ -98,9 +98,8 @@ export async function submitLead(
             privacy_accepted,
         } = parseResult.data;
 
-        // Cast quote to OrderPayload to regain strict typing lost by Zod's .record(z.any())
-        // if the schema was too loose. Ideally, schema matches OrderPayload.
-        const typedQuote = quote as OrderPayload;
+        // No more manual casting! Zod verification guarantees OrderPayload compatibility.
+        const typedQuote = quote;
 
         const headerStore = await headers();
         const cookieStore = await cookies();

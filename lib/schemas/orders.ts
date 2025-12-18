@@ -17,8 +17,39 @@ const OrderItemSchema = z.object({
     volume: z.number(),
     service: z.string(),
     subtotal: z.number(),
-    // Add additives to schema to prevent Zod from stripping them during validation
     additives: z.array(z.string()).optional(),
+});
+
+/**
+ * Schema representing the full quote/order snapshot.
+ * Aligned strictly with OrderPayload interface in types/domain.ts
+ */
+export const OrderPayloadSchema = z.object({
+    folio: z.string(),
+    customer: CustomerSchema,
+    items: z.array(OrderItemSchema),
+    financials: z.object({
+        subtotal: z.number(),
+        vat: z.number(),
+        total: z.number(),
+        currency: z.string(),
+    }),
+    breakdownLines: z.array(z.object({
+        label: z.string(),
+        value: z.number(),
+        type: z.enum(['base', 'additive', 'surcharge']),
+    })).optional(),
+    metadata: z.object({
+        source: z.literal("web_calculator"),
+        pricing_version: z.number().optional(),
+        utm_source: z.string().optional(),
+        utm_medium: z.string().optional(),
+        userAgent: z.string().optional(),
+        deliveryAddress: z.string().optional(),
+        deliveryDate: z.string().optional(),
+        deliveryTime: z.string().optional(),
+        notes: z.string().optional(),
+    }),
 });
 
 export const OrderSubmissionSchema = z.object({
@@ -27,24 +58,7 @@ export const OrderSubmissionSchema = z.object({
     phone: z.string().min(10, "Verifica el número (10 dígitos)"),
 
     // Rich quote payload, stored as JSONB snapshot
-    quote: z.object({
-        folio: z.string(),
-        items: z.array(OrderItemSchema),
-        financials: z.object({
-            total: z.number(),
-            currency: z.string(),
-        }),
-        // Metadata is now strict instead of z.any()
-        metadata: z.object({
-            source: z.literal("web_calculator"),
-            pricing_version: z.number().optional(),
-            utm_source: z.string().optional(),
-            utm_medium: z.string().optional(),
-            userAgent: z.string().optional(),
-        }),
-        // Enforce strict customer schema matching OrderPayload
-        customer: CustomerSchema,
-    }),
+    quote: OrderPayloadSchema,
 
     // Tracking & privacy metadata
     visitor_id: z.string().optional(),

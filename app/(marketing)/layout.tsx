@@ -3,7 +3,7 @@
 
 import type { ReactNode } from "react";
 
-import Header from "@/components/layouts/header/Header";
+import Header from "@/components/layouts/Header/Header";
 import Footer from "@/components/layouts/Footer/Footer";
 import SkipLink from "@/components/ui/SkipLink/SkipLink";
 import { generateLocalBusinessSchema } from "@/lib/seo";
