@@ -57,3 +57,9 @@ export const OrderSubmissionSchema = z.object({
 });
 
 export type OrderSubmission = z.infer<typeof OrderSubmissionSchema>;
+
+/**
+ * Validates a folio string from a URL parameter.
+ * Format: WEB-YYYYMMDD-XXXX (where XXXX is numeric, matching generateQuoteId output)
+ */
+export const FolioParamSchema = z.string().regex(/^WEB-\d{8}-\d{4}$/, "Formato de folio inválido");

@@ -84,6 +84,8 @@ describe('Server Action: submitLead', () => {
                 }
             ],
             financials: {
+                subtotal: 10741,
+                vat: 859,
                 total: 11600,
                 currency: 'MXN'
             },

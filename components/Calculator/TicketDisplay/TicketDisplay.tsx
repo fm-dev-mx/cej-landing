@@ -1,13 +1,16 @@
-import { QuoteBreakdown, QuoteWarning } from '@/types/domain';
+import { QuoteBreakdown, QuoteWarning, QuoteLineItem } from '@/types/domain';
+import { QuoteSnapshot } from '@/types/database';
 import { fmtMXN } from '@/lib/utils';
 import { env } from '@/config/env';
 import { FALLBACK_PRICING_RULES } from '@/config/business';
 import styles from './TicketDisplay.module.scss';
 
+// Type union to support both runtime breakdown and stored snapshot
+type TicketQuote = QuoteBreakdown | QuoteSnapshot;
 
 interface TicketDisplayProps {
     variant: 'compact' | 'preview' | 'full';
-    quote: QuoteBreakdown | null;
+    quote: TicketQuote | null;
     /** Indicates if the quote has valid data (volume > 0, required inputs satisfied) */
     isValidQuote?: boolean;
     folio?: string;
@@ -15,6 +18,7 @@ interface TicketDisplayProps {
     warning?: QuoteWarning | null;
     steps?: { id: string; label: string; isCompleted: boolean; isActive: boolean }[];
     onReset?: () => void;
+    className?: string;
 }
 
 /**
@@ -25,7 +29,7 @@ interface TicketDisplayProps {
 * - preview: Full breakdown without folio (Phase 1 - after "Ver Desglose")
 * - full: Complete ticket with folio and customer info (after submission)
 */
-export function TicketDisplay({ variant, quote, isValidQuote = true, folio, customerName, steps, onReset }: TicketDisplayProps) {
+export function TicketDisplay({ variant, quote, isValidQuote = true, folio, customerName, steps, onReset, className }: TicketDisplayProps) {
     // If no quote, show empty state
     if (!quote) {
         return (
@@ -42,8 +46,57 @@ export function TicketDisplay({ variant, quote, isValidQuote = true, folio, cust
         day: 'numeric'
     });
 
+    // Helper to determine subtotal/vat/total regardless of quote shape
+    // QuoteBreakdown has: subtotal, vat, total at root level
+    // QuoteSnapshot has: financials.subtotal, financials.vat, financials.total
+    let total: number;
+    let subtotal: number;
+    let vat: number;
+
+    if ('subtotal' in quote && 'vat' in quote && 'total' in quote) {
+        // QuoteBreakdown structure (runtime calculation)
+        subtotal = quote.subtotal;
+        vat = quote.vat;
+        total = quote.total;
+    } else if ('financials' in quote) {
+        // QuoteSnapshot structure (from database)
+        total = quote.financials.total;
+
+        // Prefer stored subtotal/vat if available (enhanced schema)
+        if ('subtotal' in quote.financials && 'vat' in quote.financials) {
+            subtotal = quote.financials.subtotal;
+            vat = quote.financials.vat;
+        } else {
+            // Legacy fallback: back-calculate from items or assume 8% VAT
+            const itemsTotal = (quote.items || []).reduce((acc, item) => acc + (item.subtotal || 0), 0);
+            if (itemsTotal > 0) {
+                subtotal = itemsTotal;
+                vat = total - subtotal;
+            } else {
+                subtotal = total / 1.08;
+                vat = total - subtotal;
+            }
+        }
+    } else {
+        // Fallback
+        total = 0;
+        subtotal = 0;
+        vat = 0;
+    }
+
     // Avoid NaN/Infinity if subtotal is 0
-    const vatPercentage = quote.subtotal > 0 ? Math.round((quote.vat / quote.subtotal) * 100) : 8;
+    const vatPercentage = subtotal > 0 ? Math.round((vat / subtotal) * 100) : 8;
+
+    // Resolve lines to display - prefer breakdownLines if available
+    const lines: QuoteLineItem[] = ('breakdownLines' in quote && quote.breakdownLines && quote.breakdownLines.length > 0)
+        ? quote.breakdownLines
+        : ('items' in quote && quote.items)
+            ? quote.items.map(item => ({
+                label: item.label,
+                value: item.subtotal,
+                type: 'base' as const
+            }))
+            : [];
 
     // Compact variant: Simplified summary view (Horizontal Bar)
     if (variant === 'compact') {
@@ -93,11 +146,11 @@ export function TicketDisplay({ variant, quote, isValidQuote = true, folio, cust
     const showCustomer = variant === 'full' && customerName;
 
     return (
-        <div className={styles.ticket}>
+        <div className={`${styles.ticket} ${className || ''}`}>
             <div className={styles.perforationTop} aria-hidden="true" />
 
             {/* Price Mismatch Alert */}
-            {quote.pricingSnapshot && quote.pricingSnapshot.rules_version < FALLBACK_PRICING_RULES.version && (
+            {'pricingSnapshot' in quote && quote.pricingSnapshot && quote.pricingSnapshot.rules_version < FALLBACK_PRICING_RULES.version && (
                 <div className={styles.versionAlert} role="alert">
                     <span className={styles.alertIcon}>⚠</span>
                     <div className={styles.alertContent}>
@@ -138,7 +191,7 @@ export function TicketDisplay({ variant, quote, isValidQuote = true, folio, cust
                 )}
 
                 {/* Volume Info - Always visible in preview/full */}
-                {quote.volume && (
+                {'volume' in quote && quote.volume && (
                     <div className={styles.volumeInfo}>
                         <div className={styles.volumeRow}>
                             <span>Volumen</span>
@@ -153,7 +206,7 @@ export function TicketDisplay({ variant, quote, isValidQuote = true, folio, cust
                 )}
 
                 {/* Calculation Details - If available */}
-                {quote.calculationDetails && (
+                {'calculationDetails' in quote && quote.calculationDetails && (
                     <div className={styles.calculationDetails}>
                         <span className={styles.calculationLabel}>Cálculo:</span>
                         <span className={styles.calculationFormula}>{quote.calculationDetails.formula}</span>
@@ -162,7 +215,7 @@ export function TicketDisplay({ variant, quote, isValidQuote = true, folio, cust
 
                 {/* Items */}
                 <div className={styles.items}>
-                    {quote.breakdownLines.map((line, idx) => (
+                    {lines.map((line, idx) => (
                         <div
                             key={idx}
                             className={styles.lineItem}
@@ -184,17 +237,17 @@ export function TicketDisplay({ variant, quote, isValidQuote = true, folio, cust
                 <div className={styles.totals}>
                     <div className={styles.totalRow}>
                         <span>Subtotal</span>
-                        <span>{fmtMXN(quote.subtotal)}</span>
+                        <span>{fmtMXN(subtotal)}</span>
                     </div>
 
                     <div className={styles.totalRow}>
                         <span>IVA ({vatPercentage}%)</span>
-                        <span>{fmtMXN(quote.vat)}</span>
+                        <span>{fmtMXN(vat)}</span>
                     </div>
 
                     <div className={`${styles.totalRow} ${styles.grandTotal}`}>
                         <span>TOTAL</span>
-                        <span>{fmtMXN(quote.total)}</span>
+                        <span>{fmtMXN(total)}</span>
                     </div>
                 </div>
 

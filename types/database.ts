@@ -11,6 +11,9 @@ export type Json =
 /**
  * Snapshot inmutable de la cotización al momento de la creación.
  * Debe coincidir con la estructura de salida de lib/schemas.ts
+ *
+ * IMPORTANT: This snapshot captures the exact state at submission time
+ * to ensure the shared quote page renders identically to what the user saw.
  */
 export interface QuoteSnapshot {
     folio: string;
@@ -20,6 +23,7 @@ export interface QuoteSnapshot {
         email?: string;
         visitorId?: string;
     };
+    /** Cart items for OMS/billing purposes */
     items: Array<{
         id: string;
         label: string;
@@ -27,10 +31,19 @@ export interface QuoteSnapshot {
         service: string;
         subtotal: number;
     }>;
+    /** Complete financial breakdown for accurate display */
     financials: {
+        subtotal: number;
+        vat: number;
         total: number;
         currency: string;
     };
+    /** Display-ready line items matching TicketDisplay format */
+    breakdownLines?: Array<{
+        label: string;
+        value: number;
+        type: 'base' | 'additive' | 'surcharge';
+    }>;
     metadata?: Record<string, unknown>;
 }
 

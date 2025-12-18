@@ -262,9 +262,17 @@ export type OrderPayload = {
         additives?: string[];
     }[];
     financials: {
+        subtotal: number;
+        vat: number;
         total: number;
         currency: string;
     };
+    /** Display-ready breakdown lines for exact rendering fidelity */
+    breakdownLines?: {
+        label: string;
+        value: number;
+        type: 'base' | 'additive' | 'surcharge';
+    }[];
     metadata: {
         source: 'web_calculator';
         pricing_version?: number;

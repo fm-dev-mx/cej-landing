@@ -245,17 +245,7 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                                 >
                                     📄 Descargar PDF
                                 </Button>
-                                <Button
-                                    fullWidth
-                                    variant="secondary"
-                                    onClick={() => {
-                                        const url = window.location.href; // Simple share
-                                        navigator.clipboard.writeText(url);
-                                        alert("Enlace copiado");
-                                    }}
-                                >
-                                    🔗 Compartir
-                                </Button>
+                                {/* Removed 'Compartir' from here as it requires a submitted folio */}
                             </div>
 
                             {/* Edit / Back */}
@@ -295,6 +285,17 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                             >
                                 📄 Guardar PDF
                             </Button>
+                            <Button
+                                fullWidth
+                                variant="secondary"
+                                onClick={() => {
+                                    const url = `${window.location.origin}/cotizacion/${submittedQuote?.folio}`;
+                                    navigator.clipboard.writeText(url);
+                                    alert("Enlace de cotización copiado");
+                                }}
+                            >
+                                🔗 Compartir
+                            </Button>
                         </div>
 
                         <button
@@ -310,6 +311,7 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
             <SchedulingModal
                 isOpen={isSchedulingOpen}
                 onClose={() => setSchedulingOpen(false)}
+                quote={currentQuote}
                 onSuccess={handleSchedulingSuccess}
             />
         </div >

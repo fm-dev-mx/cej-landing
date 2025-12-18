@@ -10,16 +10,24 @@ import { ResponsiveDialog } from "@/components/ui/ResponsiveDialog/ResponsiveDia
 import styles from "./SchedulingModal.module.scss"; // Reusing or new styles
 import { getWhatsAppUrl } from "@/lib/utils";
 import { env } from "@/config/env";
+import type { QuoteBreakdown } from "@/types/domain";
 
 type SchedulingModalProps = {
     isOpen: boolean;
     onClose: () => void;
+    /**
+     * Optional: The current quote to submit.
+     * If provided, ensures DB matches what user sees (single-item flow).
+     * If omitted, falls back to cart-based submission (multi-item flow from drawer).
+     */
+    quote?: QuoteBreakdown | null;
     onSuccess?: (folio: string, name: string) => void;
 };
 
 export function SchedulingModal({
     isOpen,
     onClose,
+    quote,
     onSuccess,
 }: SchedulingModalProps) {
     const user = useCejStore((s) => s.user);
@@ -39,19 +47,13 @@ export function SchedulingModal({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // 1. Process Order (Backend + Pixel)
-        // We can't easily pass the extra metadata to processOrder without updating it.
-        // For now, processOrder handles the core logic.
-        // We will need to pass the scheduling data via the 'metadata' extension we just added,
-        // BUT processOrder signature doesn't accept metadata yet.
-        //
-        // FAIL-SAFE STRATEGY:
-        // We will call processOrder as usual to get the Folio and fire Pixel.
-        // Then we construct the WhatsApp message with FULL details.
-
+        // Process Order (Backend + Pixel)
+        // If quote is provided, it's passed for exact data consistency.
+        // Otherwise, processOrder will fall back to cart-based submission.
         const result = await processOrder(
             { name, phone },
-            saveMyData
+            saveMyData,
+            quote ?? undefined
         );
 
         // FAIL-OPEN STRATEGY:

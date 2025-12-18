@@ -144,7 +144,8 @@ describe('SchedulingModal', () => {
         await waitFor(() => {
             expect(mockProcessOrder).toHaveBeenCalledWith(
                 { name: 'Juan Test', phone: '6561234567' },
-                true
+                true,
+                undefined // No quote provided in this test (drawer flow)
             );
         });
 

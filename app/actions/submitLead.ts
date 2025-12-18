@@ -125,10 +125,12 @@ export async function submitLead(
         const now = new Date().toISOString();
 
         // Snapshot for JSONB storage in leads.quote_data
+        // Now includes breakdownLines for exact display fidelity on shared quote page
         const quoteSnapshot: QuoteSnapshot = {
             folio: typedQuote.folio,
             items: typedQuote.items,
             financials: typedQuote.financials,
+            breakdownLines: typedQuote.breakdownLines,
             metadata: typedQuote.metadata,
             customer: {
                 name,
