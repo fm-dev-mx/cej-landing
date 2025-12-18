@@ -4,7 +4,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { trackLead } from "@/lib/tracking/visitor";
 import { submitLead } from "@/app/actions/submitLead";
-import type { CustomerInfo, OrderPayload, QuoteBreakdown, CalculatorState } from "@/types/domain";
+import type { CustomerInfo, OrderPayload, QuoteBreakdown, CalculatorState, CartItem } from "@/types/domain";
 
 export type OrderSubmissionResult = {
     success: boolean;
@@ -45,6 +45,43 @@ export function mapQuoteToOrder(
         metadata: {
             source: "web_calculator",
             pricing_version: quote.pricingSnapshot?.rules_version || 2,
+            userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'Server',
+        },
+    };
+}
+
+/**
+ * Maps cart items to a standard OrderPayload (Legacy/multi-item fallback).
+ */
+export function mapCartToOrder(
+    folio: string,
+    customer: CustomerInfo,
+    cart: CartItem[]
+): OrderPayload {
+    const totalValue = cart.reduce((acc, item) => acc + item.results.total, 0);
+    const subtotalValue = cart.reduce((acc, item) => acc + item.results.subtotal, 0);
+    const vatValue = cart.reduce((acc, item) => acc + item.results.vat, 0);
+
+    return {
+        folio,
+        customer,
+        items: cart.map((i) => ({
+            id: i.id,
+            label: i.config.label,
+            volume: i.results.volume.billedM3,
+            service: i.results.concreteType,
+            subtotal: i.results.subtotal,
+            additives: i.inputs.additives || [],
+        })),
+        financials: {
+            subtotal: subtotalValue,
+            vat: vatValue,
+            total: totalValue,
+            currency: "MXN",
+        },
+        metadata: {
+            source: "web_calculator",
+            pricing_version: 2,
             userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'Server',
         },
     };

@@ -118,6 +118,7 @@ Lead submission uses a dual path (DB + CAPI). If Supabase is unreachable, errors
 
 - `lib/schemas/*`: Zod definitions.
 - `lib/pricing.ts`: Pure math engine.
+- `lib/logic/*`: Application Services (e.g. `orderDispatcher`).
 - `app/actions/*`: Server-side mutations.
 
 ---

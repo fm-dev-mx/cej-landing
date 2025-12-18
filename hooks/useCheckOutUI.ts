@@ -12,7 +12,7 @@ import { reportError } from "@/lib/monitoring";
 
 import type { CustomerInfo, OrderPayload, QuoteBreakdown } from "@/types/domain";
 
-import { dispatchOrder, mapQuoteToOrder } from "@/lib/logic/orderDispatcher";
+import { dispatchOrder, mapQuoteToOrder, mapCartToOrder } from "@/lib/logic/orderDispatcher";
 
 // CONSTANT: Exported for synchronization (used in tests)
 export const WHATSAPP_DELAY_MS = 100;
@@ -50,34 +50,8 @@ export function useCheckoutUI() {
             if (quote) {
                 orderPayload = mapQuoteToOrder(folio, customer, quote, draft);
             } else {
-                // Legacy / Cart Fallback
-                const totalValue = cart.reduce((acc, item) => acc + item.results.total, 0);
-                const subtotalValue = cart.reduce((acc, item) => acc + item.results.subtotal, 0);
-                const vatValue = cart.reduce((acc, item) => acc + item.results.vat, 0);
-
-                orderPayload = {
-                    folio,
-                    customer,
-                    items: cart.map((i) => ({
-                        id: i.id,
-                        label: i.config.label,
-                        volume: i.results.volume.billedM3,
-                        service: i.results.concreteType,
-                        subtotal: i.results.subtotal,
-                        additives: i.inputs.additives || [],
-                    })),
-                    financials: {
-                        subtotal: subtotalValue,
-                        vat: vatValue,
-                        total: totalValue,
-                        currency: "MXN",
-                    },
-                    metadata: {
-                        source: "web_calculator",
-                        pricing_version: 2,
-                        userAgent: typeof window !== 'undefined' ? navigator.userAgent : 'Server',
-                    },
-                };
+                // Legacy / Cart Fallback - use centralized mapper
+                orderPayload = mapCartToOrder(folio, customer, cart);
             }
 
             // 2. Persist user contact to store (UI side effect)
