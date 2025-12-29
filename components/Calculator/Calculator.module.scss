@@ -22,7 +22,6 @@ $glass-border: rgba(255, 255, 255, 0.1);
 
   /* Mobile viewport height fix */
   @media (max-width: 768px) {
-    min-height: auto;
     /* Let content dictate height on mobile to prevent large gaps */
     padding-top: calc(var(--header-h-stuck) + var(--sp-4));
     padding-bottom: calc(var(--bottom-bar-h) + var(--sp-4));
