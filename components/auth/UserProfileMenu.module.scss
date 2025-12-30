@@ -1,0 +1,135 @@
+@use "../../styles/tokens" as t;
+@use "../../styles/mixins" as *;
+
+.container {
+    position: relative;
+}
+
+.trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    background: transparent;
+    border: 1px solid var(--c-border-on-dark);
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+        background-color: var(--c-bg-on-dark-hover);
+        border-color: var(--c-border-on-dark-hover);
+    }
+}
+
+.avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--c-primary-dark);
+    background: var(--c-accent);
+    border-radius: 50%;
+}
+
+.greeting {
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    color: var(--c-text-on-dark);
+
+    @media (max-width: 768px) {
+        display: none;
+    }
+}
+
+.chevron {
+    color: var(--c-muted-on-dark);
+    transition: transform 0.2s ease;
+}
+
+.chevronOpen {
+    transform: rotate(180deg);
+}
+
+.dropdown {
+    position: absolute;
+    top: calc(100% + var(--sp-2));
+    right: 0;
+    min-width: 220px;
+    padding: var(--sp-2);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    z-index: 100;
+}
+
+.userInfo {
+    padding: var(--sp-3);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+}
+
+.userName {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--c-text);
+}
+
+.userEmail {
+    font-size: var(--fs-xs);
+    color: var(--c-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.divider {
+    height: 1px;
+    margin: var(--sp-1) 0;
+    background-color: var(--c-border);
+}
+
+.menuItem {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    width: 100%;
+    padding: var(--sp-3);
+    font-size: var(--fs-sm);
+    color: var(--c-text);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    transition: background-color 0.15s ease;
+
+    &:hover {
+        background-color: var(--c-surface-light);
+    }
+}
+
+.menuIcon {
+    font-size: 1rem;
+}
+
+.logoutButton {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    width: 100%;
+    padding: var(--sp-3);
+    font-size: var(--fs-sm);
+    color: var(--c-error-text);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+        background-color: var(--c-error-soft);
+    }
+}

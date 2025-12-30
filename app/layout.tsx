@@ -12,6 +12,7 @@ import "../styles/globals.scss";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import GlobalUI from "@/components/layouts/GlobalUI";
+import { AuthProvider } from "@/components/auth";
 
 export const viewport: Viewport = {
     width: "device-width",
@@ -81,11 +82,13 @@ export default function RootLayout({
                     </Script>
                 )}
 
-                {/* App content */}
-                {children}
+                {/* App content wrapped with AuthProvider */}
+                <AuthProvider>
+                    {children}
 
-                {/* Global UX components (cart, drawer, toast) */}
-                <GlobalUI />
+                    {/* Global UX components (cart, drawer, toast) */}
+                    <GlobalUI />
+                </AuthProvider>
 
                 {/* Vercel analytics */}
                 <SpeedInsights />

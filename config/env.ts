@@ -23,6 +23,7 @@ const envSchema = z.object({
     // --- PHASE 1: Data Core (Fail-Open Configuration) ---
     // Hacemos estos campos opcionales. Si faltan, la app inicia pero en modo degradado.
     NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
     SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
 
     // Monitoring
@@ -45,6 +46,7 @@ const processEnv = {
     NEXT_PUBLIC_CURRENCY: process.env.NEXT_PUBLIC_CURRENCY,
     // Backend Vars
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     MONITORING_WEBHOOK_URL: process.env.MONITORING_WEBHOOK_URL,
     FB_ACCESS_TOKEN: process.env.FB_ACCESS_TOKEN,
@@ -84,4 +86,17 @@ if (process.env.NODE_ENV === 'production') {
     if (!env.NEXT_PUBLIC_SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
         console.warn('⚠️ [CRITICAL] Supabase keys missing. Running in Fail-Open mode.');
     }
+}
+
+// --- Supabase SSR Config Helper ---
+/**
+ * Centralized Supabase configuration for SSR clients.
+ * Single source of truth for env var validation.
+ */
+export function getSupabaseConfig() {
+    const url = env.NEXT_PUBLIC_SUPABASE_URL;
+    const anonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const isConfigured = !!(url && anonKey);
+
+    return { url, anonKey, isConfigured };
 }
