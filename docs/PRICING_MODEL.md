@@ -114,7 +114,7 @@ To ensure operational reliability in a real-world business environment, we imple
 
 When an item is added to the cart or an order is created, the system captures a `pricingSnapshot` that includes:
 
-- **`rules_version`**: The internal version of the `PricingRules`.
+- **`rules_version`**: The internal version of the `PricingRules` (e.g. `1` as defined in `FALLBACK_PRICING_RULES`).
 - **`timestamp`**: Exact moment of calculation.
 - **`rules_applied`**: A full copy of the prices used.
 

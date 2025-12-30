@@ -107,15 +107,16 @@ Local SaaS experience without authentication:
 - **Re-order Flow:** `loadQuote()` restores previous quotes.
 - **Persistent Cart:** Survives page refreshes and route changes.
 
-### 3.6 Cloud SaaS Portal (Phase 4B – Planned)
+### 3.6 Cloud SaaS Portal (Phase 4B – In Progress)
 
-> *(Defined, not yet shipped.)*
+> **Status:** Partially Implemented. Infrastructure for Auth and Dashboard is live.
 
-- Supabase Auth (Magic Link).
-- `public.profiles` linked to `auth.users`.
-- `public.orders` for authenticated order history.
-- Dashboard with order list and “Reordenar” action.
-- Data sync to `price_config` as the primary pricing source.
+- Supabase Auth (Magic Link). ✅
+- `public.profiles` linked to `auth.users`. ✅
+- `public.orders` for authenticated order history. ✅
+- Dashboard with order list and “Reordenar” action. ✅
+- Middleware protection for `/dashboard`. ✅
+- Data sync to `price_config` as the primary pricing source. (Planned)
 
 Full details: [`docs/PLAYBOOK_04_SAAS_PORTAL.md`].
 
@@ -251,10 +252,7 @@ Main docs live under `/docs`:
 
 - [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) – Tokens, layout, motion, and responsive behavior.
 - [`docs/COMPONENT_LIBRARY.md`](docs/COMPONENT_LIBRARY.md) – UI components and props.
-- [`docs/INTERACTION_PATTERNS.md`](docs/INTERACTION_PATTERNS.md) – Patterns for forms, loading, errors.
-- [`docs/UX_FLOWS.md`](docs/UX_FLOWS.md) – User journeys and state machines.
-- [`docs/UI_STATES.md`](docs/UI_STATES.md) – Empty, error, loading, and success states.
-- [`docs/VALIDATION.md`](docs/VALIDATION.md) – Validation timing, error focus, and field rules.
+- [`docs/UX_STANDARDS.md`](docs/UX_STANDARDS.md) – User journeys, state machines, interaction patterns, and validation rules.
 - [`docs/COPY_GUIDELINES.md`](docs/COPY_GUIDELINES.md) – All UI text, messages, and labels (Spanish).
 - [`docs/ACCESSIBILITY.md`](docs/ACCESSIBILITY.md) – A11y patterns and testing.
 

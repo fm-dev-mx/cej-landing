@@ -99,11 +99,11 @@ It acts as a high-fidelity audit log for sales attribution and dispute resolutio
 }
 ```
 
-### `public.price_config` (Provisioned - Future Source of Truth)
+### `public.price_config` (Active - Initial Data Seeded)
 
 This table is the designated single source of truth for the pricing engine.
 
-- **Status**: The table structure is provisioned in the SQL schema but is NOT YET CONNECTED to the frontend application flow.
+- **Status**: The table structure is live and data has been seeded. Connection to frontend is in progress.
 - Current State: The application currently relies on a hardcoded configuration file (config/business.ts, specifically FALLBACK_PRICING_RULES).
 
     This ensures the application works immediately without database dependencies during the initial deployment.
@@ -117,17 +117,12 @@ This table is the designated single source of truth for the pricing engine.
 > ⚠️ WARNING: Do not write to or rely on this table for production calculations until the Phase 4 migration is officially complete. Use config/business.ts for now.
 >
 
-### `public.profiles` & `public.orders` (Provisioned)
+### `public.profiles` & `public.orders` (Active)
 
-These tables form the core of the SaaS infrastructure scheduled for Phase 4.
+These tables form the core of the SaaS infrastructure implemented in Phase 4B.
 
 - profiles: Maintains a 1-to-1 relationship with auth.users.
-
-    It extends the basic authentication data to include business-specific fields required for invoicing in Mexico, such as the RFC (Tax ID) and fiscal address.
-
-- orders: Represents the lifecycle of a confirmed job. Unlike leads, which are static snapshots, orders are mutable entities that track the state of a job from draft (initial calculation) to confirmed (deposit paid) and finally delivered.
-
-    It includes geo_location data to assist logistics in locating the construction site.
+- orders: Represents the lifecycle of a confirmed job.
 
 ## 3. Security & RLS Policies
 

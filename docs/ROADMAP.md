@@ -67,7 +67,7 @@ Tracking is more robust across platforms (including iOS), and the site is better
 - [x] **Progressive Disclosure:** QuoteSummary with compact → breakdown → submitted states
 - [x] **Validation Fixes:** Spanish error messages for all Zod schemas
 - [x] **Number Formatting:** Consistent `.toFixed(2)` for volume display
-- [x] **Documentation:** VALIDATION.md, COPY_GUIDELINES.md, updated UX_FLOWS.md
+- [x] **Documentation:** UX_STANDARDS.md, COPY_GUIDELINES.md
 - [x] **Validation Timing:** Implement hybrid on-blur validation (prevent premature errors)
 - [x] **Form Compactness:** CSS refinements for "Ayúdame a calcular" flow
 - [x] **Error Focus:** Auto-focus first invalid field on form submit
@@ -92,12 +92,14 @@ The calculator now provides a complete "Local Pro" experience: users can save qu
 - [ ] **Contact Channels:** Phone call CTA alongside WhatsApp
 - [ ] **SLA Display:** Time-based contact expectation messages
 
-#### 5.2 SaaS Infrastructure (Planned)
+#### 5.2 SaaS Infrastructure (In Progress)
 
+- [x] **Auth:** Supabase Auth integration (Magic Link).
+- [x] **Middleware:** Protected `/dashboard` routes and session refresh.
+- [x] **Profiles:** User profile management (`public.profiles`).
+- [x] **Dashboard:** Basic order list and authenticated UI.
 - [ ] **Data Sync:** Migrate from static `FALLBACK_PRICING_RULES` to live `price_config` table in Supabase.
 - [ ] **Repository Layer:** Begin partial implementation for Orders/Profiles (triggered by multi-action complexity).
-- [ ] **Auth:** Supabase Auth integration (Magic Link).
-- [ ] **Profiles:** User profile management (`public.profiles`).
 - [ ] **Order Sync:** Sync local cart to database for authenticated users.
 - [ ] **Re-order Cloud:** Clone previous order with current pricing (cloud-synced).
 

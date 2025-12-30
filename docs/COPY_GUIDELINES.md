@@ -2,8 +2,7 @@
 
 **Scope:** All user-facing text, error messages, success messages, and UI labels.
 **Language:** Spanish (informal second person singular).
-**Source of Truth:** This document is the canonical reference for all copy.
-
+**Source of Truth:** This document is the canonical reference for all copy
 ---
 
 ## 1. Voice & Tone
@@ -191,6 +190,7 @@
 | Ticket footer | "⚠ Cotización preliminar sujeta a visita técnica." |
 | Price warning | "Precios sujetos a cambio sin previo aviso." |
 | Volume warning | "Volumetría final sujeta a verificación en obra." |
+| Estimate legend | "Precios sujetos a cambio sin previo aviso. La volumetría final se valida con visita técnica gratuita." |
 | Print footer | "Generado en {SITE_URL}" |
 
 ---
@@ -238,6 +238,5 @@
 
 ## 11. Related Documents
 
-- [`VALIDATION.md`](./VALIDATION.md) — Validation timing and rules
-- [`UI_STATES.md`](./UI_STATES.md) — Visual states for messages
+- [`UX_STANDARDS.md`](./UX_STANDARDS.md) — Interaction patterns, validation rules, and UI states
 - [`DESIGN_SYSTEM.md`](./DESIGN_SYSTEM.md) — Typography and spacing for copy

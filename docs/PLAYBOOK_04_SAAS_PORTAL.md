@@ -62,9 +62,9 @@
 
 ### Step 2: Authentication (UI)
 
-- [ ] Create `/login` page (Magic Link form).
-- [ ] Add `UserProfileMenu` to Header (Avatar + Logout).
-- [ ] Middleware: Protect `/dashboard`.
+- [x] Create `/login` page (Magic Link form).
+- [x] Add `UserProfileMenu` to Header (Avatar + Logout).
+- [x] Middleware: Protect `/dashboard`.
 
 ### Step 3: Local-to-Cloud Sync
 
@@ -76,8 +76,8 @@
 
 ### Step 4: Dashboard & Re-orders
 
-- [ ] Create `/dashboard/page.tsx`.
-- [ ] Fetch orders via Server Actions (RLS protected).
+- [x] Create `/dashboard/page.tsx`.
+- [x] Fetch orders via Server Actions (RLS protected).
 - [ ] **Re-order Action:**
   - Load `order.snapshot` into `useCejStore.draft`.
   - Redirect to `/calculator` with `mode=edit`.
@@ -87,6 +87,11 @@
 
 - [ ] Integrate `@axe-core/playwright`.
 - [ ] Add CI check for accessibility violations on critical paths.
+
+## Related Documents
+
+- [`UX_STANDARDS.md`](./UX_STANDARDS.md) — UX, validation, and interaction standards
+- [`COPY_GUIDELINES.md`](./COPY_GUIDELINES.md) — Message catalog
 
 ---
 
