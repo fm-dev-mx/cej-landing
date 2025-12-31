@@ -70,16 +70,6 @@ export function OrdersList({ orders }: OrdersListProps) {
                             >
                                 Ver Detalles
                             </Link>
-                            <button
-                                type="button"
-                                className={styles.reorderButton}
-                                onClick={() => {
-                                    // TODO: Implement reorder flow
-                                    console.log('Reorder:', order.folio);
-                                }}
-                            >
-                                Reordenar
-                            </button>
                         </div>
                     </article>
                 );

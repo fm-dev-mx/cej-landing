@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { LoginForm } from '@/components/auth';
+import { LoginForm } from '@/components/Auth';
 import styles from './page.module.scss';
 
 export const metadata: Metadata = {

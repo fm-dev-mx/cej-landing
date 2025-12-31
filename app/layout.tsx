@@ -12,7 +12,7 @@ import "../styles/globals.scss";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import GlobalUI from "@/components/layouts/GlobalUI";
-import { AuthProvider } from "@/components/auth";
+import { AuthProvider } from "@/components/Auth";
 
 export const viewport: Viewport = {
     width: "device-width",

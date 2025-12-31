@@ -11,7 +11,7 @@ import { useHeaderLogic } from "./useHeaderLogic";
 import DesktopNav from "./DesktopNav";
 import MobileMenu from "./MobileMenu";
 import { useCejStore } from "@/store/useCejStore";
-import { useAuth, UserProfileMenu } from "@/components/auth";
+import { useAuth, UserProfileMenu } from "@/components/Auth";
 
 import styles from "./Header.module.scss";
 
