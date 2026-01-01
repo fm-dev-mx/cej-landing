@@ -107,7 +107,7 @@ export const WORK_TYPES: WorkTypeConfig[] = [
 // Currently used as Fail-Open fallback.
 
 const rawPricingConfig = {
-    version: 1,
+    version: 2,
     lastUpdated: new Date().toISOString(),
     currency: CURRENCY,
     vatRate: VAT_RATE,

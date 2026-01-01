@@ -19,6 +19,7 @@ import {
     DimensionsSchema,
     AreaSchema,
 } from "@/lib/schemas";
+import { type PricingRules } from "@/lib/schemas/pricing";
 
 import type {
     CalculatorState,
@@ -34,7 +35,10 @@ export interface QuoteCalculatorResult {
     warning: QuoteWarning;
 }
 
-export function useQuoteCalculator(input: CalculatorState): QuoteCalculatorResult {
+export function useQuoteCalculator(
+    input: CalculatorState,
+    overriddenRules?: PricingRules
+): QuoteCalculatorResult {
     const {
         mode,
         m3,
@@ -193,7 +197,7 @@ export function useQuoteCalculator(input: CalculatorState): QuoteCalculatorResul
             strength,
             type,
             additives: additives || [],
-        });
+        }, overriddenRules);
 
         quote.calculationDetails = calculationDetails;
 
@@ -250,6 +254,7 @@ export function useQuoteCalculator(input: CalculatorState): QuoteCalculatorResul
         strength,
         type,
         additives,
+        overriddenRules,
     ]);
 
     return result;

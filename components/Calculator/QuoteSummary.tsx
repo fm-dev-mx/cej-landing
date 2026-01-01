@@ -1,7 +1,7 @@
 // components/Calculator/QuoteSummary.tsx
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useCejStore } from '@/store/useCejStore';
 import { useQuoteCalculator } from '@/hooks/useQuoteCalculator';
 import { useCheckoutUI } from '@/hooks/useCheckOutUI';
@@ -14,6 +14,8 @@ import { getWhatsAppUrl } from '@/lib/utils';
 import { env } from '@/config/env';
 import { getCalculatorSteps } from '@/lib/progress';
 import { FALLBACK_PRICING_RULES } from '@/config/business';
+import { getPriceConfig } from '@/app/actions/getPriceConfig';
+import { type PricingRules } from '@/lib/schemas/pricing';
 
 import styles from './CalculatorForm.module.scss';
 
@@ -49,7 +51,19 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
     const updateCartItemCustomer = useCejStore((s) => s.updateCartItemCustomer);
     const updateCartItemFolio = useCejStore((s) => s.updateCartItemFolio);
 
-    const { quote: currentQuote, isValid, warning } = useQuoteCalculator(draft);
+    // Live Pricing State
+    const [liveRules, setLiveRules] = useState<PricingRules | undefined>(undefined);
+
+    // Fetch live pricing on mount
+    useEffect(() => {
+        const fetchPricing = async () => {
+            const rules = await getPriceConfig();
+            setLiveRules(rules);
+        };
+        fetchPricing();
+    }, []);
+
+    const { quote: currentQuote, isValid, warning } = useQuoteCalculator(draft, liveRules);
 
     // Display Quote: Submitted one OR Current Draft
     const quote = submittedQuote ? submittedQuote.results : currentQuote;
@@ -208,6 +222,11 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                 {/* 2. Ticket Visible + Actions */}
                 {stage === 'actions' && (
                     <div className={styles.animateFadeIn}>
+                        {liveRules && liveRules.version > FALLBACK_PRICING_RULES.version && (
+                            <div className={styles.livePriceBadge}>
+                                ✨ Precios actualizados ✨
+                            </div>
+                        )}
                         <div className={styles.successActions}>
                             {/* Recalculate Prompt if Version Mismatch */}
                             {isVersionMismatch && (

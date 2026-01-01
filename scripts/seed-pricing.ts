@@ -1,24 +1,40 @@
 // scripts/seed-pricing.ts
-import { DEFAULT_PRICING_RULES } from '../lib/pricing';
-import { PricingRulesSchema } from '../lib/schemas/pricing';
+import { createClient } from '@supabase/supabase-js';
+import * as dotenv from 'dotenv';
+import { FALLBACK_PRICING_RULES } from '../config/business';
 
-function generateSeed() {
-    try {
-        // Validate against the strict schema first
-        const validConfig = PricingRulesSchema.parse(DEFAULT_PRICING_RULES);
+dotenv.config({ path: '.env.local' });
 
-        console.log('✅ Configuration Validated Successfully.');
-        console.log('---------------------------------------------------');
-        console.log('COPY THE JSON BELOW INTO Supabase "price_config" table:');
-        console.log('KEY: "default_v1"');
-        console.log('---------------------------------------------------');
-        console.log(JSON.stringify(validConfig, null, 2));
-        console.log('---------------------------------------------------');
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    } catch (error) {
-        console.error('❌ Schema Validation Failed:', error);
-        process.exit(1);
-    }
+if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('❌ Error: Faltan variables de entorno en .env.local');
+    process.exit(1);
 }
 
-generateSeed();
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+async function seedPricing() {
+    console.log('🚀 Iniciando carga de precios a Supabase...');
+
+    const { data, error } = await supabase
+        .from('price_config')
+        .insert([
+            {
+                version: FALLBACK_PRICING_RULES.version,
+                pricing_rules: FALLBACK_PRICING_RULES,
+            },
+        ])
+        .select();
+
+    if (error) {
+        console.error('❌ Error al cargar precios:', error.message);
+        console.error('Detalles:', error.details);
+        process.exit(1);
+    }
+
+    console.log('✅ Precios cargados exitosamente:', data);
+}
+
+seedPricing();

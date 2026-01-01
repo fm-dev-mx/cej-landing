@@ -428,6 +428,20 @@
     margin: 0;
 }
 
+.livePriceBadge {
+    display: inline-flex;
+    align-self: center;
+    padding: 0.25rem 0.75rem;
+    background: var(--c-whatsapp-soft);
+    border: 1px solid var(--c-whatsapp);
+    border-radius: 99px;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--c-whatsapp);
+    margin-bottom: var(--sp-4);
+    animation: fadeIn 0.3s ease-out;
+}
+
 .versionAlertPrompt {
     margin-bottom: var(--sp-2);
 }
