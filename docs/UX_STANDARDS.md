@@ -31,7 +31,7 @@ graph LR
 When using "Ayúdame a calcular", the system applies specific factors based on the work type:
 
 | Work Type | Calculation Logic | Notes |
-|:----------|:------------------|:------|
+| --------- | ----------------- | ----- |
 | **Losa sólida** | `L * W * T * 0.98` | 2% reduction factor for waste/compression |
 | **Losa aligerada** | `Area * Coefficient` | Uses Contribution Coefficient ($m^3/m^2$) |
 | **Other (Zapata/Firme)** | `L * W * T` | Direct geometric calculation |
@@ -39,7 +39,7 @@ When using "Ayúdame a calcular", the system applies specific factors based on t
 #### Coffered Slab Coefficients (Casetón)
 
 | Casetón Size | Total Thickness | Coefficient ($m^3/m^2$) |
-|:-------------|:----------------|:-------------------------|
+| ------------- | ---------------- | ------------------------- |
 | **7 cm** | 12 cm | **0.085** |
 | **10 cm** | 15 cm | **0.108** |
 | **15 cm** | 20 cm | **0.135** |
@@ -53,7 +53,7 @@ When using "Ayúdame a calcular", the system applies specific factors based on t
 The "Ayúdame a calcular" flow recommends concrete strengths based on the selected work type:
 
 | ID | Label | Recommended Strength ($f'c$) |
-|:---|:------|:-----------------------------|
+| --- | ------ | ----------------------------- |
 | `slab` | Losa | 200 |
 | `lightInteriorFloor` | Piso interior ligero | 150 |
 | `vehicleFloor` | Piso exterior / vehículos | 200 |
@@ -108,7 +108,7 @@ Users can restore a specific submitted quote using the `folio` URL parameter:
 ### 2.1 Validation Strategy (Hybrid)
 
 | Phase | Trigger | Behavior |
-|:------|:--------|:---------|
+| --- | --- | --- |
 | **Initial** | Field untouched | No validation shown |
 | **On Blur** | User leaves touched field | Validate and show error |
 | **On Change** | User types in touched field | Clear error if now valid |
@@ -161,7 +161,7 @@ Users are **never blocked** by backend failures. If the database write (`submitL
 Response expectation messages based on submission time:
 
 | Time Range | Expected Contact |
-|:-----------|:-----------------|
+| ----------- | ----------------- |
 | Mon-Fri < 4 PM | Within 1 hour |
 | After 4 PM / Weekend | Next business day AM |
 
@@ -183,7 +183,7 @@ Canonical brand and contact information used across the platform:
 ### 5.1 Field Rules
 
 | Field | Rule | Error Message |
-|:------|:-----|:--------------|
+| --- | --- | --- |
 | **Name** | Min 3 chars | "El nombre es muy corto" |
 | **Phone** | 10 digits | "Verifica el número (10 dígitos)" |
 | **Volume** | > 0 | "Ingresa un volumen mayor a 0 m³" |

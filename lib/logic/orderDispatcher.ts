@@ -4,6 +4,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { trackLead } from "@/lib/tracking/visitor";
 import { submitLead } from "@/app/actions/submitLead";
+import { reportError } from "@/lib/monitoring";
 import type { CustomerInfo, OrderPayload, QuoteBreakdown, CalculatorState, CartItem } from "@/types/domain";
 
 export type OrderSubmissionResult = {
@@ -96,38 +97,43 @@ export async function dispatchOrder(
     identity: { visitorId?: string; utm_source?: string; utm_medium?: string },
     fbEventId: string
 ): Promise<OrderSubmissionResult> {
+    try {
+        // 1. Tracking (Browser side effect)
+        trackLead({
+            value: orderPayload.financials.total,
+            currency: "MXN",
+            content_name: "Order Checkout",
+            event_id: fbEventId,
+        });
 
-    // 1. Tracking (Browser side effect)
-    trackLead({
-        value: orderPayload.financials.total,
-        currency: "MXN",
-        content_name: "Order Checkout",
-        event_id: fbEventId,
-    });
+        // 2. Persistence (Server Action)
+        const result = await submitLead({
+            name: customer.name,
+            phone: customer.phone,
+            quote: orderPayload,
+            visitor_id: identity.visitorId,
+            utm_source: identity.utm_source,
+            utm_medium: identity.utm_medium,
+            fb_event_id: fbEventId,
+            privacy_accepted: true,
+        });
 
-    // 2. Persistence (Server Action)
-    const result = await submitLead({
-        name: customer.name,
-        phone: customer.phone,
-        quote: orderPayload,
-        visitor_id: identity.visitorId,
-        utm_source: identity.utm_source,
-        utm_medium: identity.utm_medium,
-        fb_event_id: fbEventId,
-        privacy_accepted: true,
-    });
-
-    if (result.status === "error") {
-        let msg = result.message || "Error al procesar el pedido.";
-        if (result.errors) {
-            const errorFields = Object.keys(result.errors).join(', ');
-            msg += ` Verifique los siguientes campos: ${errorFields}`;
+        if (result.status === "error") {
+            let msg = result.message || "Error al procesar el pedido.";
+            if (result.errors) {
+                const errorFields = Object.keys(result.errors).join(', ');
+                msg += ` Verifique los siguientes campos: ${errorFields}`;
+            }
+            return {
+                success: false,
+                error: msg,
+            };
         }
-        return {
-            success: false,
-            error: msg,
-        };
-    }
 
-    return { success: true, folio: orderPayload.folio };
+        return { success: true, folio: orderPayload.folio };
+    } catch (err: unknown) {
+        reportError(err, { context: "dispatchOrder.catchAll", folio: orderPayload.folio } as Record<string, unknown>);
+        // Fail-open: Return success with the folio so the UI can continue to WhatsApp flow
+        return { success: true, folio: orderPayload.folio };
+    }
 }

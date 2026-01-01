@@ -9,7 +9,7 @@ import { env } from "@/config/env";
 
 // Check if E2E mocks are enabled (set by Playwright during testing)
 const isE2EMocksEnabled = process.env.ENABLE_E2E_MOCKS === 'true';
-import { reportError } from "@/lib/monitoring";
+import { reportError, reportWarning } from "@/lib/monitoring";
 import type { Database, QuoteSnapshot } from "@/types/database";
 import { FolioParamSchema } from "@/lib/schemas/orders";
 
@@ -51,6 +51,7 @@ export async function getQuoteByFolio(folio: string): Promise<QuoteSnapshot | nu
 
         // 1.5 Handle Test Folio for E2E validation (when mocks are enabled)
         if (isE2EMocksEnabled && validFolio === "WEB-00000000-0000") {
+            reportWarning(`[E2E] Serving mock data for folio: ${validFolio}`);
             return {
                 folio: "WEB-00000000-0000",
                 customer: { name: "E2E Robot", phone: "******8888" },
@@ -77,7 +78,7 @@ export async function getQuoteByFolio(folio: string): Promise<QuoteSnapshot | nu
         }
 
         if (!supabase) {
-            console.warn("SUPABASE_NOT_CONFIGURED: Shared quote lookup failed.");
+            reportWarning("SUPABASE_NOT_CONFIGURED: Shared quote lookup failed.");
             return null;
         }
 

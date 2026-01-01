@@ -14,7 +14,7 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
 // Ensure critical UI env vars are present for local/CI consistency
 process.env.NEXT_PUBLIC_WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '525512345678';
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3007;
 const BASE_URL = `http://localhost:${PORT}`;
 
 /**
@@ -84,12 +84,14 @@ export default defineConfig({
     // Ensure 'npm run build' is executed before running tests in CI pipeline.
     command: 'pnpm run start',
     url: BASE_URL,
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 120 * 1000, // Give Next.js enough time to boot up (2 mins)
     stdout: 'pipe',
     stderr: 'pipe',
     env: {
       ...process.env,
+      PORT: PORT.toString(),
+      NEXT_PUBLIC_SITE_URL: BASE_URL,
       // Enable E2E mock data (e.g., test folio WEB-00000000-0000)
       ENABLE_E2E_MOCKS: 'true',
     },

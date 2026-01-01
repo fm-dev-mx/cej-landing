@@ -2,7 +2,8 @@
 
 **Scope:** All user-facing text, error messages, success messages, and UI labels.
 **Language:** Spanish (informal second person singular).
-**Source of Truth:** This document is the canonical reference for all copy
+**Source of Truth:** This document is the canonical reference for all copy.
+
 ---
 
 ## 1. Voice & Tone

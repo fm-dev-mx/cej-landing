@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mapQuoteToOrder, mapCartToOrder, dispatchOrder } from "./orderDispatcher";
 import { trackLead } from "@/lib/tracking/visitor";
 import { submitLead } from "@/app/actions/submitLead";
+import type { QuoteBreakdown, CalculatorState, CartItem, OrderPayload } from "@/types/domain";
 
 // --- Mocks ---
 vi.mock("uuid", () => ({
@@ -42,7 +43,7 @@ describe("orderDispatcher logic", () => {
 
     describe("mapQuoteToOrder", () => {
         it("correctly maps a quote to an OrderPayload", () => {
-            const result = mapQuoteToOrder("WEB-123", mockCustomer, mockQuote as any, mockDraft as any);
+            const result = mapQuoteToOrder("WEB-123", mockCustomer, mockQuote as unknown as QuoteBreakdown, mockDraft as unknown as CalculatorState);
 
             expect(result.folio).toBe("WEB-123");
             expect(result.customer).toEqual(mockCustomer);
@@ -70,7 +71,7 @@ describe("orderDispatcher logic", () => {
                 },
             ];
 
-            const result = mapCartToOrder("WEB-999", mockCustomer, mockCart as any);
+            const result = mapCartToOrder("WEB-999", mockCustomer, mockCart as unknown as CartItem[]);
 
             expect(result.folio).toBe("WEB-999");
             expect(result.items).toHaveLength(2);
@@ -91,7 +92,7 @@ describe("orderDispatcher logic", () => {
 
             const result = await dispatchOrder(
                 mockCustomer,
-                mockPayload as any,
+                mockPayload as unknown as OrderPayload,
                 { visitorId: "vis-1" },
                 "fb-evt-1"
             );
@@ -118,7 +119,7 @@ describe("orderDispatcher logic", () => {
 
             const result = await dispatchOrder(
                 mockCustomer,
-                mockPayload as any,
+                mockPayload as unknown as OrderPayload,
                 {},
                 "fb-evt-1"
             );
