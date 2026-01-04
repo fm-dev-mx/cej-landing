@@ -180,7 +180,7 @@ describe('SchedulingModal', () => {
 
         await waitFor(() => {
             expect(mockOnSuccess).toHaveBeenCalledWith(
-                expect.stringMatching(/^WEB-\d{6}$/),
+                expect.stringMatching(/^OFFLINE-[A-Z0-9]+$/),
                 'Test User'
             );
         });
