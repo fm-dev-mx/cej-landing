@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { getMyOrders } from '@/app/actions/getMyOrders';
@@ -14,19 +13,14 @@ export const metadata: Metadata = {
 
 export default async function DashboardPage() {
     const supabase = await createClient();
-
-    // Check authentication
+    // User is guaranteed to exist via dashboard/layout.tsx auth boundary
     const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-        redirect('/login?redirect=/dashboard');
-    }
 
     // Fetch user's orders
     const { orders, success, error } = await getMyOrders();
 
     // Get user name for greeting
-    const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario';
+    const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuario';
 
     return (
         <main className={styles.main}>

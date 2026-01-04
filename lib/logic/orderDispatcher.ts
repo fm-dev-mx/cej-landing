@@ -124,6 +124,7 @@ export async function dispatchOrder(
                 const errorFields = Object.keys(result.errors).join(', ');
                 msg += ` Verifique los siguientes campos: ${errorFields}`;
             }
+            reportError(new Error(msg), { context: "dispatchOrder.validationError", result });
             return {
                 success: false,
                 error: msg,
@@ -132,8 +133,9 @@ export async function dispatchOrder(
 
         return { success: true, folio: orderPayload.folio };
     } catch (err: unknown) {
+        console.error(`[dispatchOrder] submitLead THREW:`, err);
         reportError(err, { context: "dispatchOrder.catchAll", folio: orderPayload.folio } as Record<string, unknown>);
-        // Fail-open: Return success with the folio so the UI can continue to WhatsApp flow
-        return { success: true, folio: orderPayload.folio };
+        // Fail-open: Return success: false here so that useCheckoutUI can catch it and generate a truly offline folio.
+        return { success: false, error: "Server infrastructure failure" };
     }
 }

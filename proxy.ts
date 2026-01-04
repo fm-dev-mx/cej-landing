@@ -3,10 +3,11 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getSupabaseConfig } from '@/config/env';
 
 /**
- * Middleware that refreshes Supabase auth tokens and protects routes.
- * Protected routes: /dashboard/*
+ * Proxy that refreshes Supabase auth tokens on each request.
+ * Route protection is handled by dashboard/layout.tsx (Server Component).
  */
-export async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
+    console.log(`[Proxy] Request: ${request.nextUrl.pathname}`);
     const { url, anonKey, isConfigured } = getSupabaseConfig();
 
     // Skip if Supabase is not configured (dev without .env.local)
@@ -17,6 +18,7 @@ export async function middleware(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
         request,
     });
+
 
     const supabase = createServerClient(
         url!,
@@ -42,29 +44,33 @@ export async function middleware(request: NextRequest) {
     );
 
     // Refresh session if expired - required for Server Components
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    // Define protected routes
-    const protectedPaths = ['/dashboard'];
-    const isProtectedRoute = protectedPaths.some((path) =>
-        request.nextUrl.pathname.startsWith(path)
-    );
-
-    // Redirect unauthenticated users trying to access protected routes
-    if (isProtectedRoute && !user) {
-        const loginUrl = new URL('/login', request.url);
-        loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
-        return NextResponse.redirect(loginUrl);
+    // AUTH BOUNDARY: Redirect unauthenticated users from /dashboard
+    if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
+        const redirectUrl = request.nextUrl.clone();
+        redirectUrl.pathname = '/login';
+        redirectUrl.searchParams.set('redirect', request.nextUrl.pathname + request.nextUrl.search);
+        return NextResponse.redirect(redirectUrl);
     }
 
-    // Redirect authenticated users away from login page
-    if (request.nextUrl.pathname === '/login' && user) {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
+    // Add current URL to request headers for use in Server Components
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-url', request.url);
 
-    return supabaseResponse;
+    // Return response with original request state + our new headers
+    const response = NextResponse.next({
+        request: {
+            headers: requestHeaders,
+        },
+    });
+
+    // Propagate session cookies from Supabase client to the final response
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+        response.cookies.set(cookie.name, cookie.value);
+    });
+
+    return response;
 }
 
 export const config = {

@@ -19,15 +19,6 @@ import { type PricingRules } from '@/lib/schemas/pricing';
 
 import styles from './CalculatorForm.module.scss';
 
-/**
- * QuoteSummary - Streamlined Flow
- *
- * States:
- * 1. PREVIEW (Default): Shows compact progress guide. CTA = "Ver Total"
- * 2. TICKET + ACTIONS: Shows full breakdown + Actions (Programar, Descargar, Compartir).
- * 3. SUBMITTED: Shows ticket with folio + Success Actions.
- */
-
 interface QuoteSummaryProps {
     hasError?: boolean;
     onFocusError?: () => void;
@@ -76,34 +67,30 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
         setTimeout(() => {
             ticketRef.current?.scrollIntoView({
                 behavior: "smooth",
-                block: "start", // Align to top of ticket for better view
+                block: "start",
             });
         }, 100);
     };
 
     // --- Handlers ---
 
-    // 1. "Ver Total" click
     const handleViewBreakdown = () => {
         setBreakdownViewed(true);
         scrollToTicket();
     };
 
-    // 2. Schedule Modal Success
     const handleSchedulingSuccess = (folio: string, name: string) => {
-        // Need to ensure item is in cart and updated
-        const itemId = addToCart(currentQuote, false);
-
-        if (name && user.phone) {
-            updateCartItemCustomer(itemId, { name, phone: user.phone });
-            updateCartItemFolio(itemId, folio);
-        }
-
         setSubmittedQuote({
             folio,
             name,
             results: currentQuote
         });
+
+        const itemId = addToCart(currentQuote, false);
+        if (name && user.phone) {
+            updateCartItemCustomer(itemId, { name, phone: user.phone });
+            updateCartItemFolio(itemId, folio);
+        }
 
         setSchedulingOpen(false);
     };
@@ -120,7 +107,6 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
     };
 
     const handleResetCurrentMode = () => {
-        // Soft reset logic
         if (draft.mode === 'knownM3') {
             useCejStore.getState().updateDraft({
                 m3: '',
@@ -130,7 +116,7 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
             });
         } else {
             useCejStore.getState().updateDraft({
-                workType: null, // This triggers the layout shift if not handled in CSS
+                workType: null,
                 length: '',
                 width: '',
                 area: '',
@@ -145,23 +131,21 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
             });
         }
         setBreakdownViewed(false);
-
-        // Scroll to top after React commits the DOM update (layout shift)
         onScrollToTop?.();
     };
 
     const handleEditCalculation = () => {
         setBreakdownViewed(false);
-        // Scroll up to inputs?
     };
 
     // --- Render Logic ---
 
-    const stage: 'preview' | 'actions' | 'submitted' = submittedQuote
+    const stage: 'preview' | 'actions' | 'submitted' = (submittedQuote && !!submittedQuote.folio)
         ? 'submitted'
         : breakdownViewed
             ? 'actions'
             : 'preview';
+
 
     const whatsappUrl = submittedQuote
         ? getWhatsAppUrl(
@@ -174,8 +158,6 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
 
     return (
         <div className={styles.container}>
-            {/* Ticket Display */}
-            {/* Ticket Display - HIDDEN in PREVIEW mode to remove "Stepper" noise */}
             {stage !== 'preview' && (
                 <div
                     className={styles.ticketWrapper}
@@ -195,17 +177,13 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                 </div>
             )}
 
-            {/* CTA Interaction Area */}
             <div className={styles.field}>
-
-                {/* 1. Initial State: "Ver Total" */}
                 {stage === 'preview' && (
                     <>
                         <Button
                             fullWidth
                             variant="primary"
                             onClick={handleViewBreakdown}
-                            // Always enabled. Validation happens on click.
                             disabled={false}
                         >
                             Ver Total
@@ -219,7 +197,6 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                     </>
                 )}
 
-                {/* 2. Ticket Visible + Actions */}
                 {stage === 'actions' && (
                     <div className={styles.animateFadeIn}>
                         {liveRules && liveRules.version > FALLBACK_PRICING_RULES.version && (
@@ -228,20 +205,18 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                             </div>
                         )}
                         <div className={styles.successActions}>
-                            {/* Recalculate Prompt if Version Mismatch */}
                             {isVersionMismatch && (
                                 <div className={styles.versionAlertPrompt}>
                                     <Button
                                         fullWidth
                                         variant="secondary"
-                                        onClick={handleViewBreakdown} // Re-trigger calculation
+                                        onClick={handleViewBreakdown}
                                     >
                                         🔄 Actualizar a precios actuales
                                     </Button>
                                 </div>
                             )}
 
-                            {/* Primary: Programar / Agendar */}
                             <Button
                                 fullWidth
                                 variant="primary"
@@ -255,7 +230,6 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                                 Agenda tu entrega o recibe asistencia personalizada.
                             </p>
 
-                            {/* Secondary Actions Grid */}
                             <div className={styles.gridActions}>
                                 <Button
                                     fullWidth
@@ -264,10 +238,8 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                                 >
                                     📄 Descargar PDF
                                 </Button>
-                                {/* Removed 'Compartir' from here as it requires a submitted folio */}
                             </div>
 
-                            {/* Edit / Back */}
                             <button
                                 onClick={handleEditCalculation}
                                 className={styles.editQuoteDataBtn}
@@ -279,7 +251,6 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                     </div>
                 )}
 
-                {/* 3. Submitted / Success State */}
                 {stage === 'submitted' && (
                     <div className={styles.successActions}>
                         <div className={styles.note}>

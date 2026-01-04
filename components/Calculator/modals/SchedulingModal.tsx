@@ -7,7 +7,7 @@ import { useCheckoutUI } from "@/hooks/useCheckOutUI";
 import { Button } from "@/components/ui/Button/Button";
 import { Input } from "@/components/ui/Input/Input";
 import { ResponsiveDialog } from "@/components/ui/ResponsiveDialog/ResponsiveDialog";
-import styles from "./SchedulingModal.module.scss"; // Reusing or new styles
+import styles from "./SchedulingModal.module.scss";
 import { getWhatsAppUrl } from "@/lib/utils";
 import { env } from "@/config/env";
 import type { QuoteBreakdown } from "@/types/domain";
@@ -48,8 +48,6 @@ export function SchedulingModal({
         e.preventDefault();
 
         // Process Order (Backend + Pixel)
-        // If quote is provided, it's passed for exact data consistency.
-        // Otherwise, processOrder will fall back to cart-based submission.
         const result = await processOrder(
             { name, phone },
             saveMyData,
@@ -58,10 +56,12 @@ export function SchedulingModal({
 
         // FAIL-OPEN STRATEGY:
         // Even if the backend/tracking fails (no folio), we MUST allow the user to proceed to WhatsApp.
-        // We use a fallback reference if the server doesn't return one.
-        const finalFolio = result.folio || `WEB-${Date.now().toString().slice(-6)}`;
+        const finalFolio = result.folio || `OFFLINE-${Date.now().toString().slice(-6)}`;
 
-        // 2. Construct WhatsApp Message
+        // 2. Clear quote and show success UI
+        if (onSuccess) onSuccess(finalFolio, name);
+
+        // 3. Open WhatsApp
         const message = `👋 Hola, soy *${name}*.
 Quiero programar un pedido.
 📄 Folio Cotización: *${finalFolio}*
@@ -74,12 +74,9 @@ Quiero programar un pedido.
 📱 Mi teléfono: ${phone}`;
 
         const whaUrl = getWhatsAppUrl(env.NEXT_PUBLIC_WHATSAPP_NUMBER, message);
-
-        // 3. Open WhatsApp
         window.open(whaUrl, '_blank');
 
-        // 4. Close & Notify
-        if (onSuccess) onSuccess(finalFolio, name);
+        // 4. Close
         onClose();
     };
 

@@ -14,7 +14,7 @@ type ButtonProps = {
 } & Partial<ButtonHTMLAttributes<HTMLButtonElement> & AnchorHTMLAttributes<HTMLAnchorElement>>;
 
 export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(
-  ({ className, variant = 'primary', fullWidth, href, isLoading, loadingText, children, disabled, ...props }, ref) => {
+  ({ className, variant = 'primary', fullWidth, href, isLoading, loadingText, children, disabled, type = 'button', ...props }, ref) => {
     const rootClassName = [
       styles.base,
       styles[variant],
@@ -59,7 +59,7 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
     return (
       <button
         ref={ref as React.Ref<HTMLButtonElement>}
-        type="button"
+        type={type as "button" | "submit" | "reset"}
         className={rootClassName}
         disabled={isDisabled}
         {...(props as ButtonHTMLAttributes<HTMLButtonElement>)}

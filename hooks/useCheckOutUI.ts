@@ -74,7 +74,7 @@ export function useCheckoutUI() {
             return { success: true, folio };
         } catch (err: unknown) {
             reportError(err, { context: "useCheckoutUI.processOrder", customerPhone: customer.phone });
-
+            console.error(`[useCheckoutUI] processOrder CAUGHT error:`, err);
             // FAIL-OPEN (Maintain resilient behavior for system/infra failures)
             const offlineFolio = `OFFLINE-${Date.now().toString(36).toUpperCase()}`;
             setState({

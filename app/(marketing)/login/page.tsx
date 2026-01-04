@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import { LoginForm } from '@/components/Auth';
+import { createClient } from '@/lib/supabase/server';
 import styles from './page.module.scss';
 
 export const metadata: Metadata = {
@@ -13,6 +15,14 @@ interface LoginPageProps {
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
+    // Redirect authenticated users to dashboard
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+        redirect('/dashboard');
+    }
+
     const params = await searchParams;
     const redirectTo = params.redirect;
     const error = params.error;
