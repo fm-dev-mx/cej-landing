@@ -9,7 +9,6 @@ export default function SmartBottomBar() {
     const cart = useCejStore(s => s.cart);
     const setDrawerOpen = useCejStore(s => s.setDrawerOpen);
 
-    // Only show if cart has items
     if (cart.length === 0) return null;
 
     const total = cart.reduce((acc, item) => acc + item.results.total, 0);
@@ -20,7 +19,7 @@ export default function SmartBottomBar() {
             <div className={styles.info}>
                 <span className={styles.countBadge}>{count}</span>
                 <div className={styles.textColumn}>
-                    <span className={styles.label}>Tu Pedido</span>
+                    <span className={styles.label}>Total Estimado</span>
                     <span className={styles.total}>{fmtMXN(total)}</span>
                 </div>
             </div>
@@ -29,7 +28,7 @@ export default function SmartBottomBar() {
                 className={styles.triggerBtn}
                 onClick={() => setDrawerOpen(true)}
             >
-                Ver Lista
+                Ver Pedido
             </button>
         </div>
     );

@@ -1,7 +1,26 @@
 // config/business.ts
-import { PricingRulesSchema, type PricingRules } from '@/lib/schemas/pricing';
+
+import type {
+    ConcreteType,
+    Strength,
+    WorkTypeConfig,
+    PriceTable,
+    VolumeTier,
+    CofferedSize
+} from '@/components/Calculator/types';
 import { env } from '@/config/env';
-import type { WorkTypeConfig, Strength, ConcreteType, CofferedSize } from '@/types/domain';
+
+// --- Global business configuration ---
+
+export const VAT_RATE = 0.08; // 8% VAT (border rate)
+export const M3_STEP = 0.5; // Volume increment (m³)
+export const CURRENCY = 'MXN';
+export const STORAGE_KEY = 'cej_calculator_v2';
+
+// Quote specific constants
+export const QUOTE_VALIDITY_DAYS = 7;
+export const SUPPORT_PHONE_LABEL = env.NEXT_PUBLIC_PHONE;
+export const WEBSITE_URL_LABEL = env.NEXT_PUBLIC_SITE_URL;
 
 // --- NUEVO: Datos Maestros del Negocio (Single Source of Truth) ---
 export const BUSINESS_INFO = {
@@ -25,22 +44,17 @@ export const BUSINESS_INFO = {
     ]
 };
 
-// --- Constants & Configuration ---
-
-export const VAT_RATE = 0.08; // 8% VAT (border rate)
-export const M3_STEP = 0.5; // Volume increment (m³)
-export const CURRENCY = 'MXN';
-export const QUOTE_VALIDITY_DAYS = 7;
-
 export const ESTIMATE_LEGEND =
     'Precios sujetos a cambio sin previo aviso. La volumetría final se valida con visita técnica gratuita.';
 
-// --- Construction Specs ---
+// --- Volume rules ---
 
 export const MIN_M3_BY_TYPE: Record<ConcreteType, number> = {
-    direct: 2,
+    direct: 3,
     pumped: 3,
 };
+
+// --- Slab Specifications ---
 
 type SlabSpec = {
     label: string;
@@ -49,16 +63,28 @@ type SlabSpec = {
 };
 
 export const COFFERED_SPECS: Record<CofferedSize, SlabSpec> = {
-    '7': { label: 'Casetón 7cm', totalThicknessCm: 12, coefficient: 0.085 },
-    '10': { label: 'Casetón 10cm', totalThicknessCm: 15, coefficient: 0.108 },
-    '15': { label: 'Casetón 15cm', totalThicknessCm: 20, coefficient: 0.135 }
+    '7': {
+        label: 'Casetón 7cm',
+        totalThicknessCm: 12,
+        coefficient: 0.085
+    },
+    '10': {
+        label: 'Casetón 10cm',
+        totalThicknessCm: 15,
+        coefficient: 0.108
+    },
+    '15': {
+        label: 'Casetón 15cm',
+        totalThicknessCm: 20,
+        coefficient: 0.135
+    }
 };
 
 export const CASETON_FACTORS = {
     solidSlab: 0.98,
 } as const;
 
-// --- Catalogs ---
+// --- Catalogs and options ---
 
 export const STRENGTHS: Strength[] = ['100', '150', '200', '250', '300'];
 
@@ -100,53 +126,34 @@ export const WORK_TYPES: WorkTypeConfig[] = [
     },
 ];
 
-// --- PRICING RULES (FALLBACK / LEGACY ADAPTER) ---
-// This object is the static fallback used when DB connection fails or is not yet configured.
-// It matches the PricingRulesSchema strictly.
-// @deprecated - This static config will be replaced by DB fetching in Phase 4 (SaaS).
-// Currently used as Fail-Open fallback.
+// --- Pricing table ---
 
-const rawPricingConfig = {
-    version: 2,
-    lastUpdated: new Date().toISOString(),
-    currency: CURRENCY,
-    vatRate: VAT_RATE,
-    minOrderQuantity: MIN_M3_BY_TYPE,
+const pesos = (n: number): number => Math.round(n * 100);
+
+const tier = (
+    minM3: number,
+    unitPricePesos: number,
+    maxM3?: number,
+): VolumeTier => ({
+    minM3,
+    maxM3,
+    pricePerM3Cents: pesos(unitPricePesos),
+});
+
+export const PRICE_TABLE: PriceTable = {
     base: {
         direct: {
-            '100': [{ minM3: 2, maxM3: 2.5, pricePerM3Cents: 223100 }, { minM3: 3, pricePerM3Cents: 208200 }],
-            '150': [{ minM3: 2, maxM3: 2.5, pricePerM3Cents: 250900 }, { minM3: 3, pricePerM3Cents: 226900 }],
-            '200': [{ minM3: 2, maxM3: 2.5, pricePerM3Cents: 273100 }, { minM3: 3, pricePerM3Cents: 248100 }],
-            '250': [{ minM3: 2, maxM3: 2.5, pricePerM3Cents: 301800 }, { minM3: 3, pricePerM3Cents: 276900 }],
-            '300': [{ minM3: 2, maxM3: 2.5, pricePerM3Cents: 309100 }, { minM3: 3, pricePerM3Cents: 303500 }],
+            '100': [tier(3, 2082.4)],
+            '150': [tier(3, 2268.5)],
+            '200': [tier(3, 2481.5)],
+            '250': [tier(3, 2768.5)],
+            '300': [tier(3, 3037.0)],
         },
         pumped: {
-            '100': [{ minM3: 3, maxM3: 4.5, pricePerM3Cents: 252700 }, { minM3: 5, pricePerM3Cents: 248100 }],
-            '150': [{ minM3: 3, maxM3: 4.5, pricePerM3Cents: 275800 }, { minM3: 5, pricePerM3Cents: 266600 }],
-            '200': [{ minM3: 3, maxM3: 4.5, pricePerM3Cents: 300800 }, { minM3: 5, pricePerM3Cents: 295800 }],
-            '250': [{ minM3: 3, maxM3: 4.5, pricePerM3Cents: 325900 }, { minM3: 5, pricePerM3Cents: 316700 }],
-            '300': [{ minM3: 3, maxM3: 4.5, pricePerM3Cents: 347800 }, { minM3: 5, pricePerM3Cents: 338500 }],
+            '150': [tier(3, 2991.6, 3.5), tier(4, 2759.2, 4.5), tier(5, 2666.6)],
+            '200': [tier(3, 3240.7, 3.5), tier(4, 3008.3, 4.5), tier(5, 2958.3)],
+            '250': [tier(3, 3491.6, 3.5), tier(4, 3259.2, 4.5), tier(5, 3166.6)],
+            '300': [tier(3, 3704.6, 3.5), tier(4, 3472.2, 4.5), tier(5, 3379.6)],
         },
     },
-    additives: [
-        {
-            id: 'fiber',
-            label: 'Fibra de Refuerzo',
-            description: 'Micro-refuerzo para reducir grietas',
-            priceCents: 15000,
-            pricingModel: 'per_m3',
-            active: true
-        },
-        {
-            id: 'accelerant',
-            label: 'Acelerante (1%)',
-            description: 'Fraguado rápido para clima frío',
-            priceCents: 18000,
-            pricingModel: 'per_m3',
-            active: true
-        }
-    ]
 };
-
-// Validate fallback config at build time
-export const FALLBACK_PRICING_RULES: PricingRules = PricingRulesSchema.parse(rawPricingConfig);

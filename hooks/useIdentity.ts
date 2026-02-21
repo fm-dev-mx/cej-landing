@@ -13,7 +13,6 @@ export function useIdentity() {
         const trackingIds = getIdentityParams();
         const utmParams = getOrInitUtmParams();
 
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIdentity({
             ...trackingIds,
             ...utmParams

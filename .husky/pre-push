@@ -1,0 +1,3 @@
+#!/bin/sh
+# Fast local confidence check. Full test suite remains enforced in CI.
+pnpm exec tsc --noEmit --incremental false

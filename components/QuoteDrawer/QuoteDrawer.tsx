@@ -1,55 +1,55 @@
+// components/QuoteDrawer/QuoteDrawer.tsx
 'use client';
 
 import { useState } from 'react';
-import { useCejStore } from '@/store/useCejStore';
-import { type CartItem } from '@/types/domain';
+import { useCejStore, type QuoteItem } from '@/store/useCejStore';
 import { fmtMXN } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
-import { SchedulingModal } from '@/components/Calculator/modals/SchedulingModal';
+import CheckoutModal from '@/components/Checkout/CheckoutModal';
 import styles from './QuoteDrawer.module.scss';
 
 export default function QuoteDrawer() {
     const {
         isDrawerOpen, setDrawerOpen,
         activeTab, setActiveTab,
-        isProcessingOrder,
-
-        cart, history,
-        removeFromCart, editCartItem, loadQuote,
-        submittedQuote,
+        cart, history, removeFromCart,
+        loadHistoryItemAsDraft // New action
     } = useCejStore();
 
-    const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
-    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+    const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
     if (!isDrawerOpen) return null;
 
     const listData = activeTab === 'order' ? cart : history;
     const cartTotal = cart.reduce((sum, item) => sum + item.results.total, 0);
 
-    const handleEdit = (id: string) => {
-        editCartItem(id);
+    const handleCheckoutClick = () => {
+        setIsCheckoutOpen(true);
     };
 
-    const handleClone = (item: CartItem) => {
-        loadQuote(item);
+    const handleClone = (item: QuoteItem) => {
+        if (confirm('¿Quieres cargar esta cotización en el calculador? Se perderán los datos actuales no guardados.')) {
+            loadHistoryItemAsDraft(item);
+        }
     };
 
+    // Helper to format date relative
     const formatDate = (ts: number) => {
         return new Date(ts).toLocaleDateString('es-MX', {
             month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
         });
     };
 
-    // Phase 0 Bugfix: Show loading state instead of empty state during processing
-    const showLoading = isProcessingOrder && activeTab === 'order' && cart.length === 0;
-    // Also check if we just submitted - cart might be empty but quote exists
-    const justSubmitted = submittedQuote && activeTab === 'order' && cart.length === 0;
-
     return (
         <>
-            <div className={styles.backdrop} onClick={() => setDrawerOpen(false)} aria-hidden="true" />
+            {/* Backdrop */}
+            <div
+                className={styles.backdrop}
+                onClick={() => setDrawerOpen(false)}
+                aria-hidden="true"
+            />
 
+            {/* Panel */}
             <aside className={styles.drawer}>
                 <header className={styles.header}>
                     <div className={styles.tabs}>
@@ -57,37 +57,25 @@ export default function QuoteDrawer() {
                             className={`${styles.tab} ${activeTab === 'order' ? styles.active : ''}`}
                             onClick={() => setActiveTab('order')}
                         >
-                            Pedido ({cart.length})
+                            Pedido Actual ({cart.length})
                         </button>
                         <button
                             className={`${styles.tab} ${activeTab === 'history' ? styles.active : ''}`}
                             onClick={() => setActiveTab('history')}
                         >
-                            Historial
+                            Mis Obras 📂
                         </button>
                     </div>
                     <button className={styles.closeBtn} onClick={() => setDrawerOpen(false)}>×</button>
                 </header>
 
                 <div className={styles.body}>
-                    {showLoading ? (
-                        <div className={styles.emptyState}>
-                            <p>Procesando tu pedido...</p>
-                        </div>
-                    ) : justSubmitted ? (
-                        <div className={styles.emptyState}>
-                            <p>✅ Cotización generada: {submittedQuote.folio}</p>
-                            <p>Regresa a la calculadora para ver el ticket.</p>
-                            <button onClick={() => setDrawerOpen(false)} className={styles.linkBtn}>
-                                Ver ticket
-                            </button>
-                        </div>
-                    ) : listData.length === 0 ? (
+                    {listData.length === 0 ? (
                         <div className={styles.emptyState}>
                             <p>
                                 {activeTab === 'order'
-                                    ? 'Tu pedido está vacío.'
-                                    : 'Aquí aparecerán tus cálculos recientes.'}
+                                    ? 'Aún no has agregado nada al pedido.'
+                                    : 'Aquí aparecerán tus cotizaciones pasadas.'}
                             </p>
                             {activeTab === 'order' && (
                                 <button onClick={() => setDrawerOpen(false)} className={styles.linkBtn}>
@@ -101,7 +89,7 @@ export default function QuoteDrawer() {
                                 <li key={item.id} className={styles.item}>
                                     <div className={styles.itemHeader}>
                                         <span className={styles.itemTitle}>
-                                            {item.config.label}
+                                            {item.config.label || (item.config.mode === 'wizard' ? 'Cálculo Guiado' : 'Cálculo Experto')}
                                         </span>
                                         <span className={styles.itemDate}>
                                             {formatDate(item.timestamp)}
@@ -110,16 +98,11 @@ export default function QuoteDrawer() {
 
                                     <div className={styles.itemDetails}>
                                         <div className={styles.detailBadge}>
-                                            {item.results.volume.billedM3.toFixed(2)} m³
+                                            {item.results.volume.billedM3.toFixed(1)} m³
                                         </div>
                                         <div className={styles.detailBadge}>
                                             {item.results.concreteType === 'pumped' ? 'Bomba' : 'Directo'}
                                         </div>
-                                        {item.customer && (
-                                            <div className={styles.detailBadgeCustomer}>
-                                                👤 {item.customer.name}
-                                            </div>
-                                        )}
                                     </div>
 
                                     <div className={styles.itemFooter}>
@@ -127,47 +110,18 @@ export default function QuoteDrawer() {
 
                                         <div className={styles.itemActions}>
                                             {activeTab === 'order' ? (
-                                                <>
-                                                    <button
-                                                        className={styles.textBtnPrimary}
-                                                        onClick={() => handleEdit(item.id)}
-                                                    >
-                                                        Editar
-                                                    </button>
-                                                    {confirmDeleteId === item.id ? (
-                                                        <div className={styles.confirmActions}>
-                                                            <span className={styles.confirmText}>¿Seguro?</span>
-                                                            <button
-                                                                className={styles.textBtnDanger}
-                                                                onClick={() => {
-                                                                    removeFromCart(item.id);
-                                                                    setConfirmDeleteId(null);
-                                                                }}
-                                                            >
-                                                                Sí
-                                                            </button>
-                                                            <button
-                                                                className={styles.textBtnPrimary}
-                                                                onClick={() => setConfirmDeleteId(null)}
-                                                            >
-                                                                No
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <button
-                                                            className={styles.textBtnDanger}
-                                                            onClick={() => setConfirmDeleteId(item.id)}
-                                                        >
-                                                            Borrar
-                                                        </button>
-                                                    )}
-                                                </>
+                                                <button
+                                                    className={styles.textBtnDanger}
+                                                    onClick={() => removeFromCart(item.id)}
+                                                >
+                                                    Eliminar
+                                                </button>
                                             ) : (
                                                 <button
                                                     className={styles.textBtnPrimary}
                                                     onClick={() => handleClone(item)}
                                                 >
-                                                    ↺ Reutilizar
+                                                    ↺ Cotizar de nuevo
                                                 </button>
                                             )}
                                         </div>
@@ -187,17 +141,17 @@ export default function QuoteDrawer() {
                         <Button
                             fullWidth
                             variant="whatsapp"
-                            onClick={() => setIsLeadModalOpen(true)}
+                            onClick={handleCheckoutClick}
                         >
-                            Finalizar Pedido
+                            Finalizar Pedido por WhatsApp
                         </Button>
                     </footer>
                 )}
             </aside>
 
-            <SchedulingModal
-                isOpen={isLeadModalOpen}
-                onClose={() => setIsLeadModalOpen(false)}
+            <CheckoutModal
+                isOpen={isCheckoutOpen}
+                onClose={() => setIsCheckoutOpen(false)}
             />
         </>
     );

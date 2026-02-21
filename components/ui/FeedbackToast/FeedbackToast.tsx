@@ -1,4 +1,3 @@
-// components/ui/FeedbackToast/FeedbackToast.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -12,8 +11,8 @@ export default function FeedbackToast() {
 
     useEffect(() => {
         // Trigger toast only when a NEW item is added (length increases)
+        // For MVP simplicity, we assume if drawer opens and cart has items, it's an add action
         if (isDrawerOpen && cart.length > 0) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
             setShow(true);
             const timer = setTimeout(() => setShow(false), 3000);
             return () => clearTimeout(timer);

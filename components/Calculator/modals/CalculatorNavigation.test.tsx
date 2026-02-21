@@ -1,9 +1,9 @@
 // components/Calculator/modals/CalculatorNavigation.test.tsx
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Calculator from '../Calculator';
 import { useCejStore } from '@/store/useCejStore';
-import { DEFAULT_CALCULATOR_STATE } from '@/types/domain';
+import { DEFAULT_CALCULATOR_STATE } from '../types';
 
 // --- Mocks ---
 vi.mock('@/config/env', () => ({
@@ -30,117 +30,109 @@ window.IntersectionObserver = vi.fn().mockReturnValue({
   disconnect: () => null
 });
 
-// Helper to reset store - Phase 1: Added breakdownViewed reset
+// Helper to reset store
 const resetStore = () => {
+  // CRITICAL FIX: No passing 'true' to setState to prevent wiping out actions
   useCejStore.setState({
+    viewMode: 'wizard',
     isDrawerOpen: false,
     activeTab: 'order',
-    draft: { ...DEFAULT_CALCULATOR_STATE },
+    currentDraft: { ...DEFAULT_CALCULATOR_STATE },
     cart: [],
-    // history: [],
-    user: {
-      visitorId: 'test-id',
-      hasConsentedPersistence: true
-    },
-    breakdownViewed: false,
-    submittedQuote: null
-  } as unknown as Partial<ReturnType<typeof useCejStore.getState>>);
+    history: [],
+    user: { visitorId: 'test-id', hasConsentedPersistence: false }
+  });
 };
 
 describe('Calculator Navigation & Button Logic', () => {
   beforeEach(() => {
     window.localStorage.clear();
-    resetStore();
+    resetStore(); // Reset state properly
     vi.clearAllMocks();
   });
 
-  it('Step 3 (Known): "Ver Desglose" button is hidden until volume is > 0', () => {
+  it('Step 3 (Known): "Next" is disabled until volume is > 0', () => {
     render(<Calculator />);
+    fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
 
-    // Select Known Mode
-    fireEvent.click(screen.getByRole('radio', { name: /Sé la cantidad/i }));
+    const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
+    const input = screen.getByLabelText(/Volumen \(m³\)/i);
 
-    const input = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
-
-    // Initially, button should NOT be there (hint is shown instead)
-    const addBtnInitial = screen.queryByRole('button', { name: /Calcular y Verificar/i });
-    expect(addBtnInitial).not.toBeInTheDocument();
-
-    // Check for the hint text
-    // Simulate user typing '0'
+    expect(nextBtn).toBeDisabled();
     fireEvent.change(input, { target: { value: '0' } });
-    expect(screen.queryByRole('button', { name: /Calcular y Verificar/i })).not.toBeInTheDocument();
-
-    // Simulate user typing '5'
+    expect(nextBtn).toBeDisabled();
     fireEvent.change(input, { target: { value: '5' } });
-
-    // Select Strength & Service to make it valid
-    const strengthTrigger = screen.getByLabelText(/Resistencia/i);
-    fireEvent.click(strengthTrigger);
-    fireEvent.click(screen.getByRole('option', { name: /250 kg\/cm²/i }));
-
-    const serviceTrigger = screen.getByLabelText(/Servicio/i);
-    fireEvent.click(serviceTrigger);
-    fireEvent.click(screen.getByRole('option', { name: /Tiro directo/i }));
-
-    // Now button should appear and be enabled (Phase 1: "Ver Total" instead of "Solicitar")
-    const addBtn = screen.getByRole('button', { name: /Ver Total/i });
-    expect(addBtn).toBeEnabled();
+    expect(nextBtn).toBeEnabled();
   });
 
-  it('Mode switching resets/adjusts form correctly', () => {
-    // ... existing content ...
+  it('Back button navigates correctly based on flow', () => {
     render(<Calculator />);
-    const radioKnown = screen.getByRole('radio', { name: /Sé la cantidad/i });
+    const radioKnown = screen.getByRole('radio', { name: /^S[íi]/i });
     fireEvent.click(radioKnown);
-    expect(screen.getByLabelText(/¿Cuánto concreto necesitas?/i)).toBeInTheDocument();
 
-    // ... existing content ...
-    const radioAssist = screen.getByRole('radio', { name: /Ayúdame a calcular/i });
-    fireEvent.click(radioAssist);
-    expect(screen.getByRole('combobox', { name: /¿Para qué usarás el concreto?/i })).toBeInTheDocument();
+    const backBtn = screen.getByRole('button', { name: /Atrás/i });
+    fireEvent.click(backBtn);
+    expect(screen.getByText(/¿Ya conoces los metros cúbicos/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('radio', { name: /No, ay.dame/i }));
+    const backBtnStep2 = screen.getByRole('button', { name: /Atrás/i });
+    fireEvent.click(backBtnStep2);
+    expect(screen.getByText(/¿Ya conoces los metros cúbicos/i)).toBeInTheDocument();
   });
 
   it('Step 3 (Assist): Validates thickness correctly for Solid vs Coffered', () => {
     render(<Calculator />);
-    fireEvent.click(screen.getByRole('radio', { name: /Ayúdame a calcular/i }));
 
-    const workTypeSelect = screen.getByRole('combobox', { name: /¿Para qué usarás el concreto?/i });
-    fireEvent.click(workTypeSelect);
-    fireEvent.click(screen.getByRole('option', { name: /Losa/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /No, ay.dame/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /Losa/i }));
 
-    const lengthInput = screen.getByLabelText('Largo');
-    const widthInput = screen.getByLabelText('Ancho');
+    const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
+    expect(nextBtn).toBeDisabled();
 
-    // Initially button hidden (Phase 1: use "Verificar datos" text)
-    expect(screen.queryByRole('button', { name: /Calcular y Verificar/i })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText('Largo (m)'), { target: { value: '10' } });
+    fireEvent.change(screen.getByLabelText('Ancho (m)'), { target: { value: '5' } });
 
-    fireEvent.change(lengthInput, { target: { value: '10' } });
-    fireEvent.change(widthInput, { target: { value: '5' } });
-
-    // --- SCENARIO A: Solid Slab ---
+    // --- ESCENARIO A: Losa Sólida ---
     fireEvent.click(screen.getByRole('radio', { name: /Sólida/i }));
 
-    const thicknessInput = screen.getByLabelText('Espesor Total de Losa');
+    const thicknessInput = screen.getByLabelText(/^Grosor \(cm\)$/);
     expect(thicknessInput).toBeVisible();
 
-    // Empty -> Button hidden
     fireEvent.change(thicknessInput, { target: { value: '' } });
-    expect(screen.queryByRole('button', { name: /Calcular y Verificar/i })).not.toBeInTheDocument();
+    expect(nextBtn).toBeDisabled();
 
-    // Filled -> Button appears
     fireEvent.change(thicknessInput, { target: { value: '10' } });
-    expect(screen.getByRole('button', { name: /Ver Total/i })).toBeEnabled();
+    expect(nextBtn).toBeEnabled();
 
-    // --- SCENARIO B: Coffered Slab ---
+    // --- ESCENARIO B: Losa Aligerada ---
     fireEvent.click(screen.getByRole('radio', { name: /Aligerada/i }));
 
-    expect(screen.queryByLabelText('Grosor (cm)')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^Grosor \(cm\)$/)).not.toBeInTheDocument();
 
     const radio7cm = screen.getByRole('radio', { name: /7 cm/i });
-    fireEvent.click(radio7cm);
+    expect(radio7cm).toBeChecked();
 
-    expect(screen.getByRole('button', { name: /Ver Total/i })).toBeEnabled();
+    expect(nextBtn).toBeEnabled();
+  });
 
+  it('Step 4: Shows loading state and disables buttons during calculation', async () => {
+    render(<Calculator />);
+
+    fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
+    fireEvent.change(screen.getByLabelText(/Volumen/i), { target: { value: '5' } });
+    fireEvent.click(screen.getByRole('button', { name: /Siguiente/i }));
+
+    const calcBtn = screen.getByRole('button', { name: /Ver Cotización Final/i });
+    const backBtn = screen.getByRole('button', { name: /Atrás/i });
+
+    fireEvent.click(calcBtn);
+
+    expect(calcBtn).toBeDisabled();
+    expect(backBtn).toBeDisabled();
+    expect(screen.getByText(/Calculando.../i)).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getByText(/Cotización Lista/i)).toBeInTheDocument();
+    }, { timeout: 2000 });
   });
 });

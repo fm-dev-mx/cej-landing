@@ -1,5 +1,4 @@
 // config/content.ts
-import { getCloudinaryUrl } from "@/lib/cloudinary";
 
 export interface ServiceItem {
     id: string;
@@ -20,8 +19,7 @@ export interface ProcessStep {
     id: string;
     title: string;
     desc: string;
-    imageSrc: string;
-    imageAlt: string;
+    icon: string;
 }
 
 export interface FaqItem {
@@ -134,7 +132,7 @@ export const LANDING_CONTENT = {
                 location: "Zona Industrial",
                 category: "Piso Pulido",
                 imageAlt: "Colado de piso de concreto industrial con bomba pluma en nave maquiladora",
-                imageUrl: getCloudinaryUrl("https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/maquila_culguq.jpg")
+                imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/maquila_culguq.jpg"
             },
             {
                 id: "work2",
@@ -142,7 +140,7 @@ export const LANDING_CONTENT = {
                 location: "Valle del Sol",
                 category: "Zapatas y Losas",
                 imageAlt: "Camión revolvedora vertiendo concreto en cimentación de casa habitación",
-                imageUrl: getCloudinaryUrl("https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673427/complejo_residencial_q3dxfu.jpg")
+                imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673427/complejo_residencial_q3dxfu.jpg"
             },
             {
                 id: "work3",
@@ -150,7 +148,7 @@ export const LANDING_CONTENT = {
                 location: "Av. Las Torres",
                 category: "Concreto Estampado",
                 imageAlt: "Preparación de armado para colado de estacionamiento comercial en Ciudad Juárez",
-                imageUrl: getCloudinaryUrl("https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/zona_industrial_gu16sr.jpg")
+                imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/zona_industrial_gu16sr.jpg"
             }
         ] as WorkItem[],
         testimonials: [
@@ -185,29 +183,25 @@ export const LANDING_CONTENT = {
                 id: "calc",
                 title: "1. Cotiza y Calcula",
                 desc: "Usa nuestra calculadora online para estimar el volumen y precio al instante, o mándanos tus medidas.",
-                imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Cotiza+y+Calcula",
-                imageAlt: "Persona usando calculadora en celular"
+                icon: "Tp" // Tp maps to calculator/phone conceptually
             },
             {
                 id: "book",
                 title: "2. Programa tu Pedido",
                 desc: "Aparta fecha y hora con un anticipo mínimo ($1,000 MXN). Asegura tu lugar en la agenda.",
-                imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Programa+Pedido",
-                imageAlt: "Calendario de obra marcado"
+                icon: "Cal"
             },
             {
                 id: "verify",
                 title: "3. Visita Técnica",
                 desc: "Un experto va a tu obra (sin costo) para verificar accesos y rectificar medidas para evitar errores.",
-                imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Visita+Tecnica",
-                imageAlt: "Ingeniero tomando medidas en obra"
+                icon: "Eng"
             },
             {
                 id: "pay",
                 title: "4. Recibe y Construye",
                 desc: "La olla llega puntual. Liquidación contra entrega y soporte durante el vaciado.",
-                imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Recibe+y+Construye",
-                imageAlt: "Camión revolvedora descargando concreto"
+                icon: "Truck"
             }
         ] as ProcessStep[]
     },

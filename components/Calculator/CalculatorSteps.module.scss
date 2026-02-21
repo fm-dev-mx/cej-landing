@@ -1,0 +1,267 @@
+@use "../../styles/mixins" as *;
+
+/* --- Layout & Animation --- */
+.step {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+}
+
+.stepAnimated {
+  animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.stepHeader {
+  text-align: center;
+  margin-bottom: var(--sp-6);
+  flex-shrink: 0;
+}
+
+.stepTitle {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: white;
+  margin: 0 0 0.5rem 0;
+  text-wrap: balance;
+}
+
+.stepSubtitle {
+  font-size: var(--fs-sm);
+  color: var(--c-muted-on-dark);
+  line-height: 1.4;
+  max-width: 45ch;
+  margin-inline: auto;
+}
+
+.stepBody {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.stepControls {
+  margin-top: auto;
+  padding-top: var(--sp-6);
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--sp-3);
+
+  @include respond-to("sm") {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    button:last-child {
+      margin-left: auto;
+      min-width: 140px;
+    }
+  }
+}
+
+/* --- Form Elements --- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: var(--sp-4);
+
+  label {
+    font-size: var(--fs-base);
+    font-weight: 600;
+    color: var(--c-muted-on-dark);
+  }
+}
+
+.hint {
+  font-size: var(--fs-xs);
+  color: var(--c-muted-on-dark);
+  opacity: 0.8;
+  margin-top: 1.5rem;
+  max-width: 70ch;
+  text-align: right;
+}
+
+/* Compact Grid for Dimensions (Length x Width) */
+.compactGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+  align-items: start;
+  width: 100%;
+
+  label {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+  }
+}
+
+/* Selection Grids */
+.selectionGrid {
+  @include grid-ram($min-width: 150px, $gap: var(--sp-3));
+}
+
+.radioRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-3);
+}
+
+.radio {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 3rem;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+
+  &:has(input:checked) {
+    background-color: rgba(254, 201, 20, 0.15);
+    border-color: var(--c-accent);
+    box-shadow: inset 0 0 0 1px var(--c-accent);
+
+    span {
+      color: var(--c-accent);
+      font-weight: 700;
+    }
+  }
+
+  input {
+    accent-color: var(--c-accent);
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  span {
+    font-size: var(--fs-base);
+    color: var(--c-muted-on-dark);
+  }
+}
+
+/* Pills & Coffered Section */
+.pillGroup {
+  display: flex;
+  gap: var(--sp-3);
+  margin-top: 0.5rem;
+}
+
+.pill {
+  position: relative;
+  flex: 1;
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+
+    &:focus-visible + span {
+      outline: 2px solid var(--c-accent);
+      outline-offset: 2px;
+    }
+  }
+
+  span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.6rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 99px;
+    color: var(--c-muted-on-dark);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+  }
+
+  &:has(input:checked) span {
+    background: var(--c-accent);
+    color: var(--c-primary-dark);
+    border-color: var(--c-accent);
+    font-weight: 700;
+  }
+}
+
+.cofferSection {
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-4);
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.cofferLabel {
+  display: block;
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--c-muted-on-dark);
+  font-weight: 600;
+}
+
+/* --- Feedback Elements --- */
+.note {
+  margin-bottom: var(--sp-4);
+  padding: 0 1rem;
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-xs);
+  color: #93c5fd;
+  border: 1px solid rgba(var(--c-accent), 0.2);
+  text-align: right;
+
+  strong {
+    color: white;
+  }
+}
+
+.error {
+  font-size: var(--fs-sm);
+  color: rgba(#fca5a5, 0.8);
+  padding: 0.3rem;
+  border-radius: var(--radius-lg);
+  background: rgba(239, 68, 68, 0.05);
+  margin-top: var(--sp-4);
+  border: 1px solid rgba(239, 68, 68, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+
+  &::before {
+    content: "⚠️";
+  }
+}
+
+.warningFeedback {
+  text-align: left;
+  font-size: 0.85em;
+  opacity: 0.9;
+}

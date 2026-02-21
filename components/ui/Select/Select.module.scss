@@ -1,93 +1,48 @@
 // components/ui/Select/Select.module.scss
 @use "../../../styles/forms" as f;
-@use "../../../styles/tokens" as t;
 
 .wrapper {
   position: relative;
   width: 100%;
+  max-width: 18rem; /* Standard max width for selects */
 }
 
-.trigger {
+.select {
   @include f.input-base;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  padding-right: 2.5rem; /* Space for custom arrow */
   cursor: pointer;
-  user-select: none;
   width: 100%;
 
-  /* Defaults */
-  background-color: var(--c-surface);
-  border: 1px solid var(--c-border);
-  color: var(--c-text);
+  /* Hide default arrow */
+  appearance: none;
+  background-image: none;
 
-  &:hover {
-    border-color: var(--c-border-strong);
-  }
-
-  &.open {
-    border-color: var(--c-primary);
-    box-shadow: 0 0 0 4px var(--c-step-current-soft);
-  }
-
-  &.placeholder .label {
-    color: var(--c-muted);
+  &::-ms-expand {
+    display: none;
   }
 }
 
-/* --- Variants --- */
-.trigger.dark {
-  background-color: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: var(--c-text-on-dark);
-
-  &.placeholder .label {
-    color: rgba(255, 255, 255, 0.4);
-  }
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.5);
-    border-color: rgba(255, 255, 255, 0.5);
-  }
-
-  &.open {
-    border-color: var(--c-accent);
-    background-color: rgba(0, 0, 0, 0.6);
-    box-shadow:
-      0 0 0 1px var(--c-accent),
-      0 0 0 4px rgba(254, 201, 20, 0.15);
-  }
+/* Variants */
+.dark {
+  @include f.input-variant-dark;
 }
 
-
-/* --- Error State --- */
-.wrapper.hasError .trigger {
-  border-color: var(--c-error-text);
-  background-color: var(--c-error-soft);
+.light {
+  @include f.input-variant-light;
 }
 
-.wrapper.hasError .trigger.dark {
-  border-color: var(--c-error-text-on-dark);
-  background-color: rgba(239, 68, 68, 0.05);
-}
+/* Custom Arrow */
+.arrow {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  width: 0.75rem;
+  height: 0.75rem;
+  pointer-events: none;
+  background-color: currentColor; /* Fallback */
 
-/* --- Label --- */
-.label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-right: 0.5rem;
-}
-
-/* --- Arrow Icon --- */
-.arrowIcon {
-  width: 12px;
-  height: 12px;
-  opacity: 0.7;
-  transition: transform 0.2s ease;
-
-  /* Chevron Down SVG Mask */
-  background-color: currentColor;
+  /* SVG Mask for color control via background-color */
   -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   -webkit-mask-size: contain;
   -webkit-mask-repeat: no-repeat;
@@ -98,127 +53,5 @@
   mask-position: center;
 }
 
-.trigger.open .arrowIcon {
-  transform: rotate(180deg);
-}
-
-/* --- Dropdown Menu --- */
-.dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  width: 100%;
-  max-height: 250px;
-  overflow-y: auto;
-  border-radius: var(--radius);
-  /* Initial State (Closed) */
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-8px);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-
-  /* Shadow & Blur */
-  box-shadow: var(--shadow-xl);
-  backdrop-filter: blur(12px);
-  scrollbar-width: none;
-
-  &.active {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-    z-index: 50;
-    /* Restore z-index to float above siblings */
-  }
-}
-
-.dropdown.dark {
-  background-color: rgba(30, 41, 59, 0.95);
-  /* Slate 800 + opacity */
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: var(--c-text-on-dark);
-}
-
-.dropdown.light {
-  background-color: rgba(255, 255, 255, 0.95);
-  border: 1px solid var(--c-border);
-  color: var(--c-text);
-}
-
-/* --- Options List --- */
-.optionsList {
-  list-style: none;
-  padding: 0.25rem;
-  margin: 0;
-}
-
-.option {
-  padding: 0.6rem 0.75rem;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  transition: background-color 0.15s ease;
-  font-size: 0.95rem;
-
-  &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-
-  &.selected {
-    background-color: rgba(255, 255, 255, 0.15);
-    font-weight: 500;
-  }
-
-  &.disabledItem {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: transparent !important;
-  }
-}
-
-.dropdown.light .option:hover {
-  background-color: var(--c-surface-dark);
-}
-
-.dropdown.light .option.selected {
-  background-color: var(--c-step-current-soft);
-  color: var(--c-primary);
-}
-
-/* --- Check Icon --- */
-.checkIcon {
-  font-size: 0.9rem;
-  margin-left: 0.5rem;
-  color: var(--c-accent);
-}
-
-.dropdown.light .checkIcon {
-  color: var(--c-primary);
-}
-
-/* --- Error Message --- */
-.errorMessage {
-  display: block;
-  margin-top: 0.35rem; // var(--sp-1) roughly
-  font-size: 0.8rem;
-  color: var(--c-error-text);
-  margin-left: 0.25rem;
-  animation: slideDown 0.2s ease-out;
-}
-
-.wrapper:has(.trigger.dark) .errorMessage {
-  color: var(--c-error-text-on-dark);
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+.arrow.dark { background-color: rgba(255, 255, 255, 0.7); }
+.arrow.light { background-color: var(--c-muted-strong); }

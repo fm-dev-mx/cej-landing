@@ -4,29 +4,23 @@ import { useCejStore } from '@/store/useCejStore';
 import styles from './ExpertToggle.module.scss';
 
 export default function ExpertToggle() {
-    const isExpert = useCejStore(s => s.draft.showExpertOptions);
-    const setExpertMode = useCejStore(s => s.setExpertMode);
+    const viewMode = useCejStore(s => s.viewMode);
+    const toggle = useCejStore(s => s.toggleViewMode);
 
     return (
         <button
             className={styles.toggle}
-            onClick={() => setExpertMode(!isExpert)}
-            // A11y: Semantic toggle state
-            aria-pressed={isExpert}
-            type="button"
-            title="Activar selección de aditivos"
+            onClick={toggle}
+            aria-label={`Cambiar a modo ${viewMode === 'wizard' ? 'Experto' : 'Guiado'}`}
         >
-            <span className={`${styles.label} ${!isExpert ? styles.active : ''}`} aria-hidden="true">
-                Básico
+            <span className={`${styles.label} ${viewMode === 'wizard' ? styles.active : ''}`}>
+                Guía
             </span>
             <div className={styles.track}>
-                <div className={`${styles.thumb} ${isExpert ? styles.thumbRight : ''}`} />
+                <div className={`${styles.thumb} ${viewMode === 'expert' ? styles.thumbRight : ''}`} />
             </div>
-            <span className={`${styles.label} ${isExpert ? styles.active : ''}`} aria-hidden="true">
-                +Aditivos
-            </span>
-            <span className="sr-only">
-                {isExpert ? "Modo experto activado" : "Modo básico activado"}
+            <span className={`${styles.label} ${viewMode === 'expert' ? styles.active : ''}`}>
+                Pro
             </span>
         </button>
     );

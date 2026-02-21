@@ -56,16 +56,11 @@
 
   --c-text-on-dark: #ffffff;
   --c-muted-on-dark: #cbd5e1;
-  --c-border-on-dark: rgba(255, 255, 255, 0.2);
-  --c-border-on-dark-hover: rgba(255, 255, 255, 0.3);
-  --c-bg-on-dark-hover: rgba(255, 255, 255, 0.1);
 
   --c-bg: #0e243b;
-  --c-bg-focus: rgba(229, 181, 0, 0.1);
   --c-surface: #ffffff;
   --c-surface-dark: #b2bece;
   --c-surface-light: #f9fafb;
-  --c-glass-white: rgba(255, 255, 255, 0.5);
 
   --c-text: #111827;
   --c-muted: #6b7280;
@@ -85,7 +80,6 @@
 
   /* Semantic Feedback (Dark Mode / Glass) */
   --c-info-text-on-dark: #93c5fd; // Blue 300
-  --c-info-text-on-dark-light: #6687af; // Blue 500
   --c-info-bg-on-dark: rgba(14, 165, 233, 0.1); // Sky 500 alpha
   --c-info-border-on-dark: rgba(14, 165, 233, 0.2);
 
@@ -102,10 +96,6 @@
   --c-whatsapp-soft: #e8f9f0;
   --c-call: #043369;
   --c-call-soft: #e3edf7;
-
-  /* Primary Alpha Variants (for focus rings and soft backgrounds) */
-  --c-primary-ring: rgba(4, 51, 105, 0.15);
-  --c-primary-soft: rgba(4, 51, 105, 0.08);
 
   /* --- Shadows --- */
   --shadow-xs: 0 1px 1px rgba(15, 23, 42, 0.04);

@@ -19,11 +19,7 @@
 .input {
   @include f.input-base;
 
-  /* Critical: ensure the input fills its wrapper (prevents suffix from "escaping") */
-  width: 100%;
-  max-width: 100%;
-
-  @include respond-to("md") {
+  @include respond-to('md') {
     max-width: 100%;
   }
 }
@@ -78,87 +74,9 @@
 
 /* Special modifiers */
 .volumeInput {
+  width: 8rem;
   font-weight: 700;
   font-size: 1.125rem;
   text-align: center;
-
-  /* Keep padding explicit; suffix logic will override right padding when needed */
   padding-inline: 0.5rem;
-
-  /* Hide native number spinners for cleaner look */
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  /* Firefox */
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
-/* --- Input Wrapper & Suffix for Units --- */
-.inputWrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-
-  /* Critical in grid/flex: allow the wrapper to shrink without overflow */
-  width: 100%;
-  min-width: 0;
-}
-
-/* Critical: force the input to occupy the wrapper width */
-.inputWrapper>input {
-  flex: 1 1 auto;
-  width: 100%;
-  min-width: 0;
-}
-
-/* Suffix rendered inside the control bounds */
-.suffix {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-
-  color: var(--c-muted-on-dark);
-  opacity: 0.6;
-  font-size: var(--fs-sm);
-  font-weight: 500;
-
-  pointer-events: none;
-  user-select: none;
-  white-space: nowrap;
-
-  /* Ensure suffix paints above the input background */
-  z-index: 1;
-}
-
-/* Padding adjustment when suffix is present */
-.hasSuffix {
-  padding-right: 4rem;
-  /* Make room for suffix text */
-}
-
-/* Volume input suffix positioning (narrower padding + left-aligned content) */
-.volumeInput.hasSuffix {
-  padding-right: 2.75rem;
-  /* slightly safer than 2.5rem for some fonts */
-  text-align: left;
-  padding-left: 0.75rem;
-}
-
-/* Light variant suffix */
-.light .suffix {
-  color: var(--c-muted);
-}
-
-.hasError {
-
-  /* Keep it lightweight: error state should not depend on label presence */
-  :global(input) {
-    border-color: rgba(239, 68, 68, 0.8);
-    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.35);
-  }
 }

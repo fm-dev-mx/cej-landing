@@ -1,18 +1,11 @@
-// File: app/(marketing)/layout.tsx
-// Description: Marketing segment layout with SEO JSON-LD and sticky header.
-
-import type { ReactNode } from "react";
-
-import Header from "@/components/layouts/Header/Header";
-import Footer from "@/components/layouts/Footer/Footer";
-import SkipLink from "@/components/ui/SkipLink/SkipLink";
+import Header from "@/components/layouts/Header";
+import Footer from "@/components/layouts/Footer";
 import { generateLocalBusinessSchema } from "@/lib/seo";
-import styles from "@/components/layouts/Layout.module.scss";
 
 export default function MarketingLayout({
     children,
 }: {
-    children: ReactNode;
+    children: React.ReactNode;
 }) {
     const jsonLd = generateLocalBusinessSchema();
 
@@ -22,9 +15,10 @@ export default function MarketingLayout({
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
-            <SkipLink />
             <Header />
-            <main id="main-content" className={styles.mainContent}>{children}</main>
+            <main style={{ paddingTop: 'var(--header-h)' }}>
+                {children}
+            </main>
             <Footer />
         </>
     );

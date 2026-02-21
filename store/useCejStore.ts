@@ -3,112 +3,160 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import {
+    type CalculatorState,
+    type QuoteBreakdown,
     DEFAULT_CALCULATOR_STATE
-} from '@/types/domain';
+} from '@/components/Calculator/types';
+import { WORK_TYPES } from '@/config/business';
 
-// Import Slices
-import { type CalculatorSlice, createCalculatorSlice } from './slices/calculatorSlice';
-import { type CartSlice, createCartSlice } from './slices/cartSlice';
-import { type UISlice, createUISlice } from './slices/uiSlice';
-import { type UserSlice, createUserSlice } from './slices/userSlice';
-import { type SubmissionSlice, createSubmissionSlice } from './slices/submissionSlice';
-import { type OrderSlice, createOrderSlice } from './slices/ordersSlice';
+export type QuoteItem = {
+    id: string;
+    timestamp: number;
+    inputs: CalculatorState;
+    results: QuoteBreakdown;
+    config: { mode: 'expert' | 'wizard'; label: string };
+};
 
-export type CejStore = CalculatorSlice & CartSlice & UISlice & UserSlice & SubmissionSlice & OrderSlice;
+interface UserState {
+    visitorId: string;
+    name?: string;
+    phone?: string;
+    hasConsentedPersistence: boolean;
+}
 
-type PersistedState = Pick<CejStore, 'cart' | 'history' | 'user' | 'draft' | 'savedDrafts' | 'submittedQuote' | 'breakdownViewed' | 'orders'>;
+interface CejState {
+    // --- UI Configuration ---
+    viewMode: 'wizard' | 'expert';
+    isDrawerOpen: boolean;
+    activeTab: 'order' | 'history';
 
-export const useCejStore = create<CejStore>()(
+    // --- Staging Area (Current Calculation) ---
+    currentDraft: CalculatorState;
+
+    // --- Persistence Data ---
+    cart: QuoteItem[];
+    history: QuoteItem[];
+
+    // --- Identity (Lazy Auth) ---
+    user: UserState;
+
+    // --- Actions ---
+    toggleViewMode: () => void;
+    setDrawerOpen: (isOpen: boolean) => void;
+    setActiveTab: (tab: 'order' | 'history') => void;
+
+    // Draft Actions
+    updateDraft: (updates: Partial<CalculatorState>) => void;
+    resetDraft: () => void;
+    // Feature: Clone/Repeat Order
+    loadHistoryItemAsDraft: (item: QuoteItem) => void;
+
+    // Cart Actions
+    addToCart: (quote: QuoteBreakdown) => void;
+    removeFromCart: (id: string) => void;
+    clearCart: () => void;
+
+    // User Actions
+    updateUserContact: (contact: { name: string; phone: string; save: boolean }) => void;
+}
+
+export const useCejStore = create<CejState>()(
     persist(
-        (set, get, api) => ({
-            ...createCalculatorSlice(set, get, api),
-            ...createCartSlice(set, get, api),
-            ...createUISlice(set, get, api),
-            ...createUserSlice(set, get, api),
-            ...createSubmissionSlice(set, get, api),
-            ...createOrderSlice(set, get, api),
+        (set, get) => ({
+            // Initial State
+            viewMode: 'wizard',
+            isDrawerOpen: false,
+            activeTab: 'order',
+            currentDraft: { ...DEFAULT_CALCULATOR_STATE },
+            cart: [],
+            history: [],
+            user: {
+                visitorId: uuidv4(), // Generate generic ID on init
+                hasConsentedPersistence: true, // Default to true for UX, user can opt-out
+            },
+
+            // Actions
+            toggleViewMode: () => set((state) => ({
+                viewMode: state.viewMode === 'wizard' ? 'expert' : 'wizard'
+            })),
+
+            setDrawerOpen: (isOpen) => set({ isDrawerOpen: isOpen }),
+            setActiveTab: (tab) => set({ activeTab: tab }),
+
+            updateDraft: (updates) => set((state) => ({
+                currentDraft: { ...state.currentDraft, ...updates }
+            })),
+
+            resetDraft: () => set({
+                currentDraft: { ...DEFAULT_CALCULATOR_STATE }
+            }),
+
+            loadHistoryItemAsDraft: (item) => {
+                set({
+                    currentDraft: { ...item.inputs, step: 3 }, // Jump to inputs step to verify volumes
+                    isDrawerOpen: false, // Close drawer to show calculator
+                    viewMode: item.config.mode // Switch to the mode used in that quote
+                });
+            },
+
+            addToCart: (results) => {
+                const state = get();
+
+                // Smart Naming: Resolve label from config or fallback
+                let workTypeLabel = 'Concreto';
+                if (state.currentDraft.workType) {
+                    const match = WORK_TYPES.find(w => w.id === state.currentDraft.workType);
+                    if (match) workTypeLabel = match.label;
+                }
+
+                const label = `${workTypeLabel} f'c ${state.currentDraft.strength}`;
+
+                const newItem: QuoteItem = {
+                    id: uuidv4(),
+                    timestamp: Date.now(),
+                    inputs: { ...state.currentDraft },
+                    results,
+                    config: {
+                        mode: state.viewMode,
+                        label
+                    }
+                };
+
+                set((state) => ({
+                    cart: [...state.cart, newItem],
+                    history: [newItem, ...state.history].slice(0, 50), // Keep last 50
+                    currentDraft: { ...DEFAULT_CALCULATOR_STATE },
+                    isDrawerOpen: true,
+                    activeTab: 'order'
+                }));
+            },
+
+            removeFromCart: (id) => set((state) => ({
+                cart: state.cart.filter((item) => item.id !== id)
+            })),
+
+            clearCart: () => set({ cart: [] }),
+
+            updateUserContact: ({ name, phone, save }) => set((state) => ({
+                user: {
+                    ...state.user,
+                    name: save ? name : undefined,
+                    phone: save ? phone : undefined,
+                    hasConsentedPersistence: save
+                }
+            })),
         }),
         {
             name: 'cej-pro-storage',
             storage: createJSONStorage(() => localStorage),
-            version: 5, // Bumped for OMS structural changes
-            migrate: (persistedState: unknown, version) => {
-                if (!persistedState || typeof persistedState !== 'object') {
-                    return {
-                        cart: [],
-                        history: [],
-                        orders: [],
-                        user: {
-                            visitorId: uuidv4(),
-                            hasConsentedPersistence: true,
-                        },
-                        draft: { ...DEFAULT_CALCULATOR_STATE },
-                        savedDrafts: {},
-                        submittedQuote: null,
-                        breakdownViewed: false,
-                    } as PersistedState;
-                }
-
-                const state = persistedState as Partial<PersistedState>;
-
-                if (!state.cart) state.cart = [];
-                if (!state.history) state.history = [];
-                if (!state.orders) state.orders = [];
-                if (!state.user) {
-                    state.user = {
-                        visitorId: uuidv4(),
-                        hasConsentedPersistence: true,
-                    };
-                }
-                if (!state.draft) {
-                    state.draft = { ...DEFAULT_CALCULATOR_STATE };
-                }
-
-                if (version === 0 || version === 1) {
-                    // Migration v0/v1 -> v2: Add additives array
-                    if (state.draft && !state.draft.additives) {
-                        state.draft.additives = [];
-                        state.draft.showExpertOptions = false;
-                    }
-                }
-
-                if (version < 4) {
-                    // Migration v2/v3 -> v4: Add progressive disclosure state
-                    if (state.breakdownViewed === undefined) {
-                        state.breakdownViewed = false;
-                    }
-                    // Ensure submittedQuote has results if it exists (or clear it)
-                    if (state.submittedQuote && !state.submittedQuote.results) {
-                        state.submittedQuote = null;
-                    }
-                }
-
-                // Migration v4 -> v5: Structural OMS updates (orders array added)
-                if (version < 5) {
-                    if (!state.orders) state.orders = [];
-                }
-
-                return state as PersistedState;
-            },
-            partialize: (state): PersistedState => ({
+            // Persist everything critical.
+            // We intentionally persist 'cart' and 'user' to survive browser closes.
+            partialize: (state) => ({
                 cart: state.cart,
                 history: state.history,
                 user: state.user,
-                draft: state.draft,
-                savedDrafts: state.savedDrafts,
-                breakdownViewed: state.breakdownViewed,
-                submittedQuote: state.submittedQuote,
-                orders: state.orders,
+                viewMode: state.viewMode
             }),
         }
     )
 );
-
-// Expose store to window for E2E testing (Non-production, E2E mode, or localhost)
-if (typeof window !== 'undefined' && (
-    process.env.NODE_ENV !== 'production' ||
-    process.env.NEXT_PUBLIC_E2E === 'true' ||
-    window.location.hostname === 'localhost'
-)) {
-    (window as unknown as { useCejStore: unknown }).useCejStore = useCejStore;
-}

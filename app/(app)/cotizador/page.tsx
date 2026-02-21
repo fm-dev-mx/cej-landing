@@ -1,36 +1,59 @@
-// app/(app)/cotizador/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import ToolShell from '@/components/layouts/ToolShell/ToolShell';
-import { CalculatorForm } from '@/components/Calculator/CalculatorForm';
+import { useCejStore } from '@/store/useCejStore';
 import ExpertToggle from '@/components/ui/ExpertToggle/ExpertToggle';
+import WizardAdapter from '@/components/Calculator/modes/WizardAdapter';
+import ExpertForm from '@/components/Calculator/modes/ExpertForm';
+import FeedbackToast from '@/components/ui/FeedbackToast/FeedbackToast';
+import QuoteDrawer from '@/components/QuoteDrawer/QuoteDrawer';
+import SmartBottomBar from '@/components/SmartBottomBar/SmartBottomBar';
 
 export default function CotizadorPage() {
     const [isHydrated, setIsHydrated] = useState(false);
+    const viewMode = useCejStore(s => s.viewMode);
+    const cart = useCejStore(s => s.cart);
 
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsHydrated(true);
     }, []);
 
     if (!isHydrated) return null;
 
     return (
-        // Inject toggle into the 'actions' slot of the Shell
         <ToolShell actions={<ExpertToggle />}>
             <div style={{ paddingBottom: '80px' }}>
-                <div className="container" style={{ maxWidth: '640px', margin: '0 auto' }}>
-                    <div style={{
-                        background: 'white',
-                        padding: '1.5rem',
-                        borderRadius: '1rem',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                    }}>
-                        <CalculatorForm />
-                    </div>
+                <div style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--c-muted-strong)' }}>
+                    <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                        Modo: <strong>{viewMode === 'wizard' ? 'Guiado' : 'Experto'}</strong>
+                    </p>
+                    {/* Debug visual ya no es necesario con SmartBar, pero lo mantenemos sutil */}
+                    {cart.length > 0 && (
+                        <span style={{
+                            fontSize: '0.75rem',
+                            background: 'var(--c-accent)',
+                            color: 'var(--c-primary-dark)',
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            fontWeight: 'bold',
+                            opacity: 0.6
+                        }}>
+                            {cart.length} en pedido
+                        </span>
+                    )}
                 </div>
+
+                {viewMode === 'wizard' ? (
+                    <WizardAdapter />
+                ) : (
+                    <ExpertForm />
+                )}
             </div>
+
+            <FeedbackToast />
+            <SmartBottomBar />
+            <QuoteDrawer />
         </ToolShell>
     );
 }

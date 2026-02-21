@@ -1,9 +1,9 @@
 // components/Calculator/Calculator.test.tsx
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Calculator from './Calculator';
 import { useCejStore } from '@/store/useCejStore';
-import { DEFAULT_CALCULATOR_STATE } from '@/types/domain';
+import { DEFAULT_CALCULATOR_STATE } from './types';
 
 // 1. Mock Environment & Utils
 vi.mock('@/config/env', () => ({
@@ -37,29 +37,17 @@ mockIntersectionObserver.mockReturnValue({
 });
 window.IntersectionObserver = mockIntersectionObserver;
 
-// Mock ResizeObserver
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
-
 // Helper to reset store
 const resetStore = () => {
   useCejStore.setState({
+    viewMode: 'wizard',
     isDrawerOpen: false,
     activeTab: 'order',
-    draft: { ...DEFAULT_CALCULATOR_STATE },
+    currentDraft: { ...DEFAULT_CALCULATOR_STATE },
     cart: [],
-    // history: [],
-    user: {
-      visitorId: 'test-id',
-      hasConsentedPersistence: true
-    },
-    // Phase 1: Reset progressive disclosure state
-    breakdownViewed: false,
-    submittedQuote: null
-  } as unknown as Partial<ReturnType<typeof useCejStore.getState>>);
+    history: [],
+    user: { visitorId: 'test-id', hasConsentedPersistence: false }
+  });
 };
 
 describe('Calculator UI Integration', () => {
@@ -70,124 +58,116 @@ describe('Calculator UI Integration', () => {
     vi.clearAllMocks();
   });
 
-  it('renders the form and calculates total (Known M3)', async () => {
+  it('renders the wizard and allows navigation through the flow (Known M3)', async () => {
     render(<Calculator />);
 
-    // 1. Select Mode
-    const radioKnown = screen.getByRole('radio', { name: /Sé la cantidad/i });
+    // 1. Step 1: Mode Selection
+    expect(screen.getByText(/(Cotiza|Calcula) tu/i)).toBeInTheDocument();
+
+    const radioKnown = screen.getByRole('radio', { name: /^S[íi]/i });
     fireEvent.click(radioKnown);
 
-    // 2. Input Volume
-    const volInput = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
+    // 2. Step 3: Inputs
+    const volInput = screen.getByLabelText(/Volumen \(m³\)/i);
     expect(volInput).toBeInTheDocument();
 
     fireEvent.change(volInput, { target: { value: '5' } });
     expect(volInput).toHaveValue(5);
 
-    // Select Strength & Service to make it valid and show "Todo listo"
-    // Select Strength & Service
+    const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
+    expect(nextBtn).not.toBeDisabled();
+    fireEvent.click(nextBtn);
+
+    // 3. Step 4: Specs
+    expect(screen.getByText(/Especificaciones del Concreto/i)).toBeInTheDocument();
+
     const strengthSelect = screen.getByLabelText(/Resistencia/i);
-    fireEvent.click(strengthSelect);
-    fireEvent.click(screen.getByRole('option', { name: /250 kg\/cm²/i }));
+    fireEvent.change(strengthSelect, { target: { value: '250' } });
 
-    const serviceSelect = screen.getByLabelText(/Servicio/i);
-    fireEvent.click(serviceSelect);
-    fireEvent.click(screen.getByRole('option', { name: /Tiro directo/i }));
+    // Simulate Calculation (Async simulation)
+    const summaryBtn = screen.getByRole('button', { name: /Ver Cotización Final/i });
+    fireEvent.click(summaryBtn);
 
-    // 3. Check Result (Instant calculation)
-    // We expect the summary to appear with "Ver Total" CTA and "Continúa..." hint (if valid)
-    expect(screen.getByText(/Continúa para ver el detalle de costos/i)).toBeInTheDocument();
+    // 4. Step 5: Summary
+    await waitFor(() => {
+      expect(screen.getByText(/Cotización Lista/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
 
-    // Note: Volume text "5.00 m³" might not be explicitly visible in the new Ticket summary
-    // relying on price/total verification via 'Total' presence is sufficient for integration here.
+    expect(screen.getByText('5.00 m³')).toBeInTheDocument();
+    expect(screen.getByText(/f’c 250/i)).toBeInTheDocument();
 
-    // 4. Phase 1: First CTA is "Ver Total"
-    const viewBreakdownBtn = screen.getByRole('button', { name: /Ver Total/i });
-    expect(viewBreakdownBtn).toBeEnabled();
-    fireEvent.click(viewBreakdownBtn);
+    const waBtn = screen.getByRole('button', { name: /Agendar por WhatsApp/i });
+    expect(waBtn).toBeEnabled();
   });
 
   it('completes the flow using Assist Mode (Dimensions)', () => {
     render(<Calculator />);
 
-    fireEvent.click(screen.getByRole('radio', { name: /Ayúdame a calcular/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /No, ay.dame a/i }));
 
-    // Select Work Type (Combobox)
-    const select = screen.getByRole('combobox', { name: /¿Para qué usarás el concreto?/i });
-    fireEvent.click(select);
-    fireEvent.click(screen.getByRole('option', { name: /Losa/i }));
+    const slabRadio = screen.getByRole('radio', { name: /Losa/i });
+    fireEvent.click(slabRadio);
 
-    // Select Solid Slab
-    fireEvent.click(screen.getByRole('radio', { name: /Sólida/i }));
+    const solidRadio = screen.getByRole('radio', { name: /Sólida/i });
+    fireEvent.click(solidRadio);
 
-    // Inputs
-    const lengthInput = screen.getByLabelText('Largo');
-    const widthInput = screen.getByLabelText('Ancho');
-    const thickInput = screen.getByLabelText('Espesor Total de Losa');
+    const lengthInput = screen.getByLabelText(/Largo \(m\)/i);
+    const widthInput = screen.getByLabelText(/Ancho \(m\)/i);
+    const thickInput = screen.getByLabelText(/Grosor/i);
 
     fireEvent.change(lengthInput, { target: { value: '10' } });
     fireEvent.change(widthInput, { target: { value: '5' } });
     fireEvent.change(thickInput, { target: { value: '10' } });
 
-    // Select Strength & Service
-    // Note: Strength is implicit or selected? "Selecciona el tipo ajusta automáticamente la resistencia"
-    // Usually Assist logic sets strength defaults?
-    // But Service is required.
-    // Assist mode renders Service selector? Yes.
-    // AssistM3 progress: workType -> dimensions -> specs -> service.
+    const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
+    expect(nextBtn).toBeEnabled();
+    fireEvent.click(nextBtn);
 
-    // We need to verify if Service is visible yet?
-    // With progress guide, is the service selector hidden until active?
-    // No, the selectors are in `AssistantForm` or `CalculatorForm`.
-    // The current implementation of `AssistantForm` renders based on logic.
-    // Let's assume we need to select Service.
-
-    // Check if Service selector is available.
-    // Check if Service selector is available.
-    const serviceSelect = screen.getByLabelText(/Servicio/i);
-    fireEvent.click(serviceSelect);
-    fireEvent.click(screen.getByRole('option', { name: /Tiro directo/i }));
-
-    const strengthSelect = screen.getByLabelText(/Resistencia/i);
-    fireEvent.click(strengthSelect);
-    fireEvent.click(screen.getByRole('option', { name: /250 kg\/cm²/i }));
-
-    // Check for "Continúa..." hint
-    expect(screen.getByText(/Continúa para ver el detalle de costos/i)).toBeInTheDocument();
-
-    // 10*5*0.10 = 5m3 * factor. Should be valid.
-    // Phase 1: Button text is now "Ver Total"
-    const viewBreakdownBtn = screen.getByRole('button', { name: /Ver Total/i });
-    expect(viewBreakdownBtn).toBeEnabled();
+    expect(screen.getByText(/Especificaciones del Concreto/i)).toBeInTheDocument();
   });
 
-  it('shows validation errors in UI (after blur)', () => {
+  it('completes the flow using Assist Mode (Area)', () => {
     render(<Calculator />);
 
-    fireEvent.click(screen.getByRole('radio', { name: /Sé la cantidad/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /No, ay.dame a/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /Losa/i }));
 
-    const volInput = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
+    fireEvent.click(screen.getByLabelText(/Por .rea/i));
+    fireEvent.click(screen.getByRole('radio', { name: /Sólida/i }));
+
+    const areaInput = screen.getByLabelText(/Área total/i);
+    const thickInput = screen.getByLabelText(/Grosor/i);
+
+    fireEvent.change(areaInput, { target: { value: '50' } });
+    fireEvent.change(thickInput, { target: { value: '10' } });
+
+    const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
+    expect(nextBtn).toBeEnabled();
+
+    fireEvent.click(nextBtn);
+    expect(screen.getByText(/Especificaciones del Concreto/i)).toBeInTheDocument();
+  });
+
+  it('shows validation errors in UI', () => {
+    render(<Calculator />);
+
+    fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
+
+    const volInput = screen.getByLabelText(/Volumen \(m³\)/i);
     fireEvent.change(volInput, { target: { value: '0' } });
 
-    // Hybrid validation: error only shows after blur (touched state)
-    fireEvent.blur(volInput);
+    const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
+    expect(nextBtn).toBeDisabled();
 
-    // Check for error message
-    const alerts = screen.getAllByRole('alert');
-    expect(alerts.length).toBeGreaterThan(0);
-    expect(alerts[0]).toBeInTheDocument();
-
-    // Ensure the quote button is NOT present when invalid (still shows, but disabled)
-    // With Phase 1, button shows but is disabled. Check for empty state hint instead.
-    const emptyHint = screen.queryByText(/Completa los pasos para ver el total/i);
-    expect(emptyHint).toBeInTheDocument();
+    // UPDATED: The new context logic maps !isValid to this generic message
+    expect(screen.getByText(/Revisa los datos/i)).toBeInTheDocument();
   });
 
   it('persists state to localStorage and rehydrates on reload', () => {
     const { unmount } = render(<Calculator />);
 
-    fireEvent.click(screen.getByRole('radio', { name: /Sé la cantidad/i }));
-    const volInput = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
+    fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
+    const volInput = screen.getByLabelText(/Volumen \(m³\)/i);
     fireEvent.change(volInput, { target: { value: '7.5' } });
 
     unmount();
@@ -195,8 +175,47 @@ describe('Calculator UI Integration', () => {
     // Re-render: Zustand + LocalStorage should persist this
     render(<Calculator />);
 
-    const volInputRestored = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
+    const volInputRestored = screen.getByLabelText(/Volumen \(m³\)/i);
     expect(volInputRestored).toBeInTheDocument();
     expect(volInputRestored).toHaveValue(7.5);
+  });
+
+  it('resets the calculator to initial state when requested', async () => {
+    render(<Calculator />);
+
+    fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
+    fireEvent.change(screen.getByLabelText(/Volumen \(m³\)/i), { target: { value: '5' } });
+    fireEvent.click(screen.getByRole('button', { name: /Siguiente/i }));
+
+    fireEvent.click(screen.getByRole('button', { name: /Ver Cotización Final/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Cotización Lista/i)).toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    const resetBtn = screen.getByRole('button', { name: /Nueva cotización/i });
+    fireEvent.click(resetBtn);
+
+    expect(screen.getByText(/(Cotiza|Calcula) tu/i)).toBeInTheDocument();
+
+    const radioKnown = screen.getByRole('radio', { name: /^S[íi]/i }) as HTMLInputElement;
+    expect(radioKnown.checked).toBe(false);
+  });
+
+  it('navigates correctly when re-clicking an active mode', () => {
+    render(<Calculator />);
+
+    const radioKnownInitial = screen.getByRole('radio', { name: /^S[íi]/i });
+    fireEvent.click(radioKnownInitial);
+    expect(screen.getByText(/Volumen \(m³\)/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Atrás/i }));
+    expect(screen.getByText(/(Cotiza|Calcula) tu/i)).toBeInTheDocument();
+
+    const radioKnownRestored = screen.getByRole('radio', { name: /^S[íi]/i });
+    expect(radioKnownRestored).toBeChecked();
+
+    fireEvent.click(radioKnownRestored);
+    expect(screen.getByText(/Volumen \(m³\)/i)).toBeInTheDocument();
   });
 });

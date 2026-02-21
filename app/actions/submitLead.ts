@@ -1,224 +1,90 @@
-// File: app/actions/submitLead.ts
-// Description: Server action to persist a lead into Supabase and send data to Meta CAPI.
-// Optimized for strict error boundaries and strong typing.
+// app/actions/submitLead.ts
+'use server';
 
-"use server";
+import { createClient } from '@supabase/supabase-js';
+import { LeadSchema, type LeadData } from '@/lib/schemas';
 
-import { createClient } from "@supabase/supabase-js";
-import { headers, cookies } from "next/headers";
-import { after } from "next/server";
-import { createHash } from "node:crypto";
+// Initialize Supabase client for Server Environment
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-import {
-    OrderSubmissionSchema,
-    // Note: We prefer the strict domain type for the payload structure
-    // to ensure TS safety beyond the Zod schema.
-} from "@/lib/schemas";
-import type { OrderPayload } from "@/types/domain"; // Import strict type
-import { env } from "@/config/env";
-import { reportError, reportWarning } from "@/lib/monitoring";
-import type { Database, QuoteSnapshot } from "@/types/database";
-import { sendToMetaCAPI } from "@/lib/tracking/capi";
-
-// Initialize Supabase only if keys are present
 const supabase =
-    env.NEXT_PUBLIC_SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY
-        ? createClient<Database>(
-            env.NEXT_PUBLIC_SUPABASE_URL,
-            env.SUPABASE_SERVICE_ROLE_KEY,
-            {
-                auth: { persistSession: false },
-            }
-        )
+    supabaseUrl && supabaseServiceRoleKey
+        ? createClient(supabaseUrl, supabaseServiceRoleKey)
         : null;
 
-export type SubmitLeadResult =
-    | {
-        status: "success";
-        id: string;
-        warning?: "db_not_configured" | "db_insert_failed" | "server_exception";
-    }
-    | {
-        status: "error";
-        message: string;
-        errors?: Record<string, string[]>;
-    };
-
-/**
- * hashData
- * Helper to normalize and SHA-256 hash PII for Meta CAPI compliance.
- */
-function hashData(data: string | undefined): string | undefined {
-    if (!data) return undefined;
-    const normalized = data.trim().toLowerCase();
-    if (!normalized) return undefined;
-    return createHash("sha256").update(normalized).digest("hex");
-}
-
-/**
- * Definition of the input payload using strictly typed OrderPayload for the quote.
- * Exported to allow type-safe testing.
- */
-export type SubmitLeadPayload = {
-    name: string;
-    phone: string;
-    quote: OrderPayload; // Enforce strict type here
-    visitor_id?: string;
-    utm_source?: string;
-    utm_medium?: string;
-    fb_event_id?: string;
-    privacy_accepted: boolean;
+export type SubmitLeadResult = {
+    success: boolean;
+    id?: string;
+    error?: string;
+    fieldErrors?: Record<string, string[] | undefined>;
 };
 
-export async function submitLead(
-    payload: SubmitLeadPayload
-): Promise<SubmitLeadResult> {
-    try {
-        // 1. Validate payload with Zod for runtime safety
-        const parseResult = OrderSubmissionSchema.safeParse(payload);
+export async function submitLead(payload: LeadData): Promise<SubmitLeadResult> {
+    // 1. Server-side Validation
+    const parseResult = LeadSchema.safeParse(payload);
 
-        if (!parseResult.success) {
-            const validationErrors = parseResult.error.flatten();
-            return {
-                status: "error",
-                message: "Datos de pedido inválidos o incompletos.",
-                errors: validationErrors.fieldErrors,
-            };
-        }
-
-        // Destructure safely from the parsed data
-        const {
-            name,
-            phone,
-            quote,
-            visitor_id,
-            utm_source,
-            utm_medium,
-            fb_event_id,
-            privacy_accepted,
-        } = parseResult.data;
-
-        // No more manual casting! Zod verification guarantees OrderPayload compatibility.
-        const typedQuote = quote;
-
-        const headerStore = await headers();
-        const cookieStore = await cookies();
-
-        const clientIp = headerStore.get("x-forwarded-for")?.split(",")[0].trim() || "0.0.0.0";
-        const userAgent = headerStore.get("user-agent") || "";
-        const refererUrl = headerStore.get("referer") || env.NEXT_PUBLIC_SITE_URL;
-
-        const fbp = cookieStore.get("_fbp")?.value;
-        const fbc = cookieStore.get("_fbc")?.value;
-
-        // 2. Fail-open behavior if DB is not configured
-        if (!supabase) {
-            reportWarning("SUPABASE_NOT_CONFIGURED: Lead not saved to DB.", { phone });
-            return {
-                status: "success",
-                id: "mock-no-db",
-                warning: "db_not_configured",
-            };
-        }
-
-        const now = new Date().toISOString();
-
-        // Snapshot for JSONB storage in leads.quote_data
-        // Now includes breakdownLines for exact display fidelity on shared quote page
-        const quoteSnapshot: QuoteSnapshot = {
-            folio: typedQuote.folio,
-            items: typedQuote.items,
-            financials: typedQuote.financials,
-            breakdownLines: typedQuote.breakdownLines,
-            metadata: typedQuote.metadata,
-            customer: {
-                name,
-                phone,
-                visitorId: visitor_id,
-            },
+    if (!parseResult.success) {
+        return {
+            success: false,
+            error: 'Datos inválidos',
+            fieldErrors: parseResult.error.flatten().fieldErrors,
         };
+    }
 
-        // 3. Insert into leads table
-        const { data, error } = await supabase
-            .from("leads")
-            .insert({
-                name,
-                phone,
-                quote_data: quoteSnapshot,
-                visitor_id: visitor_id || null,
-                fb_event_id: fb_event_id || null,
-                utm_source: utm_source || "direct",
-                utm_medium: utm_medium || "none",
-                status: "new",
-                privacy_accepted,
-                privacy_accepted_at: privacy_accepted ? now : null,
-            })
-            .select("id")
+    if (!supabase) {
+        console.error('SERVER ERROR: Supabase credentials missing.');
+        return {
+            success: false,
+            error: 'Error de configuración del servidor',
+        };
+    }
+
+    const data = parseResult.data;
+
+    // Prepare JSONB data structure
+    const quoteData = {
+        ...data.quote,
+        meta: {
+            calculated_at: new Date().toISOString(),
+            version: 'v2.2-server-action',
+            session_id: data.session_id || null,
+        },
+    };
+
+    try {
+        const { data: dbData, error } = await supabase
+            .from('leads')
+            .insert([
+                {
+                    name: data.name,
+                    phone: data.phone,
+                    quote_data: quoteData,
+                    visitor_id: data.visitor_id || null,
+                    utm_source: data.utm_source || 'direct',
+                    utm_medium: data.utm_medium || 'none',
+                    utm_campaign: data.utm_campaign || null,
+                    utm_term: data.utm_term || null,
+                    utm_content: data.utm_content || null,
+                    fbclid: data.fbclid || null,
+                    privacy_accepted: data.privacy_accepted,
+                    privacy_accepted_at: new Date().toISOString(),
+                    status: 'new',
+                    fb_event_id: data.fb_event_id || null,
+                },
+            ])
+            .select('id')
             .single();
 
         if (error) {
-            reportError(new Error(`Supabase Insert Failed: ${error.message}`), {
-                code: error.code,
-                details: error.details,
-                payloadPhone: phone,
-            });
-
-            // Fail-open: Return success to UI so the user sees the "Order Received" page
-            return {
-                status: "success",
-                id: "fallback-db-error",
-                warning: "db_insert_failed",
-            };
+            console.error('Supabase Insert Error:', error);
+            return { success: false, error: 'No se pudo guardar la información.' };
         }
 
-        // 4. Fire Meta CAPI event asynchronously
-        // Using 'after' allows the response to return immediately while CAPI sends in background
-        if (fb_event_id) {
-            after(async () => {
-                const hashedPhone = hashData(phone);
-                const hashedEmail = hashData(typedQuote.customer?.email);
+        return { success: true, id: String(dbData?.id) };
 
-                await sendToMetaCAPI({
-                    event_name: "Lead",
-                    event_time: Math.floor(Date.now() / 1000),
-                    event_id: fb_event_id,
-                    event_source_url: refererUrl,
-                    action_source: "website",
-                    user_data: {
-                        client_ip_address: clientIp,
-                        client_user_agent: userAgent,
-                        ph: hashedPhone,
-                        em: hashedEmail,
-                        fbp,
-                        fbc,
-                    },
-                    custom_data: {
-                        currency: typedQuote.financials.currency,
-                        value: typedQuote.financials.total,
-                        content_name: "Concrete Quote",
-                        status: "new",
-                        contents: typedQuote.items.map((item) => ({
-                            id: item.id,
-                            quantity: item.volume,
-                            item_price: item.subtotal,
-                        })),
-                    },
-                });
-            });
-        }
-
-        return { status: "success", id: String(data.id) };
-
-    } catch (err: unknown) {
-        // Global Catch-All: Ensures the server never crashes the client request
-        reportError(err instanceof Error ? err : new Error("Unknown error"), {
-            context: "submitLead unhandled exception"
-        });
-
-        return {
-            status: "success",
-            id: "fallback-exception",
-            warning: "server_exception",
-        };
+    } catch (err) {
+        console.error('Unexpected Action Error:', err);
+        return { success: false, error: 'Ocurrió un error inesperado.' };
     }
 }

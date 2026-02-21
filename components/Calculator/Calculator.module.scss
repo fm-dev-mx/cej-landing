@@ -14,24 +14,14 @@ $glass-border: rgba(255, 255, 255, 0.1);
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  padding-block: var(--sp-4);
-  /* Reduced from sp-8 for mobile compactness */
+  padding-block: var(--sp-8);
   padding-inline: var(--sp-4);
   background-color: var(--c-primary-dark);
   background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
 
-  /* Mobile viewport height fix */
-  @media (max-width: 768px) {
-    /* Let content dictate height on mobile to prevent large gaps */
-    padding-top: calc(var(--header-h-stuck) + var(--sp-4));
-    padding-bottom: calc(var(--bottom-bar-h) + var(--sp-4));
-  }
-
   @include respond-to('md') {
     min-height: 85svh;
     display: grid;
-    /* FIX: Force grid track to fill container so it doesn't shrink-wrap content */
-    grid-template-columns: minmax(0, 1fr);
     place-items: center;
     padding-top: var(--sp-8);
     justify-content: center;
@@ -42,8 +32,6 @@ $glass-border: rgba(255, 255, 255, 0.1);
   position: relative;
   margin: 0 auto;
   max-width: 640px;
-  width: 100%;
-  /* Ensure full width up to max-width to prevent shrink-wrap in grid center */
   height: auto;
   display: flex;
   flex-direction: column;
@@ -74,7 +62,25 @@ $glass-border: rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
 }
 
-/* Stepper styles removed */
+.progressContainer {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  height: 4px;
+}
+
+.progressSegment {
+  flex: 1;
+  height: 100%;
+  border-radius: 2px;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.4s ease, box-shadow 0.4s ease;
+
+  &.active {
+    background-color: var(--c-accent);
+    box-shadow: 0 0 8px rgba(254, 201, 20, 0.4);
+  }
+}
 
 .headerText {
   text-align: center;
@@ -107,11 +113,4 @@ $glass-border: rgba(255, 255, 255, 0.1);
   flex: 1;
   position: relative;
   overflow: hidden;
-}
-
-/* Suspense Fallback */
-.suspenseFallback {
-  padding: 2rem;
-  text-align: center;
-  color: var(--c-muted-on-dark);
 }
