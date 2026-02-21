@@ -59,7 +59,7 @@ export type VolumeTier = {
 
 export type BasePriceTable = Record<
     ConcreteType,
-    Record<Strength, VolumeTier[]>
+    Partial<Record<Strength, VolumeTier[]>>
 >;
 
 export type PriceTable = {

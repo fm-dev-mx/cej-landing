@@ -130,6 +130,11 @@ function resolveUnitPricePerM3Cents(
 ): number {
     const tiers = table.base[type][strength];
 
+    if (!tiers || tiers.length === 0) {
+        console.warn(`[Pricing System]: Configuración no encontrada para ${type}/${strength}`);
+        return 0;
+    }
+
     for (const t of tiers) {
         const withinMin = billedM3 >= t.minM3;
         const withinMax =

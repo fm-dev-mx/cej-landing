@@ -12,6 +12,8 @@ import {
     afterEach,
 } from 'vitest';
 import { LeadFormModal, type LeadQuoteDetails } from './LeadFormModal';
+import { useCejStore } from '@/store/useCejStore';
+import { submitLead } from '@/app/actions/submitLead';
 
 // Mock portal so the modal renders into the normal test DOM tree
 vi.mock('react-dom', async () => {
@@ -21,6 +23,11 @@ vi.mock('react-dom', async () => {
         createPortal: (node: React.ReactNode) => node,
     };
 });
+
+// Mock submitLead Server Action
+vi.mock('@/app/actions/submitLead', () => ({
+    submitLead: vi.fn(),
+}));
 
 // Mock useIdentity hook
 vi.mock('@/hooks/useIdentity', () => ({
@@ -44,6 +51,7 @@ describe('LeadFormModal', () => {
     let originalFetch: typeof global.fetch | undefined;
 
     beforeAll(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const cryptoAny = globalThis.crypto as any;
 
         if (cryptoAny && typeof cryptoAny.randomUUID === 'function') {
@@ -63,6 +71,7 @@ describe('LeadFormModal', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        useCejStore.setState({ user: { visitorId: 'test', hasConsentedPersistence: false } });
         originalFetch = global.fetch;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         global.fetch = vi.fn() as any;
@@ -102,14 +111,14 @@ describe('LeadFormModal', () => {
         expect(screen.getByLabelText(/Teléfono/i)).toBeInTheDocument();
         expect(screen.getByText(/Aviso de Privacidad/i)).toBeInTheDocument();
         expect(
-            screen.getByRole('button', { name: /Continuar a WhatsApp/i }),
+            screen.getByRole('button', { name: /Continuar a WhatsApp|Enviar Pedido/i }),
         ).toBeInTheDocument();
     });
 
     it('submits data to API and triggers onSuccess with event id', async () => {
-        (global.fetch as any).mockResolvedValue({
-            ok: true,
-            json: async () => ({ success: true }),
+        vi.mocked(submitLead).mockResolvedValue({
+            success: true,
+            id: 'test-db-id'
         });
 
         render(
@@ -130,30 +139,22 @@ describe('LeadFormModal', () => {
         });
 
         // Accept Privacy Policy
-        const privacyCheckbox = screen.getByRole('checkbox');
+        const privacyCheckbox = screen.getByLabelText(/Aviso de Privacidad/i);
         fireEvent.click(privacyCheckbox);
 
         // Submit
         fireEvent.click(
-            screen.getByRole('button', { name: /Continuar a WhatsApp/i }),
+            screen.getByRole('button', { name: /Continuar a WhatsApp|Enviar Pedido/i }),
         );
 
         await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalled();
+            expect(submitLead).toHaveBeenCalled();
             expect(mockOnSuccess).toHaveBeenCalledWith('Juan Pérez', 'test-event-id');
         });
 
-        const mock = global.fetch as any;
-        const [url, options] = mock.mock.calls[0] as [string, RequestInit];
+        const payloadArg = vi.mocked(submitLead).mock.calls[0][0];
 
-        expect(url).toBe('/api/leads');
-        expect(options.method).toBe('POST');
-        expect(options.headers).toMatchObject({
-            'Content-Type': 'application/json',
-        });
-
-        const parsedBody = JSON.parse(options.body as string);
-        expect(parsedBody).toMatchObject({
+        expect(payloadArg).toMatchObject({
             name: 'Juan Pérez',
             phone: '6561234567',
             quote: mockQuoteDetails,
@@ -165,10 +166,9 @@ describe('LeadFormModal', () => {
     });
 
     it('handles API errors gracefully and still calls onSuccess', async () => {
-        (global.fetch as any).mockResolvedValue({
-            ok: false,
-            status: 500,
-            json: async () => ({ error: 'Internal Server Error' }),
+        vi.mocked(submitLead).mockResolvedValue({
+            success: false,
+            error: 'Internal Server Error'
         });
 
         const consoleSpy = vi
@@ -192,11 +192,11 @@ describe('LeadFormModal', () => {
         });
 
         // Accept Privacy Policy
-        const privacyCheckbox = screen.getByRole('checkbox');
+        const privacyCheckbox = screen.getByLabelText(/Aviso de Privacidad/i);
         fireEvent.click(privacyCheckbox);
 
         fireEvent.click(
-            screen.getByRole('button', { name: /Continuar a WhatsApp/i }),
+            screen.getByRole('button', { name: /Continuar a WhatsApp|Enviar Pedido/i }),
         );
 
         await waitFor(() => {
@@ -211,10 +211,10 @@ describe('LeadFormModal', () => {
     });
 
     it('shows validation error if privacy is not accepted', async () => {
-        // Mock successful fetch to isolate client-side validation
-        (global.fetch as any).mockResolvedValue({
-            ok: true,
-            json: async () => ({ success: true }),
+        // Mock successful action to isolate client-side validation
+        vi.mocked(submitLead).mockResolvedValue({
+            success: true,
+            id: 'test'
         });
 
         render(
@@ -235,12 +235,12 @@ describe('LeadFormModal', () => {
 
         // Privacy checkbox is NOT clicked here
         fireEvent.click(
-            screen.getByRole('button', { name: /Continuar a WhatsApp/i }),
+            screen.getByRole('button', { name: /Continuar a WhatsApp|Enviar Pedido/i }),
         );
 
-        // Expect fetch NOT to be called, and error message to be visible
+        // Expect action NOT to be called, and error message to be visible
         await waitFor(() => {
-            expect(global.fetch).not.toHaveBeenCalled();
+            expect(submitLead).not.toHaveBeenCalled();
             expect(screen.getByText(/Debes aceptar el aviso de privacidad para continuar./i)).toBeInTheDocument();
         });
     });

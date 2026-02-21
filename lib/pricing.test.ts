@@ -54,10 +54,10 @@ describe('Pricing Logic', () => {
         it('should use rounded volume if above minimum', () => {
             const type = 'direct';
 
-            const result = normalizeVolume(2.1, type);
+            const result = normalizeVolume(3.1, type);
 
-            expect(result.roundedM3).toBe(2.5);
-            expect(result.billedM3).toBe(2.5);
+            expect(result.roundedM3).toBe(3.5);
+            expect(result.billedM3).toBe(3.5);
             expect(result.isBelowMinimum).toBe(false);
         });
     });
@@ -166,7 +166,7 @@ describe('Pricing Logic', () => {
             const quote = calcQuote(1, '200', 'direct');
 
             expect(quote.volume.requestedM3).toBe(1);
-            expect(quote.volume.billedM3).toBe(2);
+            expect(quote.volume.billedM3).toBe(3);
             expect(quote.subtotal).toBe(quote.volume.billedM3 * quote.unitPricePerM3);
         });
     });

@@ -15,7 +15,7 @@ import { env } from '@/config/env';
 export const VAT_RATE = 0.08; // 8% VAT (border rate)
 export const M3_STEP = 0.5; // Volume increment (m³)
 export const CURRENCY = 'MXN';
-export const STORAGE_KEY = 'cej_calculator_v1';
+export const STORAGE_KEY = 'cej_calculator_v2';
 
 // Quote specific constants
 export const QUOTE_VALIDITY_DAYS = 7;
@@ -50,7 +50,7 @@ export const ESTIMATE_LEGEND =
 // --- Volume rules ---
 
 export const MIN_M3_BY_TYPE: Record<ConcreteType, number> = {
-    direct: 2,
+    direct: 3,
     pumped: 3,
 };
 
@@ -143,18 +143,17 @@ const tier = (
 export const PRICE_TABLE: PriceTable = {
     base: {
         direct: {
-            '100': [tier(2, 2231, 2.5), tier(3, 2082)],
-            '150': [tier(2, 2509, 2.5), tier(3, 2269)],
-            '200': [tier(2, 2731, 2.5), tier(3, 2481)],
-            '250': [tier(2, 3018, 2.5), tier(3, 2769)],
-            '300': [tier(2, 3091, 2.5), tier(3, 3035)],
+            '100': [tier(3, 2082.4)],
+            '150': [tier(3, 2268.5)],
+            '200': [tier(3, 2481.5)],
+            '250': [tier(3, 2768.5)],
+            '300': [tier(3, 3037.0)],
         },
         pumped: {
-            '100': [tier(3, 2527, 4.5), tier(5, 2481)],
-            '150': [tier(3, 2758, 4.5), tier(5, 2666)],
-            '200': [tier(3, 3008, 4.5), tier(5, 2958)],
-            '250': [tier(3, 3259, 4.5), tier(5, 3167)],
-            '300': [tier(3, 3478, 4.5), tier(5, 3385)],
+            '150': [tier(3, 2991.6, 3.5), tier(4, 2759.2, 4.5), tier(5, 2666.6)],
+            '200': [tier(3, 3240.7, 3.5), tier(4, 3008.3, 4.5), tier(5, 2958.3)],
+            '250': [tier(3, 3491.6, 3.5), tier(4, 3259.2, 4.5), tier(5, 3166.6)],
+            '300': [tier(3, 3704.6, 3.5), tier(4, 3472.2, 4.5), tier(5, 3379.6)],
         },
     },
 };
