@@ -282,7 +282,7 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
         }
     }, [core.quote.total]);
 
-    const canProceedToSummary = !core.volumeError && core.billedM3 > 0;
+    const canProceedToSummary = !core.volumeError && core.billedM3 > 0 && core.quote.total > 0;
     const unitPriceLabel = fmtMXN(core.quote.unitPricePerM3);
 
     const modeLabel =

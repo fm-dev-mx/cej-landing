@@ -14,9 +14,15 @@ export function SpecsForm() {
 
     const handleStrengthChange = useCallback(
         (e: ChangeEvent<HTMLSelectElement>) => {
-            setStrength(e.target.value as Strength);
+            const nextStrength = e.target.value as Strength;
+            setStrength(nextStrength);
+
+            // AUTO-ADJUST: If 100 is selected and current type is pumped, switch to direct
+            if (nextStrength === '100' && type === 'pumped') {
+                setType('direct');
+            }
         },
-        [setStrength]
+        [setStrength, type, setType]
     );
 
     return (
@@ -40,17 +46,22 @@ export function SpecsForm() {
             <div className={styles.field}>
                 <label>Tipo de servicio</label>
                 <div className={styles.selectionGrid}>
-                    {CONCRETE_TYPES.map((t) => (
-                        <SelectionCard
-                            key={t.value}
-                            id={`type-${t.value}`}
-                            name="service-type"
-                            value={t.value}
-                            label={t.label}
-                            isSelected={type === t.value}
-                            onChange={() => setType(t.value)}
-                        />
-                    ))}
+                    {CONCRETE_TYPES.map((t) => {
+                        const isDisabled = t.value === 'pumped' && strength === '100';
+                        return (
+                            <SelectionCard
+                                key={t.value}
+                                id={`type-${t.value}`}
+                                name="service-type"
+                                value={t.value}
+                                label={t.label}
+                                isSelected={type === t.value}
+                                onChange={() => setType(t.value)}
+                                disabled={isDisabled}
+                                className={isDisabled ? styles.disabled : ''}
+                            />
+                        );
+                    })}
                 </div>
             </div>
         </>

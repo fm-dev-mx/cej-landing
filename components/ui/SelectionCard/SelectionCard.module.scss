@@ -58,7 +58,9 @@
     /* Slightly more yellow tint */
     border: 2px solid var(--c-accent);
     /* Thickness increased to 2px */
-    box-shadow: 0 0 0 1px var(--c-accent), 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow:
+      0 0 0 1px var(--c-accent),
+      0 4px 12px rgba(0, 0, 0, 0.3);
     /* Reinforcement shadow */
 
     transform: none;
@@ -87,6 +89,20 @@
       filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
     }
   }
+
+  /* --- Disabled State --- */
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.5 !important;
+    filter: grayscale(1);
+    pointer-events: none; // Prevent clicks
+
+    &:hover {
+      transform: none;
+      background-color: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+  }
 }
 
 /* Custom Radio UI */
@@ -110,7 +126,7 @@
   white-space: nowrap;
   border: 0;
 
-  &:focus-visible+.radioIndicator {
+  &:focus-visible + .radioIndicator {
     outline: 2px solid var(--c-accent);
     outline-offset: 2px;
   }

@@ -46,7 +46,7 @@ const resetStore = () => {
     currentDraft: { ...DEFAULT_CALCULATOR_STATE },
     cart: [],
     history: [],
-    user: { visitorId: 'test-id' }
+    user: { visitorId: 'test-id', hasConsentedPersistence: false }
   });
 };
 

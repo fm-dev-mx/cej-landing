@@ -15,7 +15,7 @@ function VolumeWarningMessage({ warning }: { warning: QuoteWarning }) {
     case 'BELOW_MINIMUM':
       return (
         <>
-          Mínimo para <strong>{warning.typeLabel}</strong> es{' '}
+          El pedido mínimo es de{' '}
           <strong>{warning.minM3.toFixed(1)} m³</strong>. Se cotiza sobre el mínimo.
         </>
       );
@@ -80,7 +80,7 @@ export function Step3Inputs() {
         )}
 
         {!volumeError && billedM3 > 0 && (
-          <div className={styles.note}>
+          <div className={`${styles.note}`}>
             {volumeWarning && (
               <div className={styles.warningFeedback}>
                 <VolumeWarningMessage warning={volumeWarning} />
@@ -102,6 +102,6 @@ export function Step3Inputs() {
           </Button>
         </div>
       </div>
-    </div>
+    </div >
   );
 }
