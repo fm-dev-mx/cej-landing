@@ -14,8 +14,8 @@ export const sanitizeNumericInput = (val: string | number | undefined | null): n
  * Recursively cleans an object removing null/undefined/empty string values
  * or converting them based on rules.
  */
-export const cleanQuoteContext = (context: Record<string, any>) => {
-    const clean: Record<string, any> = {};
+export const cleanQuoteContext = (context: Record<string, unknown>) => {
+    const clean: Record<string, unknown> = {};
 
     for (const [key, value] of Object.entries(context)) {
         // Skip internal UI keys if necessary
@@ -23,7 +23,11 @@ export const cleanQuoteContext = (context: Record<string, any>) => {
 
         // Sanitize dimensions specific keys (assuming metric units)
         if (['width', 'length', 'thickness', 'area', 'm3', 'cofferedSize'].includes(key)) {
-            const cleanedValue = sanitizeNumericInput(value);
+            // Narrow from unknown to the accepted type before sanitizing
+            const rawValue = (typeof value === 'string' || typeof value === 'number' || value == null)
+                ? value
+                : undefined;
+            const cleanedValue = sanitizeNumericInput(rawValue);
             // We save the cleaned value, which will be null if it was invalid or empty
             if (cleanedValue !== null) {
                 clean[key] = cleanedValue;

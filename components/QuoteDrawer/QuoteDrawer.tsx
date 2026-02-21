@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useCejStore } from '@/store/useCejStore';
+import { useCejStore, type QuoteItem } from '@/store/useCejStore';
 import { fmtMXN } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
 import CheckoutModal from '@/components/Checkout/CheckoutModal';
@@ -27,7 +27,7 @@ export default function QuoteDrawer() {
         setIsCheckoutOpen(true);
     };
 
-    const handleClone = (item: any) => {
+    const handleClone = (item: QuoteItem) => {
         if (confirm('¿Quieres cargar esta cotización en el calculador? Se perderán los datos actuales no guardados.')) {
             loadHistoryItemAsDraft(item);
         }

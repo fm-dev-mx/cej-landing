@@ -1,5 +1,7 @@
 // lib/utils.ts
 
+import type { QuoteItem } from '@/store/useCejStore';
+
 export const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max);
 
 export function fmtMXN(value: number) {
@@ -65,7 +67,7 @@ export function getPhoneUrl(phone: string | undefined): string | undefined {
 }
 
 // NEW: Helper to format cart for WhatsApp
-export function generateCartMessage(cart: any[], name: string, folio: string): string {
+export function generateCartMessage(cart: QuoteItem[], name: string, folio: string): string {
     let message = `👋 Hola soy *${name}*, me interesa confirmar este pedido (Folio: ${folio}):\n\n`;
 
     cart.forEach((item, index) => {
