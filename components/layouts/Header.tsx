@@ -7,6 +7,7 @@ import { env } from "@/config/env";
 import { useHeaderLogic } from "./Header/useHeaderLogic";
 import DesktopNav from "./Header/DesktopNav";
 import MobileMenu from "./Header/MobileMenu";
+import { WhatsAppIcon } from "@/components/ui/Icon/WhatsAppIcon";
 import styles from "./Header.module.scss";
 
 export default function Header() {
@@ -48,6 +49,7 @@ export default function Header() {
                 rel="noreferrer"
                 className={`${styles.button} ${styles.buttonWhatsApp}`}
               >
+                <WhatsAppIcon size={20} className={styles.buttonIcon} />
                 WhatsApp
               </a>
             )}

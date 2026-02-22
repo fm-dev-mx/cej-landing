@@ -4,6 +4,7 @@
 import { useMemo, useCallback } from "react";
 import { getWhatsAppUrl, getPhoneUrl } from "@/lib/utils";
 import { trackContact } from "@/lib/pixel";
+import { WhatsAppIcon } from "@/components/ui/Icon/WhatsAppIcon";
 import styles from "./CTAButtons.module.scss";
 
 type Props = {
@@ -57,7 +58,7 @@ export default function CTAButtons({
           rel="noopener noreferrer"
           aria-label="Contactar por WhatsApp"
         >
-          <span aria-hidden="true">💬</span> WhatsApp
+          <WhatsAppIcon size={20} /> WhatsApp
         </a>
       )}
       {links.tel && (

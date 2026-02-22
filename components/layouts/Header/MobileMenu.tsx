@@ -1,5 +1,6 @@
 // components/layouts/header/MobileMenu.tsx
 import { type NavItem, type PhoneMeta } from "./header.types";
+import { WhatsAppIcon } from "@/components/ui/Icon/WhatsAppIcon";
 import styles from "../Header.module.scss";
 
 type MobileMenuProps = {
@@ -57,6 +58,7 @@ export default function MobileMenu({
                             rel="noopener noreferrer"
                             className={`${styles.button} ${styles.buttonWhatsApp}`}
                         >
+                            <WhatsAppIcon size={20} className={styles.buttonIcon} />
                             WhatsApp
                         </a>
                     )}

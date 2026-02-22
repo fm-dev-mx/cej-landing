@@ -3,6 +3,7 @@
 import { env } from "@/config/env";
 import { LANDING_CONTENT } from "@/config/content";
 import { getWhatsAppUrl } from "@/lib/utils";
+import { WhatsAppIcon } from "@/components/ui/Icon/WhatsAppIcon";
 import styles from "./HeroSection.module.scss";
 
 type HeroSectionProps = {
@@ -86,7 +87,7 @@ export default function HeroSection({
                 rel="noopener noreferrer"
                 className={styles.hero__btnSecondary}
               >
-                <span className={styles.hero__iconWa}>💬</span>
+                <WhatsAppIcon className={styles.hero__iconWa} />
                 {content.cta.secondary}
               </a>
             )}

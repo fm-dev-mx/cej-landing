@@ -4,6 +4,7 @@
 import { useState, useMemo } from "react";
 import { env } from "@/config/env";
 import { getPhoneUrl, getWhatsAppUrl } from "@/lib/utils";
+import { WhatsAppIcon } from "@/components/ui/Icon/WhatsAppIcon";
 import styles from "./ServiceArea.module.scss";
 
 export default function ServiceArea() {
@@ -69,9 +70,9 @@ export default function ServiceArea() {
                         href={links.whatsapp}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={styles.textLink}
+                        className={styles.whatsappLink}
                       >
-                        Enviar WhatsApp
+                        <WhatsAppIcon size={16} /> Enviar WhatsApp
                       </a>
                     )}
                     <a href={`mailto:${email}`} className={styles.textLink}>

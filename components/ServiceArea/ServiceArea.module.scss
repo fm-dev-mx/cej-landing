@@ -20,7 +20,7 @@
   /* Use minmax to prevent content squishing */
   grid-template-columns: 1fr;
 
-  @include respond-to('lg') {
+  @include respond-to("lg") {
     grid-template-columns: 1fr 1.2fr;
     /* Favor map slightly */
     align-items: start;
@@ -36,7 +36,7 @@
   order: 2;
   /* Content below map on mobile usually looks better or vice-versa depending on priority. Here standard order. */
 
-  @include respond-to('lg') {
+  @include respond-to("lg") {
     order: 1;
   }
 }
@@ -153,11 +153,11 @@
   transition: box-shadow 0.3s ease;
   order: 1;
 
-  @include respond-to('sm') {
+  @include respond-to("sm") {
     aspect-ratio: 16/9;
   }
 
-  @include respond-to('lg') {
+  @include respond-to("lg") {
     order: 2;
     aspect-ratio: 4/3; // Taller on desktop
     height: 100%;
@@ -188,9 +188,11 @@
   display: grid;
   place-items: center;
   cursor: pointer;
-  background: linear-gradient(135deg,
-      rgba(2, 26, 54, 0.8),
-      rgba(4, 51, 105, 0.85));
+  background: linear-gradient(
+    135deg,
+    rgba(2, 26, 54, 0.8),
+    rgba(4, 51, 105, 0.85)
+  );
   transition: opacity 0.3s ease;
   backdrop-filter: blur(3px);
 
@@ -264,6 +266,16 @@
   &:hover {
     color: var(--c-accent-hover);
     text-decoration: underline;
+  }
+}
+
+.whatsappLink {
+  @extend .textLink;
+  color: var(--c-whatsapp);
+  align-items: center;
+
+  &:hover {
+    color: color-mix(in oklab, var(--c-whatsapp) 90%, black 10%);
   }
 }
 

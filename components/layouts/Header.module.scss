@@ -66,7 +66,7 @@
 .nav {
   display: none;
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     display: block;
   }
 }
@@ -79,7 +79,7 @@
   margin: 0;
   padding: 0;
 
-  @include respond-to('lg') {
+  @include respond-to("lg") {
     gap: var(--sp-8);
   }
 }
@@ -107,7 +107,7 @@
     font-weight: 700;
 
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       bottom: 0;
       left: 50%;
@@ -127,7 +127,7 @@
   align-items: center;
   gap: var(--sp-1);
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     display: flex;
   }
 }
@@ -141,13 +141,13 @@
 }
 
 .buttonWhatsApp {
-  background-color: var(--c-accent);
-  color: var(--c-primary-dark);
-  border-color: var(--c-accent);
+  background-color: var(--c-whatsapp);
+  color: white;
+  border-color: var(--c-whatsapp);
   font-weight: 700;
 
   &:hover {
-    background-color: var(--c-accent-hover);
+    background: color-mix(in oklab, var(--c-whatsapp) 90%, black 10%);
   }
 }
 
@@ -183,7 +183,7 @@
   cursor: pointer;
   z-index: 20;
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     display: none;
   }
 }
@@ -201,7 +201,9 @@
   width: 100%;
   background-color: var(--c-text-on-dark);
   border-radius: 4px;
-  transition: transform 0.25s ease, opacity 0.2s ease;
+  transition:
+    transform 0.25s ease,
+    opacity 0.2s ease;
 }
 
 .menuIconOpen .menuIconBar:nth-child(1) {
@@ -240,7 +242,7 @@
     visibility: visible;
   }
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     display: none;
   }
 }

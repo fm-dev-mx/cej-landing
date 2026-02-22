@@ -1,5 +1,6 @@
 // components/ui/Button/Button.tsx
 import { ButtonHTMLAttributes, AnchorHTMLAttributes, forwardRef } from 'react';
+import { WhatsAppIcon } from '@/components/ui/Icon/WhatsAppIcon';
 import styles from './Button.module.scss';
 
 type ButtonVariant = 'primary' | 'secondary' | 'whatsapp' | 'tertiary';
@@ -28,7 +29,6 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
 
     const isDisabled = disabled || isLoading;
 
-    // Dynamic content: Spinner + Text or just Children
     const content = isLoading ? (
       <>
         <span className={styles.spinner} aria-hidden="true" />
@@ -38,7 +38,10 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
         )}
       </>
     ) : (
-      children
+      <>
+        {variant === 'whatsapp' && <WhatsAppIcon size={20} className={styles.icon} />}
+        {children}
+      </>
     );
 
     // Render as Anchor if href is provided and not disabled
