@@ -1,5 +1,5 @@
 // components/layouts/header/useHeaderLogic.ts
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
 import { useLockBodyScroll } from "@/hooks/useLockBodyScroll";
 import { env } from "@/config/env";
@@ -34,16 +34,12 @@ export function useHeaderLogic() {
     }, []);
 
     // 4. Data Helpers
-    const waHref = useMemo(() => {
-        return (
-            getWhatsAppUrl(
-                env.NEXT_PUBLIC_WHATSAPP_NUMBER,
-                "Hola, me interesa una cotización de concreto."
-            ) ?? null
-        );
-    }, []);
+    const waHref = getWhatsAppUrl(
+        env.NEXT_PUBLIC_WHATSAPP_NUMBER,
+        "Hola, me interesa una cotización de concreto."
+    ) ?? null;
 
-    const phoneMeta: PhoneMeta | null = useMemo(() => {
+    const phoneMeta: PhoneMeta | null = (() => {
         const raw = env.NEXT_PUBLIC_PHONE;
         const href = getPhoneUrl(raw);
         const trimmed = raw?.trim();
@@ -57,20 +53,20 @@ export function useHeaderLogic() {
             : trimmed;
 
         return { href, display };
-    }, []);
+    })();
 
     // 5. Handlers
-    const toggleMenu = useCallback(() => setIsMenuOpen((prev) => !prev), []);
-    const closeMenu = useCallback(() => setIsMenuOpen(false), []);
+    const toggleMenu = () => setIsMenuOpen((prev) => !prev);
+    const closeMenu = () => setIsMenuOpen(false);
 
     // Tracking Handlers
-    const handleWaClick = useCallback(() => {
+    const handleWaClick = () => {
         trackContact('WhatsApp');
-    }, []);
+    };
 
-    const handlePhoneClick = useCallback(() => {
+    const handlePhoneClick = () => {
         trackContact('Phone');
-    }, []);
+    };
 
     return {
         state: {
