@@ -71,7 +71,7 @@ export default function ServiceArea() {
                         rel="noopener noreferrer"
                         className={styles.textLink}
                       >
-                        {whatsapp} <span className={styles.linkLabel}>(WhatsApp)</span>
+                        Enviar WhatsApp
                       </a>
                     )}
                     <a href={`mailto:${email}`} className={styles.textLink}>
