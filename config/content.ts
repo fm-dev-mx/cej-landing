@@ -1,10 +1,11 @@
 // config/content.ts
+import type { IconName } from '@/components/ui/Icon';
 
 export interface ServiceItem {
     id: string;
     title: string;
     desc: string;
-    icon: string;
+    icon: IconName;
     ariaLabel: string;
 }
 
@@ -12,14 +13,14 @@ export interface TrustItem {
     id: string;
     title: string;
     desc: string;
-    icon: string;
+    icon: IconName;
 }
 
 export interface ProcessStep {
     id: string;
     title: string;
     desc: string;
-    icon: string;
+    icon: IconName;
 }
 
 export interface FaqItem {
@@ -101,19 +102,19 @@ export const LANDING_CONTENT = {
                 id: "time",
                 title: "Tiempo es Dinero",
                 desc: "Entendemos que una cuadrilla parada cuesta. Nuestra logística en Juárez garantiza que el camión llegue cuando se programó.",
-                icon: "⏱️"
+                icon: "clock"
             },
             {
                 id: "quality",
                 title: "Calidad Normativa",
                 desc: "Mezclas diseñadas bajo norma. Si pides f’c 200 para una losa, recibes exactamente esa resistencia garantizada.",
-                icon: "🛡️"
+                icon: "shield-check"
             },
             {
                 id: "local",
                 title: "Expertos Locales",
                 desc: "Conocemos los agregados de la región y las condiciones climáticas de Juárez para ajustar la mezcla ideal.",
-                icon: "📍"
+                icon: "map-pin"
             }
         ] as TrustItem[]
     },
@@ -177,31 +178,31 @@ export const LANDING_CONTENT = {
     },
     process: {
         title: "Tu colado en 4 pasos",
-        subtitle: "Simplificamos la logística para que tú solo te preocupes por construir.",
+        subtitle: "Logística simple para que solo te preocupes por construir.",
         steps: [
             {
-                id: "calc",
-                title: "1. Cotiza y Calcula",
-                desc: "Usa nuestra calculadora online para estimar el volumen y precio al instante, o mándanos tus medidas.",
-                icon: "Tp" // Tp maps to calculator/phone conceptually
+                id: "quote",
+                title: "1. Cotiza",
+                desc: "Calcula tu volumen en línea o compártenos tus medidas para una cotización formal.",
+                icon: "calculator"
             },
             {
-                id: "book",
-                title: "2. Programa tu Pedido",
-                desc: "Aparta fecha y hora con un anticipo mínimo ($1,000 MXN). Asegura tu lugar en la agenda.",
-                icon: "Cal"
+                id: "schedule",
+                title: "2. Agenda tu Pedido",
+                desc: "Define fecha y horario según disponibilidad.",
+                icon: "calendar-check"
             },
             {
-                id: "verify",
-                title: "3. Visita Técnica",
-                desc: "Un experto va a tu obra (sin costo) para verificar accesos y rectificar medidas para evitar errores.",
-                icon: "Eng"
+                id: "visit",
+                title: "3. Visita Técnica (opcional)",
+                desc: "Disponible si deseas validar accesos o condiciones especiales en obra.",
+                icon: "hard-hat"
             },
             {
-                id: "pay",
+                id: "delivery",
                 title: "4. Recibe y Construye",
-                desc: "La olla llega puntual. Liquidación contra entrega y soporte durante el vaciado.",
-                icon: "Truck"
+                desc: "Entrega en el horario acordado y acompañamiento durante todo el proceso.",
+                icon: "truck"
             }
         ] as ProcessStep[]
     },
@@ -215,21 +216,21 @@ export const LANDING_CONTENT = {
                 id: "concreto",
                 title: "Venta de Concreto Premezclado",
                 desc: "Suministro de concreto convencional y estructural (f’c 150, 200, 250, 300 kg/cm²). Ideal para losas, firmes, banquetas, cimentaciones y muros. Garantizamos la resistencia y trabajabilidad que tu obra exige.",
-                icon: "🏗️",
+                icon: "building",
                 ariaLabel: "Camión revolvedora de concreto",
             },
             {
                 id: "bomba",
                 title: "Servicio de Bombeo (Pluma y Estacionaria)",
                 desc: "Renta de bombas de concreto para alcanzar cualquier distancia o altura. Contamos con bombas pluma (telescópicas) para losas altas y bombas estacionarias (tubería) para interiores o patios traseros de difícil acceso.",
-                icon: "🚛",
+                icon: "waves-arrow-up",
                 ariaLabel: "Bomba de concreto",
             },
             {
                 id: "asesoria",
                 title: "Asesoría Técnica y Volumetría",
                 desc: "No arriesgues tu dinero. Nuestros técnicos realizan visitas a obra para calcular los metros cúbicos exactos y recomendarte la resistencia (f'c) adecuada según el uso final de tu construcción.",
-                icon: "👷",
+                icon: "clipboard-check",
                 ariaLabel: "Ingeniero civil asesorando",
             },
         ] as ServiceItem[]

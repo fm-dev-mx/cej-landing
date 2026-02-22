@@ -4,9 +4,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { env } from "@/config/env";
-import { useHeaderLogic } from "./header/useHeaderLogic";
-import DesktopNav from "./header/DesktopNav";
-import MobileMenu from "./header/MobileMenu";
+import { useHeaderLogic } from "./Header/useHeaderLogic";
+import DesktopNav from "./Header/DesktopNav";
+import MobileMenu from "./Header/MobileMenu";
 import styles from "./Header.module.scss";
 
 export default function Header() {

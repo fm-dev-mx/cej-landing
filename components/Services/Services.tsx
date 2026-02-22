@@ -1,5 +1,6 @@
 // components/Services/Services.tsx
 import { LANDING_CONTENT } from "@/config/content";
+import { Icon } from "@/components/ui/Icon";
 import { Card } from "@/components/ui/Card/Card";
 import styles from "./Services.module.scss";
 
@@ -22,13 +23,12 @@ export default function Services() {
             <Card.Root key={s.id} variant="glass" className={styles.cardHover}>
               <Card.Body>
                 <div className={styles.iconWrapper}>
-                  <span
+                  <Icon
+                    name={s.icon}
+                    size={32}
                     className={styles.icon}
-                    role="img"
                     aria-label={s.ariaLabel}
-                  >
-                    {s.icon}
-                  </span>
+                  />
                 </div>
                 <h3 className={styles.cardTitle}>{s.title}</h3>
                 <p className={styles.cardDesc}>{s.desc}</p>

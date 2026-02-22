@@ -1,5 +1,6 @@
 // components/TrustSection/TrustSection.tsx
 import { LANDING_CONTENT } from "@/config/content";
+import { Icon } from "@/components/ui/Icon";
 import { Card } from "@/components/ui/Card/Card";
 import styles from "./TrustSection.module.scss";
 
@@ -17,8 +18,8 @@ export default function TrustSection() {
           {items.map((item) => (
             <Card.Root key={item.id} variant="glass">
               <Card.Header>
-                <div className={styles.iconBox} aria-hidden="true">
-                  {item.icon}
+                <div className={styles.iconBox}>
+                  <Icon name={item.icon} size={28} />
                 </div>
                 <h3 className={styles.title}>{item.title}</h3>
               </Card.Header>

@@ -1,5 +1,6 @@
 // components/ProcessSection/ProcessSection.tsx
 import { LANDING_CONTENT } from "@/config/content";
+import { Icon } from "@/components/ui/Icon";
 import { Card } from "@/components/ui/Card/Card";
 import styles from "./ProcessSection.module.scss";
 
@@ -25,9 +26,7 @@ export default function ProcessSection() {
               <Card.Root variant="surface" className={styles.stepCard}>
                 <Card.Body className={styles.cardBody}>
                   <div className={styles.iconWrapper}>
-                    <span className={styles.icon} aria-hidden="true">
-                      {step.icon}
-                    </span>
+                    <Icon name={step.icon} size={28} className={styles.icon} />
                     <span className={styles.stepNumber}>{index + 1}</span>
                   </div>
 
