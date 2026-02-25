@@ -26,8 +26,8 @@ export default function Header() {
               <Image
                 src="/logo.svg"
                 alt={env.NEXT_PUBLIC_BRAND_NAME}
-                width={160}
-                height={40}
+                width={44}
+                height={44}
                 className={styles.logo}
                 priority
               />

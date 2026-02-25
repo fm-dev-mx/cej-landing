@@ -99,7 +99,7 @@
   transition: color 0.2s ease;
 
   &:hover {
-    color: var(--c-accent);
+    color: var(--c-accent-base);
   }
 
   &Active {
@@ -114,9 +114,9 @@
       transform: translateX(-50%);
       width: 4px;
       height: 4px;
-      background-color: var(--c-accent);
+      background-color: var(--c-accent-base);
       border-radius: 50%;
-      box-shadow: 0 0 6px var(--c-accent);
+      box-shadow: 0 0 6px var(--c-accent-base);
     }
   }
 }
@@ -279,8 +279,8 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 
   &Active {
-    color: var(--c-accent);
-    border-left: 3px solid var(--c-accent);
+    color: var(--c-accent-base);
+    border-left: 3px solid var(--c-accent-base);
     padding-left: var(--sp-3);
   }
 }

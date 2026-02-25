@@ -17,7 +17,7 @@
   gap: var(--sp-8);
 
   /* Responsive switch: Column on mobile, Row on desktop */
-  @include respond-to('md') {
+  @include respond-to("md") {
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-start;
@@ -84,8 +84,8 @@
   font-weight: 500;
 
   &:hover {
-    color: var(--c-accent);
-    border-color: var(--c-accent);
+    color: var(--c-accent-base);
+    border-color: var(--c-accent-base);
     opacity: 1;
   }
 }
@@ -96,7 +96,7 @@
   flex-direction: column;
   gap: var(--sp-4);
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     align-items: flex-end;
     text-align: right;
   }
@@ -110,7 +110,7 @@
   flex-direction: column;
   gap: var(--sp-3);
 
-  @include respond-to('sm') {
+  @include respond-to("sm") {
     flex-direction: row;
     gap: var(--sp-6);
   }
@@ -123,6 +123,6 @@
   padding-block: 0.25rem; // Increase touch target
 
   &:hover {
-    color: var(--c-accent);
+    color: var(--c-accent-base);
   }
 }
