@@ -44,7 +44,7 @@
   border-bottom: 1px dashed var(--c-border-strong);
   margin-bottom: var(--sp-2);
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     gap: var(--sp-12);
   }
 }
@@ -63,7 +63,7 @@
   line-height: 1;
   letter-spacing: -0.02em;
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     font-size: 3rem;
   }
 }
@@ -174,7 +174,7 @@
 .quoteIcon {
   font-size: 2rem;
   line-height: 1;
-  color: var(--c-accent); // Brand color for the quote mark
+  color: var(--c-accent-base); // Brand color for the quote mark
   opacity: 0.5;
   margin-bottom: var(--sp-2);
 }
