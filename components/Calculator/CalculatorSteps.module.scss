@@ -140,18 +140,18 @@
   }
 
   &:has(input:checked) {
-    background-color: var(--c-accent-glow);
-    border-color: var(--c-accent);
-    box-shadow: inset 0 0 0 1px var(--c-accent);
+    background-color: rgba(42, 95, 168, 0.1); // Soft Brand Blue
+    border-color: var(--c-text-on-dark);
+    box-shadow: inset 0 0 0 1px var(--c-text-on-dark);
 
     span {
-      color: var(--c-accent);
+      color: white;
       font-weight: 700;
     }
   }
 
   input {
-    accent-color: var(--c-accent);
+    accent-color: var(--c-text-on-dark);
     width: 1.15rem;
     height: 1.15rem;
   }
@@ -186,7 +186,7 @@
     border: 0;
 
     &:focus-visible + span {
-      outline: 2px solid var(--c-accent);
+      outline: 2px solid var(--c-primary-light);
       outline-offset: 2px;
     }
   }
@@ -206,9 +206,9 @@
   }
 
   &:has(input:checked) span {
-    background: var(--c-accent);
-    color: var(--c-primary-dark);
-    border-color: var(--c-accent);
+    background: var(--c-text-on-dark);
+    color: var(--c-primary-dark); // Dark Contrast Text
+    border-color: var(--c-text-on-dark);
     font-weight: 700;
   }
 }
@@ -234,7 +234,7 @@
   border-radius: var(--radius-lg);
   font-size: var(--fs-xs);
   color: var(--c-info-text-on-dark);
-  border: 1px solid rgba(var(--c-accent), 0.2);
+  border: 1px solid rgba(42, 95, 168, 0.2); // Uses primary color, not accent (avoids false error signal)
   text-align: right;
 
   strong {

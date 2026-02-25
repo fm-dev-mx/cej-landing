@@ -323,14 +323,14 @@
   gap: 0.25rem;
 
   &:hover {
-    color: var(--c-accent);
+    color: var(--c-accent-base);
     text-decoration: underline;
   }
 }
 
 .linkIcon {
   font-size: var(--fs-lg);
-  color: var(--c-accent);
+  color: var(--c-accent-base);
 }
 
 .disclaimer {

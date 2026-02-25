@@ -9,6 +9,7 @@ import ExpertForm from '@/components/Calculator/modes/ExpertForm';
 import FeedbackToast from '@/components/ui/FeedbackToast/FeedbackToast';
 import QuoteDrawer from '@/components/QuoteDrawer/QuoteDrawer';
 import SmartBottomBar from '@/components/SmartBottomBar/SmartBottomBar';
+import styles from './CotizadorPage.module.scss';
 
 export default function CotizadorPage() {
     const [isHydrated, setIsHydrated] = useState(false);
@@ -16,29 +17,23 @@ export default function CotizadorPage() {
     const cart = useCejStore(s => s.cart);
 
     useEffect(() => {
-        setIsHydrated(true);
+        // Timeout prevents synchronous setState cascading render warning
+        const timer = setTimeout(() => setIsHydrated(true), 0);
+        return () => clearTimeout(timer);
     }, []);
 
     if (!isHydrated) return null;
 
     return (
         <ToolShell actions={<ExpertToggle />}>
-            <div style={{ paddingBottom: '80px' }}>
-                <div style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--c-muted-strong)' }}>
-                    <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+            <div className={styles.pageContainer}>
+                <div className={styles.modeHeader}>
+                    <p className={styles.modeText}>
                         Modo: <strong>{viewMode === 'wizard' ? 'Guiado' : 'Experto'}</strong>
                     </p>
                     {/* Debug visual ya no es necesario con SmartBar, pero lo mantenemos sutil */}
                     {cart.length > 0 && (
-                        <span style={{
-                            fontSize: '0.75rem',
-                            background: 'var(--c-accent)',
-                            color: 'var(--c-primary-dark)',
-                            padding: '2px 8px',
-                            borderRadius: '12px',
-                            fontWeight: 'bold',
-                            opacity: 0.6
-                        }}>
+                        <span className={styles.cartBadge}>
                             {cart.length} en pedido
                         </span>
                     )}

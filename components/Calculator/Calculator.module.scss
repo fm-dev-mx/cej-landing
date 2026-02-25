@@ -19,7 +19,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
   background-color: var(--c-primary-dark);
   background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     min-height: 85svh;
     display: grid;
     place-items: center;
@@ -47,7 +47,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
   box-shadow: var(--shadow-xl);
   color: var(--c-text-on-dark);
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     padding: var(--sp-8) var(--sp-6);
     min-height: 600px;
   }
@@ -74,11 +74,13 @@ $glass-border: rgba(255, 255, 255, 0.1);
   height: 100%;
   border-radius: 2px;
   background-color: rgba(255, 255, 255, 0.1);
-  transition: background-color 0.4s ease, box-shadow 0.4s ease;
+  transition:
+    background-color 0.4s ease,
+    box-shadow 0.4s ease;
 
   &.active {
-    background-color: var(--c-accent);
-    box-shadow: 0 0 8px rgba(254, 201, 20, 0.4);
+    background-color: var(--c-accent-base);
+    box-shadow: 0 0 8px rgba(192, 38, 41, 0.45);
   }
 }
 
@@ -97,7 +99,7 @@ $glass-border: rgba(255, 255, 255, 0.1);
 }
 
 .headerTitleAccent {
-  color: var(--c-accent);
+  color: var(--c-accent-base);
 }
 
 .headerSubtitle {
