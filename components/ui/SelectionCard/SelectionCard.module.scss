@@ -54,13 +54,14 @@
   /* --- Selected State --- */
   &.selected {
     /* FIX 2: More visible background and thicker border */
-    background-color: rgba(254, 201, 20, 0.15);
-    /* Slightly more yellow tint */
-    border: 2px solid var(--c-accent);
+    background-color: rgba(255, 255, 255, 0.08);
+    /* Slightly more elevated */
+    border: 2px solid rgba(255, 255, 255, 0.5);
     /* Thickness increased to 2px */
     box-shadow:
-      0 0 0 1px var(--c-accent),
-      0 4px 12px rgba(0, 0, 0, 0.3);
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      var(--shadow-xl),
+      var(--shadow-glass-top);
     /* Reinforcement shadow */
 
     transform: none;
@@ -68,9 +69,9 @@
     /* Bring to front */
 
     .radioIndicator {
-      border-color: var(--c-accent);
-      background-color: var(--c-accent);
-      box-shadow: 0 0 8px rgba(254, 201, 20, 0.5);
+      border-color: rgba(255, 255, 255, 0.8);
+      background-color: rgba(255, 255, 255, 0.8);
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
 
       &::after {
         transform: scale(1);
@@ -78,7 +79,7 @@
     }
 
     .label {
-      color: var(--c-accent);
+      color: var(--c-text-on-dark);
     }
 
     .customIndicatorWrapper {
@@ -127,7 +128,7 @@
   border: 0;
 
   &:focus-visible + .radioIndicator {
-    outline: 2px solid var(--c-accent);
+    outline: 2px solid rgba(255, 255, 255, 0.6);
     outline-offset: 2px;
   }
 }

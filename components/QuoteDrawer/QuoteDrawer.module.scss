@@ -3,237 +3,237 @@
 @use "../../styles/mixins" as *;
 
 .backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(2px);
-    z-index: 100;
-    animation: fade 0.2s ease-out;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px);
+  z-index: 100;
+  animation: fade 0.2s ease-out;
 }
 
 .drawer {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    max-width: 400px;
-    background: var(--c-surface);
-    z-index: 101;
-    display: flex;
-    flex-direction: column;
-    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.2);
-    animation: slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 400px;
+  background: var(--c-surface);
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.2);
+  animation: slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--sp-4);
-    border-bottom: 1px solid var(--c-border);
-    background: var(--c-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-4);
+  border-bottom: 1px solid var(--c-border);
+  background: var(--c-bg);
 }
 
 .tabs {
-    display: flex;
-    gap: var(--sp-4);
+  display: flex;
+  gap: var(--sp-4);
 }
 
 .tab {
-    background: none;
-    border: none;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--c-muted);
-    padding-bottom: 0.25rem;
-    border-bottom: 2px solid transparent;
-    cursor: pointer;
-    transition: all 0.2s;
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--c-muted);
+  padding-bottom: 0.25rem;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
 
-    &.active {
-        color: var(--c-text);
-        border-color: var(--c-accent);
-    }
+  &.active {
+    color: var(--c-text);
+    border-color: var(--c-primary);
+  }
 }
 
 .closeBtn {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    line-height: 1;
-    color: var(--c-muted);
-    cursor: pointer;
-    padding: 0.5rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--c-muted);
+  cursor: pointer;
+  padding: 0.5rem;
 }
 
 .body {
-    flex: 1;
-    overflow-y: auto;
-    background: var(--c-surface-light);
-    padding: var(--sp-4);
+  flex: 1;
+  overflow-y: auto;
+  background: var(--c-surface-light);
+  padding: var(--sp-4);
 }
 
 .emptyState {
-    text-align: center;
-    margin-top: 3rem;
-    color: var(--c-muted);
+  text-align: center;
+  margin-top: 3rem;
+  color: var(--c-muted);
 
-    .linkBtn {
-        margin-top: 1rem;
-        background: none;
-        border: none;
-        color: var(--c-primary);
-        text-decoration: underline;
-        cursor: pointer;
-    }
+  .linkBtn {
+    margin-top: 1rem;
+    background: none;
+    border: none;
+    color: var(--c-primary);
+    text-decoration: underline;
+    cursor: pointer;
+  }
 }
 
 .list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-3);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
 }
 
 .item {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    padding: var(--sp-3);
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    position: relative;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
 
-    // Left border accent for history items
-    border-left: 3px solid var(--c-border);
+  // Left border accent for history items
+  border-left: 3px solid var(--c-border);
 
-    &:hover {
-        border-left-color: var(--c-accent);
-    }
+  &:hover {
+    border-left-color: var(--c-primary);
+  }
 }
 
 .itemHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    font-size: 0.8rem;
-    margin-bottom: 0.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
 }
 
 .itemTitle {
-    font-weight: 700;
-    color: var(--c-text);
-    font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--c-text);
+  font-size: 0.95rem;
 }
 
 .itemDate {
-    color: var(--c-muted);
-    font-size: 0.7rem;
-    white-space: nowrap;
+  color: var(--c-muted);
+  font-size: 0.7rem;
+  white-space: nowrap;
 }
 
 .itemDetails {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.25rem;
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .detailBadge {
-    font-size: 0.75rem;
-    padding: 2px 8px;
-    border-radius: 4px;
-    background-color: rgba(0, 0, 0, 0.05);
-    color: var(--c-muted-strong);
-    font-weight: 500;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--c-muted-strong);
+  font-weight: 500;
 }
 
 .itemFooter {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    border-top: 1px dashed var(--c-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--c-border);
 }
 
 .itemPrice {
-    font-weight: 800;
-    color: var(--c-primary);
-    font-size: 1rem;
+  font-weight: 800;
+  color: var(--c-primary);
+  font-size: 1rem;
 }
 
 .itemActions {
-    display: flex;
-    gap: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
 }
 
 .textBtnDanger {
-    background: none;
-    border: none;
-    color: var(--c-error-text);
-    font-size: 0.75rem;
-    cursor: pointer;
-    font-weight: 500;
+  background: none;
+  border: none;
+  color: var(--c-error-text);
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 500;
 
-    &:hover {
-        text-decoration: underline;
-    }
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .textBtnPrimary {
-    background: none;
-    border: none;
-    color: var(--c-primary);
-    font-size: 0.75rem;
-    cursor: pointer;
-    font-weight: 700;
+  background: none;
+  border: none;
+  color: var(--c-primary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 700;
 
-    &:hover {
-        color: var(--c-accent-hover);
-        text-decoration: underline;
-    }
+  &:hover {
+    color: var(--c-primary-dark);
+    text-decoration: underline;
+  }
 }
 
 .footer {
-    padding: var(--sp-4);
-    padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom));
-    background: var(--c-surface);
-    border-top: 1px solid var(--c-border);
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-4);
+  padding: var(--sp-4);
+  padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom));
+  background: var(--c-surface);
+  border-top: 1px solid var(--c-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
 }
 
 .totalRow {
-    display: flex;
-    justify-content: space-between;
-    font-size: 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.1rem;
 
-    strong {
-        color: var(--c-primary);
-    }
+  strong {
+    color: var(--c-primary);
+  }
 }
 
 @keyframes slideLeft {
-    from {
-        transform: translateX(100%);
-    }
+  from {
+    transform: translateX(100%);
+  }
 
-    to {
-        transform: translateX(0);
-    }
+  to {
+    transform: translateX(0);
+  }
 }
 
 @keyframes fade {
-    from {
-        opacity: 0;
-    }
+  from {
+    opacity: 0;
+  }
 
-    to {
-        opacity: 1;
-    }
+  to {
+    opacity: 1;
+  }
 }

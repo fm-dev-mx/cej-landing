@@ -9,7 +9,7 @@ import { Analytics } from "@vercel/analytics/next";
 export const viewport: Viewport = {
     width: "device-width",
     initialScale: 1,
-    themeColor: "#021a36",
+    themeColor: "#0e2240",
 };
 
 const GA_MEASUREMENT_ID = env.NEXT_PUBLIC_GA_ID;

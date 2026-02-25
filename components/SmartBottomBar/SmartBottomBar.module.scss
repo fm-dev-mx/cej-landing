@@ -2,86 +2,86 @@
 @use "../../styles/mixins" as *;
 
 .bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: var(--c-primary-dark);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding: var(--sp-3) var(--sp-4);
-    padding-bottom: calc(var(--sp-3) + env(safe-area-inset-bottom));
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    z-index: 50;
-    /* Above regular content, below modal */
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-    animation: slideUp 0.3s ease-out;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--c-primary-dark);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: var(--sp-3) var(--sp-4);
+  padding-bottom: calc(var(--sp-3) + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 50;
+  /* Above regular content, below modal */
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
 
-    @include respond-to('md') {
-        display: none;
-        /* Hide on desktop if using sidebar/header cart */
-    }
+  @include respond-to("md") {
+    display: none;
+    /* Hide on desktop if using sidebar/header cart */
+  }
 }
 
 .info {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-3);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
 }
 
 .countBadge {
-    background: var(--c-accent);
-    color: var(--c-primary-dark);
-    width: 1.75rem;
-    height: 1.75rem;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    font-weight: 800;
-    font-size: 0.85rem;
+  background: var(--c-accent-rich);
+  color: var(--c-text-on-dark);
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 0.85rem;
 }
 
 .textColumn {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .label {
-    font-size: 0.7rem;
-    color: var(--c-muted-on-dark);
-    text-transform: uppercase;
+  font-size: 0.7rem;
+  color: var(--c-muted-on-dark);
+  text-transform: uppercase;
 }
 
 .total {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: white;
-    line-height: 1.1;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1.1;
 }
 
 .triggerBtn {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 0.6rem 1.2rem;
-    border-radius: 99px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background 0.2s;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 99px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
 
-    &:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
 }
 
 @keyframes slideUp {
-    from {
-        transform: translateY(100%);
-    }
+  from {
+    transform: translateY(100%);
+  }
 
-    to {
-        transform: translateY(0);
-    }
+  to {
+    transform: translateY(0);
+  }
 }

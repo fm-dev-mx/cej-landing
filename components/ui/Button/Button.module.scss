@@ -76,20 +76,20 @@
 
 /* Variants */
 .primary {
-  background-color: var(--c-accent);
-  color: var(--c-primary-dark);
-  border-color: var(--c-accent);
-  box-shadow: 0 4px 15px rgba(254, 201, 20, 0.3);
+  background-color: var(--c-cta);
+  color: var(--c-text-on-dark);
+  border-color: var(--c-cta);
+  box-shadow: 0 4px 15px var(--c-cta-glow);
   padding: var(--sp-4) var(--sp-12);
 
   &:hover:not(:disabled) {
-    background-color: var(--c-accent-hover);
+    background-color: var(--c-cta-hover);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(254, 201, 20, 0.4);
+    box-shadow: 0 6px 20px var(--c-cta-glow);
   }
 
   .spinner {
-    border-color: var(--c-primary-dark);
+    border-color: var(--c-text-on-dark);
     border-right-color: transparent;
   }
 }

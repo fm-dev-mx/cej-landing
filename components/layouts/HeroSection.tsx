@@ -105,7 +105,7 @@ function CheckIcon() {
       height="20"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--c-accent)"
+      stroke="var(--c-info-text-on-dark)"
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"

@@ -79,6 +79,10 @@
   font-size: 1.25rem;
   flex-shrink: 0;
   box-shadow: var(--shadow-xs);
+
+  &--whatsapp {
+    color: var(--c-whatsapp);
+  }
 }
 
 .itemText {
@@ -271,7 +275,7 @@
 
 .whatsappLink {
   @extend .textLink;
-  color: var(--c-whatsapp);
+  color: var(--c-muted-strong);
   align-items: center;
 
   &:hover {

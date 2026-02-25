@@ -49,15 +49,32 @@
   --radius-lg: 1rem;
 
   /* --- Colors --- */
-  --c-primary: #043369;
-  --c-primary-dark: #021a36;
-  --c-accent: #fec914;
-  --c-accent-hover: #e5b500;
+  --c-primary: #193f6e;
+  --c-primary-dark: #0e2240;
+  --c-primary-light: #2a5fa8; // Mid-Navy: for gradients and elevated surfaces
+  --c-accent: #d8282c;
+  --c-accent-rich: color-mix(
+    in oklab,
+    #d8282c 88%,
+    #193f6e 12%
+  ); // Tinted red: less saturated, more premium
+  --c-accent-hover: color-mix(in oklab, var(--c-accent-rich) 85%, black);
+  --c-accent-glow: rgba(
+    216,
+    40,
+    44,
+    0.25
+  ); // Reduced opacity for subtler shadow
 
-  --c-text-on-dark: #ffffff;
+  /* CTA = Illuminated Navy (Option B) — separated from brand accent */
+  --c-cta: var(--c-primary-light);
+  --c-cta-hover: color-mix(in oklab, var(--c-primary-light) 85%, black);
+  --c-cta-glow: rgba(42, 95, 168, 0.3);
+
+  --c-text-on-dark: color-mix(in oklab, white 95%, var(--c-primary));
   --c-muted-on-dark: #cbd5e1;
 
-  --c-bg: #0e243b;
+  --c-bg: #0e2240;
   --c-surface: #ffffff;
   --c-surface-dark: #b2bece;
   --c-surface-light: #f9fafb;
@@ -74,34 +91,35 @@
   --c-success-soft: #ecfdf3;
   --c-warning: #f59e0b;
   --c-warning-soft: #fffbeb;
-  --c-error-text: #b91c1c;
-  --c-error-border: #fecaca;
-  --c-error-soft: #fef2f2;
+  --c-error-text: #ea580c; // Orange 600
+  --c-error-border: #fed7aa; // Orange 200
+  --c-error-soft: #fff7ed; // Orange 50
 
   /* Semantic Feedback (Dark Mode / Glass) */
   --c-info-text-on-dark: #93c5fd; // Blue 300
   --c-info-bg-on-dark: rgba(14, 165, 233, 0.1); // Sky 500 alpha
   --c-info-border-on-dark: rgba(14, 165, 233, 0.2);
 
-  --c-error-text-on-dark: #fca5a5; // Red 300
-  --c-error-bg-on-dark: rgba(239, 68, 68, 0.1); // Red 500 alpha
-  --c-error-border-on-dark: rgba(239, 68, 68, 0.2);
+  --c-error-text-on-dark: #fdba74; // Orange 300
+  --c-error-bg-on-dark: rgba(234, 88, 12, 0.1);
+  --c-error-border-on-dark: rgba(234, 88, 12, 0.2);
 
   --c-step-bg: #f9fafb;
   --c-step-border: #e5e7eb;
-  --c-step-current: #043369;
+  --c-step-current: #193f6e;
   --c-step-current-soft: #e3edf7;
 
   --c-whatsapp: #25d366;
   --c-whatsapp-soft: #e8f9f0;
-  --c-call: #043369;
+  --c-call: #193f6e;
   --c-call-soft: #e3edf7;
 
   /* --- Shadows --- */
   --shadow-xs: 0 1px 1px rgba(15, 23, 42, 0.04);
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
   --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
-  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-xl: 0 25px 50px -12px rgba(14, 34, 64, 0.25);
+  --shadow-glass-top: inset 0 1px 1px rgba(255, 255, 255, 0.1);
 
   /* --- Layout & Dimensions --- */
 
@@ -123,7 +141,7 @@
 }
 
 /* Desktop Overrides */
-@include respond-to('md') {
+@include respond-to("md") {
   :root {
     --header-h: 100px;
     --header-h-stuck: 80px;

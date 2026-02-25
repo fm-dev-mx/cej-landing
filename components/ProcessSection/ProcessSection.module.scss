@@ -79,7 +79,7 @@
 }
 
 .icon {
-  color: var(--c-accent);
+  color: var(--c-text-on-dark);
   font-size: 2.5rem;
   line-height: 1;
 }
@@ -87,11 +87,12 @@
 .stepNumber {
   position: absolute;
   top: -0.25rem;
-  right: -0.25rem;
+  left: -0.25rem;
+  right: auto;
   width: 1.75rem;
   height: 1.75rem;
-  background-color: var(--c-accent);
-  color: var(--c-primary-dark);
+  background-color: var(--c-primary);
+  color: var(--c-text-on-dark);
   border-radius: 50%;
   font-size: 0.875rem;
   font-weight: 700;

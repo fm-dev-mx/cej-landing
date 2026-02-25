@@ -48,15 +48,16 @@ export default function ServiceArea() {
                 <div className={styles.itemText}>
                   <strong>Oficinas Centrales</strong>
                   <address className={styles.address}>
-                    Centro Comercial San José, Local 27 <br />
-                    Av. Ejército Nacional 6225, Ciudad Juárez, Chih.
+
+                    Turbosina 9410, entrada por calle Aeronáutica, <br />
+                    Ciudad Juárez, Chihuahua, 32695
                   </address>
                 </div>
               </li>
 
               {/* 2. CONTACT */}
               <li className={styles.contactItem}>
-                <div className={styles.iconBox} aria-hidden="true">📞</div>
+                <div className={`${styles.iconBox} ${styles['iconBox--whatsapp']}`} aria-hidden="true"><WhatsAppIcon /></div>
                 <div className={styles.itemText}>
                   <strong>Atención Inmediata</strong>
                   <div className={styles.linksStack}>
@@ -70,9 +71,9 @@ export default function ServiceArea() {
                         href={links.whatsapp}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={styles.whatsappLink}
+                        className={styles.textLink}
                       >
-                        <WhatsAppIcon size={16} /> Enviar WhatsApp
+                        Enviar WhatsApp
                       </a>
                     )}
                     <a href={`mailto:${email}`} className={styles.textLink}>
@@ -137,6 +138,6 @@ export default function ServiceArea() {
           </div>
         </div>
       </div>
-    </section>
+    </section >
   );
 }

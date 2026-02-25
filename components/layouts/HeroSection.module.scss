@@ -42,16 +42,20 @@
   inset: 0;
   z-index: 1;
   width: 100%;
-  background: linear-gradient(to bottom,
-      rgba(2, 26, 54, 0.4) 0%,
-      rgba(2, 26, 54, 0.8) 60%,
-      rgba(2, 26, 54, 1) 100%);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--c-primary-dark) 40%, transparent) 0%,
+    color-mix(in srgb, var(--c-primary-dark) 80%, transparent) 60%,
+    var(--c-primary-dark) 100%
+  );
 
-  @include respond-to('lg') {
-    background: linear-gradient(90deg,
-        rgba(2, 26, 54, 0.95) 0%,
-        rgba(2, 26, 54, 0.8) 50%,
-        rgba(2, 26, 54, 0.4) 100%);
+  @include respond-to("lg") {
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--c-primary-dark) 95%, transparent) 0%,
+      color-mix(in srgb, var(--c-primary-dark) 60%, transparent) 40%,
+      color-mix(in srgb, var(--c-primary-dark) 10%, transparent) 100%
+    );
   }
 }
 
@@ -67,7 +71,7 @@
 
   padding-bottom: calc(var(--header-h) + var(--sp-6));
 
-  @include respond-to-height('short') {
+  @include respond-to-height("short") {
     align-self: start;
     margin-top: calc(env(safe-area-inset-top) + var(--header-h) + var(--sp-2));
   }
@@ -93,11 +97,15 @@
   border-radius: 99px;
   font-size: var(--fs-xs);
   // Robust small size
-  color: var(--c-accent);
+  color: var(--c-text-on-dark);
   font-weight: 600;
   backdrop-filter: blur(4px);
 
-  @include respond-to('md') {
+  .hero__badgeIcon {
+    color: var(--c-info-text-on-dark);
+  }
+
+  @include respond-to("md") {
     font-size: var(--fs-sm);
   }
 }
@@ -110,13 +118,13 @@
   /* Prevent orphan words */
   text-wrap: balance;
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     max-width: 20ch;
   }
 }
 
 .hero__highlight {
-  color: var(--c-accent);
+  color: var(--c-text-on-dark);
 }
 
 .hero__lead {
@@ -133,7 +141,7 @@
     font-weight: 600;
   }
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     font-size: var(--fs-xl);
     max-width: 40ch;
   }
@@ -148,7 +156,7 @@
   flex-direction: column;
   gap: var(--sp-2);
 
-  @include respond-to('sm') {
+  @include respond-to("sm") {
     flex-direction: row;
     flex-wrap: wrap;
     gap: var(--sp-4);
@@ -164,10 +172,10 @@
   line-height: 1.2;
 
   strong {
-    color: var(--c-accent);
+    color: var(--c-info-text-on-dark);
   }
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     font-size: var(--fs-lg);
   }
 }
@@ -180,7 +188,7 @@
   gap: var(--sp-3);
   margin-top: var(--sp-2);
 
-  @include respond-to('sm') {
+  @include respond-to("sm") {
     flex-direction: row;
     width: auto;
     gap: var(--sp-4);
@@ -189,23 +197,23 @@
 
 .hero__btnPrimary {
   @include p.btn;
-  background-color: var(--c-accent);
-  color: var(--c-primary-dark);
-  border: 1px solid var(--c-accent);
-  font-size: var(--fs-base); // Better base size
+  background-color: var(--c-cta);
+  color: var(--c-text-on-dark);
+  border: 1px solid var(--c-cta);
+  font-size: var(--fs-base);
   justify-content: center;
   padding: var(--sp-3) var(--sp-6);
-  box-shadow: 0 4px 14px rgba(254, 201, 20, 0.3);
+  box-shadow: 0 4px 14px var(--c-cta-glow);
   font-weight: 700;
   text-decoration: none;
 
   &:hover {
-    background-color: var(--c-accent-hover);
-    border-color: var(--c-accent-hover);
+    background-color: var(--c-cta-hover);
+    border-color: var(--c-cta-hover);
     transform: translateY(-2px);
   }
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     font-size: var(--fs-lg);
   }
 }
@@ -226,7 +234,7 @@
     border-color: white;
   }
 
-  @include respond-to('md') {
+  @include respond-to("md") {
     font-size: var(--fs-lg);
   }
 }
