@@ -52,19 +52,15 @@
   --c-primary: #193f6e;
   --c-primary-dark: #0e2240;
   --c-primary-light: #2a5fa8; // Mid-Navy: for gradients and elevated surfaces
-  --c-accent: #d8282c;
-  --c-accent-rich: color-mix(
-    in oklab,
-    #d8282c 88%,
-    #193f6e 12%
-  ); // Tinted red: less saturated, more premium
-  --c-accent-hover: color-mix(in oklab, var(--c-accent-rich) 85%, black);
-  --c-accent-glow: rgba(
-    216,
-    40,
-    44,
-    0.25
-  ); // Reduced opacity for subtler shadow
+  /* Carmín Elegante — Brand Accent */
+  --c-accent-base: #c02629; // Carmín: premium, less harsh than pure red
+  --c-accent-hover: #a61b1d; // :hover — deeper engagement
+  --c-accent-active: #8b1214; // :active / :pressed — tactile feedback
+  --c-accent-soft: rgba(192, 38, 41, 0.09); // Checked cards, light fills
+  --c-accent-subtle: #fdf2f2; // Large-area soft backgrounds
+  --c-accent-content: #ffffff; // Text on solid accent — WCAG AA+
+  /* Back-compat shim: keep --c-accent pointing to the new base */
+  --c-accent: var(--c-accent-base);
 
   /* CTA = Illuminated Navy (Option B) — separated from brand accent */
   --c-cta: var(--c-primary-light);
@@ -91,9 +87,11 @@
   --c-success-soft: #ecfdf3;
   --c-warning: #f59e0b;
   --c-warning-soft: #fffbeb;
-  --c-error-text: #ea580c; // Orange 600
-  --c-error-border: #fed7aa; // Orange 200
-  --c-error-soft: #fff7ed; // Orange 50
+  /* Error: intentionally separated from brand accent to avoid UX confusion */
+  --c-error-base: #dc2626; // Red 600 — only for validation errors
+  --c-error-text: #b91c1c; // Red 700 — accessible on light bg
+  --c-error-border: #fca5a5; // Red 300
+  --c-error-soft: #fef2f2; // Red 50 — large error area background
 
   /* Semantic Feedback (Dark Mode / Glass) */
   --c-info-text-on-dark: #93c5fd; // Blue 300

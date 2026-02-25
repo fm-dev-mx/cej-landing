@@ -41,11 +41,11 @@
 
   &:focus-visible {
     outline: none;
-    border-color: var(--c-accent);
+    border-color: var(--c-primary-light);
     background-color: rgba(0, 0, 0, 0.6);
     box-shadow:
-      0 0 0 1px var(--c-accent),
-      0 0 0 4px rgba(254, 201, 20, 0.15);
+      0 0 0 1px var(--c-primary-light),
+      0 0 0 4px rgba(42, 95, 168, 0.2);
   }
 
   /* Error State */

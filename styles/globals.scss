@@ -36,7 +36,9 @@ body {
     2. The device's safe area (Home Indicator on iOS).
     3. A small buffer spacing.
   */
-  padding-bottom: calc(var(--bottom-bar-h) + env(safe-area-inset-bottom) + var(--sp-2));
+  padding-bottom: calc(
+    var(--bottom-bar-h) + env(safe-area-inset-bottom) + var(--sp-2)
+  );
 }
 
 /* Global utility container */
@@ -44,17 +46,10 @@ body {
   @include p.container;
 }
 
-/* Accessible focus ring */
+/* Accessible focus ring: use primary navy — red implies error state */
 :where(a, button, [role="button"], input, select, textarea) {
   &:focus-visible {
-    /* P1 FIX: Use Accent Color (Yellow) for better visibility on dark backgrounds */
-    outline: 2px solid var(--c-accent);
-
-    @supports (color: color-mix(in oklab, #000, #fff)) {
-      /* Create a dual-tone effect if supported for contrast on mixed backgrounds */
-      outline: 2px solid color-mix(in oklab, var(--c-accent) 80%, white 20%);
-    }
-
+    outline: 2px solid var(--c-primary-light);
     outline-offset: 2px;
     border-radius: calc(var(--radius) / 2);
   }
