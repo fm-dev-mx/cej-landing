@@ -1,109 +1,145 @@
-# 🏗️ CEJ Landing (MVP)
+# 🏗️ CEJ Cotizador Platform
 
-Landing page **for Concreto y Equipos de Juárez (CEJ)** — a construction materials company based in Ciudad Juárez.
-This project provides a **functional, mobile-first landing page** featuring a **concrete cost calculator**, **Meta Pixel tracking**, and **WhatsApp lead generation** for contractors and builders.
+**Concreto y Equipos de Juárez (CEJ)** — Plataforma de cotización para constructores y contratistas en Ciudad Juárez.
+
+A full-stack, mobile-first web application enabling users to estimate concrete costs, generate folios, and submit orders directly to WhatsApp — with a **Fail-Open resilience strategy** that guarantees the user flow completes even when backend services are unavailable.
 
 ---
 
 ## 🚀 Overview
 
-**CEJ Landing** is built to capture qualified leads by allowing users to estimate the cost of ready-mix concrete directly on the page, view a transparent price breakdown, and contact CEJ instantly via WhatsApp or phone.
+The platform has evolved from a simple landing page into a multi-phase SaaS product:
 
-It’s designed as a **fast, scalable, and trackable MVP**, deployable to Vercel, with clean code and a modular architecture ready for future growth (e.g., saving leads, CRM integration, API expansion).
+- **Phase 1–3 (Complete):** Traffic capture, lead generation, Meta CAPI tracking, and a robust concrete cost calculator with expert mode.
+- **Phase 4A (Complete):** Local quote history, persistent cart, multi-step checkout, and URL-based quote sharing.
+- **Phase 4B (In Progress):** Supabase Auth (Magic Link), protected `/dashboard`, user order history.
+
+For the full roadmap and sprint history see [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ---
 
-## 🧩 Features
+## 🧩 Core Features
 
 ### 🧱 Concrete Calculator
-- Real-time calculation by **resistance (f’c)**, **service type (pumped/tirado)**, and **zone/freight**.
-- Optional additives.
-- Transparent cost breakdown (Base + Extras + Freight + VAT + Total).
-- Input validation (minimum m³, numeric formatting, etc.).
 
-### 💬 Lead Capture
-- **WhatsApp CTA** with prefilled message including UTM parameters.
-- **Phone CTA** with Pixel `Contact` event.
-- Optional email CTA (future version).
+- Wizard and Expert modes (volume, strength, service type, additives).
+- Transparent price breakdown with validation and real-time updates.
+- Live pricing from Supabase with static `FALLBACK_PRICING_RULES` as fail-open.
+- URL-based quote restore and persistent local cart.
 
-### 📊 Meta Pixel Tracking
-- `PageView`, `ViewContent`, `Lead`, and `Contact` events with proper parameters:
-  - `value`, `currency`, `contents`, `content_category`, and custom `lead_type`.
+### 💬 Checkout & Lead Capture
 
-### ⚙️ Technical Foundation
-- **Next.js 16 (App Router)**
-- **TypeScript** for type safety and maintainability
-- **SCSS Modules** for scoped, clean styling
-- **pnpm** for fast, reproducible dependency management
-- **Vercel-ready static output** (`output: export`)
-- Pixel script initialization managed via `useEffect` hook
+- Multi-step `SchedulingModal` with full form validation.
+- **Fail-Open Checkout:** If backend fails, a local `OFFLINE-xxx` folio is generated and the WhatsApp handoff proceeds without interruption.
+- `orderDispatcher` centralizes all submission logic.
+
+### 📊 Hybrid Tracking (Browser + Server)
+
+- Meta Pixel (browser) + Meta CAPI (server-side) with SHA-256 PII hashing.
+- Shared `event_id` for deduplication across both channels.
+- Google Analytics 4 via `NEXT_PUBLIC_GA_ID`.
+- UTM attribution persisted via `sessionStorage` and attached to the lead payload.
+
+### 🔐 Auth & Dashboard (Phase 4B)
+
+- Supabase Auth with Magic Link.
+- Server-side session refresh via Next.js Middleware.
+- Protected `/dashboard` route with order history.
 
 ---
 
 ## 🛠️ Stack
 
-| Layer | Technology | Purpose |
-|-------|-------------|----------|
-| Framework | **Next.js (App Router)** | Modern React-based architecture |
-| Language | **TypeScript** | Type safety and cleaner code |
-| Styling | **SCSS Modules** | Modular styles with shared variables/mixins |
-| Package Manager | **pnpm** | Fast, deterministic installs |
-| Hosting | **Vercel** | Zero-config deployment |
-| Tracking | **Meta Pixel** | Lead and conversion tracking |
-| Communication | **WhatsApp API** | Instant lead generation |
+| Layer           | Technology                       | Purpose                                          |
+| --------------- | -------------------------------- | ------------------------------------------------ |
+| Framework       | **Next.js 16 (App Router)**      | SSR, Server Actions, Middleware                  |
+| Language        | **TypeScript 5.9**               | Strict typing across all layers                  |
+| State           | **Zustand 5 (Slices)**           | `calculatorSlice`, `cartSlice`, `ordersSlice`    |
+| Styling         | **SCSS Modules + Design Tokens** | `_tokens.scss`, `_primitives.scss`               |
+| Backend         | **Supabase (Postgres + Auth)**   | Leads, Orders, Pricing, Auth                     |
+| Validation      | **Zod**                          | Schema-first validation across Client and Server |
+| Tracking        | **Meta Pixel + CAPI + GA4**      | Hybrid conversion tracking                       |
+| Package Manager | **pnpm**                         | Fast, deterministic installs                     |
+| Hosting         | **Vercel**                       | Zero-config deployment                           |
+| Unit Tests      | **Vitest + Testing Library**     | Component and hook coverage                      |
+| E2E Tests       | **Playwright**                   | Full quote-flow, checkout, auth coverage         |
 
 ---
 
 ## 🧱 Project Structure
 
 ```
-
 cej-landing/
-├─ app/
-│  ├─ layout.tsx          # Root layout with global styles
-│  └─ page.tsx            # Main landing + calculator
+├─ app/               # Next.js App Router (routes, layouts, server actions)
 ├─ components/
-│  ├─ Calculator/         # Main calculator logic and UI
-│  └─ CTAButtons.tsx      # Persistent bottom CTAs
+│  ├─ Calculator/     # Multi-step wizard, expert mode, modals, ticket
+│  ├─ QuoteDrawer/    # Cart drawer with multi-item summary
+│  ├─ layouts/        # Header, Footer, HeroSection, GlobalUI
+│  └─ ui/             # Design system primitives (Button, Input, Select, …)
+├─ config/
+│  ├─ business.ts     # Pricing rules, additives, business config
+│  ├─ content.ts      # Marketing copy and section content
+│  └─ env.ts          # Zod-validated environment variables (single source of truth)
+├─ docs/              # Architecture, ADRs, design system, roadmap
+├─ hooks/             # useQuoteCalculator, useCheckoutUI, useCalculatorUI
 ├─ lib/
-│  ├─ pricing.ts          # Pricing tables and constants
-│  ├─ pixel.ts            # Pixel initialization + event tracking
-│  └─ utils.ts            # Helpers (formatting, WhatsApp link)
-├─ styles/
-│  ├─ globals.scss        # Global base styles
-│  ├─ _variables.scss     # Color palette and variables
-│  └─ _mixins.scss        # Shared mixins
-├─ public/
-│  └─ logo-cej.svg
-└─ .env.local             # Environment variables (ignored by Git)
-
-````
+│  ├─ logic/          # orderDispatcher (centralized submission)
+│  ├─ tracking/       # capi.ts, visitor.ts, utm.ts
+│  ├─ schemas/        # Zod schemas (calculator, orders, pricing)
+│  ├─ supabase/       # client.ts (browser) + server.ts (SSR)
+│  └─ utils.ts        # Shared helpers
+├─ scripts/           # DB seeding (seed-leads.ts, seed-pricing.ts)
+├─ store/
+│  ├─ slices/         # calculatorSlice, cartSlice, ordersSlice, uiSlice, userSlice
+│  └─ useCejStore.ts  # Zustand store with persist middleware
+├─ styles/            # globals.scss, _tokens.scss, _primitives.scss
+├─ tests/             # Playwright E2E specs
+├─ types/
+│  ├─ domain.ts       # Core domain types (QuoteBreakdown, Order, Lead)
+│  └─ database.ts     # Supabase auto-generated DB types
+└─ vitest.config.mts
+```
 
 ---
 
 ## ⚙️ Environment Variables
 
-Create a file called `.env.local` at the project root with:
+Create `.env.local` at the project root. Use `.env.example` as a template.
+All variables are validated at startup via `config/env.ts` (Zod schema).
 
-```bash
-NEXT_PUBLIC_PIXEL_ID=XXXXXXXXXXXXXX
-NEXT_PUBLIC_WHATSAPP_NUMBER=521656XXXXXXX
-NEXT_PUBLIC_PHONE=521656XXXXXXX
-NEXT_PUBLIC_SITE_URL=https://cej.com.mx
-````
+| Variable                        | Scope  | Required    | Description                                   |
+| ------------------------------- | ------ | ----------- | --------------------------------------------- |
+| `NEXT_PUBLIC_PIXEL_ID`          | Public | Yes         | Meta Pixel ID for browser tracking            |
+| `FB_ACCESS_TOKEN`               | Server | Yes         | Meta System User Token for CAPI events        |
+| `NEXT_PUBLIC_GA_ID`             | Public | Recommended | Google Analytics 4 Measurement ID             |
+| `NEXT_PUBLIC_WHATSAPP_NUMBER`   | Public | Yes         | WhatsApp number (E.164, no `+`)               |
+| `NEXT_PUBLIC_PHONE`             | Public | No          | Optional phone CTA number                     |
+| `NEXT_PUBLIC_SITE_URL`          | Public | Yes         | Canonical base URL (no trailing slash)        |
+| `NEXT_LOCAL_SITE_URL`           | Server | Dev only    | Local dev base URL (`http://localhost:3000`)  |
+| `NEXT_PUBLIC_BRAND_NAME`        | Public | No          | Brand name used in SEO metadata               |
+| `NEXT_PUBLIC_CURRENCY`          | Public | No          | Currency code (default: `MXN`)                |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Public | Yes\*       | Supabase project URL                          |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Yes\*       | Supabase anon/public key for browser client   |
+| `SUPABASE_SERVICE_ROLE_KEY`     | Server | Yes\*       | Supabase service role key for Server Actions  |
+| `MONITORING_WEBHOOK_URL`        | Server | No          | Slack/webhook URL for system error alerts     |
+| `ENABLE_E2E_MOCKS`              | Server | Dev only    | Set to `true` to enable Playwright mock modes |
 
-Or use `.env.example` as a template.
+> \* If Supabase keys are absent, the app starts in **Fail-Open mode**: local folios are generated and WhatsApp handoff works, but orders will not be persisted to the database.
 
 ---
 
 ## 🧠 Scripts
 
-| Command      | Description                        |
-| ------------ | ---------------------------------- |
-| `pnpm dev`   | Run development server (Turbopack) |
-| `pnpm build` | Generate production build          |
-| `pnpm start` | Serve production build locally     |
-| `pnpm lint`  | Run ESLint checks                  |
+| Command               | Description                                 |
+| --------------------- | ------------------------------------------- |
+| `pnpm dev`            | Development server (Next.js with Turbopack) |
+| `pnpm build`          | Production build                            |
+| `pnpm start`          | Serve production build locally              |
+| `pnpm lint`           | ESLint (static analysis + type-aware rules) |
+| `pnpm test`           | Vitest unit/integration tests (single run)  |
+| `pnpm test:watch`     | Vitest in watch mode                        |
+| `pnpm coverage`       | Vitest with coverage report                 |
+| `npx playwright test` | Playwright E2E test suite                   |
 
 ---
 
@@ -113,18 +149,18 @@ Or use `.env.example` as a template.
 
 1. Push this repository to GitHub.
 2. Connect it to [Vercel](https://vercel.com).
-3. Add the environment variables above in **Project Settings → Environment Variables**.
-4. Deploy → Your landing page is live 🚀.
+3. Add all environment variables from the table above in **Project Settings → Environment Variables**.
+4. Deploy 🚀.
+
+> **Note:** The app runs in Fail-Open mode if Supabase keys are not configured. All UX flows remain functional, but persistence and CAPI tracking will be disabled.
 
 ---
 
-## 🧰 Roadmap (next iterations)
+## 📐 Architecture
 
-* [ ] Serverless API endpoint for saving leads (via `/app/api/lead/route.ts`)
-* [ ] Automatic quote ID (`folio`) per lead
-* [ ] Integration with Facebook Conversions API (CAPI)
-* [ ] Dark mode + theming system
-* [ ] SEO enhancements (structured data + OG tags)
+See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full system diagram, Fail-Open sequence, and component lifecycle.
+
+See [`docs/TRACKING_GUIDE.md`](docs/TRACKING_GUIDE.md) for the Pixel + CAPI hybrid tracking architecture.
 
 ---
 
