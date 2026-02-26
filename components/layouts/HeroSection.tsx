@@ -42,9 +42,11 @@ export default function HeroSection({
             <source src={videoSrc} type="video/mp4" />
           </video>
         ) : fallbackImage ? (
-          <div
+          <img
+            src={fallbackImage}
             className={styles.hero__imageFallback}
-            style={{ "--hero-fallback": `url(${fallbackImage})` } as React.CSSProperties}
+            alt=""
+            aria-hidden="true"
           />
         ) : (
           <div className={styles.hero__imagePlaceholder} />
