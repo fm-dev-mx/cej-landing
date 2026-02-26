@@ -1,16 +1,22 @@
 #!/bin/sh
-current_branch=$(git rev-parse --abbrev-ref HEAD)
+. "$(dirname "$0")/_/husky.sh"
 
-# 1. Safety check for main branch push
-if [ "$current_branch" = "main" ]; then
-  echo "❌ Direct push to 'main' is blocked. Please use a Pull Request."
-  exit 1
-fi
+# Verify the commits that are about to be pushed
+while read local_ref local_sha remote_ref remote_sha
+do
+  # range of commits being pushed
+  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+    range="$local_sha"
+  else
+    range="$remote_sha..$local_sha"
+  fi
 
-# 2. Quality gates (Heavy checks)
-# 2. Quality gates (Heavy checks)
-if FORCE_COLOR=0 pnpm typecheck && FORCE_COLOR=0 pnpm test; then
-  echo "🚀 Quality gates passed. Proceeding with push..."
-else
-  exit 1
-fi
+  for c in $(git rev-list "$range"); do
+    if ! git verify-commit "$c" >/dev/null 2>&1; then
+      echo "❌ Commit not signed: $c"
+      exit 1
+    fi
+  done
+done
+
+exit 0
