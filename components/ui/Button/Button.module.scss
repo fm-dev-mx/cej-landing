@@ -4,25 +4,33 @@
 
 .base {
   @include p.btn;
+
+  cursor: pointer;
+
   position: relative;
-  border-radius: 99px;
+
+  gap: var(--sp-2);
+  align-items: center;
+  justify-content: center;
+
   padding: var(--sp-2) var(--sp-0);
+  border-radius: 99px;
+
   font-size: var(--fs-base);
   font-weight: 600;
-  justify-content: center;
-  align-items: center;
-  gap: var(--sp-2);
-  text-transform: none;
-  cursor: pointer;
   text-decoration: none;
+  text-transform: none;
+
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Disabled state base */
   &:disabled {
-    filter: grayscale(0.8);
-    opacity: 0.7;
     cursor: not-allowed;
+
     transform: none !important;
+
+    opacity: 0.7;
+    filter: grayscale(0.8);
     box-shadow: none !important;
   }
 
@@ -34,13 +42,15 @@
 
 /* Spinner Element */
 .spinner {
+  flex-shrink: 0;
+
   width: 1.15rem;
   height: 1.15rem;
-  border: 2px solid currentColor;
+  border: 2px solid currentcolor;
   border-right-color: transparent;
   border-radius: 50%;
+
   animation: spin 0.6s linear infinite;
-  flex-shrink: 0;
 }
 
 @keyframes spin {
@@ -57,15 +67,17 @@
 .loading:not(.loadingWithText) {
   .invisibleContent {
     opacity: 0;
+
     /* Maintains button width */
   }
 
   .spinner {
     position: absolute;
-    left: 50%;
     top: 50%;
-    margin-left: -0.575rem;
+    left: 50%;
+
     margin-top: -0.575rem;
+    margin-left: -0.575rem;
   }
 }
 
@@ -76,15 +88,17 @@
 
 /* Variants */
 .primary {
-  background-color: var(--c-cta);
-  color: var(--c-text-on-dark);
-  border-color: var(--c-cta);
-  box-shadow: 0 4px 15px var(--c-cta-glow);
   padding: var(--sp-4) var(--sp-12);
+  border-color: var(--c-cta);
+
+  color: var(--c-text-on-dark);
+
+  background-color: var(--c-cta);
+  box-shadow: 0 4px 15px var(--c-cta-glow);
 
   &:hover:not(:disabled) {
-    background-color: var(--c-cta-hover);
     transform: translateY(-2px);
+    background-color: var(--c-cta-hover);
     box-shadow: 0 6px 20px var(--c-cta-glow);
   }
 
@@ -95,13 +109,13 @@
 }
 
 .secondary {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgb(255 255 255 / 30%);
   color: white;
+  background: transparent;
 
   &:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.1);
     border-color: white;
+    background: rgb(255 255 255 / 10%);
   }
 
   .spinner {
@@ -112,17 +126,18 @@
 
 .tertiary {
   @extend .secondary;
-  color: var(--c-muted);
+
   padding: var(--sp-4) var(--sp-10);
+  color: var(--c-muted);
 }
 
 .whatsapp {
-  background-color: var(--c-whatsapp);
   border-color: var(--c-whatsapp);
   color: white;
+  background-color: var(--c-whatsapp);
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+    box-shadow: 0 4px 15px rgb(37 211 102 / 30%);
   }
 }

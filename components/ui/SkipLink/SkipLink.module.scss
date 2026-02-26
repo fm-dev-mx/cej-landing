@@ -2,16 +2,20 @@
 
 .skipLink {
     position: absolute;
+    z-index: 1000;
     top: -9999px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: var(--c-accent);
-    color: var(--c-primary-dark);
+
     padding: var(--sp-2) var(--sp-4);
-    font-weight: 700;
     border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-    z-index: 1000;
+
+    font-weight: 700;
+    color: var(--c-primary-dark);
     text-decoration: none;
+
+    background-color: var(--c-accent);
+
     transition: top 0.2s ease-out;
 
     &:focus {

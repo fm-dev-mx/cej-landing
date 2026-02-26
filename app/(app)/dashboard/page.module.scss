@@ -9,6 +9,7 @@
 
 .container {
     @include container;
+
     max-width: 960px;
 }
 
@@ -17,26 +18,28 @@
 }
 
 .title {
+    margin: 0 0 var(--sp-2);
     font-size: var(--fs-2xl);
     font-weight: 700;
     color: var(--c-text);
-    margin: 0 0 var(--sp-2);
 }
 
 .subtitle {
+    margin: 0;
     font-size: var(--fs-base);
     color: var(--c-muted);
-    margin: 0;
 }
 
 .errorBanner {
-    padding: var(--sp-4);
     margin-bottom: var(--sp-6);
-    background: var(--c-error-soft);
+    padding: var(--sp-4);
     border: 1px solid var(--c-error-border);
     border-radius: var(--radius);
+
     color: var(--c-error-text);
     text-align: center;
+
+    background: var(--c-error-soft);
 }
 
 .ordersSection {
@@ -44,10 +47,10 @@
 }
 
 .sectionTitle {
+    margin: 0 0 var(--sp-4);
     font-size: var(--fs-lg);
     font-weight: 600;
     color: var(--c-text);
-    margin: 0 0 var(--sp-4);
 }
 
 // Empty State
@@ -56,38 +59,45 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+
     padding: var(--sp-12) var(--sp-6);
-    background: var(--c-surface);
-    border-radius: var(--radius-lg);
-    text-align: center;
     border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+
+    text-align: center;
+
+    background: var(--c-surface);
 }
 
 .emptyIcon {
-    font-size: var(--fs-hero);
     margin-bottom: var(--sp-4);
+    font-size: var(--fs-hero);
 }
 
 .emptyMessage {
+    margin: 0 0 var(--sp-6);
     font-size: var(--fs-base);
     color: var(--c-muted);
-    margin: 0 0 var(--sp-6);
 }
 
 .ctaButton {
     display: inline-block;
+
     padding: var(--sp-3) var(--sp-6);
+    border-radius: var(--radius);
+
     font-size: var(--fs-base);
     font-weight: 600;
     color: var(--c-primary-dark);
-    background: var(--c-accent);
-    border-radius: var(--radius);
     text-decoration: none;
+
+    background: var(--c-accent);
+
     transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
 
     &:hover {
         transform: translateY(-2px);
-        box-shadow: var(--shadow-md);
         background-color: var(--c-accent-hover);
+        box-shadow: var(--shadow-md);
     }
 }

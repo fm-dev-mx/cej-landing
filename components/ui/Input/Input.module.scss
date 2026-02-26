@@ -3,10 +3,12 @@
 @use "../../../styles/mixins" as *;
 
 .container {
+  position: relative;
+
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  position: relative;
+
   margin-top: var(--sp-3);
 }
 
@@ -30,20 +32,20 @@
 
 /* Error Message */
 .errorMessage {
-  font-size: var(--fs-xs);
   margin-top: 0.1rem;
+  font-size: var(--fs-xs);
   animation: slideDown 0.2s ease-out forwards;
 }
 
 @keyframes slideDown {
   from {
-    opacity: 0;
     transform: translateY(-4px);
+    opacity: 0;
   }
 
   to {
-    opacity: 1;
     transform: translateY(0);
+    opacity: 1;
   }
 }
 
@@ -78,28 +80,28 @@
 
 /* Special modifiers */
 .volumeInput {
-  font-weight: 700;
-  font-size: 1.125rem;
-  text-align: center;
-
   /* Keep padding explicit; suffix logic will override right padding when needed */
   padding-inline: 0.5rem;
+
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-align: center;
+
+  /* Firefox */
+  appearance: textfield;
 
   /* Hide native number spinners for cleaner look */
   &::-webkit-outer-spin-button,
   &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
     margin: 0;
+    appearance: none;
   }
-
-  /* Firefox */
-  -moz-appearance: textfield;
-  appearance: textfield;
 }
 
 /* --- Input Wrapper & Suffix for Units --- */
 .inputWrapper {
   position: relative;
+
   display: flex;
   align-items: center;
 
@@ -117,36 +119,39 @@
 
 /* Suffix rendered inside the control bounds */
 .suffix {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-
-  color: var(--c-muted-on-dark);
-  opacity: 0.6;
-  font-size: var(--fs-sm);
-  font-weight: 500;
-
   pointer-events: none;
   user-select: none;
-  white-space: nowrap;
+
+  position: absolute;
 
   /* Ensure suffix paints above the input background */
   z-index: 1;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--c-muted-on-dark);
+  white-space: nowrap;
+
+  opacity: 0.6;
 }
 
 /* Padding adjustment when suffix is present */
 .hasSuffix {
   padding-right: 4rem;
+
   /* Make room for suffix text */
 }
 
 /* Volume input suffix positioning (narrower padding + left-aligned content) */
 .volumeInput.hasSuffix {
   padding-right: 2.75rem;
+  padding-left: 0.75rem;
+
   /* slightly safer than 2.5rem for some fonts */
   text-align: left;
-  padding-left: 0.75rem;
 }
 
 /* Light variant suffix */
@@ -155,10 +160,9 @@
 }
 
 .hasError {
-
   /* Keep it lightweight: error state should not depend on label presence */
   :global(input) {
-    border-color: rgba(239, 68, 68, 0.8);
-    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.35);
+    border-color: rgb(239 68 68 / 80%);
+    box-shadow: 0 0 0 1px rgb(239 68 68 / 35%);
   }
 }

@@ -2,66 +2,78 @@
 @use "../../styles/mixins" as *;
 
 /* Theme Variables & Glass Configuration */
-$glass-surface: rgba(2, 26, 54, 0.95);
-$glass-border: rgba(255, 255, 255, 0.1);
+$glass-surface: rgb(2 26 54 / 95%);
+$glass-border: rgb(255 255 255 / 10%);
 
 .wrapper {
   position: relative;
-  width: 90%;
-  margin-inline: auto;
-  min-height: 100dvh;
+
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   align-items: center;
+  justify-content: flex-start;
+
+  width: 90%;
+  min-height: 100dvh;
+  margin-inline: auto;
   padding-block: var(--sp-4);
+
   /* Reduced from sp-8 for mobile compactness */
   padding-inline: var(--sp-4);
+
   background-color: var(--c-primary-dark);
-  background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), transparent);
+  background-image: linear-gradient(to bottom, rgb(0 0 0 / 40%), transparent);
 
   /* Mobile viewport height fix */
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     /* Let content dictate height on mobile to prevent large gaps */
     padding-top: calc(var(--header-h-stuck) + var(--sp-4));
     padding-bottom: calc(var(--bottom-bar-h) + var(--sp-4));
   }
 
   @include respond-to('md') {
-    min-height: 85svh;
     display: grid;
+
     /* FIX: Force grid track to fill container so it doesn't shrink-wrap content */
     grid-template-columns: minmax(0, 1fr);
     place-items: center;
-    padding-top: var(--sp-8);
     justify-content: center;
+
+    min-height: 85svh;
+    padding-top: var(--sp-8);
   }
 }
 
 .shell {
+  scroll-margin-top: var(--sp-6);
+
   position: relative;
-  margin: 0 auto;
-  max-width: 640px;
-  width: 100%;
-  /* Ensure full width up to max-width to prevent shrink-wrap in grid center */
-  height: auto;
+
   display: flex;
   flex-direction: column;
-  @include container;
+
+  width: 100%;
+  max-width: 640px;
+
+  /* Ensure full width up to max-width to prevent shrink-wrap in grid center */
+  height: auto;
+  margin: 0 auto;
   padding: var(--sp-6) var(--sp-4);
   padding-bottom: calc(var(--sp-6) + env(safe-area-inset-bottom));
-  scroll-margin-top: var(--sp-6);
-  border-radius: var(--radius-lg);
-  background: linear-gradient(145deg, $glass-surface, rgba(2, 20, 40, 0.9));
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
   border: 1px solid $glass-border;
-  box-shadow: var(--shadow-xl);
+  border-radius: var(--radius-lg);
+
   color: var(--c-text-on-dark);
 
+  background: linear-gradient(145deg, $glass-surface, rgb(2 20 40 / 90%));
+  backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-xl);
+
+  @include container;
+
   @include respond-to('md') {
-    padding: var(--sp-8) var(--sp-6);
     min-height: 600px;
+    padding: var(--sp-8) var(--sp-6);
   }
 }
 
@@ -69,9 +81,10 @@ $glass-border: rgba(255, 255, 255, 0.1);
 .header {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-6);
-  margin-bottom: var(--sp-6);
   flex-shrink: 0;
+  gap: var(--sp-6);
+
+  margin-bottom: var(--sp-6);
 }
 
 /* Stepper styles removed */
@@ -82,12 +95,13 @@ $glass-border: rgba(255, 255, 255, 0.1);
 
 .headerTitle {
   margin: 0;
+
   font-size: clamp(1.25rem, 4vw, 2rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
   line-height: 1.1;
   color: white;
   text-wrap: balance;
+  letter-spacing: -0.02em;
 }
 
 .headerTitleAccent {
@@ -95,23 +109,24 @@ $glass-border: rgba(255, 255, 255, 0.1);
 }
 
 .headerSubtitle {
-  font-size: var(--fs-sm);
-  color: var(--c-muted-on-dark);
   margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
   line-height: 1.5;
+  color: var(--c-muted-on-dark);
 }
 
 .form {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
   position: relative;
+
   overflow: hidden;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
 }
 
 /* Suspense Fallback */
 .suspenseFallback {
   padding: 2rem;
-  text-align: center;
   color: var(--c-muted-on-dark);
+  text-align: center;
 }

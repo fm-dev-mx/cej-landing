@@ -17,10 +17,10 @@
 }
 
 .header {
-  text-align: center;
-  margin-bottom: 3rem;
   max-width: 40rem;
+  margin-bottom: 3rem;
   margin-inline: auto;
+  text-align: center;
 
   @include respond-to("md") {
     margin-bottom: 4rem;
@@ -28,11 +28,12 @@
 }
 
 .title {
+  margin-bottom: 1rem;
+
   font-size: 2rem;
   font-weight: 700;
-  color: var(--c-text);
-  margin-bottom: 1rem;
   line-height: 1.2;
+  color: var(--c-text);
 
   @include respond-to("md") {
     font-size: 2.5rem;
@@ -41,19 +42,21 @@
 
 .subtitle {
   font-size: 1.125rem;
-  color: var(--c-muted-strong);
   line-height: 1.6;
+  color: var(--c-muted-strong);
 }
 
 .stepsGrid {
   display: grid;
-  gap: 2rem;
-  list-style: none;
-  padding: 0;
-  margin: 0;
 
   // Responsive grid
   grid-template-columns: 1fr;
+  gap: 2rem;
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
 
   @include respond-to("sm") {
     grid-template-columns: repeat(2, 1fr);
@@ -70,28 +73,34 @@
 }
 
 .stepCard {
-  width: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  border-radius: 1rem;
-  background: var(--c-surface);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  width: 100%;
   border: 1px solid var(--c-border);
+  border-radius: 1rem;
+
+  background: var(--c-surface);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -1px rgb(0 0 0 / 6%);
+
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 
   &:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -2px rgb(0 0 0 / 5%);
   }
 }
 
 .imageWrapper {
   position: relative;
-  width: 100%;
-  aspect-ratio: 16/10;
-  background-color: var(--c-surface-light);
+
   overflow: hidden;
+
+  aspect-ratio: 16/10;
+  width: 100%;
+
+  background-color: var(--c-surface-light);
 }
 
 .stepImage {
@@ -105,39 +114,44 @@
 
 .stepBadge {
   position: absolute;
+  z-index: 2;
   top: 1rem;
   left: 1rem;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  background-color: var(--c-primary);
-  color: white;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+
   font-size: 1.125rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  z-index: 2;
+  font-weight: 700;
+  color: white;
+
+  background-color: var(--c-primary);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
 }
 
 .cardBody {
-  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  padding: 1.5rem;
 }
 
 .stepTitle {
+  margin-bottom: 0.75rem;
+
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--c-text);
-  margin-bottom: 0.75rem;
   line-height: 1.3;
+  color: var(--c-text);
 }
 
 .stepDesc {
   font-size: 0.9375rem;
-  color: var(--c-muted-strong);
   line-height: 1.5;
+  color: var(--c-muted-strong);
 }

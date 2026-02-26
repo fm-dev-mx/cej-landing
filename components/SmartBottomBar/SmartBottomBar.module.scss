@@ -3,43 +3,52 @@
 
 .bar {
   position: fixed;
+  z-index: 50;
   bottom: 0;
   left: 0;
-  width: 100%;
-  background: var(--c-primary-dark);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: var(--sp-3) var(--sp-4);
-  padding-bottom: calc(var(--sp-3) + env(safe-area-inset-bottom));
+
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 50;
+
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  padding-bottom: calc(var(--sp-3) + env(safe-area-inset-bottom));
+  border-top: 1px solid rgb(255 255 255 / 10%);
+
+  background: var(--c-primary-dark);
+
   /* Above regular content, below modal */
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 -4px 20px rgb(0 0 0 / 30%);
+
   animation: slideUp 0.3s ease-out;
 
   @include respond-to("md") {
     display: none;
+
     /* Hide on desktop if using sidebar/header cart */
   }
 }
 
 .info {
   display: flex;
-  align-items: center;
   gap: var(--sp-3);
+  align-items: center;
 }
 
 .countBadge {
-  background: var(--c-accent-base);
-  color: var(--c-accent-content);
+  display: grid;
+  place-items: center;
+
   width: 1.75rem;
   height: 1.75rem;
   border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-weight: 800;
+
   font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--c-accent-content);
+
+  background: var(--c-accent-base);
 }
 
 .textColumn {
@@ -56,23 +65,27 @@
 .total {
   font-size: 1.1rem;
   font-weight: 700;
-  color: white;
   line-height: 1.1;
+  color: white;
 }
 
 .triggerBtn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white;
-  padding: 0.6rem 1.2rem;
-  border-radius: 99px;
-  font-weight: 600;
-  font-size: 0.9rem;
   cursor: pointer;
+
+  padding: 0.6rem 1.2rem;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 99px;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+
+  background: rgb(255 255 255 / 10%);
+
   transition: background 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgb(255 255 255 / 20%);
   }
 }
 

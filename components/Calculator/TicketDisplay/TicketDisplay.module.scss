@@ -1,26 +1,31 @@
 @use "@/styles/mixins" as *;
 
 .ticket {
-    background-color: var(--c-surface);
-    /* Always white paper */
-    color: var(--c-text);
+    position: relative;
+
     /* Ink color */
     width: 100%;
     max-width: 380px;
     margin: 1rem auto;
-    position: relative;
-    box-shadow: var(--shadow-md);
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+
     font-family: var(--font-mono, monospace); // Receipt look
     font-size: 0.85rem;
     line-height: 1.4;
-    transition: transform 0.3s ease;
+
+    /* Always white paper */
+    color: var(--c-text);
+
+    background-color: var(--c-surface);
 
     // Watermark / paper texture
     background-image:
-        radial-gradient(circle at center, rgba(0, 0, 0, 0.02) 2px, transparent 2px),
-        linear-gradient(to bottom right, rgba(0, 0, 0, 0.01) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.01) 50%, rgba(0, 0, 0, 0.01) 75%, transparent 75%);
+        radial-gradient(circle at center, rgb(0 0 0 / 2%) 2px, transparent 2px),
+        linear-gradient(to bottom right, rgb(0 0 0 / 1%) 25%, transparent 25%, transparent 50%, rgb(0 0 0 / 1%) 50%, rgb(0 0 0 / 1%) 75%, transparent 75%);
     background-size: 20px 20px, 40px 40px;
+    filter: drop-shadow(0 4px 6px rgb(0 0 0 / 10%));
+    box-shadow: var(--shadow-md);
+
+    transition: transform 0.3s ease;
 
     &.preview {
         transform: rotate(-1deg); // Slight "draft" angle
@@ -32,17 +37,19 @@
 }
 
 .header {
-    text-align: center;
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+
     margin-bottom: var(--sp-4);
+
+    text-align: center;
 }
 
 .brand {
+    font-size: 1rem;
     font-weight: 800;
     text-transform: uppercase;
-    font-size: 1rem;
     letter-spacing: 0.05em;
 }
 
@@ -58,9 +65,9 @@
 }
 
 .divider {
+    margin-block: var(--sp-3);
     border: none;
     border-top: 1px dashed var(--c-border); // Gray-300
-    margin-block: var(--sp-3);
 }
 
 .customerRow {
@@ -74,8 +81,8 @@
 .volumeInfo {
     margin-bottom: var(--sp-3);
     padding: var(--sp-2);
-    background: var(--c-surface-dim);
     border-radius: var(--radius-sm);
+    background: var(--c-surface-dim);
 }
 
 .volumeRow {
@@ -85,9 +92,9 @@
 }
 
 .volumeNote {
+    margin-top: var(--sp-1);
     font-size: 0.75rem;
     color: var(--c-muted-strong);
-    margin-top: var(--sp-1);
 }
 
 // Phase 1: Calculation details
@@ -95,16 +102,19 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+
     margin-bottom: var(--sp-3);
     padding: var(--sp-2);
-    background: var(--c-surface-dim);
     border-radius: var(--radius-sm);
+
     font-size: 0.8rem;
+
+    background: var(--c-surface-dim);
 }
 
 .calculationLabel {
-    color: var(--c-muted-strong);
     font-size: 0.7rem;
+    color: var(--c-muted-strong);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -129,9 +139,9 @@
     }
 
     &[data-type="additive"] {
-        color: var(--c-muted-strong);
-        font-size: 0.8rem;
         padding-left: 0.5rem;
+        font-size: 0.8rem;
+        color: var(--c-muted-strong);
 
         &::before {
             content: "+ ";
@@ -150,21 +160,23 @@
     justify-content: space-between;
 
     &.grandTotal {
-        font-size: 1.1rem;
-        font-weight: 800;
         margin-top: var(--sp-2);
         padding-top: var(--sp-2);
         border-top: 2px solid var(--c-text);
+
+        font-size: 1.1rem;
+        font-weight: 800;
     }
 }
 
 .footer {
     margin-top: var(--sp-6);
-    text-align: center;
-    font-size: 0.65rem;
-    color: var(--c-muted);
+
     font-family: var(--font-sans);
+    font-size: 0.65rem;
     line-height: 0.5;
+    color: var(--c-muted);
+    text-align: center;
 
     p {
         margin-bottom: 0.25rem;
@@ -174,51 +186,60 @@
 .disclaimerMain {
     font-size: 0.7rem;
     font-weight: 600;
-    color: var(--c-muted-strong);
     line-height: 0.6;
+    color: var(--c-muted-strong);
 }
 
 // Local Glass Variables
-$glass-bg: rgba(255, 255, 255, 0.03);
-$glass-border: rgba(255, 255, 255, 0.1);
-$glass-bg-hover: rgba(255, 255, 255, 0.05);
-$glass-border-hover: rgba(255, 255, 255, 0.2);
+$glass-bg: rgb(255 255 255 / 3%);
+$glass-border: rgb(255 255 255 / 10%);
+$glass-bg-hover: rgb(255 255 255 / 5%);
+$glass-border-hover: rgb(255 255 255 / 20%);
 
 // Phase 1: Compact variant styles (Horizontal Bar)
 .compact {
+    cursor: default;
+
+    position: relative;
+    transform: none !important;
+
     width: 100%;
+
     /* Allow full width of container */
     max-width: none;
-    background-color: $glass-bg;
-    border: 1px solid $glass-border;
-    border-radius: 99px;
+
     /* Pill shape */
     margin: 0;
-    /* Reset margins */
-    box-shadow: none;
-    /* Remove shadow for cleaner look */
-    filter: none;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-    cursor: default;
-    position: relative;
+    border: 1px solid $glass-border;
+    border-radius: 99px;
+
+    background-color: $glass-bg;
 
     /* Override paper texture/effects */
     background-image: none;
-    transform: none !important;
+
+    /* Remove shadow for cleaner look */
+    filter: none;
+
+    /* Reset margins */
+    box-shadow: none;
+
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 
     &:hover {
-        background-color: $glass-bg-hover;
         border-color: $glass-border-hover;
+        background-color: $glass-bg-hover;
     }
 }
 
 .compactContent {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 1rem;
     gap: var(--sp-4);
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0.5rem 1rem;
 }
 
 .compactInfo {
@@ -229,18 +250,20 @@ $glass-border-hover: rgba(255, 255, 255, 0.2);
 }
 
 .compactTitle {
+    margin: 0;
+
     font-size: 0.75rem;
     font-weight: 600;
+    line-height: 1;
     color: var(--c-muted-on-dark);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin: 0;
-    line-height: 1;
 }
 
 .miniProgress {
     display: flex;
     gap: 0.35rem;
+
     /* Specific tight gap for dots */
     align-items: center;
 }
@@ -249,12 +272,14 @@ $glass-border-hover: rgba(255, 255, 255, 0.2);
     width: 6px;
     height: 6px;
     border-radius: 50%;
+
     background-color: $glass-border;
+
     transition: background-color 0.3s ease, transform 0.3s ease;
 
     &.active {
-        background-color: var(--c-accent);
         transform: scale(1.2);
+        background-color: var(--c-accent);
     }
 
     &.completed {
@@ -276,23 +301,27 @@ $glass-border-hover: rgba(255, 255, 255, 0.2);
 }
 
 /* Cleanup: Remove old vertical compact styles if they are no longer used */
+
 /* .progressList, .progressStep, .compactHeader, .compactTotal... removed */
 
 .resetContainer {
     position: relative;
-    text-align: center;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .resetBtn {
-    background: none;
+    cursor: pointer;
+
     border: none;
+
     font-size: 0.75rem;
     color: var(--c-muted-strong);
     text-decoration: underline;
-    cursor: pointer;
     text-wrap: nowrap;
+
+    background: none;
 
     &:hover {
         color: var(--c-muted-on-dark);
@@ -301,12 +330,14 @@ $glass-border-hover: rgba(255, 255, 255, 0.2);
 
 .compactPlaceholder {
     display: block;
+
+    padding: var(--sp-2) 0;
+
+    font-family: var(--font-sans);
     font-size: 1rem;
     font-weight: 500;
-    color: var(--c-text);
-    font-family: var(--font-sans);
     line-height: 1.4;
-    padding: var(--sp-2) 0;
+    color: var(--c-text);
 }
 
 /* Preview Variant Effects - Removed (Flat design) */
@@ -314,14 +345,15 @@ $glass-border-hover: rgba(255, 255, 255, 0.2);
 /* Print Styles */
 .printOnly {
     display: none;
+
     margin-top: var(--sp-4);
+
     font-size: 0.75rem;
     color: var(--c-text-tertiary);
     text-align: center;
 }
 
 @media print {
-
     /* Hide everything global first */
     :global(body > *),
     :global(nav),
@@ -337,19 +369,23 @@ $glass-border-hover: rgba(255, 255, 255, 0.2);
     }
 
     .ticket {
-        visibility: visible;
         position: absolute;
         top: 0;
         left: 0;
+        transform: none !important;
+
         width: 100%;
+        max-width: none;
         margin: 0;
         padding: 0;
-        box-shadow: none;
-        background: white;
-        color: black;
         border: none;
-        max-width: none;
-        transform: none !important;
+
+        color: black;
+
+        visibility: visible;
+        background: white;
+        box-shadow: none;
+
         /* No rotation */
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
@@ -360,8 +396,8 @@ $glass-border-hover: rgba(255, 255, 255, 0.2);
     }
 
     .header {
-        background: black;
         color: white;
+        background: black;
     }
 
     .printOnly {
@@ -381,8 +417,10 @@ $glass-border-hover: rgba(255, 255, 255, 0.2);
 .perforationBottom {
     position: absolute;
     left: 0;
+
     width: 100%;
     height: 10px;
+
     background-size: 20px 20px;
 }
 
@@ -397,27 +435,30 @@ $glass-border-hover: rgba(255, 255, 255, 0.2);
 }
 
 .warningNote {
+    margin: 1rem;
     font-size: 0.75rem;
     color: var(--c-info-text-on-dark-light);
     text-align: center;
-    margin: 1rem;
 }
 
 // Version Alert (Price Mismatch)
 .versionAlert {
     display: flex;
     gap: var(--sp-3);
+
     padding: var(--sp-3);
-    background-color: var(--c-warning-soft);
     border-bottom: 2px solid var(--c-warning);
-    color: var(--c-error-text);
+
     font-family: var(--font-sans);
     line-height: 1.3;
+    color: var(--c-error-text);
+
+    background-color: var(--c-warning-soft);
 }
 
 .alertIcon {
-    font-size: 1.2rem;
     flex-shrink: 0;
+    font-size: 1.2rem;
 }
 
 .alertContent {
@@ -431,7 +472,7 @@ $glass-border-hover: rgba(255, 255, 255, 0.2);
     }
 
     p {
-        font-size: 0.75rem;
         margin: 0;
+        font-size: 0.75rem;
     }
 }

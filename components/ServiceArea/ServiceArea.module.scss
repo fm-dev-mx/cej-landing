@@ -3,9 +3,9 @@
 @use "../../styles/mixins" as *;
 
 .section {
-  background-color: var(--c-surface);
-  padding-block: var(--sp-12);
   position: relative;
+  padding-block: var(--sp-12);
+  background-color: var(--c-surface);
 }
 
 .container {
@@ -15,16 +15,17 @@
 /* Robust Layout: Stack on mobile, Side-by-side on large screens */
 .grid {
   display: grid;
-  gap: var(--sp-8);
 
   /* Use minmax to prevent content squishing */
   grid-template-columns: 1fr;
+  gap: var(--sp-8);
 
   @include respond-to("lg") {
     grid-template-columns: 1fr 1.2fr;
+    gap: var(--sp-10);
+
     /* Favor map slightly */
     align-items: start;
-    gap: var(--sp-10);
   }
 }
 
@@ -34,6 +35,7 @@
   flex-direction: column;
   gap: var(--sp-6);
   order: 2;
+
   /* Content below map on mobile usually looks better or vice-versa depending on priority. Here standard order. */
 
   @include respond-to("lg") {
@@ -43,23 +45,27 @@
 
 .title {
   @include p.h2;
-  color: var(--c-text);
+
   margin-bottom: var(--sp-2);
+  color: var(--c-text);
 }
 
 .description {
   @include p.lead;
+
   color: var(--c-muted-strong);
 }
 
 /* Contact List */
 .contactList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
   display: flex;
   flex-direction: column;
   gap: var(--sp-5);
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
 }
 
 .contactItem {
@@ -69,15 +75,18 @@
 }
 
 .iconBox {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+
   width: 2.75rem;
   height: 2.75rem;
-  display: grid;
-  place-items: center;
-  background-color: white;
   border: 1px solid var(--c-border);
   border-radius: 12px; // Softer square
+
   font-size: 1.25rem;
-  flex-shrink: 0;
+
+  background-color: white;
   box-shadow: var(--shadow-xs);
 
   &--whatsapp {
@@ -89,13 +98,14 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+
   font-size: var(--fs-base);
   color: var(--c-muted-strong);
 
   strong {
-    color: var(--c-text);
-    font-weight: 600;
     font-size: var(--fs-lg);
+    font-weight: 600;
+    color: var(--c-text);
   }
 }
 
@@ -107,55 +117,63 @@
 /* Schedule Card */
 .scheduleCard {
   margin-top: var(--sp-4);
-  background-color: var(--c-surface-light);
+  padding: var(--sp-6);
   border: 1px solid var(--c-border);
   border-left: 4px solid var(--c-accent-base);
-  padding: var(--sp-6);
   border-radius: var(--radius);
+
+  background-color: var(--c-surface-light);
   box-shadow: var(--shadow-sm);
 }
 
 .scheduleTitle {
+  margin-bottom: var(--sp-3);
+
   font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--c-muted);
-  margin-bottom: var(--sp-3);
-  font-weight: 700;
 }
 
 .scheduleRow {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+
   padding-block: 0.5rem;
   border-bottom: 1px dashed var(--c-border-strong);
+
   font-size: var(--fs-base);
   color: var(--c-text);
 
   &:last-child {
-    border-bottom: none;
     padding-bottom: 0;
+    border-bottom: none;
   }
 
   strong {
-    color: var(--c-primary);
     font-feature-settings: "tnum"; // Tabular numbers alignment
+    color: var(--c-primary);
   }
 }
 
 /* Map Container */
 .mapWrapper {
   position: relative;
-  width: 100%;
-  aspect-ratio: 4/3;
-  border-radius: var(--radius-lg);
+
   overflow: hidden;
+  order: 1;
+
+  aspect-ratio: 4/3;
+  width: 100%;
+  border: 1px solid rgb(0 0 0 / 10%);
+  border-radius: var(--radius-lg);
+
   background-color: var(--c-border);
   box-shadow: var(--shadow-md);
-  border: 1px solid rgba(0, 0, 0, 0.1);
+
   transition: box-shadow 0.3s ease;
-  order: 1;
 
   @include respond-to("sm") {
     aspect-ratio: 16/9;
@@ -182,26 +200,32 @@
 
 /* Map Overlay */
 .mapOverlay {
-  appearance: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  font: inherit;
+  cursor: pointer;
+
   position: absolute;
-  inset: 0;
   z-index: 10;
-  width: 100%;
-  height: 100%;
+  inset: 0;
+
   display: grid;
   place-items: center;
-  cursor: pointer;
+
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+
+  font: inherit;
+
+  appearance: none;
   background: linear-gradient(
     135deg,
-    rgba(2, 26, 54, 0.8),
-    rgba(4, 51, 105, 0.85)
+    rgb(2 26 54 / 80%),
+    rgb(4 51 105 / 85%)
   );
-  transition: opacity 0.3s ease;
   backdrop-filter: blur(3px);
+
+  transition: opacity 0.3s ease;
 
   &:focus-visible {
     /* Using primary-light for focus — red implies error state (WCAG best practice) */
@@ -211,13 +235,16 @@
 }
 
 .overlayContent {
-  text-align: center;
+  transform: translateY(0);
+
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: var(--sp-3);
+  align-items: center;
+
   color: white;
-  transform: translateY(0);
+  text-align: center;
+
   transition: transform 0.3s ease;
 
   .mapWrapper:hover & {
@@ -227,31 +254,34 @@
 
 .overlayIcon {
   font-size: 3rem;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 4px 6px rgb(0 0 0 / 30%));
 }
 
 .overlayText {
-  font-size: var(--fs-lg);
-  font-weight: 700;
-  background-color: var(--c-accent-base);
-  color: var(--c-accent-content);
   padding: 0.6rem 1.5rem;
   border-radius: 99px;
+
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--c-accent-content);
+
+  background-color: var(--c-accent-base);
   box-shadow: var(--shadow-md);
 }
 
 .overlayHint {
   font-size: var(--fs-sm);
-  opacity: 0.9;
   font-weight: 500;
+  opacity: 0.9;
 }
 
 .mapFrame {
+  display: block;
+
   width: 100%;
   height: calc(100% + 68px);
-  border: 0;
-  display: block;
   margin-top: -68px;
+  border: 0;
 }
 
 /* Links */
@@ -262,14 +292,17 @@
 }
 
 .textLink {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: baseline;
+
+  width: fit-content;
+
+  font-weight: 600;
   color: var(--c-primary);
   text-decoration: none;
-  font-weight: 600;
+
   transition: color 0.2s ease;
-  width: fit-content;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.5rem;
 
   &:hover {
     color: var(--c-accent-hover);
@@ -279,8 +312,9 @@
 
 .whatsappLink {
   @extend .textLink;
-  color: var(--c-muted-strong);
+
   align-items: center;
+  color: var(--c-muted-strong);
 
   &:hover {
     color: color-mix(in oklab, var(--c-whatsapp) 90%, black 10%);
@@ -289,6 +323,6 @@
 
 .linkLabel {
   font-size: 0.85em;
-  color: var(--c-muted);
   font-weight: 400;
+  color: var(--c-muted);
 }

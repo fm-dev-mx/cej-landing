@@ -3,14 +3,15 @@
 @use "../../styles/mixins" as *;
 
 .section {
-  padding-block: var(--section-py);
-  background-color: var(--c-surface-light);
   position: relative;
+  padding-block: var(--section-py);
   border-bottom: 1px solid var(--c-border);
+  background-color: var(--c-surface-light);
 }
 
 .container {
   @include container;
+
   display: flex;
   flex-direction: column;
   gap: var(--sp-10);
@@ -18,31 +19,34 @@
 
 /* Header Group */
 .header {
-  text-align: center;
   max-width: 700px;
   margin-inline: auto;
+  text-align: center;
 }
 
 .title {
   @include p.h2;
+
   margin-bottom: var(--sp-3);
   color: var(--c-text);
 }
 
 .subtitle {
   @include p.lead;
+
   color: var(--c-muted-strong);
 }
 
 /* --- Stats Bar (New) --- */
 .statsBar {
   display: flex;
-  justify-content: center;
   flex-wrap: wrap;
   gap: var(--sp-8);
+  justify-content: center;
+
+  margin-bottom: var(--sp-2);
   padding-bottom: var(--sp-8);
   border-bottom: 1px dashed var(--c-border-strong);
-  margin-bottom: var(--sp-2);
 
   @include respond-to("md") {
     gap: var(--sp-12);
@@ -59,8 +63,8 @@
 .statValue {
   font-size: 2.5rem;
   font-weight: 800;
-  color: var(--c-primary);
   line-height: 1;
+  color: var(--c-primary);
   letter-spacing: -0.02em;
 
   @include respond-to("md") {
@@ -69,12 +73,13 @@
 }
 
 .statLabel {
+  margin-top: 0.5rem;
+
   font-size: var(--fs-sm);
-  color: var(--c-muted-strong);
   font-weight: 600;
+  color: var(--c-muted-strong);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-top: 0.5rem;
 }
 
 /* --- Projects Grid (Existing + Refined) --- */
@@ -84,18 +89,21 @@
 
 .imageWrapper {
   position: relative;
-  width: 100%;
-  aspect-ratio: 16/10;
-  background-color: var(--c-border);
+
   overflow: hidden;
+
+  aspect-ratio: 16/10;
+  width: 100%;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+
+  background-color: var(--c-border);
 }
 
 .image {
-  object-fit: cover;
-  transition: transform 0.5s ease;
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
 
   /* Target the parent card hover state from within */
   :global(.card-root:hover) & {
@@ -105,64 +113,75 @@
 
 .badge {
   position: absolute;
+  z-index: 2;
   bottom: var(--sp-3);
   left: var(--sp-3);
-  background-color: rgba(2, 26, 54, 0.95);
-  color: white;
+
+  padding: 0.35rem 0.85rem;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: 99px;
+
   font-size: 0.75rem;
   font-weight: 700;
-  padding: 0.35rem 0.85rem;
-  border-radius: 99px;
+  color: white;
+
+  background-color: rgb(2 26 54 / 95%);
   backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  z-index: 2;
 }
 
 .workTitle {
+  margin: 0;
+
   font-size: var(--fs-lg);
   font-weight: 700;
-  color: var(--c-text);
-  margin: 0;
   line-height: 1.3;
+  color: var(--c-text);
 }
 
 .location {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+
+  margin: 0;
+  margin-top: auto;
+
   font-size: var(--fs-sm);
   color: var(--c-muted);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-top: auto;
 }
 
 /* --- Testimonials Grid (New) --- */
 .testimonialsSection {
-  margin-top: var(--sp-4);
   display: flex;
   flex-direction: column;
   gap: var(--sp-6);
+  margin-top: var(--sp-4);
 }
 
 .testimonialsHeader {
-  text-align: center;
+  position: relative;
+
+  display: flex;
+  gap: var(--sp-4);
+  align-items: center;
+  justify-content: center;
+
   font-size: var(--fs-lg);
   font-weight: 700;
   color: var(--c-text);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--sp-4);
+  text-align: center;
 
   /* Decorative lines */
   &::before,
   &::after {
     content: "";
-    height: 1px;
-    background-color: var(--c-border);
+
     flex: 1;
+
     max-width: 100px;
+    height: 1px;
+
+    background-color: var(--c-border);
   }
 }
 
@@ -172,43 +191,52 @@
 
 /* Testimonial Card Specifics */
 .quoteIcon {
+  margin-bottom: var(--sp-2);
+
   font-size: 2rem;
   line-height: 1;
   color: var(--c-accent-base); // Brand color for the quote mark
+
   opacity: 0.5;
-  margin-bottom: var(--sp-2);
 }
 
 .quoteText {
+  flex: 1;
+
+  margin-bottom: var(--sp-4);
+
   font-size: var(--fs-base);
-  color: var(--c-muted-strong);
   font-style: italic;
   line-height: 1.6;
-  margin-bottom: var(--sp-4);
-  flex: 1;
+  color: var(--c-muted-strong);
+
   /* Pushes author down */
 }
 
 .authorBlock {
   display: flex;
-  align-items: center;
   gap: var(--sp-3);
+  align-items: center;
+
+  margin-top: auto;
   padding-top: var(--sp-4);
   border-top: 1px solid var(--c-border);
-  margin-top: auto;
 }
 
 .authorInitial {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+
   width: 2.5rem;
   height: 2.5rem;
-  background-color: var(--c-primary);
-  color: white;
   border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-weight: 700;
+
   font-size: 1rem;
-  flex-shrink: 0;
+  font-weight: 700;
+  color: white;
+
+  background-color: var(--c-primary);
 }
 
 /* Distinct style for "contractor" vs "individual" if needed */

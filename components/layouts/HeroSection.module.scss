@@ -4,13 +4,17 @@
 
 .hero {
   position: relative;
+
+  overflow: hidden;
   display: flex;
   align-items: flex-start;
-  overflow: hidden;
-  background-color: var(--c-primary-dark);
-  color: var(--c-text-on-dark);
-  min-height: 100svh;
+
   min-width: 100svw;
+  min-height: 100svh;
+
+  color: var(--c-text-on-dark);
+
+  background-color: var(--c-primary-dark);
 
   /* Fallback */
   @supports not (height: 100svh) {
@@ -21,8 +25,8 @@
 /* Background Layers */
 .hero__background {
   position: absolute;
-  inset: 0;
   z-index: 0;
+  inset: 0;
 }
 
 .hero__video,
@@ -38,44 +42,39 @@
   background-color: var(--c-primary-dark);
 }
 
-.hero__imageFallback {
-  background-image: var(--hero-fallback, none);
-  background-size: cover;
-  background-position: center;
-}
 
 .hero__overlay {
   position: absolute;
-  inset: 0;
   z-index: 1;
+  inset: 0;
+
   width: 100%;
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--c-primary-dark) 40%, transparent) 0%,
-    color-mix(in srgb, var(--c-primary-dark) 80%, transparent) 60%,
-    var(--c-primary-dark) 100%
-  );
+
+  background: linear-gradient(to bottom,
+      color-mix(in srgb, var(--c-primary-dark) 40%, transparent) 0%,
+      color-mix(in srgb, var(--c-primary-dark) 80%, transparent) 60%,
+      var(--c-primary-dark) 100%);
 
   @include respond-to("lg") {
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--c-primary-dark) 95%, transparent) 0%,
-      color-mix(in srgb, var(--c-primary-dark) 60%, transparent) 40%,
-      color-mix(in srgb, var(--c-primary-dark) 10%, transparent) 100%
-    );
+    background: linear-gradient(90deg,
+        color-mix(in srgb, var(--c-primary-dark) 95%, transparent) 0%,
+        color-mix(in srgb, var(--c-primary-dark) 60%, transparent) 40%,
+        color-mix(in srgb, var(--c-primary-dark) 10%, transparent) 100%);
   }
 }
 
 /* Content Container */
 .hero__container {
   @include container;
+
   // Uses standard max-width and padding
   position: relative;
-  align-self: center;
-  margin-top: calc(var(--header-h) + var(--sp-6));
   z-index: 2;
-  width: 80%;
 
+  align-self: center;
+
+  width: 80%;
+  margin-top: calc(var(--header-h) + var(--sp-6));
   padding-bottom: calc(var(--header-h) + var(--sp-6));
 
   @include respond-to-height("short") {
@@ -85,27 +84,32 @@
 }
 
 .hero__content {
-  width: 100%;
-  max-width: 32rem;
   display: flex;
   flex-direction: column;
   gap: var(--sp-6);
   align-items: flex-start;
+
+  width: 100%;
+  max-width: 32rem;
 }
 
 .hero__badge {
   display: inline-flex;
-  align-items: center;
   gap: var(--sp-2);
+  align-items: center;
+
   padding: 0.35rem 0.75rem;
-  /* Fine visual adjustment without token */
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgb(255 255 255 / 20%);
   border-radius: 99px;
+
   font-size: var(--fs-xs);
+  font-weight: 600;
+
   // Robust small size
   color: var(--c-text-on-dark);
-  font-weight: 600;
+
+  /* Fine visual adjustment without token */
+  background: rgb(255 255 255 / 10%);
   backdrop-filter: blur(4px);
 
   .hero__badgeIcon {
@@ -118,10 +122,12 @@
 }
 
 .hero__title {
+  margin: 0;
   font-size: var(--fs-hero);
+
   // Uses clamp() from tokens
   line-height: 1.1;
-  margin: 0;
+
   /* Prevent orphan words */
   text-wrap: balance;
 
@@ -136,47 +142,51 @@
 
 .hero__lead {
   @include p.lead;
-  color: var(--c-muted-on-dark);
-  font-size: var(--fs-base);
+
   margin: 0;
+  font-size: var(--fs-base);
+  color: var(--c-muted-on-dark);
 
   @include text-measure(36ch);
+
   // Limit width for readability
 
   strong {
-    color: var(--c-text-on-dark);
     font-weight: 600;
+    color: var(--c-text-on-dark);
   }
 
   @include respond-to("md") {
-    font-size: var(--fs-xl);
     max-width: 40ch;
+    font-size: var(--fs-xl);
   }
 }
 
 /* Features List */
 .hero__features {
-  list-style: none;
-  padding: 0;
-  margin: 0;
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
 
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+
   @include respond-to("sm") {
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-flow: row wrap;
     gap: var(--sp-4);
   }
 }
 
 .hero__feature {
   display: flex;
-  align-items: center;
   gap: var(--sp-2);
-  color: var(--c-muted-on-dark);
+  align-items: center;
+
   font-size: var(--fs-sm);
   line-height: 1.2;
+  color: var(--c-muted-on-dark);
 
   strong {
     color: var(--c-info-text-on-dark);
@@ -191,33 +201,38 @@
 .hero__actions {
   display: flex;
   flex-direction: column;
-  width: 100%;
   gap: var(--sp-3);
+
+  width: 100%;
   margin-top: var(--sp-2);
 
   @include respond-to("sm") {
     flex-direction: row;
-    width: auto;
     gap: var(--sp-4);
+    width: auto;
   }
 }
 
 .hero__btnPrimary {
   @include p.btn;
-  background-color: var(--c-cta);
-  color: var(--c-text-on-dark);
-  border: 1px solid var(--c-cta);
-  font-size: var(--fs-base);
+
   justify-content: center;
+
   padding: var(--sp-3) var(--sp-6);
-  box-shadow: 0 4px 14px var(--c-cta-glow);
+  border: 1px solid var(--c-cta);
+
+  font-size: var(--fs-base);
   font-weight: 700;
+  color: var(--c-text-on-dark);
   text-decoration: none;
 
+  background-color: var(--c-cta);
+  box-shadow: 0 4px 14px var(--c-cta-glow);
+
   &:hover {
-    background-color: var(--c-cta-hover);
-    border-color: var(--c-cta-hover);
     transform: translateY(-2px);
+    border-color: var(--c-cta-hover);
+    background-color: var(--c-cta-hover);
   }
 
   @include respond-to("md") {
@@ -227,18 +242,22 @@
 
 .hero__btnSecondary {
   @include p.btn;
-  background-color: transparent;
-  color: var(--c-text-on-dark);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  font-size: var(--fs-base);
+
   justify-content: center;
+
   padding: var(--sp-3) var(--sp-6);
+  border: 1px solid rgb(255 255 255 / 30%);
+
+  font-size: var(--fs-base);
+  color: var(--c-text-on-dark);
   text-decoration: none;
+
+  background-color: transparent;
   backdrop-filter: blur(4px);
 
   &:hover {
-    background-color: rgba(255, 255, 255, 0.15);
     border-color: white;
+    background-color: rgb(255 255 255 / 15%);
   }
 
   @include respond-to("md") {
@@ -247,6 +266,6 @@
 }
 
 .hero__iconWa {
-  font-size: 1.2em;
   margin-right: 0.5rem;
+  font-size: 1.2em;
 }

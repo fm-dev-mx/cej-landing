@@ -10,14 +10,16 @@
 
 /* --- Layout --- */
 .container {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
     position: relative;
-    min-height: auto;
+
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
     /* Removed fixed 600px to allow compact mode */
     width: 100%;
-    width: 100%;
+    min-height: auto;
+
     /* Ensure form never changes width based on content */
 
     /* Prevent width math surprises inside the calculator */
@@ -30,79 +32,96 @@
 
 /* Stable wrapper for volume inputs to prevent layout shift */
 .volumeSection {
-    /* Stabilize layout: animate height changes instead of jumping */
-    transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: height;
     width: 100%;
+
+    /* Stabilize layout: animate height changes instead of jumping */
+    transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
     /* Prevent internal content from expanding parent */
 }
 
 /* --- Edit Mode Banner --- */
 .editBanner {
     display: flex;
-    align-items: center;
     gap: var(--sp-2);
+    align-items: center;
+
+    margin-bottom: var(--sp-4);
     padding: var(--sp-3) var(--sp-4);
-    background: rgba(254, 201, 20, 0.15);
     border: 1px solid var(--c-accent);
     border-radius: var(--radius);
-    margin-bottom: var(--sp-4);
+
     font-size: var(--fs-sm);
     color: var(--c-accent);
+
+    background: rgb(254 201 20 / 15%);
+
     animation: fadeIn 0.3s ease-out;
 }
 
 .editBannerIcon {
-    font-size: 1.25rem;
     flex-shrink: 0;
+    font-size: 1.25rem;
 }
 
 .editBannerCancel {
+    cursor: pointer;
+
     margin-left: auto;
-    background: none;
+    padding: var(--sp-1) var(--sp-2);
     border: 1px solid var(--c-accent);
     border-radius: var(--radius-sm);
-    color: var(--c-accent);
-    padding: var(--sp-1) var(--sp-2);
+
     font-size: var(--fs-xs);
     font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
+    color: var(--c-accent);
     white-space: nowrap;
 
+    background: none;
+
+    transition: background 0.2s ease, color 0.2s ease;
+
     &:hover {
-        background: var(--c-accent);
         color: var(--c-primary-dark);
+        background: var(--c-accent);
     }
 }
 
 /* --- Active Field Guidance --- */
 .activeField {
     position: relative;
-    border-radius: var(--radius);
-    background-color: var(--c-bg-focus);
-    padding: var(--sp-2);
-    /* Compact Rhythm: Significantly reduced from sp-8 to sp-4 */
-    margin-block: var(--sp-4);
+
     /* Fix overlap: Ensure active field sits above subsequent elements (like dropdowns) */
     z-index: 10;
+
+    /* Compact Rhythm: Significantly reduced from sp-8 to sp-4 */
+    margin-block: var(--sp-4);
+    padding: var(--sp-2);
+    border-radius: var(--radius);
+
+    background-color: var(--c-bg-focus);
+
+    &::before {
+        pointer-events: none;
+        content: "";
+
+        position: absolute;
+        z-index: 0;
+        inset: -0.5rem;
+
+        border: 2px solid var(--c-accent);
+        border-radius: calc(var(--radius) + 4px);
+
+        opacity: 0.4;
+
+        transition: opacity 0.3s ease-in;
+        animation: fadeIn 0.6s ease-out;
+    }
 
     /* Ensure content sits above the highlight overlays */
     >* {
         position: relative;
-    }
-
-    &::before {
-        content: "";
-        position: absolute;
-        inset: -0.5rem;
-        border: 2px solid var(--c-accent);
-        border-radius: calc(var(--radius) + 4px);
-        opacity: 0.4;
-        pointer-events: none;
-        z-index: 0;
-        transition: opacity 0.3s ease-in;
-        animation: fadeIn 0.6s ease-out;
     }
 
     /* Optional: Spotlight label - REMOVED */
@@ -126,23 +145,27 @@
 /* Compact variant for assist mode - tighter vertical spacing */
 .fieldCompact {
     @extend .field;
-    margin-bottom: var(--sp-2);
+
     gap: 0.375rem;
+    margin-bottom: var(--sp-2);
 }
 
 .fieldWithSeparator {
     @extend .field;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+
     padding-top: 1rem;
+    border-top: 1px solid rgb(255 255 255 / 10%);
 }
 
 .hint {
+    max-width: 70ch;
+    margin-top: 0.5rem;
+
     font-size: var(--fs-xs);
     color: var(--c-muted-on-dark);
-    opacity: 0.8;
-    margin-top: 0.5rem;
-    max-width: 70ch;
     text-align: right;
+
+    opacity: 0.8;
 }
 
 .emptyStateHint {
@@ -154,12 +177,14 @@
 /* --- Grids --- */
 .compactGrid {
     display: grid;
+    grid-auto-flow: row;
+
     /* Key fix: allow columns to shrink without overflowing (prevents overlap) */
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--sp-3);
     align-items: start;
+
     width: 100%;
-    grid-auto-flow: row;
     margin-top: var(--sp-10);
 }
 
@@ -172,25 +197,26 @@
 .compactGrid :global(input),
 .compactGrid :global(select),
 .compactGrid :global(textarea) {
+    box-sizing: border-box;
     width: 100%;
     min-width: 0;
     max-width: 100%;
-    box-sizing: border-box;
 }
 
 /* Stack earlier on small screens (more reliable than 360px only) */
-@media (max-width: 420px) {
+@media (width <=420px) {
     .compactGrid {
         grid-template-columns: 1fr;
     }
 }
 
 .compactGrid label {
-    font-size: 0.9rem;
-    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
     display: block;
+
+    font-size: 0.9rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Selection Grids (RAM pattern) */
@@ -204,7 +230,7 @@
     gap: var(--sp-2);
 }
 
-@media (max-width: 420px) {
+@media (width <=420px) {
     .radioRow {
         grid-template-columns: 1fr;
     }
@@ -212,51 +238,60 @@
 
 /* --- Radio & Pills Custom UI --- */
 .radio {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: var(--sp-3);
-    padding: 0.75rem 1rem;
-    border-radius: var(--radius);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    background-color: rgba(255, 255, 255, 0.03);
     cursor: pointer;
-    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+
+    position: relative;
+
+    display: flex;
+    gap: var(--sp-3);
+    align-items: center;
+
     /* Compactness: Reduced min-height */
     min-height: 2.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgb(255 255 255 / 15%);
+    border-radius: var(--radius);
+
+    background-color: rgb(255 255 255 / 3%);
+
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 
     &:hover {
-        background-color: rgba(255, 255, 255, 0.06);
+        background-color: rgb(255 255 255 / 6%);
     }
 
     /* Progressive enhancement: :has() is supported in modern browsers */
     &:has(input:checked) {
-        background-color: rgba(254, 201, 20, 0.15);
         border-color: var(--c-accent);
+        background-color: rgb(254 201 20 / 15%);
         box-shadow: inset 0 0 0 1px var(--c-accent);
 
         span {
-            color: var(--c-accent);
             font-weight: 700;
+            color: var(--c-accent);
         }
     }
 
     input {
         /* A11y: visually hidden but focusable */
         position: absolute;
+
+        overflow: hidden;
+
         width: 1px;
         height: 1px;
-        padding: 0;
         margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
+        padding: 0;
         border: 0;
 
+        white-space: nowrap;
+
+        clip-path: inset(50%);
+
         &:focus-visible+span {
+            border-radius: 2px;
             outline: 2px solid var(--c-accent);
             outline-offset: 2px;
-            border-radius: 2px;
         }
     }
 
@@ -268,31 +303,36 @@
 
 .pillGroup {
     display: flex;
-    gap: var(--sp-3);
-    margin-top: 0.5rem;
-    min-width: 0;
 
     /* Avoid collisions on narrow widths */
     flex-wrap: wrap;
+    gap: var(--sp-3);
+
+    min-width: 0;
+    margin-top: 0.5rem;
 }
 
 .pill {
-    position: relative;
-    flex: 1 1 12rem;
     /* allows wrapping gracefully */
     cursor: pointer;
+    position: relative;
+    flex: 1 1 12rem;
     min-width: 0;
 
     input {
         position: absolute;
+
+        overflow: hidden;
+
         width: 1px;
         height: 1px;
-        padding: 0;
         margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
+        padding: 0;
         border: 0;
+
+        white-space: nowrap;
+
+        clip-path: inset(50%);
 
         &:focus-visible+span {
             outline: 2px solid var(--c-accent);
@@ -304,41 +344,47 @@
         display: flex;
         align-items: center;
         justify-content: center;
+
+        width: 100%;
         min-height: 2.75rem;
         padding: 0.5rem 0.75rem;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px solid rgb(255 255 255 / 20%);
         border-radius: 99px;
-        color: var(--c-muted-on-dark);
-        font-weight: 500;
-        transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
         font-size: 0.85rem;
-        text-align: center;
+        font-weight: 500;
         line-height: 1.2;
-        width: 100%;
+        color: var(--c-muted-on-dark);
+        text-align: center;
+
+        background: rgb(255 255 255 / 5%);
+
+        transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
     }
 
     &:has(input:checked) span {
-        background: var(--c-accent);
-        color: var(--c-primary-dark);
         border-color: var(--c-accent);
         font-weight: 700;
+        color: var(--c-primary-dark);
+        background: var(--c-accent);
     }
 }
 
 .cofferSection {
     margin-top: var(--sp-4);
     padding-top: var(--sp-4);
-    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    border-top: 1px dashed rgb(255 255 255 / 10%);
     animation: fadeIn 0.3s ease-out;
 }
 
 .cofferLabel {
     display: block;
+
     margin-bottom: var(--sp-2);
+
     font-size: var(--fs-sm);
-    color: var(--c-muted-on-dark);
     font-weight: 600;
+    color: var(--c-muted-on-dark);
 }
 
 /* --- Feedback Elements --- */
@@ -350,20 +396,24 @@
 }
 
 .note {
+    margin-block: 0.5rem;
+
     font-size: var(--fs-xs);
     color: var(--c-info-text-on-dark);
     text-align: center;
-    margin-block: 0.5rem;
+
     opacity: 0.9;
 }
 
 /* --- Summary Card --- */
 .summary {
-    background-color: rgba(255, 255, 255, 0.05);
-    padding: 1.5rem;
-    border-radius: 1rem;
     margin-top: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem;
+    border: 1px solid rgb(255 255 255 / 10%);
+    border-radius: 1rem;
+
+    background-color: rgb(255 255 255 / 5%);
+
     transition: border-color 0.3s ease;
 
     &.summarySuccess {
@@ -373,14 +423,16 @@
 
 .summaryRow {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 1rem;
     gap: var(--sp-2);
+    align-items: flex-end;
+    justify-content: space-between;
+
+    margin-bottom: 1rem;
 }
 
 .summaryLabel {
     display: block;
+
     font-size: 0.8rem;
     color: var(--c-muted-on-dark);
     text-transform: uppercase;
@@ -395,13 +447,14 @@
 
 .summaryValueHighlight {
     @extend .summaryValue;
+
     color: var(--c-accent);
 }
 
 .summaryFooter {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.5);
     margin-top: 0.75rem;
+    font-size: 0.75rem;
+    color: rgb(255 255 255 / 50%);
     text-align: center;
 }
 
@@ -412,8 +465,9 @@
 
 .warningNote {
     @extend .note;
-    text-align: center;
+
     margin-bottom: 1rem;
+    text-align: center;
 }
 
 .successActions {
@@ -424,21 +478,26 @@
 
 .successHint {
     @extend .hint;
-    text-align: center;
+
     margin: 0;
+    text-align: center;
 }
 
 .livePriceBadge {
     display: inline-flex;
     align-self: center;
+
+    margin-bottom: var(--sp-4);
     padding: 0.25rem 0.75rem;
-    background: var(--c-whatsapp-soft);
     border: 1px solid var(--c-whatsapp);
     border-radius: 99px;
+
     font-size: var(--fs-xs);
     font-weight: 600;
     color: var(--c-whatsapp);
-    margin-bottom: var(--sp-4);
+
+    background: var(--c-whatsapp-soft);
+
     animation: fadeIn 0.3s ease-out;
 }
 
@@ -453,21 +512,25 @@
     margin-top: 0.5rem;
 }
 
-@media (max-width: 420px) {
+@media (width <=420px) {
     .gridActions {
         grid-template-columns: 1fr;
     }
 }
 
 .textBtn {
-    background: none;
+    cursor: pointer;
+
+    padding: 0;
     border: none;
+
     color: var(--c-muted-on-dark);
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 2px;
-    cursor: pointer;
-    padding: 0;
+
+    background: none;
+
     transition: color 0.2s ease;
 
     &:hover {
@@ -477,8 +540,9 @@
 
 .textBtnPrimary {
     @extend .textBtn;
-    color: var(--c-accent);
+
     font-weight: 600;
+    color: var(--c-accent);
 
     &:hover {
         color: #fff;
@@ -487,24 +551,28 @@
 
 .editDataBtn {
     @extend .textBtn;
+
     font-size: 0.8rem;
     text-align: right;
 }
 
 .editQuoteDataBtn {
     @extend .editDataBtn;
+
     font-size: 1rem;
     text-align: center;
 }
 
 .historyBtn {
     @extend .textBtnPrimary;
+
     display: block;
     margin: 0.5rem auto;
 }
 
 .newQuoteBtn {
     @extend .textBtn;
+
     display: block;
     margin: 0 auto;
     font-size: 0.85rem;
@@ -513,12 +581,14 @@
 /* --- Selector Active State --- */
 .selectorActive {
     :global(select) {
-        background-color: rgba(255, 255, 255, 0.1) !important;
         border-color: var(--c-accent) !important;
-        opacity: 1 !important;
-        color: white !important;
-        box-shadow: 0 0 0 1px var(--c-accent) !important;
+
         font-weight: 600;
+        color: white !important;
+
+        opacity: 1 !important;
+        background-color: rgb(255 255 255 / 10%) !important;
+        box-shadow: 0 0 0 1px var(--c-accent) !important;
 
         option {
             background-color: #1e1e1e;
@@ -533,49 +603,61 @@
 
 /* New Toggle Button Styles */
 .toggleButton {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
     cursor: pointer;
     user-select: none;
+
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
 }
 
 .toggleInput {
     position: absolute;
+
+    overflow: hidden;
+
     width: 1px;
     height: 1px;
-    padding: 0;
     margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
+    padding: 0;
     border: 0;
+
+    white-space: nowrap;
+
+    clip-path: inset(50%);
 }
 
 .toggleFakeCheckbox {
-    width: 1.25rem;
-    height: 1.25rem;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-    background-color: transparent;
-    transition: all 0.2s ease;
     display: grid;
     place-items: center;
 
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid rgb(255 255 255 / 30%);
+    border-radius: 4px;
+
+    background-color: transparent;
+
+    transition: all 0.2s ease;
+
     &::after {
         content: "";
+
+        transform: scale(0);
+
         width: 0.75rem;
         height: 0.75rem;
-        background-color: var(--c-primary-dark);
         border-radius: 2px;
-        transform: scale(0);
+
+        background-color: var(--c-primary-dark);
+
         transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 }
 
 .toggleButton input:checked+.toggleFakeCheckbox {
-    background-color: var(--c-accent);
     border-color: var(--c-accent);
+    background-color: var(--c-accent);
 
     &::after {
         transform: scale(1);
@@ -584,8 +666,8 @@
 
 .toggleLabel {
     font-size: 0.9rem;
-    color: var(--c-muted-on-dark);
     font-weight: 500;
+    color: var(--c-muted-on-dark);
     transition: color 0.2s ease;
 }
 
@@ -604,21 +686,21 @@
 /* Compression Layer Override Section */
 .compressionHeader {
     display: flex;
+    gap: var(--sp-2);
     place-content: space-between;
     margin-bottom: 0.5rem;
-    gap: var(--sp-2);
 }
 
 .compressionNote {
-    text-align: left;
     margin: 0;
+    text-align: left;
     opacity: 0.8;
 }
 
 .label {
     font-size: var(--fs-sm);
-    color: var(--c-muted-on-dark);
     font-weight: 600;
+    color: var(--c-muted-on-dark);
 }
 
 /* --- Helper Text for Form Fields --- */
@@ -630,32 +712,35 @@
 }
 
 .helperText {
+    margin: 0.25rem 0 0;
+
     font-size: 0.75rem;
-    color: var(--c-muted-on-dark);
-    opacity: 0.7;
-    margin: 0.25rem 0 0 0;
     font-style: italic;
+    color: var(--c-muted-on-dark);
+
+    opacity: 0.7;
 }
 
 .selectorHint {
+    margin-top: 0.5rem;
     font-size: 0.75rem;
     color: #94a3b8;
-    margin-top: 0.5rem;
 }
 
 /* --- Input with unit helpers (optional but recommended) --- */
+
 /* Use this wrapper around input + "metros/cm" label to prevent collisions */
 .inputWithUnit {
     display: flex;
-    align-items: center;
     gap: var(--sp-2);
+    align-items: center;
     min-width: 0;
 }
 
 .inputWithUnit :global(input) {
     flex: 1 1 auto;
-    min-width: 0;
     width: 100%;
+    min-width: 0;
 }
 
 .unit {
@@ -666,13 +751,13 @@
 /* --- Animations --- */
 @keyframes fadeIn {
     from {
-        opacity: 0;
         transform: translateY(5px);
+        opacity: 0;
     }
 
     to {
-        opacity: 1;
         transform: translateY(0);
+        opacity: 1;
     }
 }
 
@@ -688,12 +773,11 @@
 
 /* Respect reduced motion preferences */
 @media (prefers-reduced-motion: reduce) {
-
     .activeField::before,
     .activeField::after,
     .cofferSection,
     .animateFadeIn {
-        animation: none !important;
         transition: none !important;
+        animation: none !important;
     }
 }

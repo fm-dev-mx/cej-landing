@@ -8,26 +8,34 @@
 
   // Font sizes (Mobile First)
   --fs-xxs: 0.625rem;
+
   /* 10px */
   --fs-xs: 0.8125rem;
+
   /* 13px */
   --fs-sm: 0.875rem;
+
   /* 14px */
   --fs-base: 1rem;
+
   /* 16px */
   --fs-lg: 1.125rem;
+
   /* 18px */
   --fs-xl: 1.25rem;
+
   /* 20px */
   --fs-2xl: 1.5rem;
+
   /* 24px */
   --fs-3xl: 1.875rem;
+
   /* 30px */
   --fs-4xl: 3rem;
+
   /* 48px */
 
   --fs-hero: clamp(2rem, 3vw + 1rem, 4rem);
-
   --lh-tight: 1.1;
   --lh-normal: 1.5;
 
@@ -52,33 +60,31 @@
   --c-primary: #193f6e;
   --c-primary-dark: #0e2240;
   --c-primary-light: #2a5fa8; // Mid-Navy: for gradients and elevated surfaces
+
   /* Carmín Elegante — Brand Accent */
   --c-accent-base: #c02629; // Carmín: premium, less harsh than pure red
   --c-accent-hover: #a61b1d; // :hover — deeper engagement
   --c-accent-active: #8b1214; // :active / :pressed — tactile feedback
-  --c-accent-soft: rgba(192, 38, 41, 0.09); // Checked cards, light fills
+  --c-accent-soft: rgb(192 38 41 / 9%); // Checked cards, light fills
   --c-accent-subtle: #fdf2f2; // Large-area soft backgrounds
-  --c-accent-content: #ffffff; // Text on solid accent — WCAG AA+
+  --c-accent-content: #fff; // Text on solid accent — WCAG AA+
+
   /* Back-compat shim: keep --c-accent pointing to the new base */
   --c-accent: var(--c-accent-base);
 
   /* CTA = Illuminated Navy (Option B) — separated from brand accent */
   --c-cta: var(--c-primary-light);
   --c-cta-hover: color-mix(in oklab, var(--c-primary-light) 85%, black);
-  --c-cta-glow: rgba(42, 95, 168, 0.3);
-
+  --c-cta-glow: rgb(42 95 168 / 30%);
   --c-text-on-dark: color-mix(in oklab, white 95%, var(--c-primary));
   --c-muted-on-dark: #cbd5e1;
-
   --c-bg: #0e2240;
-  --c-surface: #ffffff;
+  --c-surface: #fff;
   --c-surface-dark: #b2bece;
   --c-surface-light: #f9fafb;
-
   --c-text: #111827;
   --c-muted: #6b7280;
   --c-muted-strong: #4b5563;
-
   --c-border: #e5e7eb;
   --c-border-strong: #cbd5e1;
 
@@ -87,6 +93,7 @@
   --c-success-soft: #ecfdf3;
   --c-warning: #f59e0b;
   --c-warning-soft: #fffbeb;
+
   /* Error: intentionally separated from brand accent to avoid UX confusion */
   --c-error-base: #dc2626; // Red 600 — only for validation errors
   --c-error-text: #b91c1c; // Red 700 — accessible on light bg
@@ -95,29 +102,26 @@
 
   /* Semantic Feedback (Dark Mode / Glass) */
   --c-info-text-on-dark: #93c5fd; // Blue 300
-  --c-info-bg-on-dark: rgba(14, 165, 233, 0.1); // Sky 500 alpha
-  --c-info-border-on-dark: rgba(14, 165, 233, 0.2);
-
+  --c-info-bg-on-dark: rgb(14 165 233 / 10%); // Sky 500 alpha
+  --c-info-border-on-dark: rgb(14 165 233 / 20%);
   --c-error-text-on-dark: #fdba74; // Orange 300
-  --c-error-bg-on-dark: rgba(234, 88, 12, 0.1);
-  --c-error-border-on-dark: rgba(234, 88, 12, 0.2);
-
+  --c-error-bg-on-dark: rgb(234 88 12 / 10%);
+  --c-error-border-on-dark: rgb(234 88 12 / 20%);
   --c-step-bg: #f9fafb;
   --c-step-border: #e5e7eb;
   --c-step-current: #193f6e;
   --c-step-current-soft: #e3edf7;
-
   --c-whatsapp: #25d366;
   --c-whatsapp-soft: #e8f9f0;
   --c-call: #193f6e;
   --c-call-soft: #e3edf7;
 
   /* --- Shadows --- */
-  --shadow-xs: 0 1px 1px rgba(15, 23, 42, 0.04);
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
-  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
-  --shadow-xl: 0 25px 50px -12px rgba(14, 34, 64, 0.25);
-  --shadow-glass-top: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  --shadow-xs: 0 1px 1px rgb(15 23 42 / 4%);
+  --shadow-sm: 0 1px 2px rgb(15 23 42 / 6%);
+  --shadow-md: 0 4px 12px rgb(15 23 42 / 8%);
+  --shadow-xl: 0 25px 50px -12px rgb(14 34 64 / 25%);
+  --shadow-glass-top: inset 0 1px 1px rgb(255 255 255 / 10%);
 
   /* --- Layout & Dimensions --- */
 
@@ -129,12 +133,15 @@
 
   /* Header Heights */
   --header-h: 80px;
+
   /* Initial State */
   --header-h-stuck: 64px;
+
   /* Scrolled State (Compact) */
 
   /* Bottom Bar */
   --bottom-bar-h: 72px;
+
   /* Height of the sticky CTA bar on mobile */
 }
 

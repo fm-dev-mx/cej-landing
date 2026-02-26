@@ -1,5 +1,6 @@
 // styles/_mixins.scss
 @use "sass:map";
+
 // FIX: Use explicit relative path to ensure resolution from any depth
 @use "@/styles/breakpoints" as b;
 
@@ -8,8 +9,8 @@
 
 @mixin container {
   width: min(90%, 1200px);
-  margin-inline: auto;
   margin-bottom: var(--sp-6);
+  margin-inline: auto;
 }
 
 @mixin container-wide {
@@ -26,12 +27,13 @@
  */
 @mixin grid-ram($min-width: 260px, $gap: var(--sp-4)) {
   display: grid;
-  gap: $gap;
+
   /* min(100%, $min-width) ensures that if the container is smaller than
      the min-width (e.g. tiny phones), the column just takes 100%
      instead of causing overflow.
   */
   grid-template-columns: repeat(auto-fit, minmax(min(100%, $min-width), 1fr));
+  gap: $gap;
 }
 
 /**
@@ -40,6 +42,7 @@
  */
 @mixin text-measure($ch: 60ch) {
   max-width: $ch;
+
   /* Prevent widows if possible */
   text-wrap: pretty;
 }
@@ -54,14 +57,14 @@
     }
   }
 
-  @else {
+ @else {
     @warn "Unknown breakpoint: #{$breakpoint}.";
   }
 }
 
 @mixin respond-to-height($type) {
-  @if $type =="short" {
-    @media screen and (max-height: 667px) {
+  @if $type == "short" {
+    @media screen and (height <= 667px) {
       @content;
     }
   }

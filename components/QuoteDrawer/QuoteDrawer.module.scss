@@ -4,25 +4,31 @@
 
 .backdrop {
     position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(2px);
     z-index: 100;
+    inset: 0;
+
+    background: rgb(0 0 0 / 50%);
+    backdrop-filter: blur(2px);
+
     animation: fade 0.2s ease-out;
 }
 
 .drawer {
     position: fixed;
+    z-index: 101;
     top: 0;
     right: 0;
     bottom: 0;
-    width: 100%;
-    max-width: 400px;
-    background: var(--c-surface);
-    z-index: 101;
+
     display: flex;
     flex-direction: column;
-    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.2);
+
+    width: 100%;
+    max-width: 400px;
+
+    background: var(--c-surface);
+    box-shadow: -4px 0 24px rgb(0 0 0 / 20%);
+
     animation: slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -30,8 +36,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     padding: var(--sp-4);
     border-bottom: 1px solid var(--c-border);
+
     background: var(--c-bg);
 }
 
@@ -41,94 +49,115 @@
 }
 
 .tab {
-    background: none;
+    cursor: pointer;
+
+    padding-bottom: 0.25rem;
     border: none;
+    border-bottom: 2px solid transparent;
+
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--c-muted);
-    padding-bottom: 0.25rem;
-    border-bottom: 2px solid transparent;
-    cursor: pointer;
+
+    background: none;
+
     transition: all 0.2s;
 
     &.active {
-        color: var(--c-text);
         border-color: var(--c-accent);
+        color: var(--c-text);
     }
 }
 
 .closeBtn {
-    background: none;
+    cursor: pointer;
+
+    padding: 0.5rem;
     border: none;
+
     font-size: 1.5rem;
     line-height: 1;
     color: var(--c-muted);
-    cursor: pointer;
-    padding: 0.5rem;
+
+    background: none;
 }
 
 .body {
-    flex: 1;
     overflow-y: auto;
-    background: var(--c-surface-light);
+    flex: 1;
     padding: var(--sp-4);
+    background: var(--c-surface-light);
 }
 
 .emptyState {
-    text-align: center;
     margin-top: 3rem;
     color: var(--c-muted);
+    text-align: center;
 
     .linkBtn {
+        cursor: pointer;
+
         margin-top: 1rem;
-        background: none;
         border: none;
+
         color: var(--c-primary);
         text-decoration: underline;
-        cursor: pointer;
+
+        background: none;
     }
 }
 
 .list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
     display: flex;
     flex-direction: column;
     gap: var(--sp-3);
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
 }
 
 .item {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: var(--radius);
-    padding: var(--sp-4);
+    position: relative;
+
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    position: relative;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+    padding: var(--sp-4);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+
+    background: var(--c-surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+
     /* Subtle start */
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
     // Left border indicator
     &::before {
         content: '';
+
         position: absolute;
-        left: 0;
         top: 12px;
         bottom: 12px;
+        left: 0;
+
         width: 3px;
-        background: var(--c-border);
         border-radius: 0 3px 3px 0;
+
+        background: var(--c-border);
+
         transition: background 0.2s ease;
     }
 
     &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+
         /* Elevated feel */
-        border-color: rgba(0, 0, 0, 0.1);
+        border-color: rgb(0 0 0 / 10%);
+        box-shadow: 0 8px 16px rgb(0 0 0 / 10%);
 
         &::before {
             background: var(--c-accent);
@@ -138,19 +167,24 @@
 
 .itemHeader {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    font-size: 0.8rem;
+    justify-content: space-between;
+
     padding-left: 0.5rem;
+
+    font-size: 0.8rem;
+
     /* Space for border */
 }
 
 .itemDate {
-    color: #94a3b8;
-    font-size: 0.7rem;
-    background: rgba(0, 0, 0, 0.03);
     padding: 2px 6px;
     border-radius: 4px;
+
+    font-size: 0.7rem;
+    color: #94a3b8;
+
+    background: rgb(0 0 0 / 3%);
 }
 
 .itemDetails {
@@ -161,36 +195,41 @@
 
 // Customer badge variant (success/green styling)
 .detailBadgeCustomer {
-    font-size: 0.75rem;
     padding: 2px 8px;
     border-radius: 4px;
+
+    font-size: 0.75rem;
     font-weight: 500;
-    background: var(--c-success-subtle, #f0fdf4);
     color: var(--c-success-strong, #166534);
+
+    background: var(--c-success-subtle, #f0fdf4);
 }
 
 .detailBadge {
-    font-size: 0.75rem;
     padding: 2px 8px;
     border-radius: 4px;
-    background-color: rgba(0, 0, 0, 0.05);
-    color: var(--c-muted-strong);
+
+    font-size: 0.75rem;
     font-weight: 500;
+    color: var(--c-muted-strong);
+
+    background-color: rgb(0 0 0 / 5%);
 }
 
 .itemFooter {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+
     margin-top: 0.5rem;
     padding-top: 0.5rem;
     border-top: 1px dashed var(--c-border);
 }
 
 .itemPrice {
+    font-size: 1rem;
     font-weight: 800;
     color: var(--c-primary);
-    font-size: 1rem;
 }
 
 .itemActions {
@@ -199,12 +238,15 @@
 }
 
 .textBtnDanger {
-    background: none;
-    border: none;
-    color: var(--c-error-text);
-    font-size: 0.75rem;
     cursor: pointer;
+
+    border: none;
+
+    font-size: 0.75rem;
     font-weight: 500;
+    color: var(--c-error-text);
+
+    background: none;
 
     &:hover {
         text-decoration: underline;
@@ -212,12 +254,15 @@
 }
 
 .textBtnPrimary {
-    background: none;
-    border: none;
-    color: var(--c-primary);
-    font-size: 0.75rem;
     cursor: pointer;
+
+    border: none;
+
+    font-size: 0.75rem;
     font-weight: 700;
+    color: var(--c-primary);
+
+    background: none;
 
     &:hover {
         color: var(--c-accent-hover);
@@ -226,13 +271,15 @@
 }
 
 .footer {
-    padding: var(--sp-4);
-    padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom));
-    background: var(--c-surface);
-    border-top: 1px solid var(--c-border);
     display: flex;
     flex-direction: column;
     gap: var(--sp-4);
+
+    padding: var(--sp-4);
+    padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--c-border);
+
+    background: var(--c-surface);
 }
 
 .totalRow {

@@ -2,56 +2,59 @@
 @use "tokens";
 
 @mixin input-base {
-  border-radius: var(--radius);
   /* 0.85rem ~ 13.6px -> Ajustado a token más cercano o mantenido si es crítico */
   padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius);
+
   font-size: var(--fs-base);
   line-height: var(--lh-normal);
-  transition: all 0.2s ease-out;
+
   appearance: none;
 
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+  transition: all 0.2s ease-out;
 
   /* Spinners fix for numbers */
   &::-webkit-inner-spin-button,
   &::-webkit-outer-spin-button {
-    opacity: 0.5;
+    cursor: pointer;
     height: var(--sp-8);
     margin: 0;
-    cursor: pointer;
+    opacity: 0.5;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 }
 
 @mixin input-variant-dark {
-  background-color: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgb(255 255 255 / 30%);
   color: var(--c-text-on-dark);
+  background-color: rgb(0 0 0 / 40%);
 
   &::placeholder {
-    color: rgba(255, 255, 255, 0.4);
+    color: rgb(255 255 255 / 40%);
   }
 
   &:hover:not(:disabled) {
-    border-color: rgba(255, 255, 255, 0.5);
-    background-color: rgba(0, 0, 0, 0.5);
+    border-color: rgb(255 255 255 / 50%);
+    background-color: rgb(0 0 0 / 50%);
   }
 
   &:focus-visible {
-    outline: none;
     border-color: var(--c-primary-light);
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgb(0 0 0 / 60%);
+    outline: none;
     box-shadow:
       0 0 0 1px var(--c-primary-light),
-      0 0 0 4px rgba(42, 95, 168, 0.2);
+      0 0 0 4px rgb(42 95 168 / 20%);
   }
 
   /* Error State */
   &[aria-invalid="true"] {
     border-color: var(--c-error-text-on-dark);
-    background-color: rgba(239, 68, 68, 0.05);
+    background-color: rgb(239 68 68 / 5%);
 
     &:focus-visible {
       border-color: var(--c-error-text-on-dark);
@@ -61,9 +64,9 @@
 }
 
 @mixin input-variant-light {
-  background-color: var(--c-surface);
   border: 1px solid var(--c-border);
   color: var(--c-text);
+  background-color: var(--c-surface);
 
   &::placeholder {
     color: var(--c-muted);
@@ -74,8 +77,8 @@
   }
 
   &:focus-visible {
-    outline: none;
     border-color: var(--c-primary);
+    outline: none;
     box-shadow: 0 0 0 4px var(--c-step-current-soft);
   }
 
@@ -92,10 +95,10 @@
 }
 
 @mixin label-base {
+  display: block;
+  margin-bottom: var(--sp-1);
   font-size: var(--fs-base);
   font-weight: 600;
-  margin-bottom: var(--sp-1);
-  display: block;
 }
 
 @mixin label-variant-dark {

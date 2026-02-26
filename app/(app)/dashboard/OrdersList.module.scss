@@ -7,10 +7,12 @@
 }
 
 .card {
-    background: var(--c-surface);
+    padding: var(--sp-4);
     border: 1px solid var(--c-border);
     border-radius: var(--radius);
-    padding: var(--sp-4);
+
+    background: var(--c-surface);
+
     transition: box-shadow 0.15s ease, border-color 0.15s ease;
 
     &:hover {
@@ -21,54 +23,54 @@
 
 .cardHeader {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: var(--sp-3);
 }
 
 .folio {
+    font-family: var(--font-mono, monospace);
     font-size: var(--fs-sm);
     font-weight: 600;
-    font-family: var(--font-mono, monospace);
     color: var(--c-primary);
 }
 
 .status {
-    font-size: var(--fs-xs);
-    font-weight: 500;
     padding: var(--sp-1) var(--sp-2);
     border-radius: 99px;
+    font-size: var(--fs-xs);
+    font-weight: 500;
 }
 
 .statusDraft {
-    background: var(--c-surface-dark);
     color: var(--c-muted-strong);
+    background: var(--c-surface-dark);
 }
 
 .statusPending {
-    background: var(--c-warning-soft);
     color: var(--c-warning);
+    background: var(--c-warning-soft);
 }
 
 .statusScheduled {
-    background: var(--c-step-current-soft);
     color: var(--c-primary);
+    background: var(--c-step-current-soft);
 }
 
 .statusDelivered {
-    background: var(--c-success-soft);
     color: var(--c-success);
+    background: var(--c-success-soft);
 }
 
 .statusCancelled {
-    background: var(--c-error-soft);
     color: var(--c-error-text);
+    background: var(--c-error-soft);
 }
 
 .cardBody {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
     margin-bottom: var(--sp-4);
 }
 
@@ -98,21 +100,25 @@
 
 .viewButton,
 .reorderButton {
+    cursor: pointer;
+
     flex: 1;
+
     padding: var(--sp-2) var(--sp-4);
+    border-radius: var(--radius);
+
     font-size: var(--fs-sm);
     font-weight: 500;
     text-align: center;
-    border-radius: var(--radius);
-    cursor: pointer;
+
     transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .viewButton {
-    color: var(--c-primary);
-    background: transparent;
     border: 1px solid var(--c-primary);
+    color: var(--c-primary);
     text-decoration: none;
+    background: transparent;
 
     &:hover {
         background-color: var(--c-step-current-soft);
@@ -120,9 +126,9 @@
 }
 
 .reorderButton {
+    border: none;
     color: var(--c-primary-dark);
     background: var(--c-accent);
-    border: none;
 
     &:hover {
         background-color: var(--c-accent-hover);

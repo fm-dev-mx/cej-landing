@@ -3,31 +3,32 @@
 @use "../../styles/mixins" as *;
 
 .stickyBar {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
   position: fixed;
+  z-index: var(--z-sticky-bar);
   bottom: 0;
   left: 0;
-  width: 100%;
-  z-index: var(--z-sticky-bar);
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
 
   // Layout
   gap: var(--sp-2);
 
+  width: 100%;
+
   // Height Control using Token
   // We use height: auto, but padding ensures it matches the --bottom-bar-h expectation visually
   padding-top: var(--sp-3);
-  padding-inline: var(--sp-4);
 
   // Safe area handling for the bar itself
   padding-bottom: calc(var(--sp-3) + env(safe-area-inset-bottom));
+  padding-inline: var(--sp-4);
+  border-top: 1px solid rgb(255 255 255 / 10%);
 
   // Visuals
-  background: rgba(2, 26, 54, 0.95);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgb(2 26 54 / 95%);
   backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 -4px 20px rgb(0 0 0 / 30%);
 
   // Hide on desktop
   @include respond-to('md') {
@@ -42,21 +43,23 @@
 
 .cta {
   @include p.btn;
+
   width: 70%;
+  min-height: 44px; // Hit target size
+  border-radius: 99px;
+
   font-size: var(--fs-sm);
   font-weight: 700;
-  border-radius: 99px;
-  text-transform: none;
   text-decoration: none;
-  min-height: 44px; // Hit target size
+  text-transform: none;
 }
 
 /* WhatsApp Button */
 .whatsapp {
-  background: var(--c-whatsapp);
-  color: white;
   border: 1px solid var(--c-whatsapp);
-  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.25);
+  color: white;
+  background: var(--c-whatsapp);
+  box-shadow: 0 2px 8px rgb(37 211 102 / 25%);
 
   &:hover {
     background: color-mix(in oklab, var(--c-whatsapp) 90%, black 10%);
@@ -65,12 +68,12 @@
 
 /* Call Button */
 .phone {
-  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(255 255 255 / 20%);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgb(255 255 255 / 10%);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.2);
     border-color: white;
+    background: rgb(255 255 255 / 20%);
   }
 }

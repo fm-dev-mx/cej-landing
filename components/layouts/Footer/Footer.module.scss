@@ -3,15 +3,18 @@
 @use "@/styles/mixins" as *;
 
 .footer {
-  background-color: var(--c-primary-dark);
-  color: var(--c-muted-on-dark);
   padding-block: var(--sp-10) var(--sp-12);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgb(255 255 255 / 10%);
+
   font-size: var(--fs-sm);
+  color: var(--c-muted-on-dark);
+
+  background-color: var(--c-primary-dark);
 }
 
 .container {
   @include container;
+
   display: flex;
   flex-direction: column;
   gap: var(--sp-8);
@@ -19,8 +22,8 @@
   /* Responsive switch: Column on mobile, Row on desktop */
   @include respond-to("md") {
     flex-direction: row;
-    justify-content: space-between;
     align-items: flex-start;
+    justify-content: space-between;
   }
 }
 
@@ -49,43 +52,46 @@
 }
 
 .tagline {
+  font-size: var(--fs-base);
+  font-weight: 400;
   line-height: 1.6;
   color: var(--c-text-on-dark);
-  font-weight: 400;
-  font-size: var(--fs-base);
 }
 
 .legalBlock {
-  margin-top: var(--sp-2);
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  margin-top: var(--sp-2);
 }
 
 .copyright {
+  margin: 0;
   font-size: var(--fs-xs);
   opacity: 0.5;
-  margin: 0;
 }
 
 .credits {
+  margin: 0;
   font-size: 0.75rem;
+
   /* Smaller than standard text */
   color: var(--c-muted-on-dark);
   opacity: 0.7;
-  margin: 0;
 }
 
 .creditsLink {
+  border-bottom: 1px dotted rgb(255 255 255 / 30%);
+
+  font-weight: 500;
   color: inherit;
   text-decoration: none;
-  border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
+
   transition: all 0.2s ease;
-  font-weight: 500;
 
   &:hover {
-    color: var(--c-accent-base);
     border-color: var(--c-accent-base);
+    color: var(--c-accent-base);
     opacity: 1;
   }
 }
@@ -103,12 +109,14 @@
 }
 
 .linkList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
   display: flex;
   flex-direction: column;
   gap: var(--sp-3);
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
 
   @include respond-to("sm") {
     flex-direction: row;
@@ -117,10 +125,10 @@
 }
 
 .link {
+  padding-block: 0.25rem; // Increase touch target
   color: var(--c-muted-on-dark);
   text-decoration: none;
   transition: all 0.2s ease;
-  padding-block: 0.25rem; // Increase touch target
 
   &:hover {
     color: var(--c-accent-base);

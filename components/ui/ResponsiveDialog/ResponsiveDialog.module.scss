@@ -2,54 +2,62 @@
 
 .backdrop {
     position: fixed;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
     z-index: var(--z-modal);
+    inset: 0;
+
     display: flex;
-    justify-content: center;
 
     /* Mobile: Align to bottom */
     align-items: flex-end;
+    justify-content: center;
+
+    background-color: rgb(0 0 0 / 60%);
+    backdrop-filter: blur(4px);
+
+    animation: fadeIn 0.2s ease-out;
 
     /* Desktop: Center */
     @include respond-to('md') {
         align-items: center;
         padding: var(--sp-4);
     }
-
-    animation: fadeIn 0.2s ease-out;
 }
 
 .sheet {
-    background-color: var(--c-surface);
-    width: 100%;
-    max-height: 90dvh;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--shadow-xl);
+
+    width: 100%;
+    max-height: 90dvh;
 
     /* Mobile: Bottom Sheet Styles */
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+
+    background-color: var(--c-surface);
+    box-shadow: var(--shadow-xl);
+
     animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
     /* Desktop: Modal Styles */
     @include respond-to('md') {
         max-width: 500px;
-        border-radius: var(--radius-lg);
-        animation: scaleIn 0.2s ease-out;
         max-height: 85vh;
         border: 1px solid var(--c-border);
+        border-radius: var(--radius-lg);
+
+        animation: scaleIn 0.2s ease-out;
     }
 }
 
 .handle {
+    flex-shrink: 0;
+
     width: 3rem;
     height: 4px;
-    background-color: var(--c-border-strong);
-    border-radius: 99px;
     margin: var(--sp-3) auto 0;
-    flex-shrink: 0;
+    border-radius: 99px;
+
+    background-color: var(--c-border-strong);
 
     @include respond-to('md') {
         display: none;
@@ -58,28 +66,32 @@
 
 .header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+
     padding: var(--sp-4) var(--sp-6);
     border-bottom: 1px solid var(--c-border);
 }
 
 .title {
+    margin: 0;
     font-size: var(--fs-lg);
     font-weight: 700;
-    margin: 0;
     color: var(--c-text);
 }
 
 .closeBtn {
-    background: none;
+    cursor: pointer;
+
+    margin-right: -0.5rem;
+    padding: 0.25rem;
     border: none;
+
     font-size: 1.75rem;
     line-height: 1;
     color: var(--c-muted);
-    cursor: pointer;
-    padding: 0.25rem;
-    margin-right: -0.5rem;
+
+    background: none;
 
     &:hover {
         color: var(--c-text);
@@ -87,10 +99,11 @@
 }
 
 .content {
-    padding: var(--sp-6);
     overflow-y: auto;
+
     /* Prevent scroll chaining */
     overscroll-behavior: contain;
+    padding: var(--sp-6);
 }
 
 @keyframes fadeIn {

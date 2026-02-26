@@ -9,22 +9,25 @@
 
 .container {
   @include container;
+
   max-width: 800px;
 }
 
 .header {
-  text-align: center;
   margin-bottom: var(--sp-8);
+  text-align: center;
 }
 
 .title {
   @include p.h2;
-  color: var(--c-text);
+
   margin-bottom: var(--sp-2);
+  color: var(--c-text);
 }
 
 .subtitle {
   @include p.lead;
+
   color: var(--c-muted);
 }
 
@@ -63,35 +66,40 @@
 }
 
 .trigger {
-  width: 100%;
+  cursor: pointer;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  width: 100%;
   padding: var(--sp-4) var(--sp-5);
-  background: none;
   border: none;
-  cursor: pointer;
-  text-align: left;
+
   font-family: var(--font-sans);
   font-size: var(--fs-lg);
   font-weight: 600;
   color: var(--c-text);
+  text-align: left;
+
+  background: none;
+
   transition: color 0.2s ease;
 
   &:focus-visible {
+    border-radius: var(--radius);
     outline: 2px solid var(--c-primary);
     outline-offset: -2px;
-    border-radius: var(--radius);
   }
 }
 
 .icon {
   flex-shrink: 0;
   margin-left: var(--sp-4);
+  color: var(--c-muted);
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     color 0.2s ease;
-  color: var(--c-muted);
 }
 
 /* Height animation using CSS Grid */
@@ -110,9 +118,10 @@
 }
 
 .answer {
-  padding: 0 var(--sp-5) var(--sp-5);
-  color: var(--c-muted-strong);
-  line-height: 1.6;
-  font-size: var(--fs-base);
   margin: 0;
+  padding: 0 var(--sp-5) var(--sp-5);
+
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  color: var(--c-muted-strong);
 }

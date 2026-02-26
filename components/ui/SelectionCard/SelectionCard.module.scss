@@ -2,18 +2,26 @@
 @use "../../../styles/primitives" as p;
 
 .card {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  cursor: pointer;
-  border-radius: var(--radius);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background-color: rgba(255, 255, 255, 0.03);
-  user-select: none;
   /* Prevent text selection on tap */
   touch-action: manipulation;
+  cursor: pointer;
+  user-select: none;
+
+  position: relative;
+
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+
+  padding: 0.75rem;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: var(--radius);
+
+  /* Ensure text contrast */
+  color: var(--c-text-on-dark);
+
+  background-color: rgb(255 255 255 / 3%);
+
   /* Optimizes tap behavior */
 
   /* Smooth transition for all transform/colors */
@@ -23,55 +31,61 @@
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 
-  /* Ensure text contrast */
-  color: var(--c-text-on-dark);
-
   &:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.3);
     transform: translateY(-2px);
+    border-color: rgb(255 255 255 / 30%);
+    background-color: rgb(255 255 255 / 8%);
+
     /* Slight lift */
   }
 
   /* Active/Click Effect: The "Spring" */
   &:active {
     transform: scale(0.97);
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgb(255 255 255 / 5%);
   }
 
   .customIndicatorWrapper {
+    transform: scale(0.9);
+
     font-size: 1.5rem;
     line-height: 1;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     /* FIX 1: Remove grayscale. Use opacity and scale only */
     opacity: 0.5;
-    transform: scale(0.9);
     filter: none;
+
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
     /* Ensure no color filters */
   }
 
   /* --- Selected State --- */
   &.selected {
-    /* FIX 2: More visible background and thicker border */
-    background-color: rgba(255, 255, 255, 0.08);
-    /* Slightly more elevated */
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    /* Thickness increased to 2px */
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.1),
-      var(--shadow-xl),
-      var(--shadow-glass-top);
+    z-index: 1;
+
     /* Reinforcement shadow */
 
     transform: none;
-    z-index: 1;
+
+    /* Slightly more elevated */
+    border: 2px solid rgb(255 255 255 / 50%);
+
+    /* FIX 2: More visible background and thicker border */
+    background-color: rgb(255 255 255 / 8%);
+
+    /* Thickness increased to 2px */
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 10%),
+      var(--shadow-xl),
+      var(--shadow-glass-top);
+
     /* Bring to front */
 
     .radioIndicator {
-      border-color: rgba(255, 255, 255, 0.8);
-      background-color: rgba(255, 255, 255, 0.8);
-      box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+      border-color: rgb(255 255 255 / 80%);
+      background-color: rgb(255 255 255 / 80%);
+      box-shadow: 0 0 8px rgb(255 255 255 / 20%);
 
       &::after {
         transform: scale(1);
@@ -83,25 +97,27 @@
     }
 
     .customIndicatorWrapper {
-      opacity: 1;
       transform: scale(1.2) rotate(-10deg);
+      opacity: 1;
+
       /* Slightly larger to stand out */
+
       /* Remove text-shadow if it muddies the emoji, or keep subtle */
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      filter: drop-shadow(0 2px 4px rgb(0 0 0 / 30%));
     }
   }
 
   /* --- Disabled State --- */
   &.disabled {
+    pointer-events: none; // Prevent clicks
     cursor: not-allowed;
     opacity: 0.5 !important;
     filter: grayscale(1);
-    pointer-events: none; // Prevent clicks
 
     &:hover {
       transform: none;
-      background-color: rgba(255, 255, 255, 0.03);
-      border-color: rgba(255, 255, 255, 0.15);
+      border-color: rgb(255 255 255 / 15%);
+      background-color: rgb(255 255 255 / 3%);
     }
   }
 }
@@ -109,73 +125,88 @@
 /* Custom Radio UI */
 .inputWrapper {
   display: flex;
-  align-items: center;
-  height: 1.5rem;
+
   /* Match line-height of title */
   flex-shrink: 0;
+  align-items: center;
+  height: 1.5rem;
 }
 
 .input {
   /* Visually hide but keep accessible */
   position: absolute;
+
+  overflow: hidden;
+
   width: 1px;
   height: 1px;
-  padding: 0;
   margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
+  padding: 0;
   border: 0;
 
-  &:focus-visible + .radioIndicator {
-    outline: 2px solid rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+
+  clip-path: inset(50%);
+
+  &:focus-visible+.radioIndicator {
+    outline: 2px solid rgb(255 255 255 / 60%);
     outline-offset: 2px;
   }
 }
 
 .radioIndicator {
-  width: 1.25rem;
-  /* Slightly larger hit target visually */
-  height: 1.25rem;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.4);
   position: relative;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
   display: grid;
   place-items: center;
+
+  width: 1.25rem;
+
+  /* Slightly larger hit target visually */
+  height: 1.25rem;
+  border: 2px solid rgb(255 255 255 / 40%);
+  border-radius: 50%;
+
   background-color: transparent;
+
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Inner dot */
   &::after {
     content: "";
+
+    transform: scale(0);
+
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 50%;
+
     background-color: var(--c-primary-dark);
-    transform: scale(0);
+
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+
     /* Bouncy scale */
   }
 }
 
 /* Content */
 .content {
-  flex: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: 0.25rem;
 }
 
 .header {
   display: flex;
-  align-items: center;
   gap: 0.5rem;
+  align-items: center;
 }
 
 .icon {
   font-size: 1.25rem;
   line-height: 1;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  filter: drop-shadow(0 2px 4px rgb(0 0 0 / 20%));
 }
 
 .label {
@@ -186,10 +217,13 @@
 }
 
 .description {
+  margin: 0;
+
   font-size: var(--fs-xs);
+  line-height: 1.4;
+
   /* Small but legible */
   color: var(--c-muted-on-dark);
-  line-height: 1.4;
-  margin: 0;
+
   opacity: 0.9;
 }

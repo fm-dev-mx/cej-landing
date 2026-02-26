@@ -11,25 +11,18 @@ body {
 }
 
 html {
-  font-size: 100%;
-  scrollbar-gutter: stable;
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 
   /* SCROLL LANDING FIX:
     Use the 'stuck' header height for padding.
     When users click a link, the header is usually already stuck or will be.
   */
   scroll-padding-top: var(--header-h-stuck);
+  font-size: 100%;
 }
 
 body {
-  font-family: var(--font-sans);
-  color: var(--c-text);
-  background: var(--c-bg);
-  line-height: var(--lh-normal);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-
   /* MOBILE STICKY BAR & SAFE AREA FIX:
     Padding ensures the Footer is not hidden behind the fixed CTA buttons.
     We add:
@@ -37,9 +30,16 @@ body {
     2. The device's safe area (Home Indicator on iOS).
     3. A small buffer spacing.
   */
-  padding-bottom: calc(
-    var(--bottom-bar-h) + env(safe-area-inset-bottom) + var(--sp-2)
-  );
+  padding-bottom: calc(var(--bottom-bar-h) + env(safe-area-inset-bottom) + var(--sp-2));
+
+  font-family: var(--font-sans);
+  line-height: var(--lh-normal);
+  color: var(--c-text);
+  text-rendering: optimizelegibility;
+
+  background: var(--c-bg);
+
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Global utility container */
@@ -50,9 +50,9 @@ body {
 /* Accessible focus ring: use primary navy — red implies error state */
 :where(a, button, [role="button"], input, select, textarea) {
   &:focus-visible {
+    border-radius: calc(var(--radius) / 2);
     outline: 2px solid var(--c-primary-light);
     outline-offset: 2px;
-    border-radius: calc(var(--radius) / 2);
   }
 }
 
@@ -67,21 +67,25 @@ body {
 
 .sr-only {
   position: absolute;
+
+  overflow: hidden;
+
   width: 1px;
   height: 1px;
-  padding: 0;
   margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
+  padding: 0;
   border: 0;
+
+  white-space: nowrap;
+
+  clip-path: inset(50%);
 }
 
 @media (prefers-reduced-motion: reduce) {
   * {
-    animation: none !important;
-    transition: none !important;
     scroll-behavior: auto !important;
+    transition: none !important;
+    animation: none !important;
   }
 }
 
@@ -95,16 +99,16 @@ body {
 
 @keyframes flashHighlight {
   0% {
-    box-shadow: 0 0 0 0 rgba(254, 201, 20, 0);
+    box-shadow: 0 0 0 0 rgb(254 201 20 / 0%);
   }
 
   10% {
-    box-shadow: 0 0 0 10px rgba(254, 201, 20, 0.3);
-    background-color: rgba(254, 201, 20, 0.05);
+    background-color: rgb(254 201 20 / 5%);
+    box-shadow: 0 0 0 10px rgb(254 201 20 / 30%);
   }
 
   100% {
-    box-shadow: 0 0 0 0 rgba(254, 201, 20, 0);
     background-color: transparent;
+    box-shadow: 0 0 0 0 rgb(254 201 20 / 0%);
   }
 }

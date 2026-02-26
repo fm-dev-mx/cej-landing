@@ -3,11 +3,13 @@
 @use "../../styles/mixins" as *;
 
 .section {
-  background-color: var(--c-primary-dark);
-  padding-block: var(--section-py);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
   z-index: 1;
+
+  padding-block: var(--section-py);
+  border-bottom: 1px solid rgb(255 255 255 / 10%);
+
+  background-color: var(--c-primary-dark);
 }
 
 .container {
@@ -15,14 +17,15 @@
 }
 
 .sectionTitle {
-  text-align: center;
-  font-size: var(--fs-2xl);
-  color: var(--c-text-on-dark);
   margin-bottom: var(--sp-10);
+
+  font-size: var(--fs-2xl);
   font-weight: 800;
+  line-height: 1.2;
+  color: var(--c-text-on-dark);
+  text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  line-height: 1.2;
 
   @include respond-to("md") {
     font-size: var(--fs-3xl);
@@ -35,31 +38,37 @@
 
 /* Card Content Styles (Container is handled by Card Component) */
 .iconBox {
-  font-size: 1.5rem;
-  line-height: 1;
+  display: grid;
   flex-shrink: 0;
+  place-items: center;
+
   width: 3rem;
   height: 3rem;
-  display: grid;
-  place-items: center;
-  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(255 255 255 / 20%);
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  font-size: 1.5rem;
+  line-height: 1;
   color: var(--c-text-on-dark);
+
+  background-color: rgb(255 255 255 / 10%);
 }
 
 .title {
+  margin: 0;
+
   font-size: var(--fs-lg);
   font-weight: 700;
-  color: var(--c-text-on-dark);
-  margin: 0;
   line-height: 1.2;
+  color: var(--c-text-on-dark);
 }
 
 .desc {
-  font-size: var(--fs-base);
-  color: var(--c-muted-on-dark);
-  line-height: 1.6;
   margin: 0;
+
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  color: var(--c-muted-on-dark);
+
   opacity: 0.9;
 }

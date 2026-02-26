@@ -3,50 +3,61 @@
 @use "../../../styles/mixins" as *;
 
 .shell {
+    overflow: hidden;
     display: flex;
     flex-direction: column;
+
     height: 100dvh;
+
+    color: var(--c-text);
+
     /* Dynamic Viewport Height for Mobile */
     background-color: var(--c-bg);
-    color: var(--c-text);
-    overflow: hidden;
+
     /* Prevent body scroll, handle internally */
 }
 
 .header {
-    height: var(--header-h-stuck);
-    border-bottom: 1px solid var(--c-border);
-    background-color: var(--c-primary-dark);
-    color: white;
+    z-index: 20;
+
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     justify-content: space-between;
+
+    height: var(--header-h-stuck);
     padding-inline: var(--sp-4);
-    flex-shrink: 0;
-    z-index: 20;
+    border-bottom: 1px solid var(--c-border);
+
+    color: white;
+
+    background-color: var(--c-primary-dark);
 }
 
 .brand {
-    font-weight: 800;
     font-size: 1.1rem;
-    letter-spacing: 0.05em;
+    font-weight: 800;
     color: white;
     text-decoration: none;
+    letter-spacing: 0.05em;
 }
 
 .main {
-    flex: 1;
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    flex: 1;
+
     padding: var(--sp-4);
     padding-bottom: calc(var(--bottom-bar-h) + var(--sp-8));
+
+    -webkit-overflow-scrolling: touch;
+
     /* Space for SmartBar */
 
     @include respond-to('md') {
-        padding: var(--sp-8);
+        width: 100%;
         max-width: 1000px;
         margin-inline: auto;
-        width: 100%;
+        padding: var(--sp-8);
     }
 }
 

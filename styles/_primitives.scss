@@ -1,15 +1,19 @@
 /* styles/_primitives.scss */
 @mixin btn {
   display: inline-flex;
+  gap: .5rem;
   align-items: center;
   justify-content: center;
-  gap: .5rem;
+
   padding: .75rem 1rem;
-  border-radius: var(--radius);
   border: 1px solid var(--c-border);
-  background: var(--c-text);
-  color: #fff;
+  border-radius: var(--radius);
+
   font-weight: 600;
+  color: #fff;
+
+  background: var(--c-text);
+
   transition: transform .04s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
 
   &:hover {
@@ -21,14 +25,14 @@
   }
 
   &:disabled {
-    opacity: .5;
     cursor: not-allowed;
+    opacity: .5;
   }
 }
 
 @mixin btn-outline {
-  background: #fff;
   color: var(--c-text);
+  background: #fff;
 
   &:hover {
     background: var(--c-surface);
@@ -37,23 +41,24 @@
 
 @mixin container {
   width: 100%;
+  max-width: 72rem;
   margin-inline: auto;
   padding-inline: var(--sp-4);
-  max-width: 72rem;
+
   /* 1152px */
 }
 
 /* Tipografías utilitarias */
 @mixin h1 {
   font-size: var(--fs-3xl);
-  line-height: var(--lh-tight);
   font-weight: 700;
+  line-height: var(--lh-tight);
 }
 
 @mixin h2 {
   font-size: var(--fs-2xl);
-  line-height: var(--lh-tight);
   font-weight: 700;
+  line-height: var(--lh-tight);
 }
 
 @mixin lead {

@@ -2,15 +2,19 @@
 @use "../../../styles/mixins" as *;
 
 .root {
+  position: relative;
+
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  position: relative;
+
   height: 100%;
+  border: 1px solid transparent;
+
   /* Critical for Grid RAM pattern */
   border-radius: var(--radius-lg);
-  overflow: hidden;
+
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid transparent;
 
   /* Default hover lift */
   &:hover {
@@ -22,22 +26,22 @@
 
 /* Glass: For dark backgrounds (Hero, Trust, Process) */
 .variant-glass {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: var(--shadow-sm);
+  border-color: rgb(255 255 255 / 10%);
+  background: rgb(255 255 255 / 3%);
   backdrop-filter: blur(8px);
+  box-shadow: var(--shadow-sm);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.06);
-    border-color: rgba(255, 255, 255, 0.4);
+    border-color: rgb(255 255 255 / 40%);
+    background: rgb(255 255 255 / 6%);
     box-shadow: var(--shadow-md);
   }
 }
 
 /* Surface: For light/mixed backgrounds (Social Proof, FAQ cards) */
 .variant-surface {
-  background: var(--c-surface);
   border-color: var(--c-border);
+  background: var(--c-surface);
   box-shadow: var(--shadow-sm);
 
   &:hover {
@@ -48,22 +52,22 @@
 
 /* Outline: Minimalist (Secondary steps, simple lists) */
 .variant-outline {
+  border-color: rgb(255 255 255 / 20%);
   background: transparent;
-  border-color: rgba(255, 255, 255, 0.2);
 
   &:hover {
-    background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.4);
+    border-color: rgb(255 255 255 / 40%);
+    background: rgb(255 255 255 / 2%);
   }
 }
 
 /* --- Subcomponents --- */
 
 .header {
-  padding: var(--sp-5) var(--sp-5) var(--sp-2);
   display: flex;
-  align-items: center;
   gap: var(--sp-3);
+  align-items: center;
+  padding: var(--sp-5) var(--sp-5) var(--sp-2);
 
   /* If header has image, remove padding */
   &.noPadding {
@@ -72,16 +76,18 @@
 }
 
 .body {
-  flex: 1;
-  /* Pushes footer down and stretches content */
-  padding: var(--sp-2) var(--sp-5) var(--sp-5);
   display: flex;
+  flex: 1;
   flex-direction: column;
   gap: var(--sp-2);
+
+  /* Pushes footer down and stretches content */
+  padding: var(--sp-2) var(--sp-5) var(--sp-5);
 }
 
 .footer {
   margin-top: auto;
+
   /* Sticky footer magic */
   padding: 0 var(--sp-5) var(--sp-5);
 }

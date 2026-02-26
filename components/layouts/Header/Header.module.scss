@@ -7,14 +7,17 @@
 /* --- Header Container --- */
 .header {
   position: fixed;
+  z-index: var(--z-header);
   top: 0;
   left: 0;
+
   width: 100%;
+  height: var(--header-h);
+  padding-top: env(safe-area-inset-top);
   padding-inline: var(--sp-0);
-  z-index: var(--z-header);
+  border-bottom: 1px solid transparent;
 
   background-color: transparent;
-  border-bottom: 1px solid transparent;
 
   transition:
     background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -22,37 +25,38 @@
     border-color 0.3s ease,
     box-shadow 0.3s ease,
     height 0.3s ease;
-
-  height: var(--header-h);
-  padding-top: env(safe-area-inset-top);
 }
 
 .headerScrolled {
   height: var(--header-h-stuck);
+  border-bottom-color: rgb(255 255 255 / 10%);
+
   background-color: color-mix(in srgb, var(--c-primary-dark) 90%, transparent);
-  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
-  border-bottom-color: rgba(255, 255, 255, 0.1);
   box-shadow: var(--shadow-md);
 }
 
 /* --- Inner Layout --- */
 .inner {
   @include container;
+
   display: flex;
+  gap: var(--sp-2);
   align-items: center;
   justify-content: space-between;
+
   height: 100%;
-  gap: var(--sp-2);
 }
 
 /* --- Brand / Logo --- */
 .brand {
-  display: flex;
-  align-items: center;
-  height: 100%;
   position: relative;
   z-index: 20;
+
+  display: flex;
+  align-items: center;
+
+  height: 100%;
 }
 
 .logoLink {
@@ -62,8 +66,8 @@
 }
 
 .logo {
-  height: 80%;
   width: auto;
+  height: 80%;
   object-fit: contain;
   transition: height 0.3s ease;
 }
@@ -79,11 +83,13 @@
 
 .navList {
   display: flex;
-  align-items: center;
   gap: var(--sp-6);
-  list-style: none;
+  align-items: center;
+
   margin: 0;
   padding: 0;
+
+  list-style: none;
 
   @include respond-to("lg") {
     gap: var(--sp-8);
@@ -96,12 +102,15 @@
 }
 
 .navLink {
+  position: relative;
+
+  padding-block: var(--sp-2);
+
   font-size: var(--fs-xs);
   font-weight: 500;
-  text-decoration: none;
-  position: relative;
-  padding-block: var(--sp-2);
   color: var(--c-muted-on-dark);
+  text-decoration: none;
+
   transition: color 0.2s ease;
 
   &:hover {
@@ -109,19 +118,22 @@
   }
 
   &Active {
-    color: var(--c-text-on-dark);
     font-weight: 700;
+    color: var(--c-text-on-dark);
 
     &::after {
       content: "";
+
       position: absolute;
       bottom: 0;
       left: 50%;
       transform: translateX(-50%);
+
       width: 4px;
       height: 4px;
-      background-color: var(--c-accent-base);
       border-radius: 50%;
+
+      background-color: var(--c-accent-base);
       box-shadow: 0 0 6px var(--c-accent-base);
     }
   }
@@ -130,8 +142,8 @@
 /* --- Desktop Actions --- */
 .actions {
   display: none;
-  align-items: center;
   gap: var(--sp-1);
+  align-items: center;
 
   @include respond-to("md") {
     display: flex;
@@ -140,22 +152,25 @@
 
 .button {
   @include p.btn;
-  font-size: var(--fs-sm);
+
   padding: var(--sp-2) var(--sp-4);
   border-radius: 99px;
+  font-size: var(--fs-sm);
   text-decoration: none;
 }
 
 .buttonHistory {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
   margin-right: 0.5rem;
   padding: 0.5rem 1rem;
+  border: 1px solid rgb(255 255 255 / 10%);
+
   color: var(--c-text-on-dark);
 
+  background: rgb(255 255 255 / 5%);
+
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.25);
+    border-color: rgb(255 255 255 / 25%);
+    background: rgb(255 255 255 / 10%);
   }
 }
 
@@ -166,10 +181,10 @@
 }
 
 .buttonWhatsApp {
-  background-color: var(--c-whatsapp);
-  color: white;
   border-color: var(--c-whatsapp);
   font-weight: 700;
+  color: white;
+  background-color: var(--c-whatsapp);
 
   &:hover {
     background: color-mix(in oklab, var(--c-whatsapp) 90%, black 10%);
@@ -177,16 +192,18 @@
 }
 
 .buttonCall {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: var(--c-text-on-dark);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgb(255 255 255 / 20%);
+
   font-family: var(--font-mono, monospace);
   font-variant-numeric: tabular-nums;
+  color: var(--c-text-on-dark);
   text-wrap: nowrap;
 
+  background-color: rgb(255 255 255 / 10%);
+
   &:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
+    border-color: rgb(255 255 255 / 40%);
+    background-color: rgb(255 255 255 / 20%);
   }
 }
 
@@ -196,27 +213,31 @@
 }
 
 .buttonLogin {
-  background: transparent;
-  color: var(--c-text-on-dark);
   border: 1px solid var(--c-border-on-dark-hover);
+  color: var(--c-text-on-dark);
+  background: transparent;
 
   &:hover {
+    border-color: rgb(255 255 255 / 50%);
     background: var(--c-bg-on-dark-hover);
-    border-color: rgba(255, 255, 255, 0.5);
   }
 }
 
 /* --- Mobile Menu Toggle --- */
 .menuToggle {
-  border: none;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 0.6rem;
-  border-radius: 8px;
+  cursor: pointer;
+
+  z-index: 20;
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  z-index: 20;
+
+  padding: 0.6rem;
+  border: none;
+  border-radius: 8px;
+
+  background: rgb(0 0 0 / 20%);
 
   @include respond-to("md") {
     display: none;
@@ -224,18 +245,21 @@
 }
 
 .menuIcon {
-  width: 24px;
-  height: 18px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+
+  width: 24px;
+  height: 18px;
 }
 
 .menuIconBar {
-  height: 2px;
   width: 100%;
-  background-color: var(--c-text-on-dark);
+  height: 2px;
   border-radius: 4px;
+
+  background-color: var(--c-text-on-dark);
+
   transition:
     transform 0.25s ease,
     opacity 0.2s ease;
@@ -256,16 +280,16 @@
 /* --- Mobile Menu Overlay --- */
 .mobileMenu {
   position: fixed;
-  inset: 0;
   z-index: var(--z-mobile-menu);
-  background-color: var(--c-primary-dark);
+  inset: 0;
+  transform: translateY(-100%);
 
   height: 100dvh;
   padding-top: calc(var(--header-h) + var(--sp-4));
 
-  transform: translateY(-100%);
-  opacity: 0;
   visibility: hidden;
+  opacity: 0;
+  background-color: var(--c-primary-dark);
 
   transition:
     transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -274,8 +298,8 @@
 
   &Open {
     transform: translateY(0);
-    opacity: 1;
     visibility: visible;
+    opacity: 1;
   }
 
   @include respond-to("md") {
@@ -284,12 +308,13 @@
 }
 
 .mobileMenuInner {
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  padding-inline: var(--sp-4);
-  padding-bottom: calc(env(safe-area-inset-bottom) + var(--sp-8));
-  overflow-y: auto;
+
   height: 80svh;
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--sp-8));
+  padding-inline: var(--sp-4);
 }
 
 .mobileNav {
@@ -297,35 +322,40 @@
 }
 
 .mobileNavList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
 }
 
 .mobileNavLink {
   display: block;
+
   padding: var(--sp-4) 0;
+  border-bottom: 1px solid rgb(255 255 255 / 5%);
+
   font-size: 1.5rem;
+  font-weight: 500;
   color: var(--c-muted-on-dark);
   text-decoration: none;
-  font-weight: 500;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 
   &Active {
-    color: var(--c-accent-base);
-    border-left: 3px solid var(--c-accent-base);
     padding-left: var(--sp-3);
+    border-left: 3px solid var(--c-accent-base);
+    color: var(--c-accent-base);
   }
 }
 
 .mobileActions {
-  margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: var(--sp-4);
+
+  margin-top: auto;
   padding-top: var(--sp-6);
 
   .button {
