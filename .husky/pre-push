@@ -1,3 +1,16 @@
 #!/bin/sh
-# Fast local confidence check. Full test suite remains enforced in CI.
-pnpm exec tsc --noEmit --incremental false
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+# 1. Safety check for main branch push
+if [ "$current_branch" = "main" ]; then
+  echo "❌ Direct push to 'main' is blocked. Please use a Pull Request."
+  exit 1
+fi
+
+# 2. Quality gates (Heavy checks)
+# 2. Quality gates (Heavy checks)
+if FORCE_COLOR=0 pnpm typecheck && FORCE_COLOR=0 pnpm test; then
+  echo "🚀 Quality gates passed. Proceeding with push..."
+else
+  exit 1
+fi

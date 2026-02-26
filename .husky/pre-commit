@@ -1,2 +1,26 @@
 #!/bin/sh
-pnpm exec lint-staged
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+# 1. Protect main branch (block commits to main)
+if [ "$current_branch" = "main" ]; then
+  echo "❌ Direct commits to 'main' are blocked. Please use a feature branch."
+  exit 1
+fi
+
+# 2. Enforce branch naming convention
+BRANCH_REGEX="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|hotfix)\/[a-zA-Z0-9._-]+$"
+
+if ! echo "$current_branch" | grep -Eq "$BRANCH_REGEX"; then
+  echo "❌ Invalid branch name: '$current_branch'"
+  echo "Branches must start with a valid prefix: feat/, fix/, docs/, style/, refactor/, perf/, test/, build/, ci/, chore/, hotfix/"
+  echo "Example: feat/add-login-form"
+  exit 1
+fi
+
+# 3. Fast checks
+# 3. Fast checks
+if FORCE_COLOR=0 pnpm lint-staged --quiet; then
+  echo "✅ Quality checks passed."
+else
+  exit 1
+fi
