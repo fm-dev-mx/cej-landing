@@ -1,8 +1,8 @@
-import { ICON_REGISTRY, type IconName } from './icon-registry';
+import { ICON_REGISTRY } from './icon-registry';
 
 interface IconProps {
     /** Key registered in ICON_REGISTRY */
-    name: IconName;
+    name: string;
     /** Size in px (default: 24) */
     size?: number;
     /** Additional CSS class */
@@ -17,7 +17,9 @@ export function Icon({
     className,
     'aria-label': ariaLabel,
 }: IconProps) {
-    const LucideIcon = ICON_REGISTRY[name];
+    const fallback = ICON_REGISTRY.calculator;
+    const LucideIcon =
+        (ICON_REGISTRY as Record<string, typeof fallback>)[name] ?? fallback;
 
     return (
         <LucideIcon

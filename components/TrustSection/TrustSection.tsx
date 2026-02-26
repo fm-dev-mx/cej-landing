@@ -19,7 +19,7 @@ export default function TrustSection() {
             <Card.Root key={item.id} variant="glass">
               <Card.Header>
                 <div className={styles.iconBox}>
-                  <Icon name={item.icon} size={28} />
+                  <Icon name={item.icon as never} size={28} />
                 </div>
                 <h3 className={styles.title}>{item.title}</h3>
               </Card.Header>

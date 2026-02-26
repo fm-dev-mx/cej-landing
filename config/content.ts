@@ -1,11 +1,11 @@
 // config/content.ts
-import type { IconName } from '@/components/ui/Icon';
+import { getCloudinaryUrl } from "@/lib/cloudinary";
 
 export interface ServiceItem {
     id: string;
     title: string;
     desc: string;
-    icon: IconName;
+    icon: string;
     ariaLabel: string;
 }
 
@@ -13,14 +13,15 @@ export interface TrustItem {
     id: string;
     title: string;
     desc: string;
-    icon: IconName;
+    icon: string;
 }
 
 export interface ProcessStep {
     id: string;
     title: string;
     desc: string;
-    icon: IconName;
+    imageSrc: string;
+    imageAlt: string;
 }
 
 export interface FaqItem {
@@ -102,19 +103,19 @@ export const LANDING_CONTENT = {
                 id: "time",
                 title: "Tiempo es Dinero",
                 desc: "Entendemos que una cuadrilla parada cuesta. Nuestra logística en Juárez garantiza que el camión llegue cuando se programó.",
-                icon: "clock"
+                icon: "⏱️"
             },
             {
                 id: "quality",
                 title: "Calidad Normativa",
                 desc: "Mezclas diseñadas bajo norma. Si pides f’c 200 para una losa, recibes exactamente esa resistencia garantizada.",
-                icon: "shield-check"
+                icon: "🛡️"
             },
             {
                 id: "local",
                 title: "Expertos Locales",
                 desc: "Conocemos los agregados de la región y las condiciones climáticas de Juárez para ajustar la mezcla ideal.",
-                icon: "map-pin"
+                icon: "📍"
             }
         ] as TrustItem[]
     },
@@ -133,7 +134,7 @@ export const LANDING_CONTENT = {
                 location: "Zona Industrial",
                 category: "Piso Pulido",
                 imageAlt: "Colado de piso de concreto industrial con bomba pluma en nave maquiladora",
-                imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/maquila_culguq.jpg"
+                imageUrl: getCloudinaryUrl("https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/maquila_culguq.jpg")
             },
             {
                 id: "work2",
@@ -141,7 +142,7 @@ export const LANDING_CONTENT = {
                 location: "Valle del Sol",
                 category: "Zapatas y Losas",
                 imageAlt: "Camión revolvedora vertiendo concreto en cimentación de casa habitación",
-                imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673427/complejo_residencial_q3dxfu.jpg"
+                imageUrl: getCloudinaryUrl("https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673427/complejo_residencial_q3dxfu.jpg")
             },
             {
                 id: "work3",
@@ -149,7 +150,7 @@ export const LANDING_CONTENT = {
                 location: "Av. Las Torres",
                 category: "Concreto Estampado",
                 imageAlt: "Preparación de armado para colado de estacionamiento comercial en Ciudad Juárez",
-                imageUrl: "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/zona_industrial_gu16sr.jpg"
+                imageUrl: getCloudinaryUrl("https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763673428/zona_industrial_gu16sr.jpg")
             }
         ] as WorkItem[],
         testimonials: [
@@ -178,31 +179,35 @@ export const LANDING_CONTENT = {
     },
     process: {
         title: "Tu colado en 4 pasos",
-        subtitle: "Logística simple para que solo te preocupes por construir.",
+        subtitle: "Simplificamos la logística para que tú solo te preocupes por construir.",
         steps: [
             {
-                id: "quote",
-                title: "1. Cotiza",
-                desc: "Calcula tu volumen en línea o compártenos tus medidas para una cotización formal.",
-                icon: "calculator"
+                id: "calc",
+                title: "1. Cotiza y Calcula",
+                desc: "Usa nuestra calculadora online para estimar el volumen y precio al instante, o mándanos tus medidas.",
+                imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Cotiza+y+Calcula",
+                imageAlt: "Persona usando calculadora en celular"
             },
             {
-                id: "schedule",
-                title: "2. Agenda tu Pedido",
-                desc: "Define fecha y horario según disponibilidad.",
-                icon: "calendar-check"
+                id: "book",
+                title: "2. Programa tu Pedido",
+                desc: "Aparta fecha y hora con un anticipo mínimo ($1,000 MXN). Asegura tu lugar en la agenda.",
+                imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Programa+Pedido",
+                imageAlt: "Calendario de obra marcado"
             },
             {
-                id: "visit",
-                title: "3. Visita Técnica (opcional)",
-                desc: "Disponible si deseas validar accesos o condiciones especiales en obra.",
-                icon: "hard-hat"
+                id: "verify",
+                title: "3. Visita Técnica",
+                desc: "Un experto va a tu obra (sin costo) para verificar accesos y rectificar medidas para evitar errores.",
+                imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Visita+Tecnica",
+                imageAlt: "Ingeniero tomando medidas en obra"
             },
             {
-                id: "delivery",
+                id: "pay",
                 title: "4. Recibe y Construye",
-                desc: "Entrega en el horario acordado y acompañamiento durante todo el proceso.",
-                icon: "truck"
+                desc: "La olla llega puntual. Liquidación contra entrega y soporte durante el vaciado.",
+                imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Recibe+y+Construye",
+                imageAlt: "Camión revolvedora descargando concreto"
             }
         ] as ProcessStep[]
     },
@@ -216,21 +221,21 @@ export const LANDING_CONTENT = {
                 id: "concreto",
                 title: "Venta de Concreto Premezclado",
                 desc: "Suministro de concreto convencional y estructural (f’c 150, 200, 250, 300 kg/cm²). Ideal para losas, firmes, banquetas, cimentaciones y muros. Garantizamos la resistencia y trabajabilidad que tu obra exige.",
-                icon: "building",
+                icon: "🏗️",
                 ariaLabel: "Camión revolvedora de concreto",
             },
             {
                 id: "bomba",
                 title: "Servicio de Bombeo (Pluma y Estacionaria)",
                 desc: "Renta de bombas de concreto para alcanzar cualquier distancia o altura. Contamos con bombas pluma (telescópicas) para losas altas y bombas estacionarias (tubería) para interiores o patios traseros de difícil acceso.",
-                icon: "waves-arrow-up",
+                icon: "🚛",
                 ariaLabel: "Bomba de concreto",
             },
             {
                 id: "asesoria",
                 title: "Asesoría Técnica y Volumetría",
                 desc: "No arriesgues tu dinero. Nuestros técnicos realizan visitas a obra para calcular los metros cúbicos exactos y recomendarte la resistencia (f'c) adecuada según el uso final de tu construcción.",
-                icon: "clipboard-check",
+                icon: "👷",
                 ariaLabel: "Ingeniero civil asesorando",
             },
         ] as ServiceItem[]

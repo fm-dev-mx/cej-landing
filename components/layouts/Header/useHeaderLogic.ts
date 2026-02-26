@@ -1,15 +1,18 @@
 // components/layouts/header/useHeaderLogic.ts
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
 import { useLockBodyScroll } from "@/hooks/useLockBodyScroll";
 import { env } from "@/config/env";
 import { getPhoneUrl, getWhatsAppUrl } from "@/lib/utils";
-import { trackContact } from "@/lib/pixel";
+import { trackContact } from "@/lib/tracking/visitor";
 import { PRIMARY_NAV, type PhoneMeta } from "./header.types";
 
 const SECTION_IDS = PRIMARY_NAV.map((item) =>
     item.href.startsWith("#") ? item.href.slice(1) : item.href
 );
+
+// Constants for contact messages
+const WA_MESSAGE = "Hola, me interesa una cotización de concreto.";
 
 export function useHeaderLogic() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -28,18 +31,18 @@ export function useHeaderLogic() {
             setIsScrolled(offset > 20);
         };
 
+        // Check initial state
         handleScroll();
+
         window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    // 4. Data Helpers
-    const waHref = getWhatsAppUrl(
-        env.NEXT_PUBLIC_WHATSAPP_NUMBER,
-        "Hola, me interesa una cotización de concreto."
-    ) ?? null;
+    // 4. Data Helpers - No useMemo needed for simple string generation
+    const waHref = getWhatsAppUrl(env.NEXT_PUBLIC_WHATSAPP_NUMBER, WA_MESSAGE) ?? null;
 
-    const phoneMeta: PhoneMeta | null = (() => {
+    // Derived state for phone meta (computed on every render is fine, it's very cheap)
+    const getPhoneMeta = (): PhoneMeta | null => {
         const raw = env.NEXT_PUBLIC_PHONE;
         const href = getPhoneUrl(raw);
         const trimmed = raw?.trim();
@@ -53,20 +56,22 @@ export function useHeaderLogic() {
             : trimmed;
 
         return { href, display };
-    })();
+    };
+
+    const phoneMeta = getPhoneMeta();
 
     // 5. Handlers
-    const toggleMenu = () => setIsMenuOpen((prev) => !prev);
-    const closeMenu = () => setIsMenuOpen(false);
+    const toggleMenu = useCallback(() => setIsMenuOpen((prev) => !prev), []);
+    const closeMenu = useCallback(() => setIsMenuOpen(false), []);
 
     // Tracking Handlers
-    const handleWaClick = () => {
+    const handleWaClick = useCallback(() => {
         trackContact('WhatsApp');
-    };
+    }, []);
 
-    const handlePhoneClick = () => {
+    const handlePhoneClick = useCallback(() => {
         trackContact('Phone');
-    };
+    }, []);
 
     return {
         state: {

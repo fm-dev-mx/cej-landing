@@ -1,0 +1,437 @@
+@use "@/styles/mixins" as *;
+
+.ticket {
+    background-color: var(--c-surface);
+    /* Always white paper */
+    color: var(--c-text);
+    /* Ink color */
+    width: 100%;
+    max-width: 380px;
+    margin: 1rem auto;
+    position: relative;
+    box-shadow: var(--shadow-md);
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+    font-family: var(--font-mono, monospace); // Receipt look
+    font-size: 0.85rem;
+    line-height: 1.4;
+    transition: transform 0.3s ease;
+
+    // Watermark / paper texture
+    background-image:
+        radial-gradient(circle at center, rgba(0, 0, 0, 0.02) 2px, transparent 2px),
+        linear-gradient(to bottom right, rgba(0, 0, 0, 0.01) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.01) 50%, rgba(0, 0, 0, 0.01) 75%, transparent 75%);
+    background-size: 20px 20px, 40px 40px;
+
+    &.preview {
+        transform: rotate(-1deg); // Slight "draft" angle
+    }
+}
+
+.content {
+    padding: var(--sp-6);
+}
+
+.header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: var(--sp-4);
+}
+
+.brand {
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+}
+
+.metaCol {
+    display: flex;
+    flex-direction: column;
+    gap: 0.01rem;
+}
+
+.meta {
+    font-size: 0.75rem;
+    color: var(--c-muted-strong);
+}
+
+.divider {
+    border: none;
+    border-top: 1px dashed var(--c-border); // Gray-300
+    margin-block: var(--sp-3);
+}
+
+.customerRow {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--sp-3);
+    font-size: 0.9rem;
+}
+
+// Phase 1: Volume info section
+.volumeInfo {
+    margin-bottom: var(--sp-3);
+    padding: var(--sp-2);
+    background: var(--c-surface-dim);
+    border-radius: var(--radius-sm);
+}
+
+.volumeRow {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 600;
+}
+
+.volumeNote {
+    font-size: 0.75rem;
+    color: var(--c-muted-strong);
+    margin-top: var(--sp-1);
+}
+
+// Phase 1: Calculation details
+.calculationDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: var(--sp-3);
+    padding: var(--sp-2);
+    background: var(--c-surface-dim);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+}
+
+.calculationLabel {
+    color: var(--c-muted-strong);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.calculationFormula {
+    font-family: var(--font-mono, monospace);
+    color: var(--c-text);
+}
+
+.items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.lineItem {
+    display: flex;
+    justify-content: space-between;
+
+    &[data-type="base"] {
+        font-weight: 600;
+    }
+
+    &[data-type="additive"] {
+        color: var(--c-muted-strong);
+        font-size: 0.8rem;
+        padding-left: 0.5rem;
+
+        &::before {
+            content: "+ ";
+        }
+    }
+}
+
+.totals {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.totalRow {
+    display: flex;
+    justify-content: space-between;
+
+    &.grandTotal {
+        font-size: 1.1rem;
+        font-weight: 800;
+        margin-top: var(--sp-2);
+        padding-top: var(--sp-2);
+        border-top: 2px solid var(--c-text);
+    }
+}
+
+.footer {
+    margin-top: var(--sp-6);
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--c-muted);
+    font-family: var(--font-sans);
+    line-height: 0.5;
+
+    p {
+        margin-bottom: 0.25rem;
+    }
+}
+
+.disclaimerMain {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--c-muted-strong);
+    line-height: 0.6;
+}
+
+// Local Glass Variables
+$glass-bg: rgba(255, 255, 255, 0.03);
+$glass-border: rgba(255, 255, 255, 0.1);
+$glass-bg-hover: rgba(255, 255, 255, 0.05);
+$glass-border-hover: rgba(255, 255, 255, 0.2);
+
+// Phase 1: Compact variant styles (Horizontal Bar)
+.compact {
+    width: 100%;
+    /* Allow full width of container */
+    max-width: none;
+    background-color: $glass-bg;
+    border: 1px solid $glass-border;
+    border-radius: 99px;
+    /* Pill shape */
+    margin: 0;
+    /* Reset margins */
+    box-shadow: none;
+    /* Remove shadow for cleaner look */
+    filter: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    cursor: default;
+    position: relative;
+
+    /* Override paper texture/effects */
+    background-image: none;
+    transform: none !important;
+
+    &:hover {
+        background-color: $glass-bg-hover;
+        border-color: $glass-border-hover;
+    }
+}
+
+.compactContent {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    gap: var(--sp-4);
+}
+
+.compactInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: flex-start;
+}
+
+.compactTitle {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--c-muted-on-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+    line-height: 1;
+}
+
+.miniProgress {
+    display: flex;
+    gap: 0.35rem;
+    /* Specific tight gap for dots */
+    align-items: center;
+}
+
+.miniDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: $glass-border;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+
+    &.active {
+        background-color: var(--c-accent);
+        transform: scale(1.2);
+    }
+
+    &.completed {
+        background-color: var(--c-success);
+    }
+}
+
+.compactAction {
+    position: absolute;
+    right: var(--sp-8);
+}
+
+.compactHintText {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--c-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+/* Cleanup: Remove old vertical compact styles if they are no longer used */
+/* .progressList, .progressStep, .compactHeader, .compactTotal... removed */
+
+.resetContainer {
+    position: relative;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
+.resetBtn {
+    background: none;
+    border: none;
+    font-size: 0.75rem;
+    color: var(--c-muted-strong);
+    text-decoration: underline;
+    cursor: pointer;
+    text-wrap: nowrap;
+
+    &:hover {
+        color: var(--c-muted-on-dark);
+    }
+}
+
+.compactPlaceholder {
+    display: block;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--c-text);
+    font-family: var(--font-sans);
+    line-height: 1.4;
+    padding: var(--sp-2) 0;
+}
+
+/* Preview Variant Effects - Removed (Flat design) */
+
+/* Print Styles */
+.printOnly {
+    display: none;
+    margin-top: var(--sp-4);
+    font-size: 0.75rem;
+    color: var(--c-text-tertiary);
+    text-align: center;
+}
+
+@media print {
+
+    /* Hide everything global first */
+    :global(body > *),
+    :global(nav),
+    :global(footer),
+    :global(button) {
+        visibility: hidden;
+    }
+
+    /* But make the ticket visible */
+    :global(body) {
+        margin: 0;
+        padding: 0;
+    }
+
+    .ticket {
+        visibility: visible;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        background: white;
+        color: black;
+        border: none;
+        max-width: none;
+        transform: none !important;
+        /* No rotation */
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .ticket * {
+        visibility: visible;
+    }
+
+    .header {
+        background: black;
+        color: white;
+    }
+
+    .printOnly {
+        display: block;
+        visibility: visible;
+    }
+
+    /* Hide decorative perforations when printing */
+    .perforationTop,
+    .perforationBottom {
+        display: none;
+    }
+}
+
+/* Decorative Perforations (ZigZag CSS) */
+.perforationTop,
+.perforationBottom {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background-size: 20px 20px;
+}
+
+.perforationTop {
+    top: -10px;
+    background-image: linear-gradient(45deg, transparent 33.333%, var(--c-surface) 33.333%, var(--c-surface) 66.667%, transparent 66.667%), linear-gradient(-45deg, transparent 33.333%, var(--c-surface) 33.333%, var(--c-surface) 66.667%, transparent 66.667%);
+}
+
+.perforationBottom {
+    bottom: -10px;
+    background-image: linear-gradient(135deg, transparent 33.333%, var(--c-surface) 33.333%, var(--c-surface) 66.667%, transparent 66.667%), linear-gradient(-135deg, transparent 33.333%, var(--c-surface) 33.333%, var(--c-surface) 66.667%, transparent 66.667%);
+}
+
+.warningNote {
+    font-size: 0.75rem;
+    color: var(--c-info-text-on-dark-light);
+    text-align: center;
+    margin: 1rem;
+}
+
+// Version Alert (Price Mismatch)
+.versionAlert {
+    display: flex;
+    gap: var(--sp-3);
+    padding: var(--sp-3);
+    background-color: var(--c-warning-soft);
+    border-bottom: 2px solid var(--c-warning);
+    color: var(--c-error-text);
+    font-family: var(--font-sans);
+    line-height: 1.3;
+}
+
+.alertIcon {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.alertContent {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+
+    strong {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+    }
+
+    p {
+        font-size: 0.75rem;
+        margin: 0;
+    }
+}

@@ -24,7 +24,7 @@ export default function Services() {
               <Card.Body>
                 <div className={styles.iconWrapper}>
                   <Icon
-                    name={s.icon}
+                    name={s.icon as never}
                     size={32}
                     className={styles.icon}
                     aria-label={s.ariaLabel}

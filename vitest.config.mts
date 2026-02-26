@@ -12,15 +12,24 @@ export default defineConfig({
         coverage: {
             provider: 'v8',
             reporter: ['text', 'json', 'html'],
+            // EXCLUSIONES ESTRATÉGICAS
+            exclude: [
+                '**/node_modules/**',
+                '**/.next/**',
+                '**/*.d.ts',
+                '**/*.config.*',
+                '**/app/layout.tsx',      // Root layouts difíciles de testear unitariamente
+                '**/app/**/page.tsx',     // Las páginas se testean mejor con E2E (Playwright)
+                '**/app/**/layout.tsx',
+                '**/scripts/**',          // Scripts de mantenimiento
+                '**/types/**',            // Archivos de solo tipos
+                '**/config/**',           // Constantes estáticas
+            ]
         },
     },
     css: {
         preprocessorOptions: {
-            scss: {
-                // Forces Vite to use the modern Sass compiler API
-                // @ts-expect-error - 'api' is valid in Vite 5.4+ but Vitest types might lag behind
-                api: 'modern-compiler',
-            },
+            scss: { api: 'modern-compiler' },
         },
     },
 });

@@ -3,8 +3,8 @@
 
 import { useMemo, useCallback } from "react";
 import { getWhatsAppUrl, getPhoneUrl } from "@/lib/utils";
-import { trackContact } from "@/lib/pixel";
-import { WhatsAppIcon } from "@/components/ui/Icon/WhatsAppIcon";
+import { trackContact } from "@/lib/tracking/visitor";
+import { useCejStore } from "@/store/useCejStore";
 import styles from "./CTAButtons.module.scss";
 
 type Props = {
@@ -24,6 +24,10 @@ export default function CTAButtons({
   onContact,
   sticky = true,
 }: Props) {
+  // Store: Hide this bar if cart has items (SmartBar takes priority)
+  const cartLength = useCejStore(s => s.cart.length);
+  const shouldHide = cartLength > 0 && sticky;
+
   const links = useMemo(() => {
     return {
       wa: getWhatsAppUrl(whatsappNumber, quoteText),
@@ -41,7 +45,7 @@ export default function CTAButtons({
     if (onContact) onContact();
   }, [onContact]);
 
-  if (!links.wa && !links.tel) return null;
+  if ((!links.wa && !links.tel) || shouldHide) return null;
 
   return (
     <div
@@ -58,7 +62,7 @@ export default function CTAButtons({
           rel="noopener noreferrer"
           aria-label="Contactar por WhatsApp"
         >
-          <WhatsAppIcon size={20} /> WhatsApp
+          <span aria-hidden="true">💬</span> WhatsApp
         </a>
       )}
       {links.tel && (

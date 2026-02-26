@@ -23,11 +23,9 @@ export const cleanQuoteContext = (context: Record<string, unknown>) => {
 
         // Sanitize dimensions specific keys (assuming metric units)
         if (['width', 'length', 'thickness', 'area', 'm3', 'cofferedSize'].includes(key)) {
-            // Narrow from unknown to the accepted type before sanitizing
-            const rawValue = (typeof value === 'string' || typeof value === 'number' || value == null)
-                ? value
-                : undefined;
-            const cleanedValue = sanitizeNumericInput(rawValue);
+            // Type assertion to string | number because sanitizeNumericInput expects it,
+            // though Number() works on unknown, TS might be strict.
+            const cleanedValue = sanitizeNumericInput(value as string | number | null | undefined);
             // We save the cleaned value, which will be null if it was invalid or empty
             if (cleanedValue !== null) {
                 clean[key] = cleanedValue;

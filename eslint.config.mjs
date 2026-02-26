@@ -17,6 +17,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Playwright artifacts
+    "playwright-report/**",
+    "test-results/**",
+    "coverage/**",
   ]),
   // Custom rule overrides
   {

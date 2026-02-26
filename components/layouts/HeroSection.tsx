@@ -1,9 +1,9 @@
 // components/layouts/HeroSection.tsx
 
-import { env } from "@/config/env";
+import { env, isProd } from "@/config/env";
 import { LANDING_CONTENT } from "@/config/content";
 import { getWhatsAppUrl } from "@/lib/utils";
-import { WhatsAppIcon } from "@/components/ui/Icon/WhatsAppIcon";
+import { getCloudinaryUrl } from "@/lib/cloudinary";
 import styles from "./HeroSection.module.scss";
 
 type HeroSectionProps = {
@@ -12,11 +12,13 @@ type HeroSectionProps = {
 };
 
 export default function HeroSection({
-  videoSrc = "https://res.cloudinary.com/dwtk0d2dj/video/upload/v1763502599/hero-bg_vluny8.mp4",
-  fallbackImage = "https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763502640/hero-fallback_yokvg7.jpg",
+  videoSrc = getCloudinaryUrl("https://res.cloudinary.com/dwtk0d2dj/video/upload/v1763502599/hero-bg_vluny8.mp4", 'video'),
+  fallbackImage = getCloudinaryUrl("https://res.cloudinary.com/dwtk0d2dj/image/upload/v1763502640/hero-fallback_yokvg7.jpg"),
 }: HeroSectionProps) {
   const whatsappNumber = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   const content = LANDING_CONTENT.hero;
+
+  const showVideo = isProd && videoSrc && !videoSrc.includes('placehold.co');
 
   const whatsappHref = getWhatsAppUrl(
     whatsappNumber,
@@ -28,7 +30,7 @@ export default function HeroSection({
       {/* Background Layer */}
       <div className={styles.hero__background} aria-hidden="true">
         <div className={styles.hero__overlay} />
-        {videoSrc ? (
+        {showVideo ? (
           <video
             className={styles.hero__video}
             autoPlay
@@ -39,6 +41,11 @@ export default function HeroSection({
           >
             <source src={videoSrc} type="video/mp4" />
           </video>
+        ) : fallbackImage ? (
+          <div
+            className={styles.hero__imageFallback}
+            style={{ "--hero-fallback": `url(${fallbackImage})` } as React.CSSProperties}
+          />
         ) : (
           <div className={styles.hero__imagePlaceholder} />
         )}
@@ -59,10 +66,9 @@ export default function HeroSection({
             </span>
           </h1>
 
-          <p
-            className={styles.hero__lead}
-            dangerouslySetInnerHTML={{ __html: content.lead }}
-          />
+          <p className={styles.hero__lead}>
+            Suministro confiable de <strong>concreto y servicio de bombeo</strong> para contratistas y particulares. Evita desperdicios con nuestro cálculo de volumetría exacto.
+          </p>
 
           <ul className={styles.hero__features}>
             {content.features.map((feature, idx) => (
@@ -87,7 +93,7 @@ export default function HeroSection({
                 rel="noopener noreferrer"
                 className={styles.hero__btnSecondary}
               >
-                <WhatsAppIcon className={styles.hero__iconWa} />
+                <span className={styles.hero__iconWa}>💬</span>
                 {content.cta.secondary}
               </a>
             )}
@@ -105,7 +111,7 @@ function CheckIcon() {
       height="20"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="var(--c-info-text-on-dark)"
+      stroke="var(--c-accent)"
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"

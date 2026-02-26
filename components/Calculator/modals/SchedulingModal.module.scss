@@ -1,0 +1,178 @@
+@use "../../../styles/primitives" as p;
+@use "../../../styles/mixins" as *;
+
+.backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-4);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+    background-color: var(--c-surface);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 480px;
+    padding: var(--sp-6);
+    box-shadow: var(--shadow-xl);
+    position: relative;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid var(--c-border);
+}
+
+.closeBtn {
+    position: absolute;
+    top: var(--sp-4);
+    right: var(--sp-4);
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--c-muted);
+    cursor: pointer;
+    line-height: 1;
+    z-index: 10;
+
+    &:hover {
+        color: var(--c-text);
+    }
+}
+
+.header {
+    margin-bottom: var(--sp-6);
+    text-align: center;
+}
+
+.title {
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    color: var(--c-text);
+    margin-bottom: var(--sp-2);
+}
+
+.subtitle {
+    font-size: var(--fs-sm);
+    color: var(--c-muted-strong);
+    line-height: 1.5;
+}
+
+/* User Memory Card */
+.userCard {
+    background-color: var(--c-surface-light);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--sp-4);
+    margin-bottom: var(--sp-6);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-4);
+}
+
+.userAvatar {
+    width: 3rem;
+    height: 3rem;
+    background-color: var(--c-primary);
+    color: white;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.userInfo {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.userName {
+    font-weight: 700;
+    color: var(--c-text);
+}
+
+.userPhone {
+    font-size: var(--fs-sm);
+    color: var(--c-muted);
+    font-family: var(--font-mono, monospace);
+}
+
+.editBtn {
+    background: none;
+    border: none;
+    color: var(--c-primary);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+
+    &:hover {
+        color: var(--c-accent-hover);
+    }
+}
+
+/* Form Styles */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-4);
+}
+
+.checkboxWrapper {
+    margin-block: var(--sp-2);
+}
+
+.checkboxLabel {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-2);
+    font-size: 0.8rem;
+    color: var(--c-muted-strong);
+    cursor: pointer;
+
+    input {
+        margin-top: 0.15rem;
+        accent-color: var(--c-primary);
+    }
+
+    a {
+        color: var(--c-primary);
+        text-decoration: underline;
+    }
+}
+
+.errorMessage {
+    color: var(--c-error-text);
+    font-size: var(--fs-sm);
+    text-align: center;
+    background: var(--c-error-soft);
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

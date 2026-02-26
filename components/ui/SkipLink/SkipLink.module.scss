@@ -1,0 +1,22 @@
+@use "@/styles/mixins" as *;
+
+.skipLink {
+    position: absolute;
+    top: -9999px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--c-accent);
+    color: var(--c-primary-dark);
+    padding: var(--sp-2) var(--sp-4);
+    font-weight: 700;
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    z-index: 1000;
+    text-decoration: none;
+    transition: top 0.2s ease-out;
+
+    &:focus {
+        top: 0;
+        outline: 2px solid var(--c-text-on-dark);
+        outline-offset: 2px;
+    }
+}
