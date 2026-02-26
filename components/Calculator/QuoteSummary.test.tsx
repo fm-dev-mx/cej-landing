@@ -1,5 +1,5 @@
 
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QuoteSummary } from './QuoteSummary';
 import { useCejStore } from '@/store/useCejStore';
@@ -81,7 +81,7 @@ describe('QuoteSummary Integration - Streamlined Flow', () => {
         }));
     });
 
-    it('shows "Ver Total" CTA button in preview stage when quote is valid', () => {
+    it('shows "Ver Total" CTA button in preview stage when quote is valid', async () => {
         (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
             quote: {
                 total: 5000,
@@ -93,7 +93,9 @@ describe('QuoteSummary Integration - Streamlined Flow', () => {
             warning: null
         });
 
-        render(<QuoteSummary />);
+        await act(async () => {
+            render(<QuoteSummary />);
+        });
         expect(screen.getByRole('button', { name: /Ver Total/i })).toBeDefined();
     });
 

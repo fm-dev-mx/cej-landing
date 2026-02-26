@@ -17,11 +17,8 @@ vi.mock('@/config/env', () => ({
   },
 }));
 
-vi.mock('@/lib/pixel', () => ({
-  trackViewContent: vi.fn(),
-  trackLead: vi.fn(),
-  trackContact: vi.fn(),
-}));
+// Note: lib/pixel.ts was removed in Phase 3. Tracking is now handled by
+// lib/tracking/visitor.ts (browser) and lib/tracking/capi.ts (server).
 
 // Mock window interactions
 const mockScrollIntoView = vi.fn();

@@ -1,4 +1,6 @@
 // components/layouts/ToolShell/ToolShell.tsx
+// ACTIVE: Used by app/(app)/cotizador/page.tsx as the app shell for the cotizador route.
+// TODO(phase-4b): Replace with the Phase 4B authenticated dashboard shell once designed.
 import Link from 'next/link';
 import { ReactNode } from 'react';
 import styles from './ToolShell.module.scss';
