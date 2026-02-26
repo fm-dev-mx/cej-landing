@@ -1,5 +1,4 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
 
 # Verify the commits that are about to be pushed
 while read local_ref local_sha remote_ref remote_sha

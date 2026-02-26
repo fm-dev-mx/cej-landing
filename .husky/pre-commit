@@ -8,13 +8,19 @@ if [ "$current_branch" = "main" ]; then
 fi
 
 # 2. Enforce branch naming convention
-BRANCH_REGEX="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|hotfix)\/[a-zA-Z0-9._-]+$"
+if [ "$current_branch" = "develop" ] || [ "$current_branch" = "main" ]; then
+  # Allow base branches to bypass the prefix check
+  :
+else
+  BRANCH_REGEX="^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|hotfix)\/[a-zA-Z0-9._-]+$"
 
-if ! echo "$current_branch" | grep -Eq "$BRANCH_REGEX"; then
-  echo "❌ Invalid branch name: '$current_branch'"
-  echo "Branches must start with a valid prefix: feat/, fix/, docs/, style/, refactor/, perf/, test/, build/, ci/, chore/, hotfix/"
-  echo "Example: feat/add-login-form"
-  exit 1
+  if ! echo "$current_branch" | grep -Eq "$BRANCH_REGEX"; then
+    echo "❌ Invalid branch name: '$current_branch'"
+    echo "Branches must start with a valid prefix: feat/, fix/, docs/, style/, refactor/, perf/, test/, build/, ci/, chore/, hotfix/"
+    echo "Example: feat/add-login-form"
+    echo "(Base branches like 'main' and 'develop' are also allowed)"
+    exit 1
+  fi
 fi
 
 # 3. Fast checks
