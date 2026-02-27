@@ -30,6 +30,7 @@ import type {
 export interface QuoteCalculatorResult {
     quote: QuoteBreakdown;
     rawVolume: number;
+    billedM3: number;
     isValid: boolean;
     error: string | null;
     warning: QuoteWarning;
@@ -59,6 +60,7 @@ export function useQuoteCalculator(
         const emptyResult = {
             quote: EMPTY_QUOTE,
             rawVolume: 0,
+            billedM3: 0,
             isValid: false,
             error: null as string | null,
             warning: null as QuoteWarning,
@@ -157,6 +159,7 @@ export function useQuoteCalculator(
                 } else {
                     const { area: a, thickness: t } = parse.data;
 
+                    // Compute volume from area and apply coffered logic if needed
                     rawRequested = calcVolumeFromArea({
                         areaM2: a,
                         manualThicknessCm: t,
@@ -189,7 +192,7 @@ export function useQuoteCalculator(
 
         // Validate Strength/Type selection (null check)
         if (!strength || !type) {
-            return { ...emptyResult, rawVolume: rawRequested, error: "Selecciona resistencia y servicio." };
+            return { ...emptyResult, rawVolume: rawRequested, billedM3: rawRequested, error: "Selecciona resistencia y servicio." };
         }
 
         // Compute quote using engine
@@ -236,6 +239,7 @@ export function useQuoteCalculator(
         return {
             quote,
             rawVolume: rawRequested,
+            billedM3: normBill,
             isValid: true,
             error: null,
             warning,

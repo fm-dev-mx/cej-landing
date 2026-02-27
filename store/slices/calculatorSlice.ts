@@ -11,7 +11,7 @@ import { WORK_TYPES } from '@/config/business';
 
 export interface CalculatorSlice {
     draft: CalculatorState;
-    savedDrafts: Partial<Record<CalculatorMode, CalculatorState>>;
+    savedDrafts: Partial<Record<'knownM3' | 'assistM3', CalculatorState>>;
     resetDraft: () => void;
     updateDraft: (updates: Partial<CalculatorState>) => void;
     setMode: (mode: CalculatorMode) => void;
@@ -37,12 +37,19 @@ export const createCalculatorSlice: StateCreator<CalculatorSlice & UISlice, [], 
     setMode: (mode) => {
         set((state) => {
             const currentMode = state.draft.mode;
-            const updatedSavedDrafts = {
-                ...state.savedDrafts,
-                [currentMode]: { ...state.draft }
-            };
+            const updatedSavedDrafts = { ...state.savedDrafts };
+            if (currentMode && currentMode !== null) {
+                updatedSavedDrafts[currentMode] = { ...state.draft };
+            }
 
-            const savedState = updatedSavedDrafts[mode];
+            if (mode === null) {
+                return {
+                    draft: { ...DEFAULT_CALCULATOR_STATE },
+                    savedDrafts: updatedSavedDrafts
+                };
+            }
+
+            const savedState = updatedSavedDrafts[mode as 'knownM3' | 'assistM3'];
             if (savedState) {
                 return {
                     draft: { ...savedState, mode },
