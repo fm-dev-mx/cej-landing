@@ -1,6 +1,6 @@
 # 02 — Conversion & CAPI Strategy: Tracking & Attribution
 
-> **Blueprint:** v1-conversion-redesign
+> **Blueprint:** v1-architecture-blueprint
 > **Last Updated:** 2026-02-27
 > **Status:** Draft — Pending Review
 

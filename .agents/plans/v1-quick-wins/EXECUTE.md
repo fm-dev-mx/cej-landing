@@ -23,7 +23,7 @@ DB schema: `docs/DB_SCHEMA.md`, `docs/schema.sql`
 
 ## Plan Files (Your Source of Truth)
 
-All plan files are in `.agents/plans/v1-conversion-redesign/`. Read each one in full before executing the corresponding step. They contain:
+All plan files are in `.agents/plans/v1-quick-wins/`. Read each one in full before executing the corresponding step. They contain:
 - Exact file paths to create/modify
 - Code snippets for the most architecturally sensitive parts
 - Explicit test cases to implement

@@ -11,12 +11,12 @@
 **Role**: Senior Next.js Architect specializing in App Router security boundaries and edge middleware.
 
 **Context**:
-You are executing Phase 0 of the `cej-landing` v1 conversion redesign. The full blueprint lives in `.agents/plans/v1-conversion-redesign/`. Before writing any code, read **all six files** in that directory to build complete context. This phase focuses exclusively on the foundational architectural changes that every subsequent phase depends on.
+You are executing Phase 0 of the `cej-landing` v1 conversion redesign. The full blueprint lives in `.agents/plans/v1-architecture-blueprint/`. Before writing any code, read **all six files** in that directory to build complete context. This phase focuses exclusively on the foundational architectural changes that every subsequent phase depends on.
 
 **Mandatory Pre-Reading** (read these files in order before any action):
-1. `.agents/plans/v1-conversion-redesign/structure.md` — Architecture & Boundaries
-2. `.agents/plans/v1-conversion-redesign/01-architectural-audit.md` — Risk & Debt Analysis
-3. `.agents/plans/v1-conversion-redesign/05-compliance-checklist.md` — Verification criteria
+1. `.agents/plans/v1-architecture-blueprint/structure.md` — Architecture & Boundaries
+2. `.agents/plans/v1-architecture-blueprint/01-architectural-audit.md` — Risk & Debt Analysis
+3. `.agents/plans/v1-architecture-blueprint/05-compliance-checklist.md` — Verification criteria
 
 **Scope — ONLY these tasks (no more, no less):**
 
@@ -55,12 +55,12 @@ You are executing Phase 0 of the `cej-landing` v1 conversion redesign. The full 
 **Role**: Senior React/Next.js Performance Engineer specializing in bundle optimization and client/server boundary management.
 
 **Context**:
-You are executing Phase 1 of the `cej-landing` v1 conversion redesign. Phase 0 (middleware, route groups, security headers) is already complete. The full blueprint lives in `.agents/plans/v1-conversion-redesign/`. Read all six files before proceeding.
+You are executing Phase 1 of the `cej-landing` v1 conversion redesign. Phase 0 (middleware, route groups, security headers) is already complete. The full blueprint lives in `.agents/plans/v1-architecture-blueprint/`. Read all six files before proceeding.
 
 **Mandatory Pre-Reading:**
-1. `.agents/plans/v1-conversion-redesign/structure.md` §2 — State Management Boundaries
-2. `.agents/plans/v1-conversion-redesign/01-architectural-audit.md` — Findings A2, A3, A7, A8
-3. `.agents/plans/v1-conversion-redesign/05-compliance-checklist.md` §1.2 — Bundle Isolation
+1. `.agents/plans/v1-architecture-blueprint/structure.md` §2 — State Management Boundaries
+2. `.agents/plans/v1-architecture-blueprint/01-architectural-audit.md` — Findings A2, A3, A7, A8
+3. `.agents/plans/v1-architecture-blueprint/05-compliance-checklist.md` §1.2 — Bundle Isolation
 
 **Scope — ONLY these tasks:**
 
@@ -109,9 +109,9 @@ You are executing Phase 1 of the `cej-landing` v1 conversion redesign. Phase 0 (
 You are executing Phase 2 of the `cej-landing` v1 conversion redesign. Phases 0–1 are complete (middleware exists, store is split, layouts are decoupled). Read all six blueprint files, paying special attention to `02-conversion-capi-strategy.md`.
 
 **Mandatory Pre-Reading:**
-1. `.agents/plans/v1-conversion-redesign/02-conversion-capi-strategy.md` — Complete document
-2. `.agents/plans/v1-conversion-redesign/01-architectural-audit.md` — Findings A4, A5, A11
-3. `.agents/plans/v1-conversion-redesign/05-compliance-checklist.md` §2 — CAPI & Tracking Validation
+1. `.agents/plans/v1-architecture-blueprint/02-conversion-capi-strategy.md` — Complete document
+2. `.agents/plans/v1-architecture-blueprint/01-architectural-audit.md` — Findings A4, A5, A11
+3. `.agents/plans/v1-architecture-blueprint/05-compliance-checklist.md` §2 — CAPI & Tracking Validation
 
 **Scope — ONLY these tasks:**
 
@@ -167,8 +167,8 @@ You are executing Phase 2 of the `cej-landing` v1 conversion redesign. Phases 0�
 You are executing Phase 3 of the `cej-landing` v1 conversion redesign. Phases 0–2 are complete (middleware, store split, CAPI retry, UTM consolidation). Read all six blueprint files, paying special attention to `03-ux-friction-reduction.md`.
 
 **Mandatory Pre-Reading:**
-1. `.agents/plans/v1-conversion-redesign/03-ux-friction-reduction.md` — Complete document
-2. `.agents/plans/v1-conversion-redesign/05-compliance-checklist.md` §3 (Core Web Vitals), §5 (Accessibility)
+1. `.agents/plans/v1-architecture-blueprint/03-ux-friction-reduction.md` — Complete document
+2. `.agents/plans/v1-architecture-blueprint/05-compliance-checklist.md` §3 (Core Web Vitals), §5 (Accessibility)
 
 **Scope — ONLY these tasks:**
 
@@ -222,9 +222,9 @@ You are executing Phase 3 of the `cej-landing` v1 conversion redesign. Phases 0�
 You are executing Phase 4 of the `cej-landing` v1 conversion redesign. Phases 0–3 are complete. This phase focuses exclusively on the admin dashboard. Read `04-dashboard-roadmap.md` thoroughly.
 
 **Mandatory Pre-Reading:**
-1. `.agents/plans/v1-conversion-redesign/04-dashboard-roadmap.md` — Complete document
-2. `.agents/plans/v1-conversion-redesign/structure.md` §3.3 — Defense in Depth
-3. `.agents/plans/v1-conversion-redesign/05-compliance-checklist.md` §4.3, §4.4
+1. `.agents/plans/v1-architecture-blueprint/04-dashboard-roadmap.md` — Complete document
+2. `.agents/plans/v1-architecture-blueprint/structure.md` §3.3 — Defense in Depth
+3. `.agents/plans/v1-architecture-blueprint/05-compliance-checklist.md` §4.3, §4.4
 
 **Scope — ONLY these tasks:**
 
@@ -272,14 +272,14 @@ You are executing Phase 4 of the `cej-landing` v1 conversion redesign. Phases 0�
 You are executing the final phase of the `cej-landing` v1 conversion redesign. All implementation phases (0–4) are complete. Your job is to verify every single item in `05-compliance-checklist.md` and produce a pass/fail report.
 
 **Mandatory Pre-Reading:**
-1. `.agents/plans/v1-conversion-redesign/05-compliance-checklist.md` — Complete document (this IS your checklist)
+1. `.agents/plans/v1-architecture-blueprint/05-compliance-checklist.md` — Complete document (this IS your checklist)
 
 **Scope:**
 
 1. Execute **every verification command** listed in §6 of the compliance checklist.
 2. Walk through **every checklist item** (R1–R8, B1–B4, T1–T8, D1–D4, Q1–Q4, U1–U5, L1–L5, C1–C4, S1–S6, F1–F6, A1–A5, P1–P5, X1–X6) and mark each as ✅ PASS or ❌ FAIL.
 3. For any FAIL, document the exact issue and proposed fix.
-4. Produce a summary report in `.agents/plans/v1-conversion-redesign/LAUNCH_REPORT.md`.
+4. Produce a summary report in `.agents/plans/v1-architecture-blueprint/LAUNCH_REPORT.md`.
 
 **Output:**
 A markdown file with every checklist item and its pass/fail status, plus a final GO / NO-GO recommendation.

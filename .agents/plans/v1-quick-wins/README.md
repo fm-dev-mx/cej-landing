@@ -1,6 +1,6 @@
-# Plan: v1 Conversion Redesign
+# Plan: v1 Quick Wins — Conversion Funnel Fixes
 
-**Initiative:** Remove friction from the public landing page, add a private admin dashboard, and upgrade the calculator-to-WhatsApp conversion funnel.
+**Initiative:** Tactical, self-contained steps to remove friction from the public landing page and upgrade the calculator-to-WhatsApp conversion funnel.
 **Status:** 📋 Planning — not yet executed
 **Created:** 2026-02-26
 **Stack:** Next.js 15 App Router · TypeScript · Supabase · SCSS · Zustand · Vitest
@@ -9,14 +9,21 @@
 
 ## Overview
 
-This initiative restructures the product into two distinct audiences:
+This plan contains **five sequential, tactical steps** that deliver immediate value:
 
-| Surface | Audience | Goal |
-|---|---|---|
-| `/` (marketing group) | Anonymous visitor | Convert to WhatsApp lead with zero friction |
-| `/dashboard` (admin group) | Authenticated admin | Register and manage orders |
+1. Fix Meta Pixel/CAPI data quality issues (EMQ boost)
+2. Remove the public login button (reduce visual noise)
+3. Protect the admin dashboard with middleware
+4. Add a WhatsApp-first dual CTA (reduce form friction)
+5. Activate missing analytics events (ViewContent, InitiateCheckout, SPA PageView)
 
-The core hypothesis: **removing the login button and making the data-capture form optional will increase WhatsApp conversions by reducing drop-off before contact intent is expressed.**
+Each step is self-contained with its own pre-conditions, test cases, and commit template.
+
+> **Relationship to the Architecture Blueprint:**
+> These quick wins address the most impactful items from the full
+> [v1-architecture-blueprint](../v1-architecture-blueprint/) analysis.
+> The blueprint contains deeper strategic changes (store split, bundle isolation,
+> CAPI retry, RBAC, compliance audit) that are phased separately.
 
 ---
 
@@ -45,6 +52,7 @@ Step 04 → Activate missing analytics events (ViewContent, InitiateCheckout, Pa
 | [`02-admin-dashboard.md`](./02-admin-dashboard.md) | Route protection, login page, admin order management |
 | [`03-optional-form-ux.md`](./03-optional-form-ux.md) | WhatsApp-first dual CTA, optional data capture |
 | [`04-calculator-conversion.md`](./04-calculator-conversion.md) | ViewContent, InitiateCheckout, SPA PageView, persistence |
+| [`EXECUTE.md`](./EXECUTE.md) | Execution prompt for agents (copy-paste into new chat) |
 
 ---
 

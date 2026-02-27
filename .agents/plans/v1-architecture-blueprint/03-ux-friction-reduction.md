@@ -1,6 +1,6 @@
 # 03 — UX Friction Reduction: Conversion Flow Optimization
 
-> **Blueprint:** v1-conversion-redesign
+> **Blueprint:** v1-architecture-blueprint
 > **Last Updated:** 2026-02-27
 > **Status:** Draft — Pending Review
 
