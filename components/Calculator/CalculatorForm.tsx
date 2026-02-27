@@ -145,7 +145,7 @@ export function CalculatorForm() {
             <div className={styles.volumeSection}>
                 <div>
                     {draft.mode === "knownM3" ? (
-                        <div className={`${styles.field} ${activeField === 'm3' ? styles.activeField : ''}`}>
+                        <div className={`${styles.field} ${styles.gamifiedReveal} ${activeField === 'm3' ? styles.activeField : ''}`}>
                             <KnownVolumeForm
                                 hasError={!!error && rawVolume <= 0}
                                 forceValidation={hasTouchedAnyField}
@@ -160,7 +160,7 @@ export function CalculatorForm() {
 
                             {draft.workType && (
                                 <div
-                                    className={`${styles.field} ${styles.animateFadeIn} ${activeField === 'assistVolume' ? styles.activeField : ''}`}
+                                    className={`${styles.field} ${styles.gamifiedReveal} ${activeField === 'assistVolume' ? styles.activeField : ''}`}
                                     ref={assistVolumeRef}
                                 >
                                     <AssistVolumeForm
@@ -178,7 +178,7 @@ export function CalculatorForm() {
             {/* 3. Specs & additives (expert section) */}
             {(draft.mode === "knownM3" || draft.workType) && (
                 <div
-                    className={`${styles.fieldWithSeparator} ${activeField === 'specs' ? styles.activeField : ''}`}
+                    className={`${styles.fieldWithSeparator} ${styles.gamifiedReveal} ${activeField === 'specs' ? styles.activeField : ''}`}
                 >
                     <SpecsForm />
                     {/* Additives Toggle */}
@@ -230,13 +230,12 @@ export function CalculatorForm() {
             )}
 
             {/* 5. Summary (ticket-like view) */}
-            <div className={styles.summarySection}>
+            <div className={`${styles.summarySection} ${draft.mode ? styles.gamifiedReveal : ''}`}>
                 <QuoteSummary
                     hasError={!!error}
                     onFocusError={focusFirstInvalidInput}
                     onScrollToTop={scrollToCalcTop}
                 />
-
             </div>
         </div>
     );

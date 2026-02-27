@@ -502,7 +502,28 @@
 }
 
 .versionAlertPrompt {
-    margin-bottom: var(--sp-2);
+    margin-bottom: var(--sp-4);
+}
+
+.updatePricesBtn {
+    padding-block: var(--sp-3) !important;
+
+    /* Prominent warning style for the update button */
+    border: 2px solid var(--c-warning) !important;
+
+    font-weight: 700 !important;
+    color: var(--c-error-text) !important;
+
+    background-color: var(--c-warning-soft) !important;
+
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+
+    &:hover {
+        transform: translateY(-2px) !important;
+        color: #fff !important;
+        background-color: var(--c-warning) !important;
+        box-shadow: 0 4px 12px rgb(0 0 0 / 15%) !important;
+    }
 }
 
 .gridActions {
@@ -751,7 +772,7 @@
 /* --- Animations --- */
 @keyframes fadeIn {
     from {
-        transform: translateY(5px);
+        transform: translateY(10px);
         opacity: 0;
     }
 
@@ -759,6 +780,22 @@
         transform: translateY(0);
         opacity: 1;
     }
+}
+
+@keyframes slideUpFade {
+    0% {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.gamifiedReveal {
+    animation: slideUpFade 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 @keyframes fadeOut {

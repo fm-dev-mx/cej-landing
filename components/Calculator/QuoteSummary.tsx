@@ -148,6 +148,7 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
             : 'preview';
 
 
+    const isViewingHistory = !!submittedQuote;
     const whatsappUrl = submittedQuote
         ? getWhatsAppUrl(
             env.NEXT_PUBLIC_WHATSAPP_NUMBER,
@@ -155,7 +156,10 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
         )
         : undefined;
 
-    const isVersionMismatch = quote?.pricingSnapshot && quote.pricingSnapshot.rules_version < FALLBACK_PRICING_RULES.version;
+    const currentRulesVersion = liveRules?.version ?? FALLBACK_PRICING_RULES.version;
+    const isVersionMismatch = isViewingHistory && quote?.pricingSnapshot
+        ? quote.pricingSnapshot.rules_version < currentRulesVersion
+        : false;
 
     return (
         <div className={styles.container}>
@@ -174,6 +178,7 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                         warning={warning}
                         steps={getCalculatorSteps(draft)}
                         onReset={handleResetCurrentMode}
+                        isVersionMismatch={isVersionMismatch}
                     />
                 </div>
             )}
@@ -211,7 +216,11 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                                     <Button
                                         fullWidth
                                         variant="secondary"
-                                        onClick={handleViewBreakdown}
+                                        className={styles.updatePricesBtn}
+                                        onClick={() => {
+                                            clearSubmittedQuote();
+                                            setBreakdownViewed(true);
+                                        }}
                                     >
                                         🔄 Actualizar a precios actuales
                                     </Button>
@@ -233,15 +242,7 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
 
                             <QuoteCTA quote={quote} />
 
-                            <div className={styles.gridActions}>
-                                <Button
-                                    fullWidth
-                                    variant="secondary"
-                                    onClick={() => window.print()}
-                                >
-                                    📄 Descargar PDF
-                                </Button>
-                            </div>
+
 
                             <button
                                 onClick={handleEditCalculation}

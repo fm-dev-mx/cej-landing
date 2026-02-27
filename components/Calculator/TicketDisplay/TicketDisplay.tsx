@@ -19,6 +19,7 @@ interface TicketDisplayProps {
     steps?: { id: string; label: string; isCompleted: boolean; isActive: boolean }[];
     onReset?: () => void;
     className?: string;
+    isVersionMismatch?: boolean;
 }
 
 /**
@@ -29,7 +30,7 @@ interface TicketDisplayProps {
 * - preview: Full breakdown without folio (Phase 1 - after "Ver Desglose")
 * - full: Complete ticket with folio and customer info (after submission)
 */
-export function TicketDisplay({ variant, quote, isValidQuote = true, folio, customerName, steps, onReset, className }: TicketDisplayProps) {
+export function TicketDisplay({ variant, quote, isValidQuote = true, folio, customerName, steps, onReset, className, isVersionMismatch }: TicketDisplayProps) {
     // If no quote, show empty state
     if (!quote) {
         return (
@@ -150,7 +151,7 @@ export function TicketDisplay({ variant, quote, isValidQuote = true, folio, cust
             <div className={styles.perforationTop} aria-hidden="true" />
 
             {/* Price Mismatch Alert */}
-            {'pricingSnapshot' in quote && quote.pricingSnapshot && quote.pricingSnapshot.rules_version < FALLBACK_PRICING_RULES.version && (
+            {isVersionMismatch && (
                 <div className={styles.versionAlert} role="alert">
                     <span className={styles.alertIcon}>⚠</span>
                     <div className={styles.alertContent}>
