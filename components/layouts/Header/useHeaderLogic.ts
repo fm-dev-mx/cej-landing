@@ -1,5 +1,5 @@
 // components/layouts/header/useHeaderLogic.ts
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
 import { useLockBodyScroll } from "@/hooks/useLockBodyScroll";
 import { env } from "@/config/env";
@@ -17,6 +17,8 @@ const WA_MESSAGE = "Hola, me interesa una cotización de concreto.";
 export function useHeaderLogic() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [isHiddenOnScrollDown, setIsHiddenOnScrollDown] = useState(false);
+    const lastScrollYRef = useRef(0);
 
     // 1. Scroll Spy for active state
     const activeSectionId = useScrollSpy(SECTION_IDS, "calculator");
@@ -26,9 +28,34 @@ export function useHeaderLogic() {
 
     // 3. Scroll listener for sticky state
     useEffect(() => {
+        const hideThreshold = 12;
+        const topLockOffset = 16;
+
         const handleScroll = () => {
             const offset = window.scrollY;
             setIsScrolled(offset > 20);
+
+            if (isMenuOpen) {
+                setIsHiddenOnScrollDown(false);
+                lastScrollYRef.current = offset;
+                return;
+            }
+
+            if (offset <= topLockOffset) {
+                setIsHiddenOnScrollDown(false);
+                lastScrollYRef.current = offset;
+                return;
+            }
+
+            const delta = offset - lastScrollYRef.current;
+
+            if (delta > hideThreshold) {
+                setIsHiddenOnScrollDown(true);
+                lastScrollYRef.current = offset;
+            } else if (delta < -hideThreshold) {
+                setIsHiddenOnScrollDown(false);
+                lastScrollYRef.current = offset;
+            }
         };
 
         // Check initial state
@@ -36,7 +63,7 @@ export function useHeaderLogic() {
 
         window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
+    }, [isMenuOpen]);
 
     // 4. Data Helpers - No useMemo needed for simple string generation
     const waHref = getWhatsAppUrl(env.NEXT_PUBLIC_WHATSAPP_NUMBER, WA_MESSAGE) ?? null;
@@ -77,6 +104,7 @@ export function useHeaderLogic() {
         state: {
             isMenuOpen,
             isScrolled,
+            isHiddenOnScrollDown,
             activeSectionId,
         },
         data: {

@@ -30,7 +30,7 @@ export default function Header() {
     <>
       <header
         className={`${styles.header} ${state.isScrolled ? styles.headerScrolled : ""
-          }`}
+          } ${state.isHiddenOnScrollDown ? styles.headerHidden : ""}`}
       >
         <div className={styles.inner}>
           {/* Brand / Logo */}

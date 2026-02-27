@@ -5,7 +5,7 @@ import Header from "./Header";
 // Mock dependencies
 vi.mock("./useHeaderLogic", () => ({
     useHeaderLogic: () => ({
-        state: { isScrolled: false, activeSectionId: "hero", isMenuOpen: false },
+        state: { isScrolled: false, isHiddenOnScrollDown: false, activeSectionId: "hero", isMenuOpen: false },
         data: {
             navItems: [],
             waHref: "https://wa.me/123",
