@@ -7,6 +7,22 @@
 
 ---
 
+## Implementation Progress
+
+> **Last audited:** 2026-02-27 by Implementation Audit
+> **Completion:** 75% (5/8 items — 2 partial)
+
+| # | Item | Status | Evidence |
+| --- | --- | --- | --- |
+| 1 | Add `QuoteCTA` component for WhatsApp-first path | ✅ | `components/Calculator/QuoteCTA.tsx` |
+| 2 | Support dual CTA behavior (`onOpenForm` secondary path) in `QuoteCTA` | 🔶 | `components/Calculator/QuoteCTA.tsx` has WhatsApp direct only; secondary form CTA/onOpenForm not present |
+| 3 | Reuse existing quote/WhatsApp message utilities for direct CTA | 🔶 | `components/Calculator/QuoteCTA.tsx` uses `buildDirectQuoteMessage`; planned folio-aware `buildQuoteMessage` behavior is incomplete |
+| 4 | Integrate `QuoteCTA` into calculator result area | ✅ | `components/Calculator/QuoteSummary.tsx` |
+| 5 | Add close/cancel action to checkout modal | ✅ | `components/Calculator/modals/SchedulingModal.tsx` |
+| 6 | Open WhatsApp after `processOrder` using returned folio | ✅ | `components/Calculator/modals/SchedulingModal.tsx` |
+| 7 | Add privacy note with privacy-policy link in modal | ✅ | `components/Calculator/modals/SchedulingModal.tsx` |
+| 8 | Add unit tests for `QuoteCTA` and quote-message utility | ⬜ | Not found |
+
 ## Pre-conditions
 
 - [ ] Steps 00 and 01 are committed

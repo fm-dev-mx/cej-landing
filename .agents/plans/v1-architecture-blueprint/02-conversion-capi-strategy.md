@@ -6,6 +6,24 @@
 
 ---
 
+## Implementation Progress
+
+> **Last audited:** 2026-02-27 by Implementation Audit
+> **Completion:** 35% (3/10 items — 1 partial)
+
+| # | Item | Status | Evidence |
+| --- | --- | --- | --- |
+| 1 | Keep Lead Pixel+CAPI dedup with shared `event_id` | ✅ | `hooks/useCheckOutUI.ts`, `lib/logic/orderDispatcher.ts`, `app/actions/submitLead.ts` |
+| 2 | Add server-side `Contact` CAPI endpoint (`/api/track-contact`) | ⬜ | Not found |
+| 3 | Ensure `_fbc` cookie capture at edge from `fbclid` | 🔶 | `proxy.ts` sets `_fbc`, but required canonical `middleware.ts` path is missing |
+| 4 | Normalize phone digits/country before hashing for CAPI | ⬜ | Not found (`app/actions/submitLead.ts` hashes without phone normalization) |
+| 5 | Add retry-with-backoff + timeout in `sendToMetaCAPI` | ⬜ | Not found |
+| 6 | Add dead-letter queue persistence for exhausted CAPI failures | ⬜ | Not found |
+| 7 | Use fire-before-navigate WhatsApp tracking with `keepalive` CAPI call | ⬜ | Not found |
+| 8 | Consolidate UTM to single cookie-first system (`cej_utm`) | ⬜ | Not found |
+| 9 | Include advanced matching fields (`external_id`, `fn`, `fbp`, `fbc`) in Lead CAPI | ✅ | `app/actions/submitLead.ts` |
+| 10 | Drive `test_event_code` from server env variable | ✅ | `lib/tracking/capi.ts`, `config/env.ts` |
+
 ## 1. Event Taxonomy & Mapping
 
 ### 1.1 Complete Event Map

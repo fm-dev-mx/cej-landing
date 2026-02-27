@@ -6,6 +6,22 @@
 
 ---
 
+## Implementation Progress
+
+> **Last audited:** 2026-02-27 by Implementation Audit
+> **Completion:** 25% (1/8 items — 2 partial)
+
+| # | Item | Status | Evidence |
+| --- | --- | --- | --- |
+| 1 | Add RBAC utility (`lib/auth/rbac.ts`) with role permission matrix | ⬜ | Not found |
+| 2 | Enforce role authorization checks in server actions | ⬜ | Not found |
+| 3 | Add cursor-based pagination for dashboard order listing | ⬜ | Not found (`app/actions/getMyOrders.ts` fetches full ordered list) |
+| 4 | Ship Phase-1 dashboard routes (`/dashboard`, `/dashboard/new`) | ✅ | `app/(admin)/dashboard/page.tsx`, `app/(admin)/dashboard/new/page.tsx` |
+| 5 | Align order status machine with roadmap transitions | 🔶 | `app/(admin)/dashboard/OrdersList.tsx` has status labels, but roadmap state machine is only partially represented |
+| 6 | Add route/data cache strategy with tag-based invalidation | 🔶 | `app/actions/getMyOrders.ts` includes `revalidatePath`, but roadmap caching model is not fully implemented |
+| 7 | Add dashboard search/filter server-side query controls | ⬜ | Not found |
+| 8 | Add scalable admin shell/navigation architecture for multi-module expansion | ⬜ | Not found |
+
 ## 1. Data Entity Relationships
 
 ### 1.1 Entity-Relationship Diagram

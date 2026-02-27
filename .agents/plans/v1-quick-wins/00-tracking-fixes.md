@@ -6,6 +6,22 @@
 
 ---
 
+## Implementation Progress
+
+> **Last audited:** 2026-02-27 by Implementation Audit
+> **Completion:** 88% (7/8 items — 0 partial)
+
+| # | Item | Status | Evidence |
+| --- | --- | --- | --- |
+| 1 | Read `META_TEST_EVENT_CODE` from env in CAPI payload | ✅ | `lib/tracking/capi.ts` |
+| 2 | Add hashed `external_id` to Lead CAPI `user_data` | ✅ | `app/actions/submitLead.ts` |
+| 3 | Add hashed `fn` (first-name token) to Lead CAPI `user_data` | ✅ | `app/actions/submitLead.ts` |
+| 4 | Add `META_TEST_EVENT_CODE` to Zod env schema | ✅ | `config/env.ts` |
+| 5 | Add `META_TEST_EVENT_CODE` to `processEnv` mapping | ✅ | `config/env.ts` |
+| 6 | Add `META_TEST_EVENT_CODE` entry to `.env.local` and `.env.example` | ⬜ | Not found |
+| 7 | Add CAPI tests for `test_event_code` toggle and network error branch | ✅ | `lib/tracking/capi.test.ts` |
+| 8 | Add submitLead tests for `external_id`, `fn`, and missing `fb_event_id` behavior | ✅ | `app/actions/submitLead.test.ts` |
+
 ## Pre-conditions
 
 - [ ] `pnpm test --run` passes on `main`

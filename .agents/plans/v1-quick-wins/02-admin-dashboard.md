@@ -7,6 +7,24 @@
 
 ---
 
+## Implementation Progress
+
+> **Last audited:** 2026-02-27 by Implementation Audit
+> **Completion:** 70% (6/10 items — 2 partial)
+
+| # | Item | Status | Evidence |
+| --- | --- | --- | --- |
+| 1 | Add server-side auth redirect in dashboard layout | ✅ | `app/(admin)/dashboard/layout.tsx` |
+| 2 | Create `lib/supabase/middleware.ts` helper | ⬜ | Not found |
+| 3 | Add root `middleware.ts` dashboard preflight guard | 🔶 | `proxy.ts` exists with equivalent guard logic, but required `middleware.ts` file is missing |
+| 4 | Ensure login route/page supports admin access and redirect semantics | ✅ | `app/(public)/login/page.tsx` |
+| 5 | Create dedicated admin server action (no Pixel/CAPI) | ✅ | `app/actions/createAdminOrder.ts` |
+| 6 | Add `+ Nuevo Pedido` CTA in dashboard page | ✅ | `app/(admin)/dashboard/page.tsx` |
+| 7 | Render status badge mapping in dashboard order list | ✅ | `app/(admin)/dashboard/OrdersList.tsx` |
+| 8 | Add `/dashboard/new` page + admin order form fields | ✅ | `app/(admin)/dashboard/new/page.tsx` |
+| 9 | Add middleware unit tests (`lib/supabase/middleware.test.ts`, `middleware.test.ts`) | ⬜ | Not found |
+| 10 | Add createAdminOrder tests including explicit no-CAPI assertion | 🔶 | `app/actions/createAdminOrder.test.ts` covers insert/error/auth; missing explicit `sendToMetaCAPI` assertion |
+
 ## Pre-conditions
 
 - [ ] Step 01 is committed

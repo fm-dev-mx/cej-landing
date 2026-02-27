@@ -6,6 +6,24 @@
 
 ---
 
+## Implementation Progress
+
+> **Last audited:** 2026-02-27 by Implementation Audit
+> **Completion:** 50% (4/10 items — 2 partial)
+
+| # | Item | Status | Evidence |
+| --- | --- | --- | --- |
+| 1 | Adopt `(public)` and `(admin)` route-group split | ✅ | `app/(public)/layout.tsx`, `app/(admin)/layout.tsx` |
+| 2 | Keep admin route group focused on dashboard surface (remove `cotizador`) | ✅ | `app/(admin)` |
+| 3 | Introduce split stores (`usePublicStore`, `useAdminStore`) | ✅ | `store/public/usePublicStore.ts`, `store/admin/useAdminStore.ts` |
+| 4 | Fully replace monolithic `useCejStore` usage with bounded stores | 🔶 | `store/useCejStore.ts` is still active across public flow |
+| 5 | Scope `GlobalUI` to public layout instead of root | ⬜ | Not found (`app/layout.tsx` still mounts `GlobalUI`) |
+| 6 | Scope `AuthProvider` to admin layout instead of root | ⬜ | Not found (`app/layout.tsx` still mounts `AuthProvider`) |
+| 7 | Scope `PageViewTracker` and Pixel script to public layout | ⬜ | Not found (`app/layout.tsx` still mounts both) |
+| 8 | Implement canonical root `middleware.ts` for auth/allowlist/security/_fbc | ⬜ | Not found (`proxy.ts` exists but canonical file is absent) |
+| 9 | Enforce route allowlisting + 404 behavior at edge | 🔶 | `proxy.ts` enforces allowlist/404, but not via canonical `middleware.ts` entrypoint |
+| 10 | Apply project-wide security headers through Next config | ✅ | `next.config.ts` |
+
 ## 1. High-Level Directory Organization
 
 The system separates concerns via Next.js Route Groups. The canonical structure

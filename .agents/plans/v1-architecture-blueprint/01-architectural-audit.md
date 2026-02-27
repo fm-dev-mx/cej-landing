@@ -6,6 +6,26 @@
 
 ---
 
+## Implementation Progress
+
+> **Last audited:** 2026-02-27 by Implementation Audit
+> **Completion:** 38% (3/12 items — 3 partial)
+
+| # | Item | Status | Evidence |
+| --- | --- | --- | --- |
+| 1 | Create root `middleware.ts` edge guard for protected routes | 🔶 | `proxy.ts` provides similar logic, but required `middleware.ts` file is missing |
+| 2 | Move `AuthProvider` out of root to admin-only layout | ⬜ | Not found (`app/layout.tsx` still mounts `AuthProvider`) |
+| 3 | Move `GlobalUI` out of root to public-only layout | ⬜ | Not found (`app/layout.tsx` still mounts `GlobalUI`) |
+| 4 | Implement CAPI retry/queue instead of fire-and-forget | ⬜ | Not found |
+| 5 | Consolidate dual UTM systems into one authoritative source | ⬜ | Not found (`hooks/useAttribution.ts` + `lib/tracking/utm.ts` both active) |
+| 6 | Add security headers in Next config | ✅ | `next.config.ts` |
+| 7 | Split monolithic Zustand store for public/admin boundaries | 🔶 | `store/public/usePublicStore.ts` and `store/admin/useAdminStore.ts` exist, but `store/useCejStore.ts` monolith remains active |
+| 8 | Remove Pixel loading from admin routes | ⬜ | Not found (`app/layout.tsx` initializes Pixel globally) |
+| 9 | Remove orphan `/cotizador` route from admin/app group | ✅ | `app/(admin)` (no `cotizador` route present) |
+| 10 | Remove placeholder image domain from production config | ✅ | `next.config.ts` |
+| 11 | Align identity cookie key naming between docs and implementation | ⬜ | Not found (`lib/tracking/identity.ts` still uses `cej_visitor_id`; doc alignment pending) |
+| 12 | Resolve unclear `proxy.ts` by folding into canonical middleware path | 🔶 | `proxy.ts` is present and functional, but canonical middleware migration is incomplete |
+
 ## 1. Critical Findings Summary
 
 | # | Category | Severity | Finding |

@@ -6,6 +6,24 @@
 
 ---
 
+## Implementation Progress
+
+> **Last audited:** 2026-02-27 by Implementation Audit
+> **Completion:** 40% (3/10 items — 2 partial)
+
+| # | Item | Status | Evidence |
+| --- | --- | --- | --- |
+| 1 | Enforce protected dashboard routing via canonical middleware entrypoint | 🔶 | `proxy.ts` enforces route checks; canonical `middleware.ts` is missing |
+| 2 | Keep auth/session code out of public bundle surface | ⬜ | Not found (`app/layout.tsx` still mounts `AuthProvider`) |
+| 3 | Maintain Lead event dedup between Pixel and CAPI | ✅ | `hooks/useCheckOutUI.ts`, `lib/logic/orderDispatcher.ts`, `app/actions/submitLead.ts` |
+| 4 | Deliver Contact CAPI fallback endpoint | ⬜ | Not found |
+| 5 | Implement CAPI retry + dead-letter handling | ⬜ | Not found |
+| 6 | Consolidate UTM attribution to one cookie-only source | ⬜ | Not found |
+| 7 | Configure security headers for all responses | ✅ | `next.config.ts` |
+| 8 | Remove placeholder image domain usage from production config | ✅ | `next.config.ts` |
+| 9 | Add server-side RBAC/rate-limiting safeguards for auth and form abuse | ⬜ | Not found |
+| 10 | Maintain baseline a11y affordances (skip link, labels, alert semantics) | 🔶 | `app/(public)/layout.tsx`, `components/Calculator/modals/SchedulingModal.tsx` include partial coverage; full checklist coverage not evidenced |
+
 ## 1. Middleware & Route Protection
 
 ### 1.1 Route Security

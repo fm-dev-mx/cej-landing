@@ -7,6 +7,18 @@
 
 ---
 
+## Implementation Progress
+
+> **Last audited:** 2026-02-27 by Implementation Audit
+> **Completion:** 100% (4/4 items — 0 partial)
+
+| # | Item | Status | Evidence |
+| --- | --- | --- | --- |
+| 1 | Remove auth/login UI block and auth imports from public header | ✅ | `components/layouts/Header/Header.tsx` |
+| 2 | Ensure no login UI remains in mobile menu/header logic paths | ✅ | `components/layouts/Header/MobileMenu.tsx` |
+| 3 | Keep WhatsApp and history/cart actions in public header | ✅ | `components/layouts/Header/Header.tsx` |
+| 4 | Add/update tests asserting no login UI and preserved CTA actions | ✅ | `components/layouts/Header/Header.test.tsx` |
+
 ## Pre-conditions
 
 - [ ] Step 00 is committed (or this can run in parallel on its own branch)

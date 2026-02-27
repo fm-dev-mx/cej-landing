@@ -7,6 +7,21 @@
 
 ---
 
+## Implementation Progress
+
+> **Last audited:** 2026-02-27 by Implementation Audit
+> **Completion:** 36% (2/7 items — 1 partial)
+
+| # | Item | Status | Evidence |
+| --- | --- | --- | --- |
+| 1 | Add `trackInitiateCheckout` helper to tracking visitor module | ⬜ | Not found |
+| 2 | Trigger `trackViewContent` from quote-result render path using stable key | 🔶 | `components/Calculator/CalculatorForm.tsx` calls `trackViewContent`, but planned result-level/stable-key integration is missing |
+| 3 | Fire `trackInitiateCheckout` when opening optional form CTA | ⬜ | Not found |
+| 4 | Add SPA route-aware `PageViewTracker` component | ✅ | `components/tracking/PageViewTracker.tsx` |
+| 5 | Remove duplicate inline `PageView` trigger from root layout | ⬜ | Not found (`app/layout.tsx` still includes inline PageView) |
+| 6 | Verify/persist quote result across navigation via store persistence | ✅ | `store/useCejStore.ts` |
+| 7 | Add tests for InitiateCheckout + PageViewTracker behavior | ⬜ | Not found |
+
 ## Pre-conditions
 
 - [ ] Steps 00, 01, 02, 03 are committed
