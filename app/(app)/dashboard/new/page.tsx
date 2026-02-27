@@ -1,4 +1,3 @@
-'use server';
 // Note: This is an internal file that will be written to app/(app)/dashboard/new/page.tsx
 // I will separate it into its own tool call to avoid size limits if needed,
 // but for now I'll write the full component.
