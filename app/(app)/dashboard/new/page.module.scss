@@ -1,0 +1,134 @@
+@use "@/styles/mixins" as *;
+
+.main {
+    min-height: 100vh;
+    padding-top: calc(var(--header-h) + var(--sp-6));
+    padding-bottom: var(--sp-8);
+    background: var(--c-surface-light);
+}
+
+.container {
+    @include container;
+
+    max-width: 800px;
+}
+
+.header {
+    margin-bottom: var(--sp-6);
+}
+
+.backLink {
+    display: inline-block;
+
+    margin-bottom: var(--sp-4);
+
+    font-size: var(--fs-sm);
+    color: var(--c-primary);
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.title {
+    margin: 0 0 var(--sp-1);
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    color: var(--c-text);
+}
+
+.subtitle {
+    margin: 0;
+    font-size: var(--fs-base);
+    color: var(--c-muted);
+}
+
+.formCard {
+    padding: var(--sp-6);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+
+    background: var(--c-surface);
+    box-shadow: var(--shadow-sm);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-6);
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sp-4);
+
+    @include respond-to('sm') {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+
+    label {
+        font-size: var(--fs-xs);
+        font-weight: 600;
+        color: var(--c-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    input, select, textarea {
+        padding: var(--sp-3);
+        border: 1px solid var(--c-border);
+        border-radius: var(--radius);
+
+        font-size: var(--fs-base);
+
+        background: var(--c-surface);
+
+        &:focus {
+            border-color: var(--c-primary);
+            outline: none;
+            box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-primary) 20%, transparent);
+        }
+    }
+}
+
+.fullWidth {
+    @include respond-to('sm') {
+        grid-column: span 2;
+    }
+}
+
+.error {
+    padding: var(--sp-3);
+    border-radius: var(--radius);
+
+    font-size: var(--fs-sm);
+    color: var(--c-error-text);
+    text-align: center;
+
+    background: var(--c-error-soft);
+}
+
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--sp-4);
+}
+
+.submitButton {
+    @include btn-primary;
+
+    width: 100%;
+
+    @include respond-to('sm') {
+        width: auto;
+        min-width: 200px;
+    }
+}

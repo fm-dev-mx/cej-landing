@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useSearchParams } from 'next/navigation';
 
 import { useCejStore } from "@/store/useCejStore";

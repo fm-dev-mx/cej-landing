@@ -17,6 +17,37 @@
     margin-bottom: var(--sp-8);
 }
 
+.headerTop {
+    display: flex;
+    gap: var(--sp-4);
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: var(--sp-2);
+
+    @include respond-to('sm') {
+        flex-direction: row;
+    }
+}
+
+.adminCta {
+    @include p.btn;
+
+    padding: var(--sp-2) var(--sp-4);
+    border-radius: var(--radius);
+
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: white;
+    text-decoration: none;
+
+    background-color: var(--c-primary);
+
+    &:hover {
+        background-color: var(--c-primary-light);
+    }
+}
+
 .title {
     margin: 0 0 var(--sp-2);
     font-size: var(--fs-2xl);

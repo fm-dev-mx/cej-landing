@@ -1,7 +1,5 @@
-// Full, final content of app/actions/submitLead.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { submitLead, type SubmitLeadPayload } from './submitLead';
-import { reportError } from '@/lib/monitoring';
 import { sendToMetaCAPI } from '@/lib/tracking/capi';
 
 // --- Mocks ---

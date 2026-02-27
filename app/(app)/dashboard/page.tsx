@@ -26,7 +26,12 @@ export default async function DashboardPage() {
         <main className={styles.main}>
             <div className={styles.container}>
                 <header className={styles.header}>
-                    <h1 className={styles.title}>Hola, {userName} 👋</h1>
+                    <div className={styles.headerTop}>
+                        <h1 className={styles.title}>Hola, {userName} 👋</h1>
+                        <Link href="/dashboard/new" className={styles.adminCta}>
+                            + Nuevo Pedido
+                        </Link>
+                    </div>
                     <p className={styles.subtitle}>
                         Aquí puedes ver tu historial de cotizaciones y pedidos.
                     </p>
