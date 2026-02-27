@@ -1,5 +1,5 @@
 // lib/utils.ts
-import { type CartItem } from '@/types/domain'; // Ensure this path matches your structure
+import { type CartItem, type QuoteBreakdown } from '@/types/domain'; // Ensure this path matches your structure
 
 export const clamp = (v: number, min: number, max: number): number =>
     Math.min(Math.max(v, min), max);
@@ -110,6 +110,30 @@ export function generateCartMessage(
 
     message += `💰 *TOTAL ESTIMADO: ${fmtMXN(grandTotal)}*\n`;
     message += `📍 *Ubicación de entrega:* (Por favor comparte tu ubicación)`;
+
+    return message;
+}
+/**
+ * Generates a simple message for a single quote (no registration).
+ */
+export function buildDirectQuoteMessage(
+    quote: QuoteBreakdown
+): string {
+    const volume = quote.volume?.billedM3;
+    const concreteType = quote.concreteType;
+    const strength = quote.strength;
+
+    let message = `👋 Hola, me interesa una cotización de concreto:\n\n`;
+
+    if (strength) message += `🔹 *Tipo:* f'c ${strength}\n`;
+    if (volume) message += `   • *Volumen:* ${volume.toFixed(2)} m³\n`;
+    if (concreteType) message += `   • *Servicio:* ${concreteType === 'pumped' ? 'Bomba' : 'Tiro Directo'}\n`;
+
+    if (quote.total) {
+        message += `💰 *Total Estimado:* ${fmtMXN(quote.total)}\n`;
+    }
+
+    message += `\n📍 *Ubicación del colado:* (Comparte tu ubicación aquí)`;
 
     return message;
 }

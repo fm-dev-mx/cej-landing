@@ -7,6 +7,7 @@ import { useQuoteCalculator } from '@/hooks/useQuoteCalculator';
 import { useCheckoutUI } from '@/hooks/useCheckOutUI';
 import { TicketDisplay } from './TicketDisplay/TicketDisplay';
 import { SchedulingModal } from './modals/SchedulingModal';
+import { QuoteCTA } from './QuoteCTA';
 import { Button } from '@/components/ui/Button/Button';
 import { trackContact } from '@/lib/tracking/visitor';
 
@@ -229,6 +230,8 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                             <p className={styles.summaryFooter}>
                                 Agenda tu entrega o recibe asistencia personalizada.
                             </p>
+
+                            <QuoteCTA quote={quote} />
 
                             <div className={styles.gridActions}>
                                 <Button

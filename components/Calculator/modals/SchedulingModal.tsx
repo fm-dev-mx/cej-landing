@@ -201,6 +201,21 @@ Quiero programar un pedido.
                     >
                         Generar Pedido en WhatsApp
                     </Button>
+
+                    <Button
+                        type="button"
+                        variant="tertiary"
+                        fullWidth
+                        onClick={onClose}
+                        disabled={isProcessing}
+                        className={styles.cancelBtn}
+                    >
+                        Cancelar
+                    </Button>
+
+                    <p className={styles.privacyNote}>
+                        🔒 Tus datos están protegidos y solo se utilizarán para coordinar esta entrega.
+                    </p>
                 </div>
             </form>
         </ResponsiveDialog>
