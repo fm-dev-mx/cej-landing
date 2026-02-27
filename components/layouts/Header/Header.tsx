@@ -11,13 +11,11 @@ import { useHeaderLogic } from "./useHeaderLogic";
 import DesktopNav from "./DesktopNav";
 import MobileMenu from "./MobileMenu";
 import { useCejStore } from "@/store/useCejStore";
-import { useAuth, UserProfileMenu } from "@/components/Auth";
 
 import styles from "./Header.module.scss";
 
 export default function Header() {
   const { state, data, actions } = useHeaderLogic();
-  const { user, loading: authLoading } = useAuth();
 
   const setDrawerOpen = useCejStore((s) => s.setDrawerOpen);
   const setActiveTab = useCejStore((s) => s.setActiveTab);
@@ -27,10 +25,6 @@ export default function Header() {
     setActiveTab("history");
     setDrawerOpen(true);
   };
-
-  // Get user display name from metadata or email
-  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuario';
-  const userEmail = user?.email || '';
 
   return (
     <>
@@ -66,15 +60,6 @@ export default function Header() {
           {/* Desktop actions (auth, history, WhatsApp, call) */}
           <div className={styles.actions}>
             {/* Auth: Show user menu or login link */}
-            {!authLoading && (
-              user ? (
-                <UserProfileMenu userName={userName} userEmail={userEmail} />
-              ) : (
-                <Link href="/login" className={`${styles.button} ${styles.buttonLogin}`}>
-                  Iniciar Sesión
-                </Link>
-              )
-            )}
 
             <button
               onClick={openHistory}
