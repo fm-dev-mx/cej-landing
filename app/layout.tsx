@@ -3,11 +3,14 @@
 
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { Inter } from "next/font/google";
 
 import { env, isPreview, isDev, APP_ENV } from "@/config/env";
 import { SEO_CONTENT } from "@/config/content";
 
+import { PageViewTracker } from "@/components/tracking/PageViewTracker";
 import "../styles/globals.scss";
+import { Suspense } from "react";
 
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
@@ -84,6 +87,9 @@ export default function RootLayout({
 
                 {/* App content wrapped with AuthProvider */}
                 <AuthProvider>
+                    <Suspense fallback={null}>
+                        <PageViewTracker />
+                    </Suspense>
                     {children}
 
                     {/* Global UX components (cart, drawer, toast) */}

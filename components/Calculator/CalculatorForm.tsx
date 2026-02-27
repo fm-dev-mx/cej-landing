@@ -11,6 +11,7 @@ import { useQuoteCalculator } from "@/hooks/useQuoteCalculator";
 
 import { ModeSelector } from "./ModeSelector";
 import { QuoteSummary } from "./QuoteSummary";
+import { trackViewContent } from "@/lib/tracking/visitor";
 
 import { KnownVolumeForm } from "./Forms/KnownVolumeForm";
 import { WorkTypeSelector } from "./Forms/WorkTypeSelector";
@@ -79,6 +80,25 @@ export function CalculatorForm() {
     const { error, warning, rawVolume } = useQuoteCalculator(draft);
 
     const submittedQuote = useCejStore((s) => s.submittedQuote);
+
+    // Friction Analysis Tracking
+    useEffect(() => {
+        if (draft.mode) {
+            trackViewContent(0, 'MXN', `Calculator_Mode_${draft.mode}`);
+        }
+    }, [draft.mode]);
+
+    useEffect(() => {
+        if (draft.workType) {
+            trackViewContent(0, 'MXN', `Calculator_WorkType_${draft.workType}`);
+        }
+    }, [draft.workType]);
+
+    useEffect(() => {
+        if (draft.showExpertOptions) {
+            trackViewContent(0, 'MXN', 'Calculator_ExpertOptions_Viewed');
+        }
+    }, [draft.showExpertOptions]);
 
     // If a quote is already submitted, hide the calculator form and only show the summary (ticket)
     if (submittedQuote) {

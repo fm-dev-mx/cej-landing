@@ -81,7 +81,7 @@ export const trackLead = ({
     }
 };
 
-export type ContactMethod = 'WhatsApp' | 'Phone' | 'Email' | 'whatsapp' | 'phone' | 'email';
+export type ContactMethod = 'WhatsApp' | 'Phone' | 'Email' | 'whatsapp' | 'phone' | 'email' | 'WhatsApp_Direct' | 'whatsapp_direct';
 
 /**
  * Contact – mid/low value contact intent event.
@@ -90,10 +90,12 @@ export type ContactMethod = 'WhatsApp' | 'Phone' | 'Email' | 'whatsapp' | 'phone
 export const trackContact = (method: ContactMethod): void => {
     if (!hasFbq()) return;
 
-    const normalized = method.toLowerCase() as 'whatsapp' | 'phone' | 'email';
+    const normalized = method.toLowerCase().replace('_direct', '') as 'whatsapp' | 'phone' | 'email';
+    const isDirect = method.toLowerCase().includes('direct');
 
     window.fbq?.('track', 'Contact', {
         content_name: normalized,
         method: normalized,
+        direct_conversion: isDirect,
     });
 };
