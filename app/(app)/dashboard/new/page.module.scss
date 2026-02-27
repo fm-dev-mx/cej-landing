@@ -1,3 +1,4 @@
+@use "@/styles/primitives" as p;
 @use "@/styles/mixins" as *;
 
 .main {
@@ -123,7 +124,7 @@
 }
 
 .submitButton {
-    @include btn-primary;
+    @include p.btn;
 
     width: 100%;
 

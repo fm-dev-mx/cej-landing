@@ -128,9 +128,10 @@ Lead submission uses a dual path (DB + CAPI). If Supabase is unreachable, errors
 We use Next.js **Route Groups** to separate concerns without affecting the URL structure:
 
 - **`(marketing)`**: Public landing pages (`/`, `/aviso-de-privacidad`). Focus on SEO and conversion.
-- **`(app)`**: Functional tools (`/cotizador`, `/perfil`). Focus on utility and state management.
+- **`(app)`**: Functional tools (`/cotizador`, `/perfil`, `/dashboard`). Focus on utility and state management.
 - **`app/actions`**: Server-side mutations.
-- **`proxy.ts`**: Global routing boundary (Next.js 16). Handles session refresh and dashboard protection.
+- **`proxy.ts`**: Global routing boundary (Next.js 16). Handles session refresh, UTM persistence (via `useAttribution`), and dashboard protection.
+- **Tracking Components**: `PageViewTracker` (App layout) captures automated Pixel events. `QuoteCTA` (Calculator) provides a low-friction WhatsApp-only conversion path.
 
 ---
 
