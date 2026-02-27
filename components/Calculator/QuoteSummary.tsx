@@ -143,11 +143,10 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
 
     // --- Render Logic ---
 
-    const stage: 'preview' | 'actions' | 'submitted' = (submittedQuote && !!submittedQuote.folio)
+    // Transition from Phase 1/2 to Phase 3
+    const stage: 'active' | 'submitted' = (submittedQuote && !!submittedQuote.folio)
         ? 'submitted'
-        : (breakdownViewed && canRevealBreakdown)
-            ? 'actions'
-            : 'preview';
+        : 'active';
 
 
     const isViewingHistory = !!submittedQuote;
@@ -164,48 +163,28 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
         : false;
 
     return (
-        <div className={styles.container}>
-            {stage !== 'preview' && (
-                <div
-                    className={styles.ticketWrapper}
-                    data-ticket-container="true"
-                    ref={ticketRef}
-                >
-                    <TicketDisplay
-                        variant={stage === 'submitted' ? 'full' : 'preview'}
-                        quote={quote}
-                        isValidQuote={isValid}
-                        folio={submittedQuote?.folio}
-                        customerName={submittedQuote?.name}
-                        warning={warning}
-                        steps={getCalculatorSteps(draft)}
-                        onReset={handleResetCurrentMode}
-                        isVersionMismatch={isVersionMismatch}
-                    />
-                </div>
-            )}
+        <div className={styles.summaryContainer}>
+            {/* The Ticket: Always visible for feedback, but visually dimmed if not valid */}
+            <div
+                className={`${styles.ticketWrapper} ${!isValid && !isViewingHistory ? styles.ticketDimmed : ''}`}
+                data-ticket-container="true"
+                ref={ticketRef}
+            >
+                <TicketDisplay
+                    variant={stage === 'submitted' ? 'full' : 'preview'}
+                    quote={quote}
+                    isValidQuote={isValid}
+                    folio={submittedQuote?.folio}
+                    customerName={submittedQuote?.name}
+                    warning={warning}
+                    steps={getCalculatorSteps(draft)}
+                    onReset={handleResetCurrentMode}
+                    isVersionMismatch={isVersionMismatch}
+                />
+            </div>
 
-            <div className={styles.field}>
-                {stage === 'preview' && (
-                    <>
-                        <Button
-                            fullWidth
-                            variant="primary"
-                            onClick={handleViewBreakdown}
-                            disabled={!canRevealBreakdown}
-                        >
-                            Ver Total
-                        </Button>
-
-                        <p className={styles.summaryFooter}>
-                            {isValid
-                                ? 'Continúa para ver el detalle de costos.'
-                                : 'Completa los pasos para ver el total.'}
-                        </p>
-                    </>
-                )}
-
-                {stage === 'actions' && (
+            <div className={styles.summaryActions}>
+                {stage === 'active' && (
                     <div className={styles.animateFadeIn}>
                         {liveRules && liveRules.version > FALLBACK_PRICING_RULES.version && (
                             <div className={styles.livePriceBadge}>

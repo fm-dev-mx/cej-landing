@@ -3,35 +3,26 @@
 
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from 'next/navigation';
 
 import { useCejStore } from "@/store/useCejStore";
 import { useQuoteCalculator } from "@/hooks/useQuoteCalculator";
 
 import { ModeSelector } from "./ModeSelector";
+import { EntryScreen } from "./EntryScreen";
 import { QuoteSummary } from "./QuoteSummary";
 import { trackViewContent } from "@/lib/tracking/visitor";
 
+import { useCalculatorUI } from "@/hooks/useCalculatorUI";
 import { KnownVolumeForm } from "./Forms/KnownVolumeForm";
 import { WorkTypeSelector } from "./Forms/WorkTypeSelector";
 import { AssistVolumeForm } from "./Forms/AssistVolumeForm";
 import { SpecsForm } from "./Forms/SpecsForm";
 import { AdditivesForm } from "./Forms/AdditivesForm";
+import { VolumeAssistant } from "./VolumeAssistant";
 
 import styles from "./CalculatorForm.module.scss";
-
-/**
- * CalculatorForm
- *
- * - Connects the Zustand store draft to individual form sections.
- * - Manages focus when mode changes.
- * - Shows validation errors, warnings and summary (ticket-style).
-
- */
-
-
-import { useCalculatorUI } from "@/hooks/useCalculatorUI";
 
 /**
  * CalculatorForm
@@ -77,9 +68,17 @@ export function CalculatorForm() {
     } = useCalculatorUI(draft);
 
     // Quote engine result
-    const { error, warning, rawVolume } = useQuoteCalculator(draft);
+    const { error, warning, rawVolume, billedM3 } = useQuoteCalculator(draft);
 
     const submittedQuote = useCejStore((s) => s.submittedQuote);
+
+    // Local state to track if volume is "confirmed" in assist mode to reveal specs
+    const [volumeConfirmed, setVolumeConfirmed] = useState(false);
+
+    // Auto-confirm for knownM3 if valid
+    const isVolumeReady = draft.mode === 'knownM3'
+        ? (billedM3 > 0 && !error)
+        : volumeConfirmed;
 
     // Friction Analysis Tracking
     useEffect(() => {
@@ -115,128 +114,123 @@ export function CalculatorForm() {
         );
     }
 
+    // If no mode selected, show the Entry Screen (Phase 0)
+    if (!draft.mode && !submittedQuote) {
+        return <EntryScreen />;
+    }
+
     return (
         <div className={styles.container} ref={formContainerRef}>
-            {/* Edit Mode Banner */}
-            {editingItemId && (
-                <div className={styles.editBanner} role="status">
-                    <span className={styles.editBannerIcon}>✏️</span>
-                    <span>Editando cálculo — tus cambios reemplazarán el item actual.</span>
-                    <button
-                        type="button"
-                        className={styles.editBannerCancel}
-                        onClick={() => {
-                            cancelEdit();
-                            scrollToCalcTop();
-                        }}
-                    >
-                        Cancelar
-                    </button>
-                </div>
-            )}
-
-            {/* 1. Mode selection */}
-            <div className={`${styles.field} ${activeField === 'mode' ? styles.activeField : ''}`}>
-                <label className={styles.label}>¿Cómo quieres cotizar?</label>
-                <ModeSelector currentMode={draft.mode} />
-            </div>
-
-            {/* 2. Volume inputs - Wrapped for smooth height transition */}
-            <div className={styles.volumeSection}>
-                <div>
-                    {draft.mode === "knownM3" ? (
-                        <div className={`${styles.field} ${styles.gamifiedReveal} ${activeField === 'm3' ? styles.activeField : ''}`}>
-                            <KnownVolumeForm
-                                hasError={!!error && rawVolume <= 0}
-                                forceValidation={hasTouchedAnyField}
-                                onFieldTouched={handleFieldTouched}
-                            />
+            <div className={styles.formLayout}>
+                <div className={styles.formMain}>
+                    {/* Edit Mode Banner */}
+                    {editingItemId && (
+                        <div className={styles.editBanner} role="status">
+                            <span className={styles.editBannerIcon}>✏️</span>
+                            <span>Editando cálculo — tus cambios reemplazarán el item actual.</span>
+                            {/* Button to cancel the current edit operation */}
+                            <button
+                                type="button"
+                                className={styles.editBannerCancel}
+                                onClick={() => {
+                                    cancelEdit();
+                                    scrollToCalcTop();
+                                }}
+                            >
+                                Cancelar
+                            </button>
                         </div>
-                    ) : (
-                        <>
-                            <div className={`${styles.field} ${activeField === 'workType' ? styles.activeField : ''}`}>
-                                <WorkTypeSelector />
-                            </div>
-
-                            {draft.workType && (
-                                <div
-                                    className={`${styles.field} ${styles.gamifiedReveal} ${activeField === 'assistVolume' ? styles.activeField : ''}`}
-                                    ref={assistVolumeRef}
-                                >
-                                    <AssistVolumeForm
-                                        error={error}
-                                        forceValidation={hasTouchedAnyField}
-                                        onFieldTouched={handleFieldTouched}
-                                    />
-                                </div>
-                            )}
-                        </>
                     )}
-                </div>
-            </div>
 
-            {/* 3. Specs & additives (expert section) */}
-            {(draft.mode === "knownM3" || draft.workType) && (
-                <div
-                    className={`${styles.fieldWithSeparator} ${styles.gamifiedReveal} ${activeField === 'specs' ? styles.activeField : ''}`}
-                >
-                    <SpecsForm />
-                    {/* Additives Toggle */}
-                    <div className={`${styles.field} ${styles.additivesContainer}`}>
-                        <label className={`${styles.toggleButton} ${draft.showExpertOptions ? styles.active : ''}`}>
-                            <input
-                                type="checkbox"
-                                checked={draft.showExpertOptions}
-                                onChange={() => useCejStore.getState().setExpertMode(!draft.showExpertOptions)}
-                                className={styles.toggleInput}
-                            />
-                            <span className={styles.toggleFakeCheckbox} aria-hidden="true" />
-                            <span className={styles.toggleLabel}>
-                                {draft.showExpertOptions ? "Ocultar Aditivos" : "Agregar Aditivos"}
-                            </span>
-                        </label>
+                    {/* 1. Mode selection */}
+                    <div className={`${styles.field} ${activeField === 'mode' ? styles.activeField : ''}`}>
+                        <div className={styles.fieldHeader}>
+                            <label className={styles.label}>¿Cómo quieres cotizar?</label>
+                            <button
+                                type="button"
+                                className={styles.resetLink}
+                                onClick={() => useCejStore.getState().setMode(null)}
+                            >
+                                Cambiar método
+                            </button>
+                        </div>
+                        <ModeSelector currentMode={draft.mode} />
                     </div>
 
-                    {draft.showExpertOptions && (
-                        <div className={styles.animateFadeIn}>
-                            <AdditivesForm />
+                    {/* 2. Volume inputs - Wrapped for smooth height transition */}
+                    <div className={styles.volumeSection}>
+                        {draft.mode === "knownM3" ? (
+                            <div className={`${styles.field} ${styles.gamifiedReveal} ${activeField === 'm3' ? styles.activeField : ''}`}>
+                                <KnownVolumeForm
+                                    hasError={!!error && rawVolume <= 0}
+                                    forceValidation={hasTouchedAnyField}
+                                    onFieldTouched={handleFieldTouched}
+                                />
+                            </div>
+                        ) : (
+                            <VolumeAssistant onComplete={() => setVolumeConfirmed(true)} />
+                        )}
+                    </div>
+
+                    {/* 3. Specs & additives - Revealed only when volume is ready */}
+                    {isVolumeReady && (
+                        <div
+                            className={`${styles.fieldWithSeparator} ${styles.gamifiedReveal} ${activeField === 'specs' ? styles.activeField : ''}`}
+                        >
+                            <SpecsForm />
+                            {/* Additives Toggle */}
+                            <div className={`${styles.field} ${styles.additivesContainer}`}>
+                                <label className={`${styles.toggleButton} ${draft.showExpertOptions ? styles.active : ''}`}>
+                                    <input
+                                        type="checkbox"
+                                        checked={draft.showExpertOptions}
+                                        onChange={() => useCejStore.getState().setExpertMode(!draft.showExpertOptions)}
+                                        className={styles.toggleInput}
+                                    />
+                                    <span className={styles.toggleFakeCheckbox} aria-hidden="true" />
+                                    <span className={styles.toggleLabel}>
+                                        {draft.showExpertOptions ? "Ocultar Aditivos" : "Agregar Aditivos"}
+                                    </span>
+                                </label>
+                            </div>
+
+                            {draft.showExpertOptions && (
+                                <div className={styles.animateFadeIn}>
+                                    <AdditivesForm />
+                                </div>
+                            )}
                         </div>
                     )}
-                </div>
-            )}
 
-            <div className={styles.fieldWithSeparator}></div>
+                    {!error && warning && (
+                        <div className={styles.note}>
+                            {warning.code === "BELOW_MINIMUM" && (
+                                <span>
+                                    {warning.typeLabel?.toLowerCase().includes("bomba")
+                                        ? `⚠️ El pedido mínimo para concreto bombeado es de 3 m³.`
+                                        : `⚠️ El pedido mínimo para tiro directo es de 2 m³.`
+                                    }
+                                </span>
+                            )}
 
-            {/* 4. Feedback & warnings (only after user interaction) */}
-            {/* REMOVED: Floating alerts. Using inline validation only. */}
-
-            {!error && warning && (
-                <div className={styles.note}>
-                    {warning.code === "BELOW_MINIMUM" && (
-                        <span>
-                            {warning.typeLabel?.toLowerCase().includes("bomba")
-                                ? `⚠️ El pedido mínimo para concreto bombeado es de 3 m³.`
-                                : `⚠️ El pedido mínimo para tiro directo es de 2 m³.`
-                            }
-                        </span>
+                            {warning.code === "ROUNDING_POLICY" && (
+                                <span>
+                                    El volumen se ajusta a múltiplos de 0.5 m³.
+                                </span>
+                            )}
+                        </div>
                     )}
+                </div> {/* End formMain */}
 
-                    {warning.code === "ROUNDING_POLICY" && (
-                        <span>
-                            El volumen se ajusta a múltiplos de 0.5 m³.
-                        </span>
-                    )}
+                {/* 5. Summary (ticket-like view) */}
+                <div className={`${styles.summarySection} ${draft.mode ? styles.gamifiedReveal : ''}`}>
+                    <QuoteSummary
+                        hasError={!!error}
+                        onFocusError={focusFirstInvalidInput}
+                        onScrollToTop={scrollToCalcTop}
+                    />
                 </div>
-            )}
-
-            {/* 5. Summary (ticket-like view) */}
-            <div className={`${styles.summarySection} ${draft.mode ? styles.gamifiedReveal : ''}`}>
-                <QuoteSummary
-                    hasError={!!error}
-                    onFocusError={focusFirstInvalidInput}
-                    onScrollToTop={scrollToCalcTop}
-                />
-            </div>
+            </div> {/* End main formLayout wrapper */}
         </div>
     );
 }

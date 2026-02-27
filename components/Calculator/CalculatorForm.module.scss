@@ -11,24 +11,42 @@
 /* --- Layout --- */
 .container {
     position: relative;
-
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-
-    /* Removed fixed 600px to allow compact mode */
     width: 100%;
-    min-height: auto;
+}
 
-    /* Ensure form never changes width based on content */
+.formLayout {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 
-    /* Prevent width math surprises inside the calculator */
-    *,
-    *::before,
-    *::after {
-        box-sizing: border-box;
+    @media (min-width: 1024px) {
+        flex-direction: row;
+        align-items: start;
     }
 }
+
+.formMain {
+    flex: 1;
+    min-width: 0; // Allow shrinking
+}
+
+.summarySection {
+    flex: 0 0 100%;
+
+    @media (min-width: 1024px) {
+        flex: 0 0 380px;
+        position: sticky;
+        top: 2rem;
+    }
+}
+
+.ticketDimmed {
+    opacity: 0.6;
+    filter: grayscale(0.5);
+    pointer-events: none;
+}
+
+
 
 /* Stable wrapper for volume inputs to prevent layout shift */
 .volumeSection {
@@ -139,6 +157,29 @@
         font-size: var(--fs-base);
         font-weight: 600;
         color: var(--c-muted-on-dark);
+        margin: 0;
+    }
+}
+
+.fieldHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.resetLink {
+    cursor: pointer;
+    font-size: var(--fs-xs);
+    color: var(--c-interactive-base);
+    background: none;
+    border: none;
+    text-decoration: underline;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+        opacity: 1;
     }
 }
 
