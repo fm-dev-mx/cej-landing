@@ -24,10 +24,19 @@ const eslintConfig = defineConfig([
   ]),
   // Custom rule overrides
   {
-    files: ["components/Calculator/hooks/useCalculatorState.ts"],
+    files: [
+      "components/Calculator/hooks/useCalculatorState.ts",
+      "components/Calculator/VolumeAssistant.tsx"
+    ],
     rules: {
-      // Allow specific hydration pattern from localStorage
+      // Allow specific hydration or step-transition pattern
       "react-hooks/set-state-in-effect": "off",
+    },
+  },
+  {
+    files: ["scripts/**/*.ts"],
+    rules: {
+      "no-console": "off",
     },
   },
   {
@@ -39,7 +48,7 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-explicit-any": "error",
       "no-console": ["error", { allow: ["warn", "error"] }],
       "react/forbid-dom-props": ["error", { forbid: ["style"] }],
-      "import/no-cycle": ["error", { maxDepth: '∞' }]
+      "import/no-cycle": ["error", { maxDepth: Infinity }]
     },
   },
 ]);

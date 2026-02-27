@@ -24,7 +24,14 @@ else
 fi
 
 # 3. Fast checks
-# 3. Fast checks
+if [ -n "$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx)$')" ]; then
+  echo "🔍 Running hygiene checks..."
+  if ! git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx)$' | xargs npx tsx scripts/check-hygiene.ts; then
+    echo "❌ Hygiene checks failed. Please fix the issues before committing."
+    exit 1
+  fi
+fi
+
 if FORCE_COLOR=0 pnpm lint-staged --quiet; then
   echo "✅ Quality checks passed."
 else

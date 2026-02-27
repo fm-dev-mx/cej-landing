@@ -1,21 +1,24 @@
 #!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
 
 # Verify the commits that are about to be pushed
 while read local_ref local_sha remote_ref remote_sha
 do
-  # range of commits being pushed
+  # New branch: only check commits not in any other remote branch
   if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
-    range="$local_sha"
+    range=$(git rev-list "$local_sha" --not --remotes)
   else
     range="$remote_sha..$local_sha"
   fi
 
-  for c in $(git rev-list "$range"); do
-    if ! git verify-commit "$c" >/dev/null 2>&1; then
-      echo "❌ Commit not signed: $c"
-      exit 1
-    fi
-  done
+  if [ -n "$range" ]; then
+    for c in $(git rev-list "$range"); do
+      if ! git verify-commit "$c" >/dev/null 2>&1; then
+        echo "❌ Commit not signed: $c"
+        exit 1
+      fi
+    done
+  fi
 done
 
 exit 0
