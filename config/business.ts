@@ -38,7 +38,7 @@ export const ESTIMATE_LEGEND =
 // --- Construction Specs ---
 
 export const MIN_M3_BY_TYPE: Record<ConcreteType, number> = {
-    direct: 2,
+    direct: 3,
     pumped: 3,
 };
 
@@ -114,18 +114,18 @@ const rawPricingConfig = {
     minOrderQuantity: MIN_M3_BY_TYPE,
     base: {
         direct: {
-            '100': [{ minM3: 2, maxM3: 2.5, pricePerM3Cents: 223100 }, { minM3: 3, pricePerM3Cents: 208200 }],
-            '150': [{ minM3: 2, maxM3: 2.5, pricePerM3Cents: 250900 }, { minM3: 3, pricePerM3Cents: 226900 }],
-            '200': [{ minM3: 2, maxM3: 2.5, pricePerM3Cents: 273100 }, { minM3: 3, pricePerM3Cents: 248100 }],
-            '250': [{ minM3: 2, maxM3: 2.5, pricePerM3Cents: 301800 }, { minM3: 3, pricePerM3Cents: 276900 }],
-            '300': [{ minM3: 2, maxM3: 2.5, pricePerM3Cents: 309100 }, { minM3: 3, pricePerM3Cents: 303500 }],
+            '100': [{ minM3: 3, pricePerM3Cents: 217036 }],
+            '150': [{ minM3: 3, pricePerM3Cents: 235646 }],
+            '200': [{ minM3: 3, pricePerM3Cents: 256946 }],
+            '250': [{ minM3: 3, pricePerM3Cents: 285646 }],
+            '300': [{ minM3: 3, pricePerM3Cents: 312496 }],
         },
         pumped: {
-            '100': [{ minM3: 3, maxM3: 4.5, pricePerM3Cents: 252700 }, { minM3: 5, pricePerM3Cents: 248100 }],
-            '150': [{ minM3: 3, maxM3: 4.5, pricePerM3Cents: 275800 }, { minM3: 5, pricePerM3Cents: 266600 }],
-            '200': [{ minM3: 3, maxM3: 4.5, pricePerM3Cents: 300800 }, { minM3: 5, pricePerM3Cents: 295800 }],
-            '250': [{ minM3: 3, maxM3: 4.5, pricePerM3Cents: 325900 }, { minM3: 5, pricePerM3Cents: 316700 }],
-            '300': [{ minM3: 3, maxM3: 4.5, pricePerM3Cents: 347800 }, { minM3: 5, pricePerM3Cents: 338500 }],
+            '100': [], // Left empty intentionally as it was N/A in legacy report
+            '150': [{ minM3: 3, maxM3: 3.5, pricePerM3Cents: 307956 }, { minM3: 4, maxM3: 4.5, pricePerM3Cents: 284716 }, { minM3: 5, pricePerM3Cents: 275456 }],
+            '200': [{ minM3: 3, maxM3: 3.5, pricePerM3Cents: 332866 }, { minM3: 4, maxM3: 4.5, pricePerM3Cents: 309626 }, { minM3: 5, pricePerM3Cents: 304626 }],
+            '250': [{ minM3: 3, maxM3: 3.5, pricePerM3Cents: 357956 }, { minM3: 4, maxM3: 4.5, pricePerM3Cents: 334716 }, { minM3: 5, pricePerM3Cents: 325456 }],
+            '300': [{ minM3: 3, maxM3: 3.5, pricePerM3Cents: 379256 }, { minM3: 4, maxM3: 4.5, pricePerM3Cents: 356016 }, { minM3: 5, pricePerM3Cents: 346756 }],
         },
     },
     additives: [
