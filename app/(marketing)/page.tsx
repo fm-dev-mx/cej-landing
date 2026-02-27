@@ -24,8 +24,8 @@ export default function Page() {
       <FAQ />
       <CTAButtons
         whatsappNumber={env.NEXT_PUBLIC_WHATSAPP_NUMBER}
-        phoneNumber={env.NEXT_PUBLIC_PHONE}
         quoteText="Hola, quiero una cotización de concreto."
+        scheduleHref="#calculator"
       />
     </>
   );

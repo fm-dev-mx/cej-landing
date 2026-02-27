@@ -44,7 +44,7 @@
 .cta {
   @include p.btn;
 
-  width: 70%;
+  width: 100%;
   min-height: 44px; // Hit target size
   border-radius: 99px;
 
@@ -52,6 +52,17 @@
   font-weight: 700;
   text-decoration: none;
   text-transform: none;
+}
+
+.schedule {
+  border: 1px solid rgb(255 255 255 / 20%);
+  color: white;
+  background: rgb(255 255 255 / 12%);
+
+  &:hover {
+    border-color: white;
+    background: rgb(255 255 255 / 20%);
+  }
 }
 
 /* WhatsApp Button */
@@ -66,14 +77,3 @@
   }
 }
 
-/* Call Button */
-.phone {
-  border: 1px solid rgb(255 255 255 / 20%);
-  color: white;
-  background: rgb(255 255 255 / 10%);
-
-  &:hover {
-    border-color: white;
-    background: rgb(255 255 255 / 20%);
-  }
-}

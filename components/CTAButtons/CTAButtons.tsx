@@ -2,26 +2,26 @@
 "use client";
 
 import { useMemo, useCallback } from "react";
-import { getWhatsAppUrl, getPhoneUrl } from "@/lib/utils";
+import { getWhatsAppUrl } from "@/lib/utils";
 import { trackContact } from "@/lib/tracking/visitor";
 import { useCejStore } from "@/store/useCejStore";
 import styles from "./CTAButtons.module.scss";
 
 type Props = {
   whatsappNumber: string;
-  phoneNumber: string;
   quoteText?: string;
+  scheduleHref?: string;
   onLead?: () => void;
-  onContact?: () => void;
+  onSchedule?: () => void;
   sticky?: boolean;
 };
 
 export default function CTAButtons({
   whatsappNumber,
-  phoneNumber,
   quoteText = "Hola, me interesa cotizar concreto.",
+  scheduleHref = "#calculator",
   onLead,
-  onContact,
+  onSchedule,
   sticky = true,
 }: Props) {
   // Store: Hide this bar if cart has items (SmartBar takes priority)
@@ -31,28 +31,35 @@ export default function CTAButtons({
   const links = useMemo(() => {
     return {
       wa: getWhatsAppUrl(whatsappNumber, quoteText),
-      tel: getPhoneUrl(phoneNumber),
     };
-  }, [whatsappNumber, phoneNumber, quoteText]);
+  }, [whatsappNumber, quoteText]);
 
   const handleWhatsAppClick = useCallback(() => {
     trackContact('WhatsApp');
     if (onLead) onLead();
   }, [onLead]);
 
-  const handlePhoneClick = useCallback(() => {
-    trackContact('Phone');
-    if (onContact) onContact();
-  }, [onContact]);
+  const handleScheduleClick = useCallback(() => {
+    if (onSchedule) onSchedule();
+  }, [onSchedule]);
 
-  if ((!links.wa && !links.tel) || shouldHide) return null;
+  if (!links.wa || shouldHide) return null;
 
   return (
     <div
       className={sticky ? styles.stickyBar : styles.inlineGroup}
       role="group"
-      aria-label="Opciones de contacto"
+      aria-label="Opciones de acción rápidas"
     >
+      <a
+        className={`${styles.cta} ${styles.schedule}`}
+        href={scheduleHref}
+        onClick={handleScheduleClick}
+        aria-label="Programar pedido"
+      >
+        <span aria-hidden="true">📅</span> Programar Pedido
+      </a>
+
       {links.wa && (
         <a
           className={`${styles.cta} ${styles.whatsapp}`}
@@ -63,16 +70,6 @@ export default function CTAButtons({
           aria-label="Contactar por WhatsApp"
         >
           <span aria-hidden="true">💬</span> WhatsApp
-        </a>
-      )}
-      {links.tel && (
-        <a
-          className={`${styles.cta} ${styles.phone}`}
-          href={links.tel}
-          onClick={handlePhoneClick}
-          aria-label="Llamar por teléfono"
-        >
-          <span aria-hidden="true">📞</span> Llamar
         </a>
       )}
     </div>
