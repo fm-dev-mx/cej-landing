@@ -76,6 +76,10 @@
   --c-cta: var(--c-primary-light);
   --c-cta-hover: color-mix(in oklab, var(--c-primary-light) 85%, black);
   --c-cta-glow: rgb(42 95 168 / 30%);
+  --c-interactive-base: #5b8fd9;
+  --c-interactive-hover: #4f80c4;
+  --c-interactive-soft: rgb(91 143 217 / 16%);
+  --c-interactive-ring: rgb(91 143 217 / 28%);
   --c-text-on-dark: color-mix(in oklab, white 95%, var(--c-primary));
   --c-muted-on-dark: #cbd5e1;
   --c-bg: #0e2240;
