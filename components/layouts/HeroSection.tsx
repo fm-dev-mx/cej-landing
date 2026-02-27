@@ -69,7 +69,7 @@ export default function HeroSection({
           </h1>
 
           <p className={styles.hero__lead}>
-            Suministro confiable de <strong>concreto y servicio de bombeo</strong> para contratistas y particulares. Evita desperdicios con nuestro cálculo de volumetría exacto.
+            Concreto y bombeo puntuales para tu obra. <strong>Calcula m³ exactos</strong> y evita desperdicio.
           </p>
 
           <ul className={styles.hero__features}>

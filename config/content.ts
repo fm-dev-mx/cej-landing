@@ -76,7 +76,7 @@ export const LANDING_CONTENT = {
             highlight: "con entrega puntual."
         },
         // SEO: Include main keywords naturally in the lead text (H2 or p context)
-        lead: "Suministro confiable de <strong>concreto y servicio de bombeo</strong> para contratistas y particulares. Evita desperdicios con nuestro cálculo de volumetría exacto.",
+        lead: "Concreto y bombeo puntuales para tu obra. Calcula m³ exactos y evita desperdicio.",
         features: [
             {
                 text: "Cotización inmediata",
@@ -102,7 +102,7 @@ export const LANDING_CONTENT = {
             {
                 id: "time",
                 title: "Tiempo es Dinero",
-                desc: "Entendemos que una cuadrilla parada cuesta. Nuestra logística en Juárez garantiza que el camión llegue cuando se programó.",
+                desc: "Si tu cuadrilla se detiene, pierdes dinero. Entregamos cuando lo programas.",
                 icon: "⏱️"
             },
             {
@@ -191,7 +191,7 @@ export const LANDING_CONTENT = {
             {
                 id: "book",
                 title: "2. Programa tu Pedido",
-                desc: "Aparta fecha y hora con un anticipo mínimo ($1,000 MXN). Asegura tu lugar en la agenda.",
+                desc: "Reserva fecha y hora con anticipo desde $1,000 MXN. Tu lugar queda asegurado.",
                 imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Programa+Pedido",
                 imageAlt: "Calendario de obra marcado"
             },
@@ -215,7 +215,7 @@ export const LANDING_CONTENT = {
     services: {
         title: "Soluciones en Concreto",
         titleHighlight: "para toda necesidad.",
-        subtitle: "Desde pequeñas ampliaciones hasta grandes desarrollos en Ciudad Juárez. Tenemos el equipo y la mezcla correcta.",
+        subtitle: "De ampliaciones a obras industriales: misma puntualidad, mezcla correcta y soporte técnico.",
         items: [
             {
                 id: "concreto",
