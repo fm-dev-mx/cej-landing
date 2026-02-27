@@ -179,33 +179,33 @@ export const LANDING_CONTENT = {
     },
     process: {
         title: "Tu colado en 4 pasos",
-        subtitle: "Simplificamos la logística para que tú solo te preocupes por construir.",
+        subtitle: "Logística simple para que solo te preocupes por construir.",
         steps: [
             {
                 id: "calc",
-                title: "1. Cotiza y Calcula",
-                desc: "Usa nuestra calculadora online para estimar el volumen y precio al instante, o mándanos tus medidas.",
+                title: "1. Cotiza",
+                desc: "Calcula tu volumen en línea o compártenos tus medidas para una cotización formal.",
                 imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Cotiza+y+Calcula",
                 imageAlt: "Persona usando calculadora en celular"
             },
             {
                 id: "book",
-                title: "2. Programa tu Pedido",
-                desc: "Reserva fecha y hora con anticipo desde $1,000 MXN. Tu lugar queda asegurado.",
+                title: "2. Agenda tu Pedido",
+                desc: "Define fecha y horario según disponibilidad.",
                 imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Programa+Pedido",
                 imageAlt: "Calendario de obra marcado"
             },
             {
                 id: "verify",
-                title: "3. Visita Técnica",
-                desc: "Un experto va a tu obra (sin costo) para verificar accesos y rectificar medidas para evitar errores.",
+                title: "3. Visita Técnica (opcional)",
+                desc: "Disponible si deseas validar accesos o condiciones especiales en obra.",
                 imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Visita+Tecnica",
                 imageAlt: "Ingeniero tomando medidas en obra"
             },
             {
                 id: "pay",
                 title: "4. Recibe y Construye",
-                desc: "La olla llega puntual. Liquidación contra entrega y soporte durante el vaciado.",
+                desc: "Entrega en el horario acordado y acompañamiento durante todo el proceso.",
                 imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Recibe+y+Construye",
                 imageAlt: "Camión revolvedora descargando concreto"
             }
