@@ -17,6 +17,10 @@ vi.mock('@/config/env', () => ({
   },
 }));
 
+vi.mock('@/app/actions/getPriceConfig', () => ({
+  getPriceConfig: vi.fn(() => new Promise(() => { /* keep pending to avoid async state updates during tests */ })),
+}));
+
 // Note: lib/pixel.ts was removed in Phase 3. Tracking is now handled by
 // lib/tracking/visitor.ts (browser) and lib/tracking/capi.ts (server).
 
@@ -73,6 +77,10 @@ describe('Calculator UI Integration', () => {
     // 1. Select Mode
     const radioKnown = screen.getByRole('radio', { name: /Sé la cantidad/i });
     fireEvent.click(radioKnown);
+
+    // CTA stays visible but disabled until required fields are complete
+    const viewBreakdownBtnInitial = screen.getByRole('button', { name: /Ver Total/i });
+    expect(viewBreakdownBtnInitial).toBeDisabled();
 
     // 2. Input Volume
     const volInput = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
@@ -174,8 +182,10 @@ describe('Calculator UI Integration', () => {
     expect(alerts.length).toBeGreaterThan(0);
     expect(alerts[0]).toBeInTheDocument();
 
-    // Ensure the quote button is NOT present when invalid (still shows, but disabled)
-    // With Phase 1, button shows but is disabled. Check for empty state hint instead.
+    // Invalid form keeps CTA disabled and shows helper hint
+    const viewBreakdownBtn = screen.getByRole('button', { name: /Ver Total/i });
+    expect(viewBreakdownBtn).toBeDisabled();
+
     const emptyHint = screen.queryByText(/Completa los pasos para ver el total/i);
     expect(emptyHint).toBeInTheDocument();
   });

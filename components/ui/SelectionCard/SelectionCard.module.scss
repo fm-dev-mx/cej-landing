@@ -26,23 +26,31 @@
 
   /* Smooth transition for all transform/colors */
   transition:
-    transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.2s ease,
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);
-    border-color: rgb(255 255 255 / 30%);
-    background-color: rgb(255 255 255 / 8%);
+    border-color: var(--c-interactive-base);
+    background-color: rgb(254 201 20 / 10%);
+    box-shadow: 0 8px 22px rgb(0 0 0 / 20%);
 
     /* Slight lift */
   }
 
+  &:has(.input:focus-visible) {
+    border-color: var(--c-interactive-base);
+    box-shadow:
+      0 0 0 1px var(--c-interactive-base),
+      0 0 0 4px var(--c-interactive-ring);
+  }
+
   /* Active/Click Effect: The "Spring" */
   &:active {
-    transform: scale(0.97);
-    background-color: rgb(255 255 255 / 5%);
+    transform: translateY(0) scale(0.98);
+    background-color: rgb(254 201 20 / 14%);
   }
 
   .customIndicatorWrapper {
@@ -69,23 +77,23 @@
     transform: none;
 
     /* Slightly more elevated */
-    border: 2px solid rgb(255 255 255 / 50%);
+    border: 2px solid var(--c-interactive-base);
 
     /* FIX 2: More visible background and thicker border */
-    background-color: rgb(255 255 255 / 8%);
+    background-color: rgb(254 201 20 / 14%);
 
     /* Thickness increased to 2px */
     box-shadow:
-      0 0 0 1px rgb(255 255 255 / 10%),
+      0 0 0 1px rgb(254 201 20 / 35%),
       var(--shadow-xl),
       var(--shadow-glass-top);
 
     /* Bring to front */
 
     .radioIndicator {
-      border-color: rgb(255 255 255 / 80%);
-      background-color: rgb(255 255 255 / 80%);
-      box-shadow: 0 0 8px rgb(255 255 255 / 20%);
+      border-color: var(--c-interactive-base);
+      background-color: rgb(254 201 20 / 75%);
+      box-shadow: 0 0 10px rgb(254 201 20 / 40%);
 
       &::after {
         transform: scale(1);
@@ -149,7 +157,7 @@
   clip-path: inset(50%);
 
   &:focus-visible+.radioIndicator {
-    outline: 2px solid rgb(255 255 255 / 60%);
+    outline: 2px solid var(--c-interactive-base);
     outline-offset: 2px;
   }
 }

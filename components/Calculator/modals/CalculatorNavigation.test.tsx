@@ -17,6 +17,10 @@ vi.mock('@/config/env', () => ({
   },
 }));
 
+vi.mock('@/app/actions/getPriceConfig', () => ({
+  getPriceConfig: vi.fn(() => new Promise(() => { /* keep pending to avoid async state updates during tests */ })),
+}));
+
 // Note: lib/pixel.ts was removed in Phase 3. Tracking is now handled by
 // lib/tracking/visitor.ts (browser) and lib/tracking/capi.ts (server).
 
@@ -51,7 +55,7 @@ describe('Calculator Navigation & Button Logic', () => {
     vi.clearAllMocks();
   });
 
-  it('Step 3 (Known): "Ver Desglose" button is hidden until volume is > 0', () => {
+  it('Step 3 (Known): "Ver Total" button stays disabled until form is complete', () => {
     render(<Calculator />);
 
     // Select Known Mode
@@ -59,14 +63,14 @@ describe('Calculator Navigation & Button Logic', () => {
 
     const input = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
 
-    // Initially, button should NOT be there (hint is shown instead)
-    const addBtnInitial = screen.queryByRole('button', { name: /Calcular y Verificar/i });
-    expect(addBtnInitial).not.toBeInTheDocument();
+    // Initially, CTA is present but disabled
+    const addBtnInitial = screen.getByRole('button', { name: /Ver Total/i });
+    expect(addBtnInitial).toBeDisabled();
 
     // Check for the hint text
     // Simulate user typing '0'
     fireEvent.change(input, { target: { value: '0' } });
-    expect(screen.queryByRole('button', { name: /Calcular y Verificar/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ver Total/i })).toBeDisabled();
 
     // Simulate user typing '5'
     fireEvent.change(input, { target: { value: '5' } });
@@ -109,8 +113,8 @@ describe('Calculator Navigation & Button Logic', () => {
     const lengthInput = screen.getByLabelText('Largo');
     const widthInput = screen.getByLabelText('Ancho');
 
-    // Initially button hidden (Phase 1: use "Verificar datos" text)
-    expect(screen.queryByRole('button', { name: /Calcular y Verificar/i })).not.toBeInTheDocument();
+    // CTA is visible but disabled while required fields are incomplete
+    expect(screen.getByRole('button', { name: /Ver Total/i })).toBeDisabled();
 
     fireEvent.change(lengthInput, { target: { value: '10' } });
     fireEvent.change(widthInput, { target: { value: '5' } });
@@ -121,9 +125,9 @@ describe('Calculator Navigation & Button Logic', () => {
     const thicknessInput = screen.getByLabelText('Espesor Total de Losa');
     expect(thicknessInput).toBeVisible();
 
-    // Empty -> Button hidden
+    // Empty -> Button disabled
     fireEvent.change(thicknessInput, { target: { value: '' } });
-    expect(screen.queryByRole('button', { name: /Calcular y Verificar/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Ver Total/i })).toBeDisabled();
 
     // Filled -> Button appears
     fireEvent.change(thicknessInput, { target: { value: '10' } });

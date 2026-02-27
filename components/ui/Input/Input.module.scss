@@ -160,9 +160,5 @@
 }
 
 .hasError {
-  /* Keep it lightweight: error state should not depend on label presence */
-  :global(input) {
-    border-color: var(--c-error-text);
-    box-shadow: 0 0 0 1px var(--c-error-border);
-  }
+  /* Visual error state is driven from aria-invalid in shared form mixins. */
 }

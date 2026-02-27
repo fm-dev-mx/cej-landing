@@ -59,6 +59,7 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
 
     // Display Quote: Submitted one OR Current Draft
     const quote = submittedQuote ? submittedQuote.results : currentQuote;
+    const canRevealBreakdown = isValid && !!quote;
     const { isProcessing } = useCheckoutUI();
 
     const [isSchedulingOpen, setSchedulingOpen] = useState(false);
@@ -76,6 +77,7 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
     // --- Handlers ---
 
     const handleViewBreakdown = () => {
+        if (!canRevealBreakdown) return;
         setBreakdownViewed(true);
         scrollToTicket();
     };
@@ -143,7 +145,7 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
 
     const stage: 'preview' | 'actions' | 'submitted' = (submittedQuote && !!submittedQuote.folio)
         ? 'submitted'
-        : breakdownViewed
+        : (breakdownViewed && canRevealBreakdown)
             ? 'actions'
             : 'preview';
 
@@ -190,7 +192,7 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                             fullWidth
                             variant="primary"
                             onClick={handleViewBreakdown}
-                            disabled={false}
+                            disabled={!canRevealBreakdown}
                         >
                             Ver Total
                         </Button>
