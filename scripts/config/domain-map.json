@@ -1,0 +1,33 @@
+{
+  "rules": [
+    {
+      "domain": "ui",
+      "prefixes": ["components/", "styles/", "public/"],
+      "exact": []
+    },
+    {
+      "domain": "routing",
+      "prefixes": ["app/"],
+      "exact": []
+    },
+    {
+      "domain": "domain",
+      "prefixes": ["lib/"],
+      "exact": []
+    },
+    {
+      "domain": "contracts",
+      "prefixes": ["types/", "schemas/"],
+      "exact": []
+    },
+    {
+      "domain": "tooling",
+      "prefixes": [".husky/", "scripts/", ".agents/"],
+      "exact": ["package.json", "pnpm-lock.yaml", "tsconfig.json"]
+    }
+  ],
+  "risk": {
+    "high": ["tooling", "domain", "contracts", "routing"],
+    "medium": ["ui"]
+  }
+}

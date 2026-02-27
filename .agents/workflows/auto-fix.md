@@ -7,11 +7,13 @@ description: Automatically diagnose, fix, and verify linting, formatting, or tes
 ## Trigger
 
 Use this workflow when CI fails, pre-commit hooks block a push, or when requested to "fix linting errors" or "fix test failures."
+Use this workflow only when the gatekeeper report route is `auto_fix`.
 
 ## Inputs
 
 - Failing command and raw error output
 - Changed file list (staged or branch diff)
+- Gatekeeper route and failing check (`lintStaged` or auto-fixable hygiene)
 - Relevant config files (`package.json`, ESLint, Vitest, TypeScript)
 
 ## Execution Steps
@@ -38,6 +40,11 @@ Use this workflow when CI fails, pre-commit hooks block a push, or when requeste
 
 5. **Report the Resolution:**
    - Provide a concise summary of what caused the failure and exactly how it was remedied.
+
+## Boundary Rule
+
+- If gatekeeper route is `architectural_intervention`, do not run this workflow.
+- Escalate back with a concise remediation note for architecture-level fixes.
 
 ## Success Criteria
 

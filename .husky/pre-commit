@@ -23,17 +23,24 @@ else
   fi
 fi
 
-# 3. Fast checks
-if [ -n "$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx)$')" ]; then
-  echo "🔍 Running hygiene checks..."
-  if ! git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx)$' | xargs npx tsx scripts/check-hygiene.ts; then
+# 3. Fast static checks
+staged_ts_files=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.(ts|tsx)$' || true)
+if [ -n "$staged_ts_files" ]; then
+  echo "🔍 Running hygiene checks (json)..."
+  if ! printf '%s\n' "$staged_ts_files" | xargs pnpm exec tsx scripts/check-hygiene.ts --format json; then
     echo "❌ Hygiene checks failed. Please fix the issues before committing."
     exit 1
   fi
 fi
 
+# 4. Lint staged changes
 if FORCE_COLOR=0 pnpm lint-staged --quiet; then
   echo "✅ Quality checks passed."
 else
   exit 1
+fi
+
+# 5. Persist one-shot artifact for AI gatekeeper reuse
+if ! pnpm exec tsx scripts/gatekeeper-report.ts --format json --skip-hygiene --lint-status pass --write-artifact > /dev/null; then
+  echo "⚠️ Gatekeeper artifact generation failed. Commit continues; report script will regenerate on demand."
 fi
