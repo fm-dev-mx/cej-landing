@@ -1,19 +1,15 @@
 // config/content.ts
 import { getCloudinaryUrl } from "@/lib/cloudinary";
 
-export interface ServiceItem {
-    id: string;
-    title: string;
-    desc: string;
-    icon: string;
-    ariaLabel: string;
-}
-
 export interface TrustItem {
     id: string;
     title: string;
     desc: string;
     icon: string;
+}
+
+export interface ServiceItem extends TrustItem {
+    ariaLabel: string;
 }
 
 export interface ProcessStep {
@@ -84,7 +80,7 @@ export const LANDING_CONTENT = {
             },
             {
                 text: "Resistencias certificadas",
-                highlight: "(f’c)"
+                highlight: "(f'c)"
             },
             {
                 text: "Flotilla moderna",
@@ -108,7 +104,7 @@ export const LANDING_CONTENT = {
             {
                 id: "quality",
                 title: "Calidad Normativa",
-                desc: "Mezclas diseñadas bajo norma. Si pides f’c 200 para una losa, recibes exactamente esa resistencia garantizada.",
+                desc: "Mezclas diseñadas bajo norma. Si pides f'c 200 para una losa, recibes exactamente esa resistencia garantizada.",
                 icon: "🛡️"
             },
             {
@@ -185,28 +181,28 @@ export const LANDING_CONTENT = {
                 id: "calc",
                 title: "1. Cotiza",
                 desc: "Calcula tu volumen en línea o compártenos tus medidas para una cotización formal.",
-                imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Cotiza+y+Calcula",
+                imageSrc: "/og-image.jpg",
                 imageAlt: "Persona usando calculadora en celular"
             },
             {
                 id: "book",
                 title: "2. Agenda tu Pedido",
                 desc: "Define fecha y horario según disponibilidad.",
-                imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Programa+Pedido",
+                imageSrc: "/og-image.jpg",
                 imageAlt: "Calendario de obra marcado"
             },
             {
                 id: "verify",
                 title: "3. Visita Técnica (opcional)",
                 desc: "Disponible si deseas validar accesos o condiciones especiales en obra.",
-                imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Visita+Tecnica",
+                imageSrc: "/og-image.jpg",
                 imageAlt: "Ingeniero tomando medidas en obra"
             },
             {
                 id: "pay",
                 title: "4. Recibe y Construye",
                 desc: "Entrega en el horario acordado y acompañamiento durante todo el proceso.",
-                imageSrc: "https://placehold.co/600x400/021a36/ffffff.png?text=Recibe+y+Construye",
+                imageSrc: "/og-image.jpg",
                 imageAlt: "Camión revolvedora descargando concreto"
             }
         ] as ProcessStep[]
@@ -220,7 +216,7 @@ export const LANDING_CONTENT = {
             {
                 id: "concreto",
                 title: "Venta de Concreto Premezclado",
-                desc: "Suministro de concreto convencional y estructural (f’c 150, 200, 250, 300 kg/cm²). Ideal para losas, firmes, banquetas, cimentaciones y muros. Garantizamos la resistencia y trabajabilidad que tu obra exige.",
+                desc: "Suministro de concreto convencional y estructural (f'c 150, 200, 250, 300 kg/cm²). Ideal para losas, firmes, banquetas, cimentaciones y muros. Garantizamos la resistencia y trabajabilidad que tu obra exige.",
                 icon: "🏗️",
                 ariaLabel: "Camión revolvedora de concreto",
             },
