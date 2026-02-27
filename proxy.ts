@@ -16,7 +16,9 @@ export default async function proxy(request: NextRequest) {
     }
 
     let supabaseResponse = NextResponse.next({
-        request,
+        request: {
+            headers: new Headers(request.headers),
+        },
     });
 
 
@@ -33,7 +35,9 @@ export default async function proxy(request: NextRequest) {
                         request.cookies.set(name, value)
                     );
                     supabaseResponse = NextResponse.next({
-                        request,
+                        request: {
+                            headers: new Headers(request.headers),
+                        },
                     });
                     cookiesToSet.forEach(({ name, value, options }) =>
                         supabaseResponse.cookies.set(name, value, options)

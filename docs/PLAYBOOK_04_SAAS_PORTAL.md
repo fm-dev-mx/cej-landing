@@ -64,7 +64,7 @@
 
 - [x] Create `/login` page (Magic Link form).
 - [x] Add `UserProfileMenu` to Header (Avatar + Logout).
-- [x] Middleware: Protect `/dashboard`.
+- [x] Proxy (Next.js): Protect `/dashboard`.
 
 ### Step 3: Local-to-Cloud Sync
 

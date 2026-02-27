@@ -80,7 +80,7 @@ Visitor sources are tracked to measure campaign performance.
 
 - **Persistence:** `lib/tracking/visitor.ts`
 - **Mechanism:**
-    1. Middleware or Client Hook captures `utm_source`, `utm_medium`, `utm_campaign` from the URL search params.
+    1. Proxy (Next.js) or Client Hook captures `utm_source`, `utm_medium`, `utm_campaign` from the URL search params.
     2. Values are stored in `sessionStorage` or Cookies.
     3. Values are attached to the `quote.metadata` object during checkout.
     4. Saved to `leads` table columns in Supabase.

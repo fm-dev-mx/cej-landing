@@ -95,7 +95,7 @@ The calculator now provides a complete "Local Pro" experience: users can save qu
 #### 5.2 SaaS Infrastructure (In Progress)
 
 - [x] **Auth:** Supabase Auth integration (Magic Link).
-- [x] **Middleware:** Protected `/dashboard` routes and session refresh.
+- [x] **Proxy (Next.js):** Protected `/dashboard` routes and session refresh.
 - [x] **Profiles:** User profile management (`public.profiles`).
 - [x] **Dashboard:** Basic order list and authenticated UI.
 - [ ] **Data Sync:** Migrate from static `FALLBACK_PRICING_RULES` to live `price_config` table in Supabase.

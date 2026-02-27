@@ -130,6 +130,7 @@ We use Next.js **Route Groups** to separate concerns without affecting the URL s
 - **`(marketing)`**: Public landing pages (`/`, `/aviso-de-privacidad`). Focus on SEO and conversion.
 - **`(app)`**: Functional tools (`/cotizador`, `/perfil`). Focus on utility and state management.
 - **`app/actions`**: Server-side mutations.
+- **`proxy.ts`**: Global routing boundary (Next.js 16). Handles session refresh and dashboard protection.
 
 ---
 
