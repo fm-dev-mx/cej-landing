@@ -299,6 +299,8 @@ export interface CapiUserData {
     client_user_agent: string;
     fbc?: string;
     fbp?: string;
+    external_id?: string;
+    fn?: string;
 }
 
 /**

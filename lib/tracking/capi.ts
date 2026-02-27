@@ -27,7 +27,7 @@ export async function sendToMetaCAPI(payload: CapiEvent): Promise<void> {
             body: JSON.stringify({
                 data: [payload],
                 access_token: env.FB_ACCESS_TOKEN,
-                // test_event_code: 'TEST20662' // Uncomment for debugging in Meta Events Manager
+                ...(env.META_TEST_EVENT_CODE && { test_event_code: env.META_TEST_EVENT_CODE }),
             }),
         });
 

@@ -34,6 +34,9 @@ const envSchema = z.object({
 
     // --- E2E Testing Support ---
     ENABLE_E2E_MOCKS: z.string().optional(),
+
+    // --- Meta Events Manager ---
+    META_TEST_EVENT_CODE: z.string().optional(),
 });
 
 const processEnv = {
@@ -51,6 +54,7 @@ const processEnv = {
     MONITORING_WEBHOOK_URL: process.env.MONITORING_WEBHOOK_URL,
     FB_ACCESS_TOKEN: process.env.FB_ACCESS_TOKEN,
     ENABLE_E2E_MOCKS: process.env.ENABLE_E2E_MOCKS,
+    META_TEST_EVENT_CODE: process.env.META_TEST_EVENT_CODE,
 };
 
 // Validación segura (no lanza excepción, devuelve success: false)

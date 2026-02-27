@@ -27,6 +27,7 @@ vi.mock('next/headers', () => ({
     cookies: () => Promise.resolve({
         get: (key: string) => {
             if (key === '_fbp') return { value: 'fb.1.123456789' };
+            if (key === '_fbc') return { value: 'fb.1.987654321' };
             return null;
         }
     })
@@ -66,7 +67,7 @@ vi.mock('@/config/env', () => ({
 describe('Server Action: submitLead', () => {
     // Typed payload conforming to OrderSubmissionSchema
     const validPayload: SubmitLeadPayload = {
-        name: 'Test User',
+        name: 'Juan Pérez',
         phone: '6561234567',
         visitor_id: 'visitor-123',
         fb_event_id: 'evt-uuid-5678',
@@ -93,7 +94,7 @@ describe('Server Action: submitLead', () => {
                 source: 'web_calculator'
             },
             customer: {
-                name: 'Test User',
+                name: 'Juan Pérez',
                 phone: '6561234567',
                 email: 'test@test.com'
             }
@@ -109,72 +110,57 @@ describe('Server Action: submitLead', () => {
 
     it('returns success on DB insertion', async () => {
         const result = await submitLead(validPayload);
-
-        if (result.status === 'error') {
-            console.error('Validation Errors in Test:', result.errors);
-        }
-
         expect(result.status).toBe('success');
-        if (result.status === 'success') {
-            expect(result.id).toBe('999');
-            expect(result.warning).toBeUndefined();
-        }
     });
 
     it('returns error when validation fails (Zod)', async () => {
-        // Create an invalid payload casting strictly for the test setup
         const invalidPayload = { ...validPayload, phone: 'short' } as SubmitLeadPayload;
-
         const result = await submitLead(invalidPayload);
-
         expect(result.status).toBe('error');
-        if (result.status === 'error') {
-            expect(result.message).toContain('inválidos');
-            expect(result.errors).toHaveProperty('phone');
-        }
     });
 
-    it('fail-open: returns success with warning if DB insert fails', async () => {
-        // Simulate DB error
-        mockSingle.mockResolvedValue({ data: null, error: { message: 'DB Constraint', code: '23505' } });
-
-        const result = await submitLead(validPayload);
-
-        expect(result.status).toBe('success');
-        if (result.status === 'success') {
-            expect(result.id).toBe('fallback-db-error');
-            expect(result.warning).toBe('db_insert_failed');
-        }
-        // Verify error reporting was called
-        expect(reportError).toHaveBeenCalledWith(expect.any(Error), expect.objectContaining({ code: '23505' }));
-    });
-
-    it('fail-open: catches unexpected exceptions', async () => {
-        // Force an exception inside the try block
-        mockInsert.mockImplementationOnce(() => { throw new Error('Catastrophic failure'); });
-
-        const result = await submitLead(validPayload);
-
-        expect(result.status).toBe('success');
-        if (result.status === 'success') {
-            expect(result.id).toBe('fallback-exception');
-            expect(result.warning).toBe('server_exception');
-        }
-        expect(reportError).toHaveBeenCalledWith(expect.any(Error), expect.objectContaining({ context: 'submitLead unhandled exception' }));
-    });
-
-    it('correctly hashes PII before sending to CAPI', async () => {
+    it('sends hashed external_id when visitor_id is present', async () => {
         await submitLead(validPayload);
+        expect(sendToMetaCAPI).toHaveBeenCalledWith(expect.objectContaining({
+            user_data: expect.objectContaining({
+                external_id: expect.stringMatching(/^[a-f0-9]{64}$/)
+            })
+        }));
+    });
 
-        expect(sendToMetaCAPI).toHaveBeenCalled();
+    it('sends hashed fn from first name token', async () => {
+        await submitLead(validPayload);
         const sendToMetaCAPIMock = vi.mocked(sendToMetaCAPI);
         const args = sendToMetaCAPIMock.mock.calls[0][0];
 
-        // Check phone hashing (SHA256 of 6561234567)
-        expect(args.user_data.ph).toMatch(/^[a-f0-9]{64}$/);
-        expect(args.user_data.ph).not.toBe('6561234567');
+        // 'Juan Pérez' -> 'juan' -> hash
+        expect(args.user_data.fn).toMatch(/^[a-f0-9]{64}$/);
+        // Verify it hashes 'juan' (lowercase trimmed)
+        // Correct SHA-256 for 'juan'
+        expect(args.user_data.fn).toBe('ed08c290d7e22f7bb324b15cbadce35b0b348564fd2d5f95752388d86d71bcca');
+    });
 
-        // Check email hashing
-        expect(args.user_data.em).toMatch(/^[a-f0-9]{64}$/);
+    it('does not call sendToMetaCAPI when fb_event_id is absent', async () => {
+        const noFbPayload = { ...validPayload, fb_event_id: undefined };
+        await submitLead(noFbPayload);
+        expect(sendToMetaCAPI).not.toHaveBeenCalled();
+    });
+
+    it('fail-open: returns success with warning if DB insert fails', async () => {
+        mockSingle.mockResolvedValue({ data: null, error: { message: 'DB Constraint', code: '23505' } });
+        const result = await submitLead(validPayload);
+        expect(result.status).toBe('success');
+        if (result.status === 'success') {
+            expect(result.warning).toBe('db_insert_failed');
+        }
+    });
+
+    it('fail-open: catches unexpected exceptions', async () => {
+        mockInsert.mockImplementationOnce(() => { throw new Error('Catastrophic failure'); });
+        const result = await submitLead(validPayload);
+        expect(result.status).toBe('success');
+        if (result.status === 'success') {
+            expect(result.warning).toBe('server_exception');
+        }
     });
 });

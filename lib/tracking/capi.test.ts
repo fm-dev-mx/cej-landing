@@ -7,7 +7,8 @@ import { reportError } from '@/lib/monitoring';
 vi.mock('@/config/env', () => ({
     env: {
         FB_ACCESS_TOKEN: 'mock-token',
-        NEXT_PUBLIC_PIXEL_ID: '1234567890'
+        NEXT_PUBLIC_PIXEL_ID: '1234567890',
+        META_TEST_EVENT_CODE: undefined // Control this via vi.mocked in tests
     }
 }));
 
@@ -62,6 +63,49 @@ describe('Meta CAPI Service', () => {
         expect(body.data[0].user_data.em).toBe('hashed_email_string');
     });
 
+    it('includes test_event_code when META_TEST_EVENT_CODE env is set', async () => {
+        const { env } = await import('@/config/env');
+        vi.mocked(env).META_TEST_EVENT_CODE = 'TEST12345';
+
+        (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+            ok: true,
+            json: async () => ({ success: true })
+        });
+
+        await sendToMetaCAPI(mockPayload);
+
+        const [, options] = (global.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
+        const body = JSON.parse(options.body);
+        expect(body.test_event_code).toBe('TEST12345');
+
+        // Reset for other tests
+        vi.mocked(env).META_TEST_EVENT_CODE = undefined;
+    });
+
+    it('omits test_event_code when META_TEST_EVENT_CODE env is not set', async () => {
+        (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+            ok: true,
+            json: async () => ({ success: true })
+        });
+
+        await sendToMetaCAPI(mockPayload);
+
+        const [, options] = (global.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
+        const body = JSON.parse(options.body);
+        expect(body.test_event_code).toBeUndefined();
+    });
+
+    it('handles fetch network error gracefully (catch branch)', async () => {
+        (global.fetch as unknown as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network error'));
+
+        await sendToMetaCAPI(mockPayload);
+
+        expect(reportError).toHaveBeenCalledWith(
+            expect.any(Error),
+            expect.objectContaining({ source: 'MetaCAPI' })
+        );
+    });
+
     it('handles API errors gracefully (Fail-Open)', async () => {
         // Simular error de Meta (400 Bad Request)
         (global.fetch as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
@@ -79,16 +123,14 @@ describe('Meta CAPI Service', () => {
     });
 
     it('skips execution if token is missing (Dev Mode)', async () => {
-        vi.resetModules();
-        vi.doMock('@/config/env', () => ({
-            env: { FB_ACCESS_TOKEN: undefined } // Simulate missing token
-        }));
+        const { env } = await import('@/config/env');
+        const originalToken = env.FB_ACCESS_TOKEN;
+        vi.mocked(env).FB_ACCESS_TOKEN = undefined;
 
-        // Re-import module to apply new mock
-        const { sendToMetaCAPI: sendToMetaCAPI_NoToken } = await import('./capi');
-
-        await sendToMetaCAPI_NoToken(mockPayload);
+        await sendToMetaCAPI(mockPayload);
 
         expect(global.fetch).not.toHaveBeenCalled();
+
+        vi.mocked(env).FB_ACCESS_TOKEN = originalToken;
     });
 });

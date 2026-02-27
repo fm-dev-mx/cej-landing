@@ -191,6 +191,8 @@ export async function submitLead(
                         em: hashedEmail,
                         fbp,
                         fbc,
+                        external_id: hashData(visitor_id),
+                        fn: hashData(name.split(' ')[0]),
                     },
                     custom_data: {
                         currency: typedQuote.financials.currency,
