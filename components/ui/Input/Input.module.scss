@@ -162,7 +162,7 @@
 .hasError {
   /* Keep it lightweight: error state should not depend on label presence */
   :global(input) {
-    border-color: rgb(239 68 68 / 80%);
-    box-shadow: 0 0 0 1px rgb(239 68 68 / 35%);
+    border-color: var(--c-error-text);
+    box-shadow: 0 0 0 1px var(--c-error-border);
   }
 }

@@ -34,21 +34,21 @@
   background-color: rgb(0 0 0 / 40%);
 
   &::placeholder {
-    color: rgb(255 255 255 / 40%);
+    color: rgb(255 255 255 / 55%);
   }
 
   &:hover:not(:disabled) {
-    border-color: rgb(255 255 255 / 50%);
-    background-color: rgb(0 0 0 / 50%);
+    border-color: rgb(255 255 255 / 60%);
+    background-color: rgb(0 0 0 / 46%);
   }
 
   &:focus-visible {
-    border-color: var(--c-primary-light);
-    background-color: rgb(0 0 0 / 60%);
+    border-color: var(--c-interactive-base);
+    background-color: rgb(0 0 0 / 54%);
     outline: none;
     box-shadow:
-      0 0 0 1px var(--c-primary-light),
-      0 0 0 4px rgb(42 95 168 / 20%);
+      0 0 0 1px var(--c-interactive-base),
+      0 0 0 4px var(--c-interactive-ring);
   }
 
   /* Error State */
@@ -77,9 +77,9 @@
   }
 
   &:focus-visible {
-    border-color: var(--c-primary);
+    border-color: var(--c-interactive-base);
     outline: none;
-    box-shadow: 0 0 0 4px var(--c-step-current-soft);
+    box-shadow: 0 0 0 4px var(--c-interactive-ring);
   }
 
   /* Error State */

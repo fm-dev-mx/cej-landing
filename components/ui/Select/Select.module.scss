@@ -46,7 +46,7 @@
   background-color: rgb(0 0 0 / 40%);
 
   &.placeholder .label {
-    color: rgb(255 255 255 / 40%);
+    color: rgb(255 255 255 / 55%);
   }
 
   &:hover {
@@ -55,11 +55,11 @@
   }
 
   &.open {
-    border-color: var(--c-accent);
+    border-color: var(--c-interactive-base);
     background-color: rgb(0 0 0 / 60%);
     box-shadow:
-      0 0 0 1px var(--c-accent),
-      0 0 0 4px rgb(254 201 20 / 15%);
+      0 0 0 1px var(--c-interactive-base),
+      0 0 0 4px var(--c-interactive-ring);
   }
 }
 
@@ -204,7 +204,7 @@
 .checkIcon {
   margin-left: 0.5rem;
   font-size: 0.9rem;
-  color: var(--c-accent);
+  color: var(--c-interactive-base);
 }
 
 .dropdown.light .checkIcon {
