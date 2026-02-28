@@ -186,6 +186,8 @@ export function CalculatorForm() {
                                         checked={draft.showExpertOptions}
                                         onChange={() => usePublicStore.getState().setExpertMode(!draft.showExpertOptions)}
                                         className={styles.toggleInput}
+                                        role="switch"
+                                        aria-checked={draft.showExpertOptions}
                                     />
                                     <span className={styles.toggleFakeCheckbox} aria-hidden="true" />
                                     <span className={styles.toggleLabel}>
