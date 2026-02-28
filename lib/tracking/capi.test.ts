@@ -23,12 +23,6 @@ async function setupMetaSuccess() {
     return deps;
 }
 
-function expectDLQFallthrough(fetchMock: ReturnType<typeof vi.fn>, dlqMock: ReturnType<typeof vi.fn>, atts: number) {
-    expect(fetchMock).toHaveBeenCalledTimes(atts);
-    expect(dlqMock).toHaveBeenCalled();
-    vi.useRealTimers();
-}
-
 describe('Meta CAPI Service Hardening', () => {
     const originalFetch = global.fetch;
 
@@ -109,7 +103,9 @@ describe('Meta CAPI Service Hardening', () => {
         fetchMock.mockResolvedValue({ ok: false, status: 500 } as unknown as Response);
         const p = sendToMetaCAPI(mockPayload);
         await advanceRetries(3); await p;
-        expectDLQFallthrough(fetchMock, insertDeadLetter, 4);
+        expect(fetchMock).toHaveBeenCalledTimes(4);
+        expect(insertDeadLetter).toHaveBeenCalled();
+        vi.useRealTimers();
     }, 20000);
 
     it('retries on timeout', async () => {

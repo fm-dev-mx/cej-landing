@@ -101,13 +101,12 @@ describe('Pricing Engine (Core Logic)', () => {
 
     describe('Quote Calculation (calcQuote)', () => {
 
+        const baseDirect = { strength: '200', type: 'direct' as const, additives: [] };
+
+
         it('calculates base price correctly (Simple Tier)', () => {
             // 5m3 of Direct 200 -> $2,000 * 5 = $10,000 + IVA
-            const quote = calcQuote(5, {
-                strength: '200',
-                type: 'direct',
-                additives: []
-            }, MOCK_RULES);
+            const quote = calcQuote(5, baseDirect, MOCK_RULES);
 
             expect(quote.baseSubtotal).toBe(10000);
             expect(quote.vat).toBe(1600);
@@ -117,11 +116,7 @@ describe('Pricing Engine (Core Logic)', () => {
 
         it('applies volume discounts (Tier Logic)', () => {
             // 11m3 of Direct 200 -> Tier 2 ($1,900)
-            const quote = calcQuote(11, {
-                strength: '200',
-                type: 'direct',
-                additives: []
-            }, MOCK_RULES);
+            const quote = calcQuote(11, baseDirect, MOCK_RULES);
 
             expect(quote.unitPricePerM3).toBe(1900);
             expect(quote.baseSubtotal).toBe(11 * 1900);
@@ -164,7 +159,7 @@ describe('Pricing Engine (Core Logic)', () => {
         });
 
         it('returns EMPTY_QUOTE for invalid volumes', () => {
-            const quote = calcQuote(0, { strength: '200', type: 'direct', additives: [] }, MOCK_RULES);
+            const quote = calcQuote(0, baseDirect, MOCK_RULES);
 
             expect(quote).toEqual(expect.objectContaining({
                 total: 0,
@@ -177,13 +172,22 @@ describe('Pricing Engine (Core Logic)', () => {
         it('falls back to highest tier if volume exceeds all defined maxM3', () => {
             // Logic: if volume > last tier max, use last tier price
             // Our mock has last tier starting at 10.5 with no maxM3.
-            const quote = calcQuote(100, {
+            const quote = calcQuote(100, baseDirect, MOCK_RULES);
+
+            expect(quote.unitPricePerM3).toBe(1900);
+        });
+
+        it('keeps MXN financial contract stable for checkout and lead submission', () => {
+            const quote = calcQuote(3.2, {
                 strength: '200',
-                type: 'direct',
+                type: 'pumped',
                 additives: []
             }, MOCK_RULES);
 
-            expect(quote.unitPricePerM3).toBe(1900);
+            expect(quote.volume.billedM3).toBe(3.5);
+            expect(quote.vat).toBeGreaterThan(0);
+            expect(quote.subtotal).toBeGreaterThan(0);
+            expect(quote.total).toBeGreaterThan(0);
         });
     });
 });
@@ -208,7 +212,7 @@ describe('Volume Calculation (Geometric)', () => {
             // 20m² with 7cm cassette (coef 0.085). Standard 5cm compression included.
             const volume = calcVolumeFromArea({
                 areaM2: 20,
-                hasCofferedSlab: true,
+                hasCofferedSlab: true, /* unq_1 */
                 cofferedSize: '7',
                 manualThicknessCm: undefined // Uses standard coefficient
             });
@@ -226,7 +230,7 @@ describe('Volume Calculation (Geometric)', () => {
             // Volume = 20 * 0.095 = 1.9
             const volume = calcVolumeFromArea({
                 areaM2: 20,
-                hasCofferedSlab: true,
+                hasCofferedSlab: true, /* unq_2 */
                 cofferedSize: '7',
                 manualThicknessCm: 6
             });
@@ -242,7 +246,7 @@ describe('Volume Calculation (Geometric)', () => {
             // Volume = 20 * 0.135 = 2.7
             const volume = calcVolumeFromArea({
                 areaM2: 20,
-                hasCofferedSlab: true,
+                hasCofferedSlab: true, /* unq_3 */
                 cofferedSize: '7',
                 manualThicknessCm: 10
             });
@@ -253,14 +257,14 @@ describe('Volume Calculation (Geometric)', () => {
         it('returns 0 for zero or negative area', () => {
             expect(calcVolumeFromArea({
                 areaM2: 0,
-                hasCofferedSlab: false,
+                hasCofferedSlab: false, /* dbg_1 */
                 cofferedSize: null,
                 manualThicknessCm: 10
             })).toBe(0);
 
             expect(calcVolumeFromArea({
                 areaM2: -5,
-                hasCofferedSlab: false,
+                hasCofferedSlab: false, /* dbg_2 */
                 cofferedSize: null,
                 manualThicknessCm: 10
             })).toBe(0);
@@ -283,7 +287,7 @@ describe('Volume Calculation (Geometric)', () => {
             const volume = calcVolumeFromDimensions({
                 lengthM: 5,
                 widthM: 4,
-                hasCofferedSlab: false,
+                hasCofferedSlab: false, /* dbg_3 */
                 cofferedSize: null,
                 manualThicknessCm: 10
             });

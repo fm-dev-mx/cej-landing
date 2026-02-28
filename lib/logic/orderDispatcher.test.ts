@@ -52,6 +52,14 @@ describe("orderDispatcher logic", () => {
             expect(result.items[0].additives).toContain("fiber");
             expect(result.financials.total).toBe(11600);
         });
+
+        it("preserves public funnel metadata for submitLead compatibility", () => {
+            const result = mapQuoteToOrder("WEB-124", mockCustomer, mockQuote as unknown as QuoteBreakdown, mockDraft as unknown as CalculatorState);
+
+            expect(result.customer.phone).toBe("1234567890");
+            expect(result.metadata.source).toBe("web_calculator");
+            expect(result.financials.currency).toBe("MXN");
+        });
     });
 
     describe("mapCartToOrder", () => {
