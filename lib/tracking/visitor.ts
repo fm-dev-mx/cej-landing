@@ -86,16 +86,32 @@ export type ContactMethod = 'WhatsApp' | 'Phone' | 'Email' | 'whatsapp' | 'phone
 /**
  * Contact – mid/low value contact intent event.
  * It is sent with a normalized `method` parameter (lowercase).
+ * Also fires a server-side CAPI event for redundancy.
  */
 export const trackContact = (method: ContactMethod): void => {
-    if (!hasFbq()) return;
-
     const normalized = method.toLowerCase().replace('_direct', '') as 'whatsapp' | 'phone' | 'email';
     const isDirect = method.toLowerCase().includes('direct');
+    const eventId = `contact-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-    window.fbq?.('track', 'Contact', {
-        content_name: normalized,
-        method: normalized,
-        direct_conversion: isDirect,
-    });
+    // 1. Pixel Tracking (if available)
+    if (hasFbq()) {
+        window.fbq?.('track', 'Contact', {
+            content_name: normalized,
+            method: normalized,
+            direct_conversion: isDirect,
+        }, { eventID: eventId });
+    }
+
+    // 2. CAPI Fallback Tracking
+    // Fire-and-forget fetch to our server endpoint
+    if (normalized === 'whatsapp') {
+        fetch('/api/track-contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event_id: eventId }),
+            keepalive: true, // Important for redirects!
+        }).catch((err) => {
+            console.error('CAPI Track Contact failed:', err);
+        });
+    }
 };

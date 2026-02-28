@@ -45,12 +45,28 @@ export type SubmitLeadResult =
     };
 
 /**
+ * normalizePhone
+ * Strips non-digits and ensures '52' prefix for Mexico.
+ * Meta CAPI expects international format without '+' or leading zeros.
+ */
+function normalizePhone(phone: string): string {
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length === 10) return `52${digits}`;
+    return digits;
+}
+
+/**
  * hashData
  * Helper to normalize and SHA-256 hash PII for Meta CAPI compliance.
  */
-function hashData(data: string | undefined): string | undefined {
+function hashData(data: string | undefined, isPhone = false): string | undefined {
     if (!data) return undefined;
-    const normalized = data.trim().toLowerCase();
+    let normalized = data.trim().toLowerCase();
+
+    if (isPhone) {
+        normalized = normalizePhone(normalized);
+    }
+
     if (!normalized) return undefined;
     return createHash("sha256").update(normalized).digest("hex");
 }
@@ -175,7 +191,7 @@ export async function submitLead(
         // Using 'after' allows the response to return immediately while CAPI sends in background
         if (fb_event_id) {
             after(async () => {
-                const hashedPhone = hashData(phone);
+                const hashedPhone = hashData(phone, true);
                 const hashedEmail = hashData(typedQuote.customer?.email);
 
                 await sendToMetaCAPI({
