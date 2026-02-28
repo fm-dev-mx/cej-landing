@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { reportError } from '@/lib/monitoring';
 import { generateQuoteId } from '@/lib/utils';
+import { getUserRole, hasPermission } from '@/lib/auth/rbac';
 
 export type AdminOrderPayload = {
     name: string;
@@ -23,7 +24,7 @@ export type AdminOrderResult =
 /**
  * createAdminOrder
  * Dedicated server action for admins to manually register orders.
- * - Requires authenticated user.
+ * - Requires authenticated user with proper RBAC permissions.
  * - Does NOT trigger Meta CAPI or Pixel events.
  * - Uses 'admin_dashboard' as utm_source.
  */
@@ -32,9 +33,15 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        // Server-side auth guard
+        // 1. Auth Guard
         if (!user) {
             redirect('/login');
+        }
+
+        // 2. RBAC Guard
+        const role = getUserRole(user.user_metadata);
+        if (!hasPermission(role, 'orders:create') && !hasPermission(role, 'admin:all')) {
+            return { status: 'error', message: 'No tienes permiso para crear pedidos.' };
         }
 
         const folio = generateQuoteId();

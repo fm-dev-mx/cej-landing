@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { reportError } from '@/lib/monitoring';
+import { getUserRole, hasPermission } from '@/lib/auth/rbac';
 
 export interface OrderSummary {
     id: string;
@@ -22,14 +23,18 @@ export interface OrderSummary {
 export interface GetMyOrdersResult {
     success: boolean;
     orders: OrderSummary[];
+    nextCursor?: string | null;
     error?: string;
 }
 
 /**
- * Fetches all orders for the currently authenticated user.
+ * Fetches orders for the currently authenticated user with cursor-based pagination.
  * Uses RLS to ensure users can only see their own orders.
+ *
+ * @param cursor - The 'created_at' timestamp of the last item from the previous page.
+ * @param pageSize - Number of items to fetch (default: 25).
  */
-export async function getMyOrders(): Promise<GetMyOrdersResult> {
+export async function getMyOrders(cursor?: string, pageSize = 25): Promise<GetMyOrdersResult> {
     try {
         const supabase = await createClient();
 
@@ -44,11 +49,28 @@ export async function getMyOrders(): Promise<GetMyOrdersResult> {
             };
         }
 
+        // RBAC Check
+        const role = getUserRole(user.user_metadata);
+        if (!hasPermission(role, 'orders:view')) {
+            return {
+                success: false,
+                orders: [],
+                error: 'No tienes permiso para ver esta sección',
+            };
+        }
+
         // Fetch orders - RLS ensures we only get this user's orders
-        const { data: orders, error: dbError } = await supabase
+        let query = supabase
             .from('orders')
             .select('id, folio, status, total_amount, currency, items, created_at, delivery_date')
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .limit(pageSize);
+
+        if (cursor) {
+            query = query.lt('created_at', cursor);
+        }
+
+        const { data: orders, error: dbError } = await query;
 
         if (dbError) {
             reportError(dbError, { action: 'getMyOrders', phase: 'db_query' });
@@ -62,6 +84,9 @@ export async function getMyOrders(): Promise<GetMyOrdersResult> {
         return {
             success: true,
             orders: orders || [],
+            nextCursor: (orders && orders.length === pageSize)
+                ? orders[orders.length - 1].created_at
+                : null,
         };
     } catch (error) {
         reportError(error, { action: 'getMyOrders', phase: 'unexpected' });
