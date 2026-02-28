@@ -85,8 +85,17 @@ function runGit(args: string[]): string {
 }
 
 function runCommand(command: string, args: string[]): { status: number; output: string } {
-  const finalArgs = process.platform === 'win32' ? args.map((arg) => (arg.includes(' ') || arg.includes('(') || arg.includes(')') ? `"${arg}"` : arg)) : args;
-  const result = spawnSync(command, finalArgs, { encoding: 'utf-8', shell: process.platform === 'win32' });
+  // Avoid `shell: true` on Windows (cmd.exe parsing / injection surface / quoting issues).
+  // Use the platform-specific executable name for pnpm on Windows.
+  const resolvedCommand =
+    process.platform === 'win32' && command === 'pnpm' ? 'pnpm.cmd' : command;
+
+  const result = spawnSync(resolvedCommand, args, {
+    encoding: 'utf-8',
+    shell: process.platform === 'win32',
+    windowsHide: true,
+  });
+
   if (result.error) {
     throw result.error;
   }
