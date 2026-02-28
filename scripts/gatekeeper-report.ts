@@ -85,7 +85,8 @@ function runGit(args: string[]): string {
 }
 
 function runCommand(command: string, args: string[]): { status: number; output: string } {
-  const result = spawnSync(command, args, { encoding: 'utf-8', shell: process.platform === 'win32' });
+  const finalArgs = process.platform === 'win32' ? args.map((arg) => (arg.includes(' ') || arg.includes('(') || arg.includes(')') ? `"${arg}"` : arg)) : args;
+  const result = spawnSync(command, finalArgs, { encoding: 'utf-8', shell: process.platform === 'win32' });
   if (result.error) {
     throw result.error;
   }
@@ -221,9 +222,16 @@ function runHygiene(tsFiles: string[], skipHygiene: boolean): HygieneOutput {
     throw new Error('check-hygiene returned empty output.');
   }
 
+  let jsonPart = hygiene.output;
+  const firstBrace = jsonPart.indexOf('{');
+  const lastBrace = jsonPart.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    jsonPart = jsonPart.slice(firstBrace, lastBrace + 1);
+  }
+
   let parsed: HygieneOutput;
   try {
-    parsed = JSON.parse(hygiene.output) as HygieneOutput;
+    parsed = JSON.parse(jsonPart) as HygieneOutput;
   } catch {
     throw new Error(`Unable to parse hygiene JSON output: ${hygiene.output.slice(0, 300)}`);
   }
@@ -290,9 +298,9 @@ function renderMarkdownSummary(report: GatekeeperReport): string {
   const checks = `hygiene=${report.checks.hygiene.status.toUpperCase()} lint=${report.checks.lintStaged.status.toUpperCase()}`;
   const top = report.violations.length
     ? report.violations
-        .slice(0, 3)
-        .map((item) => `${item.type}@${item.file}${item.line ? `:${item.line}` : ''}`)
-        .join('; ')
+      .slice(0, 3)
+      .map((item) => `${item.type}@${item.file}${item.line ? `:${item.line}` : ''}`)
+      .join('; ')
     : 'none';
 
   return [
