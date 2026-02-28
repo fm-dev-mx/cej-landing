@@ -5,17 +5,10 @@ import { redirect } from 'next/navigation';
 import { reportError } from '@/lib/monitoring';
 import { generateQuoteId } from '@/lib/utils';
 import { getUserRole, hasPermission } from '@/lib/auth/rbac';
+import { adminOrderPayloadSchema } from '@/lib/schemas/internal/order';
+import type { AdminOrderPayload, InternalOrderItem } from '@/types/internal/order';
 
-export type AdminOrderPayload = {
-    name: string;
-    phone: string;
-    volume: number;
-    concreteType: 'direct' | 'pumped';
-    strength: string;
-    deliveryAddress: string;
-    deliveryDate?: string;
-    notes?: string;
-};
+export type { AdminOrderPayload };
 
 export type AdminOrderResult =
     | { status: 'success'; id: string }
@@ -44,36 +37,37 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
             return { status: 'error', message: 'No tienes permiso para crear pedidos.' };
         }
 
+        const parsedPayload = adminOrderPayloadSchema.safeParse(payload);
+        if (!parsedPayload.success) {
+            return { status: 'error', message: 'Revisa los datos del formulario e intenta de nuevo.' };
+        }
+
+        const normalizedPayload = parsedPayload.data;
         const folio = generateQuoteId();
+        const orderItem: InternalOrderItem = {
+            id: crypto.randomUUID(),
+            label: `Concreto ${normalizedPayload.concreteType === 'pumped' ? 'Bomba' : 'Directo'} f'c ${normalizedPayload.strength}`,
+            volume: normalizedPayload.volume,
+            service: normalizedPayload.concreteType,
+            subtotal: 0,
+            strength: normalizedPayload.strength,
+            notes: normalizedPayload.notes,
+        };
+        const deliveryDate = normalizedPayload.deliveryDate
+            ? new Date(normalizedPayload.deliveryDate).toISOString()
+            : null;
 
         const { data, error } = await supabase
-            .from('leads')
+            .from('orders')
             .insert({
-                name: payload.name,
-                phone: payload.phone,
-                status: 'new',
-                utm_source: 'admin_dashboard',
-                utm_medium: 'internal',
-                privacy_accepted: true,
-                privacy_accepted_at: new Date().toISOString(),
-                quote_data: {
-                    folio,
-                    items: [{
-                        id: crypto.randomUUID(),
-                        label: `Concreto ${payload.concreteType === 'pumped' ? 'Bomba' : 'Directo'} f'c ${payload.strength}`,
-                        volume: payload.volume,
-                        service: payload.concreteType,
-                        subtotal: 0, // Admin orders do not calculate price at registration time
-                    }],
-                    financials: { subtotal: 0, vat: 0, total: 0, currency: 'MXN' },
-                    breakdownLines: [],
-                    metadata: {
-                        source: 'admin_dashboard',
-                        deliveryAddress: payload.deliveryAddress,
-                        deliveryDate: payload.deliveryDate,
-                        notes: payload.notes,
-                    },
-                },
+                user_id: user.id,
+                folio,
+                status: 'draft',
+                total_amount: 0,
+                currency: 'MXN',
+                items: [orderItem],
+                delivery_date: deliveryDate,
+                delivery_address: normalizedPayload.deliveryAddress,
             })
             .select('id')
             .single();
@@ -82,7 +76,7 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
             reportError(new Error(error.message), {
                 source: 'createAdminOrder',
                 code: error.code,
-                customer: payload.name
+                customer: normalizedPayload.name
             });
             return { status: 'error', message: 'No se pudo registrar el pedido. Intente de nuevo.' };
         }

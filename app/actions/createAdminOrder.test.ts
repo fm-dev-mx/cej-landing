@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAdminOrder, type AdminOrderPayload } from './createAdminOrder';
 import { createClient } from '@/lib/supabase/server';
-import { sendToMetaCAPI } from '@/lib/tracking/capi';
 
 vi.mock('@/lib/supabase/server', () => ({
     createClient: vi.fn(),
@@ -14,10 +13,6 @@ vi.mock('@/lib/monitoring', () => ({
 
 vi.mock('@/lib/utils', () => ({
     generateQuoteId: vi.fn(() => 'ADMIN-123'),
-}));
-
-vi.mock('@/lib/tracking/capi', () => ({
-    sendToMetaCAPI: vi.fn(),
 }));
 
 describe('createAdminOrder', () => {
@@ -37,29 +32,51 @@ describe('createAdminOrder', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.mocked(createClient).mockResolvedValue({
-            auth: { getUser: () => Promise.resolve({ data: { user: { id: 'admin-id' } } }) },
+            auth: {
+                getUser: () => Promise.resolve({ data: { user: { id: 'admin-id', user_metadata: { role: 'admin' } } } }),
+            },
             from: () => ({
                 insert: mockInsert.mockReturnValue({
                     select: mockSelect.mockReturnValue({
-                        single: mockSingle
-                    })
-                })
-            })
+                        single: mockSingle,
+                    }),
+                }),
+            }),
         } as unknown as any);
     });
 
-    it('inserts a new lead row with admin_dashboard UTM source', async () => {
+    it('inserts a new order row compatible with dashboard list shape', async () => {
         mockSingle.mockResolvedValue({ data: { id: '999' }, error: null });
 
         const result = await createAdminOrder(validPayload);
 
         expect(result.status).toBe('success');
         expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({
-            utm_source: 'admin_dashboard',
-            utm_medium: 'internal',
-            name: 'Test Client',
+            user_id: 'admin-id',
+            folio: 'ADMIN-123',
+            status: 'draft',
+            total_amount: 0,
+            currency: 'MXN',
+            delivery_address: 'Test Address 123',
+            items: expect.arrayContaining([
+                expect.objectContaining({
+                    label: "Concreto Directo f'c 250",
+                    volume: 5,
+                    service: 'direct',
+                    subtotal: 0,
+                }),
+            ]),
         }));
-        expect(sendToMetaCAPI).not.toHaveBeenCalled();
+    });
+
+    it('returns error result on validation failure', async () => {
+        const invalidPayload = { ...validPayload, name: '' };
+        const result = await createAdminOrder(invalidPayload);
+
+        expect(result.status).toBe('error');
+        if (result.status === 'error') {
+            expect(result.message).toContain('Revisa los datos');
+        }
     });
 
     it('returns error result on DB failure', async () => {
@@ -75,7 +92,7 @@ describe('createAdminOrder', () => {
 
     it('redirects to /login if user is not authenticated', async () => {
         vi.mocked(createClient).mockResolvedValueOnce({
-            auth: { getUser: () => Promise.resolve({ data: { user: null } }) }
+            auth: { getUser: () => Promise.resolve({ data: { user: null } }) },
         } as unknown as any);
 
         await expect(createAdminOrder(validPayload)).rejects.toThrow('NEXT_REDIRECT');
