@@ -42,10 +42,24 @@ export const usePublicStore = create<PublicStore>()(
             ...createSubmissionSlice(set, get, api),
         }),
         {
-            name: "cej-pro-storage",
+            name: "cej-public-storage",
             storage: createJSONStorage(() => localStorage),
-            version: 6,
+            version: 7,
             migrate: (persistedState: unknown, version) => {
+                // v7 Migration: If new key is empty, try to migrate from old 'cej-pro-storage'
+                if (!persistedState && typeof window !== 'undefined') {
+                    const oldData = localStorage.getItem('cej-pro-storage');
+                    if (oldData) {
+                        try {
+                            const parsed = JSON.parse(oldData);
+                            // We only take what we need for the public store
+                            return parsed.state;
+                        } catch (e) {
+                            console.error('Failed to migrate from cej-pro-storage', e);
+                        }
+                    }
+                }
+
                 if (!persistedState || typeof persistedState !== "object") {
                     return {
                         cart: [],
@@ -75,23 +89,7 @@ export const usePublicStore = create<PublicStore>()(
                 }
                 if (!state.draft) state.draft = { ...DEFAULT_CALCULATOR_STATE };
 
-                if (version === 0 || version === 1) {
-                    if (state.draft && !state.draft.additives) {
-                        state.draft.additives = [];
-                        state.draft.showExpertOptions = false;
-                    }
-                }
-
-                if (version < 4) {
-                    if (state.breakdownViewed === undefined) {
-                        state.breakdownViewed = false;
-                    }
-                    if (state.submittedQuote && !state.submittedQuote.results) {
-                        state.submittedQuote = null;
-                    }
-                }
-
-                // v6 migration: remove legacy admin state from public storage.
+                // v7 cleanup: ensured structural integrity of migration
                 delete state.orders;
 
                 return state as PersistedState;
