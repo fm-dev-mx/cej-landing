@@ -8,7 +8,8 @@ const PIXEL_ID = env.NEXT_PUBLIC_PIXEL_ID || 'MISSING_PIXEL_ID';
 const URL = `https://graph.facebook.com/${API_VERSION}/${PIXEL_ID}/events`;
 
 const MAX_RETRIES = 3;
-const REQUEST_TIMEOUT_MS = 4000;
+const REQUEST_TIMEOUT_MS = 5000;
+const BASE_DELAY_MS = 1000;
 
 /**
  * Sends a tracking event to Meta Conversion API with retry logic and dead-letter fallback.
@@ -23,7 +24,6 @@ export async function sendToMetaCAPI(payload: CapiEvent): Promise<void> {
     }
 
     let lastError: Error | null = null;
-    const backoffs = [250, 750, 1500];
     let attemptsMade = 0;
 
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -31,6 +31,10 @@ export async function sendToMetaCAPI(payload: CapiEvent): Promise<void> {
         try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+            if (process.env.NODE_ENV === 'development') {
+                console.warn(`[CAPI] Attempt ${attemptsMade} for ${payload.event_name}`);
+            }
 
             const res = await fetch(URL, {
                 method: 'POST',
@@ -45,7 +49,12 @@ export async function sendToMetaCAPI(payload: CapiEvent): Promise<void> {
 
             clearTimeout(timeoutId);
 
-            if (res.ok) return; // Success!
+            if (res.ok) {
+                if (process.env.NODE_ENV === 'development') {
+                    console.warn(`[CAPI] Success for ${payload.event_name}`);
+                }
+                return;
+            }
 
             const errorData = await res.json();
             lastError = new Error(`Meta API Error: ${JSON.stringify(errorData)}`);
@@ -56,13 +65,11 @@ export async function sendToMetaCAPI(payload: CapiEvent): Promise<void> {
             }
         } catch (error: unknown) {
             lastError = error instanceof Error ? error : new Error(String(error));
-            // Retry on AbortError (timeout) or generic network failures
         }
 
         // Wait before retry (if not the last attempt)
         if (attempt < MAX_RETRIES) {
-            const jitter = Math.random() * 200 - 100; // ±100ms
-            const delay = backoffs[attempt] + jitter;
+            const delay = BASE_DELAY_MS * Math.pow(2, attempt);
             await new Promise((resolve) => setTimeout(resolve, delay));
         }
     }
@@ -73,7 +80,7 @@ export async function sendToMetaCAPI(payload: CapiEvent): Promise<void> {
     try {
         // Dynamically import server-only module to avoid bundling service role client in browser
         const { insertDeadLetter } = await import('./capi-deadletters.server');
-        await insertDeadLetter(payload, lastError?.message);
+        await insertDeadLetter(payload, lastError?.message, attemptsMade);
     } catch (dlqError) {
         // If DLQ fails, we already reported the primary error; just log to console
         console.error('[CAPI DLQ Failed]', dlqError);

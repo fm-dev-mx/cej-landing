@@ -2,6 +2,7 @@
 // Description: Client-side wrapper for Facebook Pixel interaction.
 
 import { env } from '@/config/env';
+import { getOrInitVisitorId } from './identity';
 
 // Extend Window to support the Facebook Pixel function
 declare global {
@@ -120,13 +121,17 @@ export const trackContact = (method: ContactMethod): void => {
     }
 
     // 2. CAPI Fallback Tracking
-    // Fire-and-forget fetch to our server endpoint
     if (normalized === 'whatsapp') {
         fetch('/api/track-contact', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ event_id: eventId }),
-            keepalive: true, // Important for redirects!
+            body: JSON.stringify({
+                event_id: eventId,
+                method: normalized,
+                visitor_id: getOrInitVisitorId(),
+                page_url: typeof window !== 'undefined' ? window.location.href : undefined,
+            }),
+            keepalive: true,
         }).catch((err) => {
             console.error('CAPI Track Contact failed:', err);
         });

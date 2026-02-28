@@ -17,6 +17,8 @@ type CapiDeadLetterPayload = CapiEvent & {
  *   event_name text not null,
  *   payload jsonb not null,
  *   error_message text,
+ *   attempts int default 0,
+ *   resolved_at timestamptz,
  *   created_at timestamptz default now()
  * );
  *
@@ -28,7 +30,11 @@ type CapiDeadLetterPayload = CapiEvent & {
  *   for all to service_role using (true) with check (true);
  */
 
-export async function insertDeadLetter(payload: CapiDeadLetterPayload, errorMessage?: string): Promise<void> {
+export async function insertDeadLetter(
+    payload: CapiDeadLetterPayload,
+    errorMessage?: string,
+    attempts: number = 0
+): Promise<void> {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -44,7 +50,8 @@ export async function insertDeadLetter(payload: CapiDeadLetterPayload, errorMess
             event_id: payload.event_id,
             event_name: payload.event_name,
             payload,
-            error_message: errorMessage
+            error_message: errorMessage,
+            attempts
         });
 
         if (error) throw error;
