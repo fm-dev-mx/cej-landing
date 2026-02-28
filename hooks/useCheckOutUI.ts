@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
-import { useCejStore } from "@/store/useCejStore";
+import { usePublicStore } from "@/store/public/usePublicStore";
 import { useIdentity } from "@/hooks/useIdentity";
 import { generateQuoteId } from "@/lib/utils";
 import { reportError } from "@/lib/monitoring";
@@ -28,9 +28,9 @@ export function useCheckoutUI() {
         error: null,
     });
 
-    const cart = useCejStore((s) => s.cart);
-    const draft = useCejStore((s) => s.draft);
-    const updateUserContact = useCejStore((s) => s.updateUserContact);
+    const cart = usePublicStore((s) => s.cart);
+    const draft = usePublicStore((s) => s.draft);
+    const updateUserContact = usePublicStore((s) => s.updateUserContact);
     const identity = useIdentity();
 
     const processOrder = async (
