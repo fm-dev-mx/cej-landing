@@ -202,48 +202,52 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                                 ✨ Precios actualizados ✨
                             </div>
                         )}
-                        <div className={styles.successActions}>
-                            {isVersionMismatch && (
-                                <div className={styles.versionAlertPrompt}>
-                                    <Button
-                                        fullWidth
-                                        variant="secondary"
-                                        className={styles.updatePricesBtn}
-                                        onClick={() => {
-                                            clearSubmittedQuote();
-                                            setBreakdownViewed(true);
-                                        }}
-                                    >
-                                        🔄 Actualizar a precios actuales
-                                    </Button>
-                                </div>
-                            )}
+                        {isValid ? (
+                            <div className={styles.successActions}>
+                                {isVersionMismatch && (
+                                    <div className={styles.versionAlertPrompt}>
+                                        <Button
+                                            fullWidth
+                                            variant="secondary"
+                                            className={styles.updatePricesBtn}
+                                            onClick={() => {
+                                                clearSubmittedQuote();
+                                                setBreakdownViewed(true);
+                                            }}
+                                        >
+                                            🔄 Actualizar a precios actuales
+                                        </Button>
+                                    </div>
+                                )}
 
-                            <Button
-                                fullWidth
-                                variant="primary"
-                                onClick={() => setSchedulingOpen(true)}
-                                isLoading={isProcessing}
-                            >
-                                📅 Programar Pedido
-                            </Button>
+                                <Button
+                                    fullWidth
+                                    variant="primary"
+                                    onClick={() => setSchedulingOpen(true)}
+                                    isLoading={isProcessing}
+                                >
+                                    📅 Programar Pedido
+                                </Button>
 
-                            <p className={styles.summaryFooter}>
-                                Agenda tu entrega o recibe asistencia personalizada.
-                            </p>
+                                <p className={styles.summaryFooter}>
+                                    Agenda tu entrega o recibe asistencia personalizada.
+                                </p>
 
-                            <QuoteCTA quote={quote} onOpenForm={() => setSchedulingOpen(true)} />
+                                <QuoteCTA quote={quote} onOpenForm={() => setSchedulingOpen(true)} />
 
-
-
-                            <button
-                                onClick={handleEditCalculation}
-                                className={styles.editQuoteDataBtn}
-                                type="button"
-                            >
-                                ← Editar cálculo
-                            </button>
-                        </div>
+                                <button
+                                    onClick={handleEditCalculation}
+                                    className={styles.editQuoteDataBtn}
+                                    type="button"
+                                >
+                                    ← Editar cálculo
+                                </button>
+                            </div>
+                        ) : (
+                            <div className={styles.incompletePrompt}>
+                                <p>Ingresa los detalles para ver tu cotización.</p>
+                            </div>
+                        )}
                     </div>
                 )}
 

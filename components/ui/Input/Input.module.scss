@@ -17,6 +17,19 @@
   @include f.label-base;
 }
 
+.labelRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.charCount {
+  font-size: var(--fs-xs);
+  color: var(--c-muted-on-dark);
+  opacity: 0.8;
+}
+
 /* Inputs Base */
 .input {
   @include f.input-base;
@@ -75,6 +88,10 @@
 
   .errorMessage {
     color: var(--c-error-text);
+  }
+
+  .charCount {
+    color: var(--c-muted);
   }
 }
 
@@ -161,4 +178,5 @@
 
 .hasError {
   /* Visual error state is driven from aria-invalid in shared form mixins. */
+  outline: none; // Placeholder to avoid empty ruleset warning
 }

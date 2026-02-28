@@ -7,10 +7,13 @@ import styles from './SmartBottomBar.module.scss';
 
 export default function SmartBottomBar() {
     const cart = usePublicStore(s => s.cart);
+    const isDrawerOpen = usePublicStore(s => s.isDrawerOpen);
     const setDrawerOpen = usePublicStore(s => s.setDrawerOpen);
 
-    // Only show if cart has items
-    if (cart.length === 0) return null;
+    // Hide if:
+    // 1. Cart is empty
+    // 2. Drawer is already open (avoid double UI)
+    if (cart.length === 0 || isDrawerOpen) return null;
 
     const total = cart.reduce((acc, item) => acc + item.results.total, 0);
     const count = cart.length;

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button/Button";
 import { Input } from "@/components/ui/Input/Input";
 import { ResponsiveDialog } from "@/components/ui/ResponsiveDialog/ResponsiveDialog";
 import styles from "./SchedulingModal.module.scss";
-import { getWhatsAppUrl } from "@/lib/utils";
+import { getWhatsAppUrl, formatPhone } from "@/lib/utils";
 import { env } from "@/config/env";
 import type { QuoteBreakdown } from "@/types/domain";
 import { getSchedulingErrors, isSchedulingFormValid, type SchedulingField } from "./schedulingValidation";
@@ -140,9 +140,9 @@ Quiero programar un pedido.
                         inputMode="numeric"
                         placeholder="656 123 4567"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => setPhone(formatPhone(e.target.value))}
                         onBlur={markTouched("phone")}
-                        maxLength={10}
+                        maxLength={12} // 10 digits + 2 spaces
                         disabled={isProcessing}
                         variant="light"
                         error={shouldShowError("phone") ? fieldErrors.phone ?? false : false}

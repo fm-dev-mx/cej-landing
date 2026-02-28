@@ -74,11 +74,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     // Molecule behavior (Layout + Label + Input + Error)
     return (
       <div className={containerClass}>
-        {label && (
-          <label htmlFor={inputId} className={styles.label}>
-            {label}
-          </label>
-        )}
+        <div className={styles.labelRow}>
+          {label && (
+            <label htmlFor={inputId} className={styles.label}>
+              {label}
+            </label>
+          )}
+          {props.maxLength && props.value && typeof props.value === "string" && (
+            <span className={styles.charCount}>
+              {props.value.length}/{props.maxLength}
+            </span>
+          )}
+        </div>
 
         {inputElement}
 
