@@ -40,16 +40,21 @@ const mockInsert = vi.fn();
 const mockSelect = vi.fn();
 const mockSingle = vi.fn();
 
+const mockSelectChain = {
+    or: vi.fn().mockReturnThis(),
+    gte: vi.fn().mockReturnThis(),
+    single: mockSingle,
+};
+
+const mockFrom = {
+    insert: mockInsert,
+    select: mockSelect,
+};
+
 // Mock Supabase with strict chaining structure
 vi.mock('@supabase/supabase-js', () => ({
     createClient: () => ({
-        from: () => ({
-            insert: mockInsert.mockReturnValue({
-                select: mockSelect.mockReturnValue({
-                    single: mockSingle
-                })
-            })
-        })
+        from: () => mockFrom
     })
 }));
 
@@ -102,7 +107,22 @@ describe('Server Action: submitLead', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        // Default success response for DB
+
+        // 1. Mock Rate Limit Chain
+        mockSelect.mockReturnValue(mockSelectChain);
+        mockSelectChain.or.mockReturnThis();
+        mockSelectChain.gte.mockReturnThis();
+        // Rate limit check returns { count: 0, error: null }
+        mockSelectChain.gte.mockResolvedValue({ count: 0, error: null });
+
+        // 2. Mock Insert Chain
+        mockInsert.mockReturnValue({
+            select: vi.fn().mockReturnValue({
+                single: mockSingle
+            })
+        });
+
+        // 3. Default Success for Insert
         mockSingle.mockResolvedValue({ data: { id: '999' }, error: null });
     });
 
