@@ -23,7 +23,7 @@ function hashData(data: string | undefined): string | undefined {
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json().catch(() => ({}));
-        const { event_id } = body;
+        const { event_id, method, visitor_id, page_url } = body;
 
         if (!event_id) {
             return NextResponse.json({ error: "Missing event_id" }, { status: 400 });
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
         const clientIp = headerStore.get("x-forwarded-for")?.split(",")[0].trim() || "0.0.0.0";
         const userAgent = headerStore.get("user-agent") || "";
-        const referer = headerStore.get("referer") || env.NEXT_PUBLIC_SITE_URL;
+        const referer = page_url || headerStore.get("referer") || env.NEXT_PUBLIC_SITE_URL;
 
         const fbp = cookieStore.get("_fbp")?.value;
         const fbc = cookieStore.get("_fbc")?.value;
@@ -51,9 +51,11 @@ export async function POST(req: NextRequest) {
                 client_user_agent: userAgent,
                 fbp,
                 fbc,
+                external_id: visitor_id ? hashData(visitor_id) : undefined,
             },
             custom_data: {
-                content_name: "WhatsApp Click",
+                content_name: method || "WhatsApp Click",
+                method: method || "whatsapp",
             },
         });
 
