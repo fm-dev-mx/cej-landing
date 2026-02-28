@@ -11,6 +11,7 @@ export type OrderSubmissionResult = {
     success: boolean;
     folio?: string;
     error?: string;
+    warning?: string;
 };
 
 /**
@@ -131,7 +132,7 @@ export async function dispatchOrder(
             };
         }
 
-        return { success: true, folio: orderPayload.folio };
+        return { success: true, folio: orderPayload.folio, warning: result.warning };
     } catch (err: unknown) {
         console.error(`[dispatchOrder] submitLead THREW:`, err);
         reportError(err, { context: "dispatchOrder.catchAll", folio: orderPayload.folio } as Record<string, unknown>);
