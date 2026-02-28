@@ -20,12 +20,14 @@ export const WHATSAPP_DELAY_MS = 100;
 type CheckoutState = {
     isProcessing: boolean;
     error: string | null;
+    warning: string | null;
 };
 
 export function useCheckoutUI() {
     const [state, setState] = useState<CheckoutState>({
         isProcessing: false,
         error: null,
+        warning: null,
     });
 
     const cart = usePublicStore((s) => s.cart);
@@ -37,8 +39,8 @@ export function useCheckoutUI() {
         customer: CustomerInfo,
         saveContact: boolean,
         quote?: QuoteBreakdown
-    ): Promise<{ success: boolean; folio?: string }> => {
-        setState({ isProcessing: true, error: null });
+    ): Promise<{ success: boolean; folio?: string; warning?: string | null }> => {
+        setState({ isProcessing: true, error: null, warning: null });
 
         try {
             const folio = generateQuoteId();
@@ -67,11 +69,12 @@ export function useCheckoutUI() {
             if (!result.success) {
                 // If it's a validation error (e.g. server-side Zod check), show it to user
                 reportError(new Error(result.error), { context: "useCheckoutUI.validationError", customerPhone: customer.phone });
-                setState({ isProcessing: false, error: result.error || null });
+                setState({ isProcessing: false, error: result.error || null, warning: null });
                 return { success: false };
             }
 
-            return { success: true, folio };
+            setState({ isProcessing: false, error: null, warning: result.warning || null });
+            return { success: true, folio, warning: result.warning };
         } catch (err: unknown) {
             reportError(err, { context: "useCheckoutUI.processOrder", customerPhone: customer.phone });
             console.error(`[useCheckoutUI] processOrder CAUGHT error:`, err);
@@ -80,8 +83,9 @@ export function useCheckoutUI() {
             setState({
                 isProcessing: false,
                 error: null,
+                warning: "server_exception",
             });
-            return { success: true, folio: offlineFolio };
+            return { success: true, folio: offlineFolio, warning: "server_exception" };
         } finally {
             setState((prev) => ({ ...prev, isProcessing: false }));
         }
