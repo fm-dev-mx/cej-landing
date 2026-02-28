@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createAdminOrder, type AdminOrderPayload } from './createAdminOrder';
 import { createClient } from '@/lib/supabase/server';
+import { sendToMetaCAPI } from '@/lib/tracking/capi';
 
 vi.mock('@/lib/supabase/server', () => ({
     createClient: vi.fn(),
@@ -13,6 +14,10 @@ vi.mock('@/lib/monitoring', () => ({
 
 vi.mock('@/lib/utils', () => ({
     generateQuoteId: vi.fn(() => 'ADMIN-123'),
+}));
+
+vi.mock('@/lib/tracking/capi', () => ({
+    sendToMetaCAPI: vi.fn(),
 }));
 
 describe('createAdminOrder', () => {
@@ -54,6 +59,7 @@ describe('createAdminOrder', () => {
             utm_medium: 'internal',
             name: 'Test Client',
         }));
+        expect(sendToMetaCAPI).not.toHaveBeenCalled();
     });
 
     it('returns error result on DB failure', async () => {
