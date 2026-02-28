@@ -10,17 +10,21 @@ export interface SelectOption {
   disabled?: boolean;
 }
 
-interface SelectProps {
+export interface SelectConfig {
+  placeholder?: string;
+  variant?: 'dark' | 'light';
+  error?: boolean | string;
+  disabled?: boolean;
+}
+
+export interface SelectProps {
   id?: string;
   value: string;
   onChange: (e: { target: { value: string; name?: string } }) => void;
   options: SelectOption[];
-  placeholder?: string;
-  variant?: 'dark' | 'light';
-  error?: boolean | string;
+  config?: SelectConfig;
   className?: string;
   name?: string;
-  disabled?: boolean;
   'aria-labelledby'?: string;
 }
 
@@ -29,14 +33,15 @@ export const Select = ({
   value,
   onChange,
   options,
-  placeholder = "Selecciona...",
-  variant = 'dark',
-  error,
+  config,
   className,
   name,
-  disabled,
   'aria-labelledby': ariaLabelledBy
 }: SelectProps) => {
+  const placeholder = config?.placeholder ?? "Selecciona...";
+  const variant = config?.variant ?? 'dark';
+  const error = config?.error;
+  const disabled = config?.disabled;
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -111,6 +116,7 @@ export const Select = ({
 
   // Create a unique ID for the listbox to satisfy aria-controls
   const listboxId = id ? `${id}-listbox` : undefined;
+  const errorId = id ? `${id}-error` : undefined;
 
   const wrapperClass = [
     styles.wrapper,
@@ -141,6 +147,8 @@ export const Select = ({
         aria-haspopup="listbox"
         aria-disabled={disabled}
         aria-labelledby={ariaLabelledBy}
+        aria-invalid={hasError}
+        aria-describedby={hasError ? errorId : undefined}
       >
         <span className={styles.label}>
           {selectedOption ? selectedOption.label : placeholder}
@@ -173,7 +181,9 @@ export const Select = ({
 
       {/* Error Message */}
       {errorMessage && (
-        <span className={styles.errorMessage}>{errorMessage}</span>
+        <span id={errorId} className={styles.errorMessage} role="alert">
+          {errorMessage}
+        </span>
       )}
     </div>
   );

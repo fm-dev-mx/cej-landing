@@ -43,13 +43,11 @@ export function SpecsForm() {
                     aria-labelledby="strength-label"
                     value={strength || ""}
                     onChange={handleStrength}
-                    variant="dark"
-                    error={isMissing('strength')}
+                    config={{ variant: "dark", error: isMissing('strength') }}
                     options={[
                         { label: "Selecciona...", value: "", disabled: true },
                         ...STRENGTHS.map(s => ({ label: `${s} kg/cm²`, value: s }))
                     ]}
-                    placeholder="Selecciona..."
                 />
             </div>
 
@@ -66,13 +64,11 @@ export function SpecsForm() {
                     aria-labelledby="service-label"
                     value={type || ""}
                     onChange={handleType}
-                    variant="dark"
-                    error={isMissing('type')}
+                    config={{ variant: "dark", error: isMissing('type') }}
                     options={[
                         { label: "Selecciona...", value: "", disabled: true },
                         ...CONCRETE_TYPES.map(t => ({ label: t.label, value: t.value }))
                     ]}
-                    placeholder="Selecciona..."
                 />
             </div>
         </div>

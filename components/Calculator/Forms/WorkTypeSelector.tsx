@@ -34,13 +34,12 @@ export function WorkTypeSelector() {
                 aria-labelledby="work-type-label"
                 value={workType || ""}
                 onChange={handleChange}
-                variant="dark"
+                config={{ variant: "dark" }}
                 className={workType ? styles.selectorActive : undefined}
                 options={[
                     { label: "Selecciona una opción...", value: "", disabled: true },
                     ...WORK_TYPES.map(w => ({ label: w.label, value: w.id }))
                 ]}
-                placeholder="Selecciona una opción..."
             />
 
             <p className={styles.selectorHint}>
