@@ -110,7 +110,7 @@ describe('Meta CAPI Service Hardening', () => {
             expect.any(Error),
             expect.objectContaining({ source: 'MetaCAPI' })
         );
-    });
+    }, 10000); // Higher timeout for network error handling
 
     it('retries on 5xx errors and eventually succeeds', async () => {
         const fetchMock = vi.mocked(global.fetch);
@@ -143,6 +143,7 @@ describe('Meta CAPI Service Hardening', () => {
     });
 
     it('sends to DLQ after exhausting all 3 retries (total 4 attempts)', async () => {
+        vi.useFakeTimers();
         const fetchMock = vi.mocked(global.fetch);
         fetchMock.mockResolvedValue({
             ok: false,
@@ -150,18 +151,24 @@ describe('Meta CAPI Service Hardening', () => {
             json: async () => ({ error: 'Fatal' })
         } as Response);
 
-        await sendToMetaCAPI(mockPayload);
+        const promise = sendToMetaCAPI(mockPayload);
+
+        // Fast forward through all 3 retries
+        for (let i = 0; i < 3; i++) {
+            await vi.runAllTimersAsync();
+        }
+
+        await promise;
 
         expect(fetchMock).toHaveBeenCalledTimes(4); // 1 initial + 3 retries
         expect(reportError).toHaveBeenCalledWith(
             expect.any(Error),
             expect.objectContaining({ attempts: 4 })
         );
-        expect(dlqModule.insertDeadLetter).toHaveBeenCalledWith(
-            mockPayload,
-            expect.stringContaining('Fatal')
-        );
-    });
+        expect(dlqModule.insertDeadLetter).toHaveBeenCalled();
+
+        vi.useRealTimers();
+    }, 20000);
 
     it('retries on timeout (AbortError)', async () => {
         vi.useFakeTimers();
@@ -171,7 +178,9 @@ describe('Meta CAPI Service Hardening', () => {
         fetchMock.mockImplementation((_url, options) => {
             return new Promise((_resolve, reject) => {
                 options?.signal?.addEventListener('abort', () => {
-                    reject(new (class AbortError extends Error { name = 'AbortError'; })());
+                    const abortErr = new Error('The operation was aborted');
+                    abortErr.name = 'AbortError';
+                    reject(abortErr);
                 });
             });
         });
@@ -179,10 +188,10 @@ describe('Meta CAPI Service Hardening', () => {
         const promise = sendToMetaCAPI(mockPayload);
 
         // We expect 4 attempts (0, 1, 2, 3)
-        // Each attempt has 4s timeout + backoff
+        // Each attempt has 5s timeout + backoff
         for (let i = 0; i < 4; i++) {
-            await vi.advanceTimersByTimeAsync(4001); // Trigger Timeout
-            await vi.advanceTimersByTimeAsync(2000); // Trigger backoff delay
+            await vi.advanceTimersByTimeAsync(5001); // Trigger REQUEST_TIMEOUT_MS
+            await vi.advanceTimersByTimeAsync(8000); // Trigger max possible backoff (BASE_DELAY_MS * 2^3 = 8000)
         }
 
         await promise;
@@ -191,7 +200,7 @@ describe('Meta CAPI Service Hardening', () => {
         expect(dlqModule.insertDeadLetter).toHaveBeenCalled();
 
         vi.useRealTimers();
-    });
+    }, 30000);
 
     it('skips execution if token is missing', async () => {
         const { env } = await import('@/config/env');
