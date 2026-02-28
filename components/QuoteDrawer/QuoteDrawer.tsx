@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useCejStore } from '@/store/useCejStore';
+import { usePublicStore } from '@/store/public/usePublicStore';
 import { type CartItem } from '@/types/domain';
 import { fmtMXN } from '@/lib/utils';
 import { Button } from '@/components/ui/Button/Button';
@@ -17,7 +17,7 @@ export default function QuoteDrawer() {
         cart, history,
         removeFromCart, editCartItem, loadQuote,
         submittedQuote,
-    } = useCejStore();
+    } = usePublicStore();
 
     const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);

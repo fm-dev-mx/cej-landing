@@ -4,7 +4,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useCejStore } from "@/store/useCejStore";
+import { usePublicStore } from "@/store/public/usePublicStore";
 import { SelectionCard } from "@/components/ui/SelectionCard/SelectionCard";
 import { DEFAULT_PRICING_RULES } from "@/lib/pricing";
 import { fmtMXN } from "@/lib/utils";
@@ -12,9 +12,8 @@ import { fmtMXN } from "@/lib/utils";
 import styles from "../CalculatorForm.module.scss";
 
 export function AdditivesForm() {
-    // Select specific slices to avoid unnecessary re-renders
-    const selectedAdditives = useCejStore((s) => s.draft.additives);
-    const toggleAdditive = useCejStore((s) => s.toggleAdditive);
+    const draft = usePublicStore((s) => s.draft);
+    const updateDraft = usePublicStore((s) => s.updateDraft);
 
     // Memoize active additives to prevent recalculation on every render
     const additives = useMemo(() =>
@@ -32,7 +31,7 @@ export function AdditivesForm() {
 
             <div className={styles.selectionGrid}>
                 {additives.map((addon) => {
-                    const isSelected = selectedAdditives.includes(addon.id);
+                    const isSelected = draft.additives.includes(addon.id);
                     const priceLabel =
                         addon.pricingModel === "per_m3"
                             ? `${fmtMXN(addon.priceCents / 100)} / m³`
@@ -47,7 +46,13 @@ export function AdditivesForm() {
                             label={addon.label}
                             description={`${addon.description} (${priceLabel})`}
                             isSelected={isSelected}
-                            onChange={() => toggleAdditive(addon.id)}
+                            onChange={() => {
+                                const isSelected = draft.additives.includes(addon.id);
+                                const newAdditives = isSelected
+                                    ? draft.additives.filter((a) => a !== addon.id)
+                                    : [...draft.additives, addon.id];
+                                updateDraft({ additives: newAdditives });
+                            }}
                             customIndicator={isSelected ? <span>✔</span> : null}
                         />
                     );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useCejStore } from '@/store/useCejStore';
+import { usePublicStore } from '@/store/public/usePublicStore';
 import { Button } from '@/components/ui/Button/Button';
 import { getWhatsAppUrl, buildDirectQuoteMessage } from '@/lib/utils';
 import { env } from '@/config/env';
@@ -13,7 +13,7 @@ interface QuoteCTAProps {
 }
 
 export function QuoteCTA({ quote }: QuoteCTAProps) {
-    const moveToHistory = useCejStore((s) => s.moveToHistory);
+    const moveToHistory = usePublicStore((s) => s.moveToHistory);
 
     const message = buildDirectQuoteMessage(quote);
     const whatsappUrl = getWhatsAppUrl(env.NEXT_PUBLIC_WHATSAPP_NUMBER, message);

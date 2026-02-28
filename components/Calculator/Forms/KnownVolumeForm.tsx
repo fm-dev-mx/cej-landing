@@ -6,7 +6,7 @@
 import type { ChangeEvent } from "react";
 import { useCallback, useState } from "react";
 
-import { useCejStore } from "@/store/useCejStore";
+import { usePublicStore } from "@/store/public/usePublicStore";
 import { Input } from "@/components/ui/Input/Input";
 import { getMissingFields } from "@/lib/progress";
 import styles from "../CalculatorForm.module.scss";
@@ -18,9 +18,9 @@ interface Props {
 }
 
 export function KnownVolumeForm({ hasError, forceValidation, onFieldTouched }: Props) {
-    const draft = useCejStore((s) => s.draft);
+    const draft = usePublicStore((s) => s.draft);
     const m3 = draft.m3;
-    const updateDraft = useCejStore((s) => s.updateDraft);
+    const updateDraft = usePublicStore((s) => s.updateDraft);
     const [touched, setTouched] = useState(false);
 
     // Derived missing state

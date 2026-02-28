@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useCejStore } from '@/store/useCejStore';
+import { usePublicStore } from '@/store/public/usePublicStore';
 import { useQuoteCalculator } from '@/hooks/useQuoteCalculator';
 import { useCheckoutUI } from '@/hooks/useCheckOutUI';
 import { TicketDisplay } from './TicketDisplay/TicketDisplay';
@@ -27,21 +27,21 @@ interface QuoteSummaryProps {
 }
 
 export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
-    const draft = useCejStore((s) => s.draft);
-    const resetDraft = useCejStore((s) => s.resetDraft);
-    const user = useCejStore((s) => s.user);
-    const addToCart = useCejStore((s) => s.addToCart);
-    const moveToHistory = useCejStore((s) => s.moveToHistory);
+    const draft = usePublicStore((s) => s.draft);
+    const resetDraft = usePublicStore((s) => s.resetDraft);
+    const user = usePublicStore((s) => s.user);
+    const addToCart = usePublicStore((s) => s.addToCart);
+    const moveToHistory = usePublicStore((s) => s.moveToHistory);
 
     // State
-    const breakdownViewed = useCejStore((s) => s.breakdownViewed);
-    const setBreakdownViewed = useCejStore((s) => s.setBreakdownViewed);
+    const breakdownViewed = usePublicStore((s) => s.breakdownViewed);
+    const setBreakdownViewed = usePublicStore((s) => s.setBreakdownViewed);
 
-    const submittedQuote = useCejStore((s) => s.submittedQuote);
-    const setSubmittedQuote = useCejStore((s) => s.setSubmittedQuote);
-    const clearSubmittedQuote = useCejStore((s) => s.clearSubmittedQuote);
-    const updateCartItemCustomer = useCejStore((s) => s.updateCartItemCustomer);
-    const updateCartItemFolio = useCejStore((s) => s.updateCartItemFolio);
+    const submittedQuote = usePublicStore((s) => s.submittedQuote);
+    const setSubmittedQuote = usePublicStore((s) => s.setSubmittedQuote);
+    const clearSubmittedQuote = usePublicStore((s) => s.clearSubmittedQuote);
+    const updateCartItemCustomer = usePublicStore((s) => s.updateCartItemCustomer);
+    const updateCartItemFolio = usePublicStore((s) => s.updateCartItemFolio);
 
     // Live Pricing State
     const [liveRules, setLiveRules] = useState<PricingRules | undefined>(undefined);
@@ -111,14 +111,14 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
 
     const handleResetCurrentMode = () => {
         if (draft.mode === 'knownM3') {
-            useCejStore.getState().updateDraft({
+            usePublicStore.getState().updateDraft({
                 m3: '',
                 strength: null,
                 type: null,
                 additives: []
             });
         } else {
-            useCejStore.getState().updateDraft({
+            usePublicStore.getState().updateDraft({
                 workType: null,
                 length: '',
                 width: '',

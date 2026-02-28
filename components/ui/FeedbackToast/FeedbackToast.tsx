@@ -2,12 +2,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useCejStore } from '@/store/useCejStore';
+import { usePublicStore } from "@/store/public/usePublicStore";
 import styles from './FeedbackToast.module.scss';
 
 export default function FeedbackToast() {
-    const isDrawerOpen = useCejStore(s => s.isDrawerOpen);
-    const cart = useCejStore(s => s.cart);
+    const isDrawerOpen = usePublicStore((s) => s.isDrawerOpen);
+    const cart = usePublicStore((s) => s.cart);
     const [show, setShow] = useState(false);
 
     useEffect(() => {

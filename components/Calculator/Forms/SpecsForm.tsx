@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useCejStore } from "@/store/useCejStore";
+import { usePublicStore } from "@/store/public/usePublicStore";
 import { Select } from "@/components/ui/Select/Select";
 import { STRENGTHS, CONCRETE_TYPES } from "@/config/business";
 import type { Strength, ConcreteType } from "@/types/domain";
@@ -13,9 +13,9 @@ import { getMissingFields, type CalculatorFieldId } from "@/lib/progress";
 import styles from "../CalculatorForm.module.scss";
 
 export function SpecsForm() {
-    const draft = useCejStore((s) => s.draft);
+    const draft = usePublicStore((s) => s.draft);
     const { strength, type } = draft;
-    const update = useCejStore((s) => s.updateDraft);
+    const update = usePublicStore((s) => s.updateDraft);
     const missing = getMissingFields(draft);
 
     const isMissing = (id: CalculatorFieldId) => missing.includes(id);

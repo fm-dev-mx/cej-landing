@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from 'next/navigation';
 
-import { useCejStore } from "@/store/useCejStore";
+import { usePublicStore } from "@/store/public/usePublicStore";
 import { useQuoteCalculator } from "@/hooks/useQuoteCalculator";
 
 import { ModeSelector } from "./ModeSelector";
@@ -32,16 +32,16 @@ import styles from "./CalculatorForm.module.scss";
  * - Shows validation errors, warnings and summary (ticket-style).
  */
 export function CalculatorForm() {
-    const draft = useCejStore((s) => s.draft);
+    const draft = usePublicStore((s) => s.draft);
 
     // URL Deep Linking for shared quotes (Local history lookup)
     const searchParams = useSearchParams();
     const folioParam = searchParams?.get('folio');
-    const setSubmittedQuote = useCejStore((s) => s.setSubmittedQuote);
-    const history = useCejStore((s) => s.history);
-    const cart = useCejStore((s) => s.cart);
-    const editingItemId = useCejStore((s) => s.editingItemId);
-    const cancelEdit = useCejStore((s) => s.cancelEdit);
+    const setSubmittedQuote = usePublicStore((s) => s.setSubmittedQuote);
+    const history = usePublicStore((s) => s.history);
+    const cart = usePublicStore((s) => s.cart);
+    const editingItemId = usePublicStore((s) => s.editingItemId);
+    const cancelEdit = usePublicStore((s) => s.cancelEdit);
 
     useEffect(() => {
         if (!folioParam) return;
@@ -70,7 +70,7 @@ export function CalculatorForm() {
     // Quote engine result
     const { error, warning, rawVolume, billedM3 } = useQuoteCalculator(draft);
 
-    const submittedQuote = useCejStore((s) => s.submittedQuote);
+    const submittedQuote = usePublicStore((s) => s.submittedQuote);
 
     // Local state to track if volume is "confirmed" in assist mode to reveal specs
     const [volumeConfirmed, setVolumeConfirmed] = useState(false);
@@ -149,7 +149,7 @@ export function CalculatorForm() {
                             <button
                                 type="button"
                                 className={styles.resetLink}
-                                onClick={() => useCejStore.getState().setMode(null)}
+                                onClick={() => usePublicStore.getState().setMode(null)}
                             >
                                 Cambiar método
                             </button>
@@ -184,7 +184,7 @@ export function CalculatorForm() {
                                     <input
                                         type="checkbox"
                                         checked={draft.showExpertOptions}
-                                        onChange={() => useCejStore.getState().setExpertMode(!draft.showExpertOptions)}
+                                        onChange={() => usePublicStore.getState().setExpertMode(!draft.showExpertOptions)}
                                         className={styles.toggleInput}
                                     />
                                     <span className={styles.toggleFakeCheckbox} aria-hidden="true" />

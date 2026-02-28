@@ -1,13 +1,13 @@
 // components/SmartBottomBar/SmartBottomBar.tsx
 'use client';
 
-import { useCejStore } from '@/store/useCejStore';
+import { usePublicStore } from "@/store/public/usePublicStore";
 import { fmtMXN } from '@/lib/utils';
 import styles from './SmartBottomBar.module.scss';
 
 export default function SmartBottomBar() {
-    const cart = useCejStore(s => s.cart);
-    const setDrawerOpen = useCejStore(s => s.setDrawerOpen);
+    const cart = usePublicStore(s => s.cart);
+    const setDrawerOpen = usePublicStore(s => s.setDrawerOpen);
 
     // Only show if cart has items
     if (cart.length === 0) return null;

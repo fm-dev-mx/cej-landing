@@ -1,6 +1,6 @@
 'use client';
 
-import { useCejStore } from '@/store/useCejStore';
+import { usePublicStore } from "@/store/public/usePublicStore";
 import { SelectionCard } from '@/components/ui/SelectionCard/SelectionCard';
 import { type CalculatorMode } from '@/types/domain';
 import styles from './CalculatorForm.module.scss';
@@ -10,7 +10,8 @@ interface Props {
 }
 
 export function ModeSelector({ currentMode }: Props) {
-    const setMode = useCejStore((s) => s.setMode);
+    const mode = usePublicStore((s) => s.draft.mode);
+    const setMode = usePublicStore((s) => s.setMode);
 
     return (
         <div className={styles.selectionGrid}>

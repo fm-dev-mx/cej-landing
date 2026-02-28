@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useCejStore } from '@/store/useCejStore';
+import { usePublicStore } from '@/store/public/usePublicStore';
 import { useQuoteCalculator } from '@/hooks/useQuoteCalculator';
 import { WorkTypeSelector } from './Forms/WorkTypeSelector';
 import { AssistVolumeForm } from './Forms/AssistVolumeForm';
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export function VolumeAssistant({ onComplete }: Props) {
-    const draft = useCejStore((s) => s.draft);
+    const draft = usePublicStore((s) => s.draft);
     const { workType } = draft;
     const { billedM3, error } = useQuoteCalculator(draft);
 
@@ -65,7 +65,7 @@ export function VolumeAssistant({ onComplete }: Props) {
                             type="button"
                             className={styles.backBtn}
                             onClick={() => {
-                                useCejStore.getState().setWorkType(null);
+                                usePublicStore.getState().updateDraft({ workType: null });
                                 setInternalStep(1);
                             }}
                         >

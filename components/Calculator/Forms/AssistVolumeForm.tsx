@@ -6,7 +6,7 @@
 import type { ChangeEvent } from "react";
 import { useState } from "react";
 
-import { useCejStore } from "@/store/useCejStore";
+import { usePublicStore } from "@/store/public/usePublicStore";
 
 import { Input } from "@/components/ui/Input/Input";
 import type { CofferedSize } from "@/types/domain";
@@ -21,20 +21,20 @@ interface Props {
 }
 
 export function AssistVolumeForm({ onFieldTouched, forceValidation }: Props) {
-    const draft = useCejStore((s) => s.draft);
+    const draft = usePublicStore((s) => s.draft);
     const {
         volumeMode,
         length,
         width,
-        area,
         thicknessByDims,
+        area,
         thicknessByArea,
         workType,
         hasCoffered,
         cofferedSize,
     } = draft;
 
-    const update = useCejStore((s) => s.updateDraft);
+    const updateDraft = usePublicStore((s) => s.updateDraft);
     const [showOverride, setShowOverride] = useState(false);
     const missingFields = getMissingFields(draft);
 
@@ -57,7 +57,7 @@ export function AssistVolumeForm({ onFieldTouched, forceValidation }: Props) {
             const val = e.target.value
                 .replace(/,/g, ".")
                 .replace(/[^0-9.]/g, "");
-            update({ [field]: val });
+            updateDraft({ [field]: val });
         };
 
     const handleBlur = (field: string) => () => {
@@ -78,7 +78,7 @@ export function AssistVolumeForm({ onFieldTouched, forceValidation }: Props) {
                             name="volume-mode"
                             value="dimensions"
                             checked={volumeMode === "dimensions"}
-                            onChange={() => update({
+                            onChange={() => updateDraft({
                                 volumeMode: "dimensions",
                                 // Clear Area fields to prevent zombies
                                 area: '',
@@ -94,7 +94,7 @@ export function AssistVolumeForm({ onFieldTouched, forceValidation }: Props) {
                             name="volume-mode"
                             value="area"
                             checked={volumeMode === "area"}
-                            onChange={() => update({
+                            onChange={() => updateDraft({
                                 volumeMode: "area",
                                 // Clear Dimensions fields to prevent zombies
                                 length: '',
@@ -149,7 +149,12 @@ export function AssistVolumeForm({ onFieldTouched, forceValidation }: Props) {
 
             {/* Manual thickness / Compression Layer Logic */}
             <div className={styles.spacingTop}>
-                {workType === 'slab' && hasCoffered === 'yes' ? (
+                {(() => {
+                    const thicknessValue = (volumeMode === "dimensions" ? thicknessByDims : thicknessByArea) ?? "";
+                    const thicknessOnChange = handleNumeric(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea");
+                    const thicknessError = isMissing(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea");
+
+                    return workType === 'slab' && hasCoffered === 'yes' ? (
                     // Logic for Coffered Slab (Aligerada)
                     <div className={styles.fieldCompact}>
                         <div className={styles.compressionHeader}>
@@ -193,13 +198,14 @@ export function AssistVolumeForm({ onFieldTouched, forceValidation }: Props) {
                         label={workType === 'slab' ? "Espesor Total de Losa" : "Grosor"}
                         placeholder={workType === 'slab' ? "10" : "10"}
                         suffix="cm"
-                        value={(volumeMode === "dimensions" ? thicknessByDims : thicknessByArea) ?? ""}
-                        onChange={handleNumeric(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea")}
+                        value={thicknessValue}
+                        onChange={thicknessOnChange}
                         inputMode="decimal"
                         variant="dark"
-                        error={isMissing(volumeMode === "dimensions" ? "thicknessByDims" : "thicknessByArea")}
+                        error={thicknessError}
                     />
-                )}
+                );
+                })()}
             </div>
 
             {/* Slab type and coffered configuration */}
@@ -214,7 +220,7 @@ export function AssistVolumeForm({ onFieldTouched, forceValidation }: Props) {
                                 name="isCoffered"
                                 checked={hasCoffered === "no"}
                                 onChange={() => {
-                                    update({
+                                    updateDraft({
                                         hasCoffered: "no",
                                         // Reset to standard slab thickness defaults
                                         thicknessByDims: "10",
@@ -232,7 +238,7 @@ export function AssistVolumeForm({ onFieldTouched, forceValidation }: Props) {
                                 name="isCoffered"
                                 checked={hasCoffered === "yes"}
                                 onChange={() => {
-                                    update({
+                                    updateDraft({
                                         hasCoffered: "yes",
                                         cofferedSize: "7",
                                         // Reset to standard compression layer (5cm) for Coffered
@@ -260,7 +266,7 @@ export function AssistVolumeForm({ onFieldTouched, forceValidation }: Props) {
                                             name="cofferSize"
                                             checked={cofferedSize === size}
                                             onChange={() =>
-                                                update({
+                                                updateDraft({
                                                     cofferedSize:
                                                         size as CofferedSize,
                                                 })

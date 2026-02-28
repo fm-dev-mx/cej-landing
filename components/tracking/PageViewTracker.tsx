@@ -12,7 +12,6 @@ import { useAttribution } from '@/hooks/useAttribution';
 export function PageViewTracker() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    useAttribution(); // Ensure UTMs are captured on every page load
 
     useEffect(() => {
         // Track page view on route change

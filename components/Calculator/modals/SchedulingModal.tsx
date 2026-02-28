@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { useCejStore } from "@/store/useCejStore";
+import { usePublicStore } from '@/store/public/usePublicStore';
 import { useCheckoutUI } from "@/hooks/useCheckOutUI";
 import { Button } from "@/components/ui/Button/Button";
 import { Input } from "@/components/ui/Input/Input";
@@ -30,7 +30,7 @@ export function SchedulingModal({
     quote,
     onSuccess,
 }: SchedulingModalProps) {
-    const user = useCejStore((s) => s.user);
+    const user = usePublicStore((s) => s.user);
     const { processOrder, isProcessing, error } = useCheckoutUI();
 
     // Form State
@@ -121,9 +121,9 @@ Quiero programar un pedido.
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         maxLength={10}
+                        disabled={isProcessing}
                         variant="light"
                         required
-                        disabled={isProcessing}
                     />
                 </div>
 
@@ -133,8 +133,8 @@ Quiero programar un pedido.
                     placeholder="Calle, Número, Colonia, Referencias"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
+                    required={true}
                     variant="light"
-                    required
                     disabled={isProcessing}
                 />
 
@@ -144,17 +144,19 @@ Quiero programar un pedido.
                         type="date"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
-                        variant="light"
-                        required
+                        aria-label="fecha-entrega"
                         disabled={isProcessing}
+                        required
+                        variant="light"
                     />
                     <Input
                         label="Preferencia horario"
                         placeholder="Ej. 8:00 AM"
                         value={time}
                         onChange={(e) => setTime(e.target.value)}
-                        variant="light"
+                        required={true}
                         disabled={isProcessing}
+                        variant="light"
                     />
                 </div>
 

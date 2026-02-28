@@ -4,7 +4,7 @@
 import { useMemo, useCallback } from "react";
 import { getWhatsAppUrl } from "@/lib/utils";
 import { trackContact } from "@/lib/tracking/visitor";
-import { useCejStore } from "@/store/useCejStore";
+import { usePublicStore } from "@/store/public/usePublicStore";
 import styles from "./CTAButtons.module.scss";
 
 type Props = {
@@ -25,7 +25,7 @@ export default function CTAButtons({
   sticky = true,
 }: Props) {
   // Store: Hide this bar if cart has items (SmartBar takes priority)
-  const cartLength = useCejStore(s => s.cart.length);
+  const cartLength = usePublicStore(s => s.cart.length);
   const shouldHide = cartLength > 0 && sticky;
 
   const links = useMemo(() => {

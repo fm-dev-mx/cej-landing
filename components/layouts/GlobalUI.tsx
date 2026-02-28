@@ -38,8 +38,8 @@ export default function GlobalUI() {
         // Expose store for E2E testing (development only)
         if (process.env.NODE_ENV === 'development') {
             // Dynamic import to avoid bundling store reference in production
-            import('@/store/useCejStore').then(({ useCejStore }) => {
-                (window as unknown as { useCejStore: typeof useCejStore }).useCejStore = useCejStore;
+            import('@/store/public/usePublicStore').then(({ usePublicStore }) => {
+                (window as unknown as { usePublicStore: typeof usePublicStore }).usePublicStore = usePublicStore;
             });
         }
     }, []);

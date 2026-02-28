@@ -10,16 +10,16 @@ import { env } from "@/config/env";
 import { useHeaderLogic } from "./useHeaderLogic";
 import DesktopNav from "./DesktopNav";
 import MobileMenu from "./MobileMenu";
-import { useCejStore } from "@/store/useCejStore";
+import { usePublicStore } from '@/store/public/usePublicStore';
 
 import styles from "./Header.module.scss";
 
 export default function Header() {
   const { state, data, actions } = useHeaderLogic();
 
-  const setDrawerOpen = useCejStore((s) => s.setDrawerOpen);
-  const setActiveTab = useCejStore((s) => s.setActiveTab);
-  const cartCount = useCejStore((s) => s.cart.length);
+  const setActiveTab = usePublicStore((s) => s.setActiveTab);
+  const setDrawerOpen = usePublicStore((s) => s.setDrawerOpen);
+  const cartCount = usePublicStore((s) => s.cart.length);
 
   const openHistory = () => {
     setActiveTab("history");

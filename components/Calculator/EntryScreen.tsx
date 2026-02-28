@@ -1,10 +1,11 @@
 'use client';
 
-import { useCejStore } from '@/store/useCejStore';
+import { usePublicStore } from '@/store/public/usePublicStore';
 import styles from './EntryScreen.module.scss';
 
 export function EntryScreen() {
-    const setMode = useCejStore((s) => s.setMode);
+    const resetDraft = usePublicStore((s) => s.resetDraft);
+    const setMode = usePublicStore((s) => s.setMode);
 
     return (
         <div className={styles.wrapper}>
