@@ -18,7 +18,7 @@ export default defineConfig({
         preprocessorOptions: {
             scss: {
                 // Forces Vite to use the modern Sass compiler API
-                // @ts-expect-error - 'api' is valid in Vite 5.4+ but Vitest types might lag behind
+                // @ts-ignore - 'api' is valid in Vite 5.4+ but Vitest types might lag behind
                 api: 'modern-compiler',
             },
         },
