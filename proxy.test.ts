@@ -32,7 +32,7 @@ describe('Proxy Middleware', () => {
         } as any);
     });
 
-    it('redirects unauthenticated users from /dashboard to /login', async () => {
+    it('redirects unauthenticated users from /dashboard to /login with security headers', async () => {
         mockGetUser.mockResolvedValue({ data: { user: null }, error: null });
 
         const req = new NextRequest('http://localhost/dashboard/orders');
@@ -40,6 +40,23 @@ describe('Proxy Middleware', () => {
 
         expect(res?.status).toBe(307);
         expect(res?.headers.get('location')).toContain('/login?redirect=%2Fdashboard%2Forders');
+
+        // Assert security headers are present on redirects
+        expect(res?.headers.get('X-Frame-Options')).toBe('DENY');
+        expect(res?.headers.get('X-Content-Type-Options')).toBe('nosniff');
+        expect(res?.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin');
+    });
+
+    it('returns 404 with security headers for non-allowlisted routes', async () => {
+        const req = new NextRequest('http://localhost/unknown-route');
+        const res = await proxy(req);
+
+        expect(res?.status).toBe(404);
+
+        // Assert security headers are present on 404s
+        expect(res?.headers.get('X-Frame-Options')).toBe('DENY');
+        expect(res?.headers.get('X-Content-Type-Options')).toBe('nosniff');
+        expect(res?.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin');
     });
 
     it('allows access to /dashboard for authenticated users', async () => {
@@ -50,6 +67,10 @@ describe('Proxy Middleware', () => {
 
         // Should return a 200/NextResponse.next() equivalent (not a redirect)
         expect(res?.status).toBe(200);
+
+        // Security headers for normal responses should NOT be in the proxy response
+        // as they are handled by next.config.ts
+        expect(res?.headers.get('X-Frame-Options')).toBeNull();
     });
 
     it('passes through if Supabase is not configured', async () => {
