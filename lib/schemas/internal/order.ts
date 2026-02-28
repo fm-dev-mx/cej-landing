@@ -1,0 +1,12 @@
+import { z } from 'zod';
+
+export const adminOrderPayloadSchema = z.object({
+    name: z.string().trim().min(2, 'El nombre es obligatorio.'),
+    phone: z.string().trim().min(10, 'El teléfono debe tener al menos 10 dígitos.'),
+    volume: z.number().positive('El volumen debe ser mayor a 0.'),
+    concreteType: z.enum(['direct', 'pumped']),
+    strength: z.string().trim().min(1, 'La resistencia es obligatoria.'),
+    deliveryAddress: z.string().trim().min(5, 'La dirección de entrega es obligatoria.'),
+    deliveryDate: z.string().trim().optional(),
+    notes: z.string().trim().optional(),
+});

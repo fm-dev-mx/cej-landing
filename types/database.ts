@@ -47,9 +47,51 @@ export interface QuoteSnapshot {
     metadata?: Record<string, unknown>;
 }
 
+export interface InternalOrderItemSnapshot {
+    id: string;
+    label: string;
+    volume: number;
+    service: 'direct' | 'pumped';
+    subtotal: number;
+    strength: string;
+    notes?: string;
+}
+
 export interface Database {
     public: {
         Tables: {
+            orders: {
+                Row: {
+                    id: string;
+                    user_id: string;
+                    folio: string;
+                    status: string;
+                    total_amount: number;
+                    currency: string;
+                    items: InternalOrderItemSnapshot[];
+                    delivery_date: string | null;
+                    delivery_address: string | null;
+                    geo_location: Json | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: string;
+                    user_id: string;
+                    folio: string;
+                    status?: string;
+                    total_amount: number;
+                    currency?: string;
+                    items: InternalOrderItemSnapshot[];
+                    delivery_date?: string | null;
+                    delivery_address?: string | null;
+                    geo_location?: Json | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: Partial<Database['public']['Tables']['orders']['Insert']>;
+                Relationships: [];
+            };
             leads: {
                 Row: {
                     id: number; // bigint se convierte a number en JS (o string si es muy grande, pero supabase lo maneja)
@@ -96,7 +138,6 @@ export interface Database {
                     privacy_accepted_at?: string | null;
                 };
                 Update: Partial<Database['public']['Tables']['leads']['Insert']>;
-                // CRÍTICO: Esto soluciona el error "Argument of type ... is not assignable to parameter of type 'never'"
                 Relationships: [];
             };
         };

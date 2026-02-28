@@ -2,5 +2,6 @@
 // Description: Barrel file to re-export all Zod schemas by domain.
 
 export * from "./calculator";
+export * from "./internal/order";
 export * from "./orders";
 export * from "./pricing";
