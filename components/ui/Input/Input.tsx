@@ -8,10 +8,12 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: boolean | string;
   /** Visual unit suffix displayed inside the input (e.g., "m", "cm", "m²") */
   suffix?: string;
+  /** Optional custom character count to display instead of value.length */
+  customCharCount?: number;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, isVolume, label, id, variant = "dark", error, suffix, ...props }, ref) => {
+  ({ className, isVolume, label, id, variant = "dark", error, suffix, customCharCount, ...props }, ref) => {
     // Generate a stable ID for label + error association
     const internalId = useId();
     const inputId = id || internalId;
@@ -80,9 +82,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               {label}
             </label>
           )}
-          {props.maxLength && props.value && typeof props.value === "string" && (
+          {props.maxLength && props.value !== undefined && (
             <span className={styles.charCount}>
-              {props.value.length}/{props.maxLength}
+              {customCharCount ?? String(props.value).length}/{props.maxLength}
             </span>
           )}
         </div>

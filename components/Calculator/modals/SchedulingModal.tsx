@@ -6,9 +6,10 @@ import { usePublicStore } from '@/store/public/usePublicStore';
 import { useCheckoutUI } from "@/hooks/useCheckOutUI";
 import { Button } from "@/components/ui/Button/Button";
 import { Input } from "@/components/ui/Input/Input";
+import { PhoneInput } from "@/components/ui/Input/PhoneInput";
 import { ResponsiveDialog } from "@/components/ui/ResponsiveDialog/ResponsiveDialog";
 import styles from "./SchedulingModal.module.scss";
-import { getWhatsAppUrl, formatPhone } from "@/lib/utils";
+import { getWhatsAppUrl } from "@/lib/utils";
 import { env } from "@/config/env";
 import type { QuoteBreakdown } from "@/types/domain";
 import { getSchedulingErrors, isSchedulingFormValid, type SchedulingField } from "./schedulingValidation";
@@ -32,7 +33,7 @@ export function SchedulingModal({
     onSuccess,
 }: SchedulingModalProps) {
     const user = usePublicStore((s) => s.user);
-    const { processOrder, isProcessing, error } = useCheckoutUI();
+    const { processOrder, isProcessing, error, warning } = useCheckoutUI();
 
     // Form State
     const [name, setName] = useState(user.name || "");
@@ -41,6 +42,7 @@ export function SchedulingModal({
     const [date, setDate] = useState("");
     const [time, setTime] = useState("");
     const [notes, setNotes] = useState("");
+    const [submittedFolio, setSubmittedFolio] = useState<string | null>(null);
 
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [saveMyData] = useState(true);
@@ -78,17 +80,25 @@ export function SchedulingModal({
             quote ?? undefined
         );
 
+        if (!result.success) return;
+
         // FAIL-OPEN STRATEGY:
-        // Even if the backend/tracking fails (no folio), we MUST allow the user to proceed to WhatsApp.
-        const finalFolio = result.folio || `OFFLINE-${Date.now().toString().slice(-6)}`;
+        // We have a success (even if partial/warning).
+        setSubmittedFolio(result.folio || null);
 
-        // 2. Clear quote and show success UI
-        if (onSuccess) onSuccess(finalFolio, name);
+        // If it's a clean success (no warning), proceed immediately.
+        // If there's a warning, we'll stay in the modal to show the fallback UI.
+        if (!result.warning) {
+            handleWhatsAppRedirect(result.folio || "");
+            onClose();
+        }
+    };
 
-        // 3. Open WhatsApp
+    const handleWhatsAppRedirect = (folio: string) => {
+        // 1. WhatsApp Message
         const message = `👋 Hola, soy *${name}*.
 Quiero programar un pedido.
-📄 Folio Cotización: *${finalFolio}*
+📄 Folio Cotización: *${folio}*
 
 📅 Fecha: ${date}
 ⏰ Horario: ${time || 'Por definir'}
@@ -99,9 +109,7 @@ Quiero programar un pedido.
 
         const whaUrl = getWhatsAppUrl(env.NEXT_PUBLIC_WHATSAPP_NUMBER, message);
         window.open(whaUrl, '_blank');
-
-        // 4. Close
-        onClose();
+        if (onSuccess) onSuccess(folio, name);
     };
 
     const isSubmitDisabled = !privacyAccepted || !isFormValid || isProcessing;
@@ -134,15 +142,12 @@ Quiero programar un pedido.
                         required
                         disabled={isProcessing}
                     />
-                    <Input
+                    <PhoneInput
                         label="Teléfono de contacto"
-                        type="tel"
-                        inputMode="numeric"
                         placeholder="656 123 4567"
                         value={phone}
-                        onChange={(e) => setPhone(formatPhone(e.target.value))}
+                        onChange={(e) => setPhone(e.target.value)}
                         onBlur={markTouched("phone")}
-                        maxLength={12} // 10 digits + 2 spaces
                         disabled={isProcessing}
                         variant="light"
                         error={shouldShowError("phone") ? fieldErrors.phone ?? false : false}
@@ -212,23 +217,47 @@ Quiero programar un pedido.
                     </label>
                 </div>
 
-                {error && (
+                {(error || (submitAttempted && !isFormValid)) && (
                     <div className={styles.errorMessage} role="alert">
-                        {error}
+                        {error || "Por favor revisa los campos marcados en rojo."}
+                    </div>
+                )}
+
+                {warning && submittedFolio && (
+                    <div className={styles.warningBox}>
+                        <p>⚠️ No pudimos sincronizar tu pedido, pero puedes continuar por WhatsApp.</p>
+                        <div className={styles.folioDisplay}>
+                            <span>Folio Temporal:</span>
+                            <code className={styles.folio}>{submittedFolio}</code>
+                        </div>
                     </div>
                 )}
 
                 <div className={styles.actions}>
-                    <Button
-                        type="submit"
-                        variant="whatsapp"
-                        fullWidth
-                        isLoading={isProcessing}
-                        loadingText="Abriendo WhatsApp..."
-                        disabled={isSubmitDisabled}
-                    >
-                        Generar Pedido en WhatsApp
-                    </Button>
+                    {warning && submittedFolio ? (
+                        <Button
+                            type="button"
+                            variant="whatsapp"
+                            fullWidth
+                            onClick={() => {
+                                handleWhatsAppRedirect(submittedFolio);
+                                onClose();
+                            }}
+                        >
+                            Enviar por WhatsApp
+                        </Button>
+                    ) : (
+                        <Button
+                            type="submit"
+                            variant="whatsapp"
+                            fullWidth
+                            isLoading={isProcessing}
+                            loadingText="Abriendo WhatsApp..."
+                            disabled={isSubmitDisabled}
+                        >
+                            Generar Pedido en WhatsApp
+                        </Button>
+                    )}
 
                     <Button
                         type="button"
@@ -238,7 +267,7 @@ Quiero programar un pedido.
                         disabled={isProcessing}
                         className={styles.cancelBtn}
                     >
-                        Cancelar
+                        {warning && submittedFolio ? "Cerrar" : "Cancelar"}
                     </Button>
 
                     <p className={styles.privacyNote}>

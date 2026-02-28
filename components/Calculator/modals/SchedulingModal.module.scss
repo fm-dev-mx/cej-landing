@@ -178,6 +178,48 @@
     background: var(--c-error-soft);
 }
 
+.warningBox {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+
+    padding: var(--sp-4);
+    border: 1px solid var(--c-warning-border, #eab308);
+    border-radius: var(--radius);
+
+    background-color: var(--c-warning-soft, #fefce8);
+
+    p {
+        margin: 0;
+
+        font-size: var(--fs-sm);
+        font-weight: 500;
+        color: var(--c-warning-text, #854d0e);
+        text-align: center;
+    }
+}
+
+.folioDisplay {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: center;
+    justify-content: center;
+
+    font-size: var(--fs-sm);
+    color: var(--c-muted-strong);
+
+    .folio {
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-sm);
+
+        font-family: var(--font-mono, monospace);
+        font-weight: 700;
+        color: var(--c-text);
+
+        background: var(--c-surface-light);
+    }
+}
+
 .actions {
     display: flex;
     flex-direction: column;

@@ -1,5 +1,5 @@
 // components/Calculator/modals/SchedulingModal.test.tsx
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SchedulingModal } from './SchedulingModal';
 
@@ -11,13 +11,16 @@ vi.mock('@/store/public/usePublicStore', () => ({
 }));
 
 // Mock checkout hook
-const mockProcessOrder = vi.fn().mockResolvedValue({ success: true, folio: 'TEST-123' });
+const mockProcessOrder = vi.fn().mockResolvedValue({ success: true, folio: 'TEST-123', warning: null });
+const mockUseCheckoutUI = vi.fn().mockReturnValue({
+    processOrder: mockProcessOrder,
+    isProcessing: false,
+    error: null,
+    warning: null
+});
+
 vi.mock('@/hooks/useCheckOutUI', () => ({
-    useCheckoutUI: () => ({
-        processOrder: mockProcessOrder,
-        isProcessing: false,
-        error: null
-    })
+    useCheckoutUI: () => mockUseCheckoutUI()
 }));
 
 // Mock ResponsiveDialog
@@ -165,8 +168,25 @@ describe('SchedulingModal', () => {
         });
     });
 
-    it('uses fallback folio when processOrder returns no folio (fail-open)', async () => {
-        mockProcessOrder.mockResolvedValueOnce({ success: false, folio: null });
+    it('shows fallback UI and allows manual WhatsApp redirect when processOrder returns a warning', async () => {
+        // Mock a failure that returns an offline folio and a warning
+        mockProcessOrder.mockResolvedValueOnce({
+            success: true,
+            folio: 'OFFLINE-12345',
+            warning: 'server_exception'
+        });
+
+        // We also need the hook to actually reflect this warning in its state if we want to test the UI reactive to it.
+        // But since we are mocking the hook AT the module level, we might need to be more clever if we want to test the reactive UI.
+        // For simplicity in this mock-heavy test, let's just adjust the hook mock to return the warning state IF called.
+
+        // Let's re-mock the hook for this specific test case
+        mockUseCheckoutUI.mockReturnValue({
+            processOrder: mockProcessOrder,
+            isProcessing: false,
+            error: null,
+            warning: 'server_exception'
+        });
 
         setup();
 
@@ -174,18 +194,27 @@ describe('SchedulingModal', () => {
         fillForm({ name: 'Test User', phone: '656 123 4567', address: 'Calle Test 123', date: '2024-12-20' });
         fireEvent.click(screen.getByRole('checkbox'));
 
+        // Submit
         fireEvent.click(screen.getByRole('button', { name: /Generar Pedido en WhatsApp/i }));
 
         await waitFor(() => {
-            expect(mockOnSuccess).toHaveBeenCalledWith(
-                expect.stringMatching(/^OFFLINE-[A-Z0-9]+$/),
-                'Test User'
-            );
+            expect(mockProcessOrder).toHaveBeenCalled();
         });
 
-        // Should still open WhatsApp even without server folio
+        // Verify fallback UI is visible
+        expect(screen.getByText(/No pudimos sincronizar tu pedido/i)).toBeInTheDocument();
+        expect(screen.getByText('OFFLINE-12345')).toBeInTheDocument();
+
+        // Click fallback button
+        const fallbackButton = screen.getByRole('button', { name: /Enviar por WhatsApp/i });
+        fireEvent.click(fallbackButton);
+
         await waitFor(() => {
             expect(mockWindowOpen).toHaveBeenCalled();
+        });
+
+        await waitFor(() => {
+            expect(mockOnSuccess).toHaveBeenCalledWith('OFFLINE-12345', 'Test User');
         });
     });
 });
