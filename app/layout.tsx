@@ -3,19 +3,13 @@
 
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Inter } from "next/font/google";
 
 import { env, isPreview, isDev, APP_ENV } from "@/config/env";
 import { SEO_CONTENT } from "@/config/content";
-
-import { PageViewTracker } from "@/components/tracking/PageViewTracker";
 import "../styles/globals.scss";
-import { Suspense } from "react";
 
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
-import GlobalUI from "@/components/layouts/GlobalUI";
-import { AuthProvider } from "@/components/Auth";
 
 /** Mirrors `--c-primary-dark` from _tokens.scss for the HTML meta theme tag. */
 const META_THEME = '#0e2240';
@@ -40,8 +34,6 @@ export const metadata: Metadata = {
 export default function RootLayout({
     children,
 }: Readonly<{ children: React.ReactNode }>) {
-    const pixelId = env.NEXT_PUBLIC_PIXEL_ID;
-
     // Tracking is enabled in Production and Preview, but NOT in local Development.
     const enableTracking = !isDev;
 
@@ -70,33 +62,7 @@ export default function RootLayout({
                     </>
                 )}
 
-                {/* Meta / Facebook Pixel */}
-                {enableTracking && pixelId && (
-                    <Script id="fb-pixel" strategy="afterInteractive">
-                        {`
-                            !function(f,b,e,v,n,t,s)
-                            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-                            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-                            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-                            n.queue=[];t=b.createElement(e);t.async=!0;
-                            t.src=v;s=b.getElementsByTagName(e)[0];
-                            s.parentNode.insertBefore(t,s)}(window, document,'script',
-                            'https://connect.facebook.net/en_US/fbevents.js');
-                            fbq('init', '${pixelId}');
-                        `}
-                    </Script>
-                )}
-
-                {/* App content wrapped with AuthProvider */}
-                <AuthProvider>
-                    <Suspense fallback={null}>
-                        <PageViewTracker />
-                    </Suspense>
-                    {children}
-
-                    {/* Global UX components (cart, drawer, toast) */}
-                    <GlobalUI />
-                </AuthProvider>
+                {children}
 
                 {/* Vercel analytics */}
                 <SpeedInsights />

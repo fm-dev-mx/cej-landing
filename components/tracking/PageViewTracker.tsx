@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { trackPageView } from '@/lib/tracking/visitor';
-import { useAttribution } from '@/hooks/useAttribution';
 
 /**
  * Component that tracks page views on route changes.

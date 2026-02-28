@@ -10,10 +10,6 @@ vi.mock('@/lib/tracking/visitor', () => ({
     trackPageView: (...args: unknown[]) => mockTrackPageView(...args),
 }));
 
-vi.mock('@/hooks/useAttribution', () => ({
-    useAttribution: () => ({ getStoredUtm: () => null }),
-}));
-
 let mockPathname = '/';
 vi.mock('next/navigation', () => ({
     usePathname: () => mockPathname,

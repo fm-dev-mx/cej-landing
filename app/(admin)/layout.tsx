@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { AuthProvider } from "@/components/Auth";
 
 export const viewport: Viewport = {
     width: "device-width",
@@ -17,5 +18,5 @@ export default function AppLayout({
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return <AuthProvider>{children}</AuthProvider>;
 }
