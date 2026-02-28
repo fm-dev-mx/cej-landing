@@ -17,10 +17,13 @@ import { Analytics } from "@vercel/analytics/next";
 import GlobalUI from "@/components/layouts/GlobalUI";
 import { AuthProvider } from "@/components/Auth";
 
+/** Mirrors `--c-primary-dark` from _tokens.scss for the HTML meta theme tag. */
+const META_THEME = '#0e2240';
+
 export const viewport: Viewport = {
     width: "device-width",
     initialScale: 1,
-    themeColor: "#0e2240",
+    themeColor: META_THEME,
 };
 
 const GA_MEASUREMENT_ID = env.NEXT_PUBLIC_GA_ID;
@@ -80,7 +83,6 @@ export default function RootLayout({
                             s.parentNode.insertBefore(t,s)}(window, document,'script',
                             'https://connect.facebook.net/en_US/fbevents.js');
                             fbq('init', '${pixelId}');
-                            fbq('track', 'PageView');
                         `}
                     </Script>
                 )}
