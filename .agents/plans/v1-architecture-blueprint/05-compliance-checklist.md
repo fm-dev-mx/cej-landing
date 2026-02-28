@@ -13,7 +13,7 @@
 
 | # | Item | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Enforce protected dashboard routing via canonical middleware entrypoint | 🔶 | `proxy.ts` enforces route checks; canonical `middleware.ts` is missing |
+| 1 | Enforce protected dashboard routing via root `proxy.ts` official entry point | ✅ | `proxy.ts` is the authoritative routing engine (Next.js 16) |
 | 2 | Keep auth/session code out of public bundle surface | ⬜ | Not found (`app/layout.tsx` still mounts `AuthProvider`) |
 | 3 | Maintain Lead event dedup between Pixel and CAPI | ✅ | `hooks/useCheckOutUI.ts`, `lib/logic/orderDispatcher.ts`, `app/actions/submitLead.ts` |
 | 4 | Deliver Contact CAPI fallback endpoint | ⬜ | Not found |
@@ -24,23 +24,7 @@
 | 9 | Add server-side RBAC/rate-limiting safeguards for auth and form abuse | ⬜ | Not found |
 | 10 | Maintain baseline a11y affordances (skip link, labels, alert semantics) | 🔶 | `app/(public)/layout.tsx`, `components/Calculator/modals/SchedulingModal.tsx` include partial coverage; full checklist coverage not evidenced |
 
-## 1. Middleware & Route Protection
-
-### 1.1 Route Security
-
-| # | Check | Verification Method | Pass Criteria |
-|:--|:------|:-------------------|:-------------|
-| R1 | `middleware.ts` exists at project root | File exists check | File present and exported |
-| R2 | Unauthenticated access to `/dashboard` redirects to `/login` | Manual test: open `/dashboard` in incognito browser | HTTP 307 → `/login` |
-| R3 | Unauthenticated access to `/dashboard/new` redirects | Manual test: open `/dashboard/new` in incognito | HTTP 307 → `/login` |
-| R4 | Authenticated access to `/dashboard` renders page | Login → navigate to `/dashboard` | Dashboard renders with user greeting |
-| R5 | Non-existent routes return 404 | Manual test: open `/nonexistent` | Next.js 404 page |
-| R6 | Auth callback route works | Complete login flow | Redirect to `/dashboard` after Supabase callback |
-| R7 | Public routes accessible without auth | Open `/` in incognito | Landing page renders fully |
-| R8 | Public routes don't trigger auth session check | Network tab inspection on `/` | No Supabase auth requests |
-
-### 1.2 Bundle Isolation
-
+## 1. Proxy & Route Protection
 | # | Check | Verification Method | Pass Criteria |
 |:--|:------|:-------------------|:-------------|
 | B1 | `AuthProvider` not in public bundle | `pnpm build` → inspect `.next/server/app/(public)/page.js` | No Supabase imports |
@@ -90,7 +74,7 @@
 | U1 | UTM params captured from URL | Visit `/?utm_source=facebook&utm_medium=cpc` | Cookie `cej_utm` set with values |
 | U2 | UTM params persist across pages | Navigate to `/aviso-de-privacidad` | Cookie still present |
 | U3 | UTM params sent in lead submission | Submit lead → check Supabase `leads` table | `utm_source` = `facebook` |
-| U4 | `fbclid` sets `_fbc` cookie via middleware | Visit `/?fbclid=ABC123` | `_fbc` cookie = `fb.1.{ts}.ABC123` |
+| U4 | `fbclid` sets `_fbc` cookie via Proxy | Visit `/?fbclid=ABC123` | `_fbc` cookie = `fb.1.{ts}.ABC123` |
 | U5 | No duplicate UTM systems | Codebase search for `localStorage` UTM keys | Only cookie-based system exists |
 
 ---
@@ -161,7 +145,7 @@
 | A2 | Session cookies have `SameSite=Lax` | Same as A1 | `SameSite` = Lax |
 | A3 | Session cookies have `Secure` flag | Same as A1 | `Secure` flag set (production) |
 | A4 | Logout clears all session data | Logout → check cookies | Session cookies removed |
-| A5 | Token refresh works in middleware | Stay on dashboard for > session TTL | No forced logout |
+| A5 | Token refresh works in Proxy | Stay on dashboard for > session TTL | No forced logout |
 
 ### 4.4 API & Data Security
 

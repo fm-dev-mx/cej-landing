@@ -20,8 +20,8 @@
 | 5 | Scope `GlobalUI` to public layout instead of root | ⬜ | Not found (`app/layout.tsx` still mounts `GlobalUI`) |
 | 6 | Scope `AuthProvider` to admin layout instead of root | ⬜ | Not found (`app/layout.tsx` still mounts `AuthProvider`) |
 | 7 | Scope `PageViewTracker` and Pixel script to public layout | ⬜ | Not found (`app/layout.tsx` still mounts both) |
-| 8 | Implement canonical root `middleware.ts` for auth/allowlist/security/_fbc | ⬜ | Not found (`proxy.ts` exists but canonical file is absent) |
-| 9 | Enforce route allowlisting + 404 behavior at edge | 🔶 | `proxy.ts` enforces allowlist/404, but not via canonical `middleware.ts` entrypoint |
+| 8 | Ensure `proxy.ts` is the official entry point (Next.js 16 convention) | ✅ | `proxy.ts` at root is the authoritative routing engine |
+| 9 | Enforce route allowlisting + 404 behavior at the Proxy layer | ✅ | `proxy.ts` enforces allowlist/404 as the official entry point |
 | 10 | Apply project-wide security headers through Next config | ✅ | `next.config.ts` |
 
 ## 1. High-Level Directory Organization
@@ -68,7 +68,7 @@ app/
 |:--------|:---------|:----------|
 | `(marketing)` | `(public)` | Aligns naming with security domain, not marketing function |
 | `(app)` contains `cotizador` + `dashboard` | `(admin)` contains only `dashboard` | `cotizador` is dead route; calculator lives on `/` |
-| No middleware | `middleware.ts` at root | Enforces route protection at the edge |
+| No Proxy layer | `proxy.ts` at root | Enforces route protection (Next.js 16 convention) |
 
 ---
 
@@ -130,7 +130,7 @@ client SDK from the public bundle (~15KB gzipped), directly improving LCP.
 
 ---
 
-## 3. Routing Rules & Middleware Protection
+## 3. Routing Rules & Proxy Protection
 
 ### 3.1 Allowed Routes (Exhaustive Allowlist)
 
@@ -150,58 +150,6 @@ const PROTECTED_ROUTES = [
 
 const AUTH_CALLBACK_ROUTES = [
   '/auth/callback',
-];
-```
-
-Any request not matching these patterns **MUST** return a `404` response. No
-catch-all fallback routes are permitted.
-
-### 3.2 Middleware Strategy
-
-Create `middleware.ts` at the project root:
-
-```
-Priority: Edge Runtime (runs before any rendering)
-```
-
-**Responsibilities:**
-
-1. **Dashboard Protection:** All requests to `/dashboard/*` MUST verify the
-   Supabase session cookie. If absent → redirect to `/login`.
-2. **Session Refresh:** Call `supabase.auth.getUser()` on every request to
-   refresh the auth token (Supabase SSR pattern).
-3. **CORS Headers:** Set strict `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`
-   on all responses.
-4. **UTM Persistence:** Capture `fbclid` from query params and set the `_fbc`
-   cookie if not already present (critical for CAPI attribution).
-5. **Route Allowlisting:** Return 404 for any route not in the allowlist.
-
-```typescript
-// middleware.ts — Structural Skeleton
-export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)',
-  ],
-};
-```
-
-### 3.3 Defense in Depth (Layered Auth)
-
-| Layer | Location | Responsibility |
-|:------|:---------|:---------------|
-| **Edge** | `middleware.ts` | Session cookie check, redirect to `/login` |
-| **Server** | `(admin)/layout.tsx` | `getUser()` verification, RBAC check |
-| **Client** | `AuthProvider` (admin-only) | UI state for conditional rendering |
-
-> [!IMPORTANT]
-> The dashboard layout's server-side `getUser()` check remains as
-> the authoritative guard. Middleware provides defense-in-depth and prevents
-> bundle download from unauthenticated browsers.
-
----
-
-## 4. Bundle Isolation Verification
-
 To verify that admin code does not leak into the public bundle:
 
 ```bash

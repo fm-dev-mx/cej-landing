@@ -15,7 +15,7 @@
 | --- | --- | --- | --- |
 | 1 | Keep Lead Pixel+CAPI dedup with shared `event_id` | ✅ | `hooks/useCheckOutUI.ts`, `lib/logic/orderDispatcher.ts`, `app/actions/submitLead.ts` |
 | 2 | Add server-side `Contact` CAPI endpoint (`/api/track-contact`) | ⬜ | Not found |
-| 3 | Ensure `_fbc` cookie capture at edge from `fbclid` | 🔶 | `proxy.ts` sets `_fbc`, but required canonical `middleware.ts` path is missing |
+| 3 | Ensure `_fbc` cookie capture at the Proxy layer from `fbclid` | ✅ | `proxy.ts` sets `_fbc` as the authoritative entry point |
 | 4 | Normalize phone digits/country before hashing for CAPI | ⬜ | Not found (`app/actions/submitLead.ts` hashes without phone normalization) |
 | 5 | Add retry-with-backoff + timeout in `sendToMetaCAPI` | ⬜ | Not found |
 | 6 | Add dead-letter queue persistence for exhausted CAPI failures | ⬜ | Not found |
@@ -187,10 +187,10 @@ an `fbclid` parameter. However, if the Pixel loads slowly or is blocked, the
 cookie is never created.
 
 **Prescribed Fix:**
-Set `_fbc` explicitly in `middleware.ts`:
+Set `_fbc` explicitly in `proxy.ts`:
 
 ```typescript
-// In middleware.ts
+// In proxy.ts
 const fbclid = request.nextUrl.searchParams.get('fbclid');
 if (fbclid && !request.cookies.get('_fbc')) {
     const fbc = `fb.1.${Date.now()}.${fbclid}`;
@@ -457,7 +457,7 @@ const handleWhatsAppClick = async () => {
 
 **New single source:** Cookie `cej_utm` (30-day expiry).
 
-**Set in:** `middleware.ts` (captures from URL on first visit).
+**Set in:** `proxy.ts` (captures from URL on first visit).
 **Read from:**
 
 - Client: `Cookies.get('cej_utm')` → parsed JSON

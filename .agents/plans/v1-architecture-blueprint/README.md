@@ -22,7 +22,7 @@ It contains deep architectural analysis, CAPI tracking strategy, UX optimization
 > The [v1-quick-wins](../v1-quick-wins/) plan extracts the most impactful
 > tactical steps from this blueprint for immediate execution.
 > This blueprint covers the full scope including store splits, bundle isolation,
-> CAPI retry/dead-letter, RBAC, and the compliance audit.
+> CAPI retry/dead-letter, RBAC, Proxy protection, and the compliance audit.
 
 ---
 
@@ -30,7 +30,7 @@ It contains deep architectural analysis, CAPI tracking strategy, UX optimization
 
 | Phase | Focus | Key Deliverables |
 |---|---|---|
-| **Phase 0** | Foundation | Middleware, route group rename, security headers |
+| **Phase 0** | Foundation | Proxy adoption, route group rename, security headers |
 | **Phase 1** | Bundle Isolation | Store split (public/admin), layout decoupling |
 | **Phase 2** | Tracking | CAPI retry, Contact endpoint, UTM consolidation |
 | **Phase 3** | UX Optimization | Form validation, fire-before-navigate, mobile polish |
@@ -45,7 +45,7 @@ See [`EXECUTION_PROMPT.md`](./EXECUTION_PROMPT.md) for copy-paste prompts per ph
 
 | File | Scope |
 |---|---|
-| [`structure.md`](./structure.md) | Architecture & boundaries: directory layout, state management, routing, middleware |
+| [`structure.md`](./structure.md) | Architecture & boundaries: directory layout, state management, routing, Proxy logic |
 | [`01-architectural-audit.md`](./01-architectural-audit.md) | Risk & debt analysis: 12 findings from P0 to P3 severity |
 | [`02-conversion-capi-strategy.md`](./02-conversion-capi-strategy.md) | Event taxonomy, deduplication, CAPI retry, dead-letter queue, UTM consolidation |
 | [`03-ux-friction-reduction.md`](./03-ux-friction-reduction.md) | UX state machine, form validation, fire-before-navigate, mobile optimization |

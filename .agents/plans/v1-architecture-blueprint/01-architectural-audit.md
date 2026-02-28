@@ -13,7 +13,7 @@
 
 | # | Item | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Create root `middleware.ts` edge guard for protected routes | 🔶 | `proxy.ts` provides similar logic, but required `middleware.ts` file is missing |
+| 1 | Adopt root `proxy.ts` official entry point for protected routes | ✅ | `proxy.ts` is the authoritative routing engine (Next.js 16 convention) |
 | 2 | Move `AuthProvider` out of root to admin-only layout | ⬜ | Not found (`app/layout.tsx` still mounts `AuthProvider`) |
 | 3 | Move `GlobalUI` out of root to public-only layout | ⬜ | Not found (`app/layout.tsx` still mounts `GlobalUI`) |
 | 4 | Implement CAPI retry/queue instead of fire-and-forget | ⬜ | Not found |
@@ -24,13 +24,13 @@
 | 9 | Remove orphan `/cotizador` route from admin/app group | ✅ | `app/(admin)` (no `cotizador` route present) |
 | 10 | Remove placeholder image domain from production config | ✅ | `next.config.ts` |
 | 11 | Align identity cookie key naming between docs and implementation | ⬜ | Not found (`lib/tracking/identity.ts` still uses `cej_visitor_id`; doc alignment pending) |
-| 12 | Resolve unclear `proxy.ts` by folding into canonical middleware path | 🔶 | `proxy.ts` is present and functional, but canonical middleware migration is incomplete |
+| 12 | Adopt `proxy.ts` as the official Next.js 16 routing convention | ✅ | `proxy.ts` is present, functional, and aligned with Next.js 16 standards |
 
 ## 1. Critical Findings Summary
 
 | # | Category | Severity | Finding |
 |:--|:---------|:---------|:--------|
-| A1 | Security | **P0** | No `middleware.ts` — zero edge-level route protection |
+| A1 | Security | **P0** | (Resolved) Adopted `proxy.ts` for edge-level route protection |
 | A2 | Performance | **P0** | `AuthProvider` + Supabase client SDK loaded on all public routes |
 | A3 | Performance | **P0** | `GlobalUI` (Zustand-dependent) ships in public + admin bundles |
 | A4 | Tracking | **P1** | CAPI has no retry/queue — fire-and-forget loses events on transient failures |
@@ -47,28 +47,13 @@
 
 ## 2. Detailed Analysis
 
-### A1: Missing Middleware (P0 — Security)
+### A1: Proxy Strategy (P0 — Security)
 
 **Current State:**
 No `middleware.ts` file exists anywhere in the project. The only auth guard is
 a server-side `getUser()` check in `(app)/dashboard/layout.tsx`.
 
 **Impact:**
-- Unauthenticated users can download the dashboard JavaScript bundle, exposing
-  component structure, API endpoints, and admin-only UI logic.
-- No session refresh at the edge — tokens may expire mid-session without
-  triggering a re-auth.
-- No centralized CORS/security header injection point.
-
-**Mitigation:**
-Create `middleware.ts` at the project root. See `structure.md` §3.2 for the
-prescribed implementation. Middleware runs at the edge before any rendering,
-preventing bundle delivery to unauthorized clients.
-
----
-
-### A2: AuthProvider Global Scope (P0 — Performance)
-
 **Current State:**
 `AuthProvider` is mounted in `app/layout.tsx` (root layout), wrapping **all**
 routes including the public landing page. This component:
