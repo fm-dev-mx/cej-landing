@@ -4,8 +4,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SchedulingModal } from './SchedulingModal';
 
 // Mock store
-vi.mock('@/store/useCejStore', () => ({
-    useCejStore: vi.fn((selector) => selector({
+vi.mock('@/store/public/usePublicStore', () => ({
+    usePublicStore: vi.fn((selector) => selector({
         user: { name: '', phone: '' }
     }))
 }));
@@ -44,39 +44,38 @@ describe('SchedulingModal', () => {
         vi.clearAllMocks();
     });
 
-    it('renders when isOpen is true', () => {
-        render(
+    const setup = (isOpen = true) => {
+        return render(
             <SchedulingModal
-                isOpen={true}
+                isOpen={isOpen}
                 onClose={mockOnClose}
                 onSuccess={mockOnSuccess}
             />
         );
+    };
+
+    const fillForm = (values = { name: 'Juan Test', phone: '6561234567', address: 'Calle Test 123', date: '2024-12-20' }) => {
+        fireEvent.change(screen.getByLabelText(/Nombre quien recibe/i), { target: { value: values.name } });
+        fireEvent.change(screen.getByLabelText(/Teléfono de contacto/i), { target: { value: values.phone } });
+        fireEvent.change(screen.getByLabelText(/Dirección de entrega/i), { target: { value: values.address } });
+        fireEvent.change(screen.getByLabelText(/Fecha requerida/i), { target: { value: values.date } });
+    };
+
+    it('renders when isOpen is true', () => {
+        setup(true);
 
         expect(screen.getByTestId('scheduling-modal')).toBeInTheDocument();
         expect(screen.getByText('Programar Pedido')).toBeInTheDocument();
     });
 
     it('does not render when isOpen is false', () => {
-        render(
-            <SchedulingModal
-                isOpen={false}
-                onClose={mockOnClose}
-                onSuccess={mockOnSuccess}
-            />
-        );
+        setup(false);
 
         expect(screen.queryByTestId('scheduling-modal')).not.toBeInTheDocument();
     });
 
     it('shows all required form fields', () => {
-        render(
-            <SchedulingModal
-                isOpen={true}
-                onClose={mockOnClose}
-                onSuccess={mockOnSuccess}
-            />
-        );
+        setup();
 
         expect(screen.getByLabelText(/Nombre quien recibe/i)).toBeInTheDocument();
         expect(screen.getByLabelText(/Teléfono de contacto/i)).toBeInTheDocument();
@@ -85,32 +84,49 @@ describe('SchedulingModal', () => {
     });
 
     it('submit button is disabled when required fields are empty', () => {
-        render(
-            <SchedulingModal
-                isOpen={true}
-                onClose={mockOnClose}
-                onSuccess={mockOnSuccess}
-            />
-        );
+        setup();
 
         const submitButton = screen.getByRole('button', { name: /Generar Pedido en WhatsApp/i });
         expect(submitButton).toBeDisabled();
     });
 
+    it('does not show validation errors before fields are touched', () => {
+        setup();
+
+        expect(screen.queryByText(/Ingresa un nombre válido/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Ingresa un teléfono válido/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Ingresa una dirección más completa/i)).not.toBeInTheDocument();
+        expect(screen.queryByText(/Selecciona una fecha de entrega/i)).not.toBeInTheDocument();
+    });
+
+    const checkNameRequired = () => {
+        const nameInput = screen.getByLabelText(/Nombre quien recibe/i);
+        fireEvent.blur(nameInput);
+        expect(screen.getByText(/Ingresa un nombre válido/i)).toBeInTheDocument();
+        return nameInput;
+    };
+
+    it('shows validation error on blur for invalid required fields', () => {
+        setup();
+        const nameInput = checkNameRequired();
+        expect(nameInput).toHaveAttribute('aria-invalid', 'true');
+    });
+
+    it('clears validation error when field becomes valid after blur', () => {
+        setup();
+        const nameInput = checkNameRequired();
+
+        fireEvent.change(nameInput, { target: { value: 'Juan Test' } });
+        fireEvent.blur(nameInput);
+
+        expect(screen.queryByText(/Ingresa un nombre válido/i)).not.toBeInTheDocument();
+    });
+
     it('submit button is enabled when all required fields are filled', async () => {
-        render(
-            <SchedulingModal
-                isOpen={true}
-                onClose={mockOnClose}
-                onSuccess={mockOnSuccess}
-            />
-        );
+        setup();
 
         // Fill form fields
-        fireEvent.change(screen.getByLabelText(/Nombre quien recibe/i), { target: { value: 'Juan Test' } });
-        fireEvent.change(screen.getByLabelText(/Teléfono de contacto/i), { target: { value: '6561234567' } });
-        fireEvent.change(screen.getByLabelText(/Dirección de entrega/i), { target: { value: 'Calle Test 123' } });
-        fireEvent.change(screen.getByLabelText(/Fecha requerida/i), { target: { value: '2024-12-20' } });
+        fillForm();
 
         // Accept privacy
         const privacyCheckbox = screen.getByRole('checkbox');
@@ -121,19 +137,10 @@ describe('SchedulingModal', () => {
     });
 
     it('calls processOrder and opens WhatsApp on submit', async () => {
-        render(
-            <SchedulingModal
-                isOpen={true}
-                onClose={mockOnClose}
-                onSuccess={mockOnSuccess}
-            />
-        );
+        setup();
 
         // Fill form
-        fireEvent.change(screen.getByLabelText(/Nombre quien recibe/i), { target: { value: 'Juan Test' } });
-        fireEvent.change(screen.getByLabelText(/Teléfono de contacto/i), { target: { value: '6561234567' } });
-        fireEvent.change(screen.getByLabelText(/Dirección de entrega/i), { target: { value: 'Calle Test 123' } });
-        fireEvent.change(screen.getByLabelText(/Fecha requerida/i), { target: { value: '2024-12-20' } });
+        fillForm();
 
         // Accept privacy
         fireEvent.click(screen.getByRole('checkbox'));
@@ -161,19 +168,10 @@ describe('SchedulingModal', () => {
     it('uses fallback folio when processOrder returns no folio (fail-open)', async () => {
         mockProcessOrder.mockResolvedValueOnce({ success: false, folio: null });
 
-        render(
-            <SchedulingModal
-                isOpen={true}
-                onClose={mockOnClose}
-                onSuccess={mockOnSuccess}
-            />
-        );
+        setup();
 
         // Fill form
-        fireEvent.change(screen.getByLabelText(/Nombre quien recibe/i), { target: { value: 'Test User' } });
-        fireEvent.change(screen.getByLabelText(/Teléfono de contacto/i), { target: { value: '6561234567' } });
-        fireEvent.change(screen.getByLabelText(/Dirección de entrega/i), { target: { value: 'Calle Test 123' } });
-        fireEvent.change(screen.getByLabelText(/Fecha requerida/i), { target: { value: '2024-12-20' } });
+        fillForm({ name: 'Test User', phone: '6561234567', address: 'Calle Test 123', date: '2024-12-20' });
         fireEvent.click(screen.getByRole('checkbox'));
 
         fireEvent.click(screen.getByRole('button', { name: /Generar Pedido en WhatsApp/i }));

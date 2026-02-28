@@ -11,6 +11,7 @@ import styles from "./SchedulingModal.module.scss";
 import { getWhatsAppUrl } from "@/lib/utils";
 import { env } from "@/config/env";
 import type { QuoteBreakdown } from "@/types/domain";
+import { getSchedulingErrors, isSchedulingFormValid, type SchedulingField } from "./schedulingValidation";
 
 type SchedulingModalProps = {
     isOpen: boolean;
@@ -43,9 +44,32 @@ export function SchedulingModal({
 
     const [privacyAccepted, setPrivacyAccepted] = useState(false);
     const [saveMyData] = useState(true);
+    const [touchedFields, setTouchedFields] = useState<Record<SchedulingField, boolean>>({
+        name: false,
+        phone: false,
+        address: false,
+        date: false,
+    });
+    const [submitAttempted, setSubmitAttempted] = useState(false);
+
+    const schedulingValues = { name, phone, address, date };
+    const fieldErrors = getSchedulingErrors(schedulingValues);
+    const isFormValid = isSchedulingFormValid(schedulingValues);
+
+    const shouldShowError = (field: SchedulingField): boolean =>
+        Boolean(fieldErrors[field]) && (touchedFields[field] || submitAttempted);
+
+    const markTouched = (field: SchedulingField) => () => {
+        setTouchedFields((prev) => ({ ...prev, [field]: true }));
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setSubmitAttempted(true);
+
+        if (!isFormValid || !privacyAccepted) {
+            return;
+        }
 
         // Process Order (Backend + Pixel)
         const result = await processOrder(
@@ -80,12 +104,7 @@ Quiero programar un pedido.
         onClose();
     };
 
-    const isSubmitDisabled =
-        !privacyAccepted ||
-        name.trim().length < 3 ||
-        phone.trim().length < 10 ||
-        address.trim().length < 5 ||
-        !date;
+    const isSubmitDisabled = !privacyAccepted || !isFormValid || isProcessing;
 
     return (
         <ResponsiveDialog
@@ -109,7 +128,9 @@ Quiero programar un pedido.
                         placeholder="Ej. Juan Pérez"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        onBlur={markTouched("name")}
                         variant="light"
+                        error={shouldShowError("name") ? fieldErrors.name ?? false : false}
                         required
                         disabled={isProcessing}
                     />
@@ -120,9 +141,11 @@ Quiero programar un pedido.
                         placeholder="656 123 4567"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
+                        onBlur={markTouched("phone")}
                         maxLength={10}
                         disabled={isProcessing}
                         variant="light"
+                        error={shouldShowError("phone") ? fieldErrors.phone ?? false : false}
                         required
                     />
                 </div>
@@ -133,8 +156,10 @@ Quiero programar un pedido.
                     placeholder="Calle, Número, Colonia, Referencias"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
+                    onBlur={markTouched("address")}
                     required={true}
                     variant="light"
+                    error={shouldShowError("address") ? fieldErrors.address ?? false : false}
                     disabled={isProcessing}
                 />
 
@@ -144,17 +169,18 @@ Quiero programar un pedido.
                         type="date"
                         value={date}
                         onChange={(e) => setDate(e.target.value)}
+                        onBlur={markTouched("date")}
                         aria-label="fecha-entrega"
                         disabled={isProcessing}
                         required
                         variant="light"
+                        error={shouldShowError("date") ? fieldErrors.date ?? false : false}
                     />
                     <Input
                         label="Preferencia horario"
                         placeholder="Ej. 8:00 AM"
                         value={time}
                         onChange={(e) => setTime(e.target.value)}
-                        required={true}
                         disabled={isProcessing}
                         variant="light"
                     />
