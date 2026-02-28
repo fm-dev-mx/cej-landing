@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Mock } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { AdditivesForm } from './AdditivesForm';
-import { useCejStore } from '@/store/useCejStore';
+import { usePublicStore } from '@/store/public/usePublicStore';
 
 // --- Types ---
 // Define the specific slice of state used in these tests to avoid 'any'
@@ -17,8 +17,8 @@ interface MockState {
 // --- Mocks ---
 const mockToggleAdditive = vi.fn();
 
-vi.mock('@/store/useCejStore', () => ({
-    useCejStore: vi.fn(),
+vi.mock('@/store/public/usePublicStore', () => ({
+    usePublicStore: vi.fn(),
 }));
 
 vi.mock('@/lib/pricing', () => ({
@@ -50,12 +50,12 @@ vi.mock('@/lib/utils', () => ({
 
 describe('Component: AdditivesForm', () => {
     // Helper to access the mock with correct typing
-    const useCejStoreMock = useCejStore as unknown as Mock;
+    const usePublicStoreMock = usePublicStore as unknown as Mock;
 
     beforeEach(() => {
         vi.clearAllMocks();
         // Default mock implementation with empty additives
-        useCejStoreMock.mockImplementation((selector: (state: MockState) => unknown) => {
+        usePublicStoreMock.mockImplementation((selector: (state: MockState) => unknown) => {
             const state: MockState = {
                 draft: { additives: [] },
                 toggleAdditive: mockToggleAdditive
@@ -78,7 +78,7 @@ describe('Component: AdditivesForm', () => {
 
     it('indicates selected state correctly', () => {
         // Override mock implementation for this specific test case
-        useCejStoreMock.mockImplementation((selector: (state: MockState) => unknown) => {
+        usePublicStoreMock.mockImplementation((selector: (state: MockState) => unknown) => {
             const state: MockState = {
                 draft: { additives: ['fiber'] },
                 toggleAdditive: mockToggleAdditive

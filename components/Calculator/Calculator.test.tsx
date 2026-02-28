@@ -2,7 +2,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Calculator from './Calculator';
-import { useCejStore } from '@/store/useCejStore';
+import { usePublicStore } from '@/store/public/usePublicStore';
 import { DEFAULT_CALCULATOR_STATE } from '@/types/domain';
 
 // 1. Mock Environment & Utils
@@ -47,20 +47,21 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 
 // Helper to reset store
 const resetStore = () => {
-  useCejStore.setState({
+  usePublicStore.setState({
     isDrawerOpen: false,
     activeTab: 'order',
     draft: { ...DEFAULT_CALCULATOR_STATE },
     cart: [],
-    // history: [],
+    history: [],
     user: {
       visitorId: 'test-id',
       hasConsentedPersistence: true
     },
-    // Phase 1: Reset progressive disclosure state
     breakdownViewed: false,
-    submittedQuote: null
-  } as unknown as Partial<ReturnType<typeof useCejStore.getState>>);
+    submittedQuote: null,
+    editingItemId: null,
+    savedDrafts: {}
+  } as unknown as Partial<ReturnType<typeof usePublicStore.getState>>);
 };
 
 describe('Calculator UI Integration', () => {
@@ -75,12 +76,10 @@ describe('Calculator UI Integration', () => {
     render(<Calculator />);
 
     // 1. Select Mode
-    const radioKnown = screen.getByRole('radio', { name: /Sé la cantidad/i });
-    fireEvent.click(radioKnown);
+    fireEvent.click(screen.getByRole('button', { name: /Ya sé cuántos m³/i }));
 
-    // CTA stays visible but disabled until required fields are complete
-    const viewBreakdownBtnInitial = screen.getByRole('button', { name: /Ver Total/i });
-    expect(viewBreakdownBtnInitial).toBeDisabled();
+    // CTA is NOT present until required fields are complete
+    expect(screen.queryByRole('button', { name: /Programar Pedido/i })).not.toBeInTheDocument();
 
     // 2. Input Volume
     const volInput = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
@@ -90,7 +89,7 @@ describe('Calculator UI Integration', () => {
     expect(volInput).toHaveValue(5);
 
     // Select Strength & Service to make it valid and show "Todo listo"
-    // Select Strength & Service
+    // Select Strength & Service to make it valid
     const strengthSelect = screen.getByLabelText(/Resistencia/i);
     fireEvent.click(strengthSelect);
     fireEvent.click(screen.getByRole('option', { name: /250 kg\/cm²/i }));
@@ -100,22 +99,21 @@ describe('Calculator UI Integration', () => {
     fireEvent.click(screen.getByRole('option', { name: /Tiro directo/i }));
 
     // 3. Check Result (Instant calculation)
-    // We expect the summary to appear with "Ver Total" CTA and "Continúa..." hint (if valid)
-    expect(screen.getByText(/Continúa para ver el detalle de costos/i)).toBeInTheDocument();
+    // We expect the summary to appear with "Programar Pedido" CTA (if valid)
+    expect(screen.getByText(/Agenda tu entrega o recibe asistencia personalizada/i)).toBeInTheDocument();
 
     // Note: Volume text "5.00 m³" might not be explicitly visible in the new Ticket summary
     // relying on price/total verification via 'Total' presence is sufficient for integration here.
 
-    // 4. Phase 1: First CTA is "Ver Total"
-    const viewBreakdownBtn = screen.getByRole('button', { name: /Ver Total/i });
+    // 4. Phase 1: CTA is "Programar Pedido"
+    const viewBreakdownBtn = screen.getByRole('button', { name: /Programar Pedido/i });
     expect(viewBreakdownBtn).toBeEnabled();
     fireEvent.click(viewBreakdownBtn);
   });
-
   it('completes the flow using Assist Mode (Dimensions)', () => {
     render(<Calculator />);
 
-    fireEvent.click(screen.getByRole('radio', { name: /Ayúdame a calcular/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Ayúdame a calcularlo/i }));
 
     // Select Work Type (Combobox)
     const select = screen.getByRole('combobox', { name: /¿Para qué usarás el concreto?/i });
@@ -134,6 +132,11 @@ describe('Calculator UI Integration', () => {
     fireEvent.change(widthInput, { target: { value: '5' } });
     fireEvent.change(thickInput, { target: { value: '10' } });
 
+    // Proceed from Volume calculation to Specs
+    const continueBtn = screen.getByRole('button', { name: /Continuar a Precios/i });
+    fireEvent.click(continueBtn);
+
+    // Now Specs should be available
     // Select Strength & Service
     // Note: Strength is implicit or selected? "Selecciona el tipo ajusta automáticamente la resistencia"
     // Usually Assist logic sets strength defaults?
@@ -157,19 +160,17 @@ describe('Calculator UI Integration', () => {
     fireEvent.click(strengthSelect);
     fireEvent.click(screen.getByRole('option', { name: /250 kg\/cm²/i }));
 
-    // Check for "Continúa..." hint
-    expect(screen.getByText(/Continúa para ver el detalle de costos/i)).toBeInTheDocument();
+    // Check for hint
+    expect(screen.getByText(/Agenda tu entrega o recibe asistencia personalizada/i)).toBeInTheDocument();
 
     // 10*5*0.10 = 5m3 * factor. Should be valid.
-    // Phase 1: Button text is now "Ver Total"
-    const viewBreakdownBtn = screen.getByRole('button', { name: /Ver Total/i });
+    const viewBreakdownBtn = screen.getByRole('button', { name: /Programar Pedido/i });
     expect(viewBreakdownBtn).toBeEnabled();
   });
-
   it('shows validation errors in UI (after blur)', () => {
     render(<Calculator />);
 
-    fireEvent.click(screen.getByRole('radio', { name: /Sé la cantidad/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Ya sé cuántos m³/i }));
 
     const volInput = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
     fireEvent.change(volInput, { target: { value: '0' } });
@@ -182,18 +183,17 @@ describe('Calculator UI Integration', () => {
     expect(alerts.length).toBeGreaterThan(0);
     expect(alerts[0]).toBeInTheDocument();
 
-    // Invalid form keeps CTA disabled and shows helper hint
-    const viewBreakdownBtn = screen.getByRole('button', { name: /Ver Total/i });
-    expect(viewBreakdownBtn).toBeDisabled();
+    // Invalid form does NOT show CTA and shows helper hint
+    expect(screen.queryByRole('button', { name: /Programar Pedido/i })).not.toBeInTheDocument();
 
-    const emptyHint = screen.queryByText(/Completa los pasos para ver el total/i);
+    const emptyHint = screen.queryByText(/Ingresa los detalles para ver tu cotización/i);
     expect(emptyHint).toBeInTheDocument();
   });
 
   it('persists state to localStorage and rehydrates on reload', () => {
     const { unmount } = render(<Calculator />);
 
-    fireEvent.click(screen.getByRole('radio', { name: /Sé la cantidad/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Ya sé cuántos m³/i }));
     const volInput = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
     fireEvent.change(volInput, { target: { value: '7.5' } });
 

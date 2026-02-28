@@ -3,11 +3,11 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SpecsForm } from '@/components/Calculator/Forms/SpecsForm';
-import { useCejStore } from '@/store/useCejStore'
+import { usePublicStore } from '@/store/public/usePublicStore'
 
 describe('SpecsForm', () => {
     beforeEach(() => {
-        useCejStore.getState().resetDraft();
+        usePublicStore.getState().resetDraft();
     });
 
     it('renders strength and service selectors', () => {
@@ -23,7 +23,7 @@ describe('SpecsForm', () => {
         const option = screen.getByRole('option', { name: /250 kg\/cm²/i });
         fireEvent.click(option);
 
-        expect(useCejStore.getState().draft.strength).toBe('250');
+        expect(usePublicStore.getState().draft.strength).toBe('250');
     });
 
     it('updates store on service type change', () => {
@@ -33,6 +33,6 @@ describe('SpecsForm', () => {
         const option = screen.getByRole('option', { name: /Bomba/i });
         fireEvent.click(option);
 
-        expect(useCejStore.getState().draft.type).toBe('pumped');
+        expect(usePublicStore.getState().draft.type).toBe('pumped');
     });
 });

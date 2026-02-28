@@ -12,11 +12,11 @@ import styles from "../CalculatorForm.module.scss";
 
 export function WorkTypeSelector() {
     const workType = usePublicStore((s) => s.draft.workType);
-    const updateDraft = usePublicStore((s) => s.updateDraft);
+    const setWorkType = usePublicStore((s) => s.setWorkType);
 
     const handleChange = (e: { target: { value: string } }) => {
         const val = e.target.value as WorkTypeId | "";
-        updateDraft({ workType: val || null });
+        setWorkType(val || null);
     };
 
     return (

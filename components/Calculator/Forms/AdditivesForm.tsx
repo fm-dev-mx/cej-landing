@@ -13,7 +13,7 @@ import styles from "../CalculatorForm.module.scss";
 
 export function AdditivesForm() {
     const draft = usePublicStore((s) => s.draft);
-    const updateDraft = usePublicStore((s) => s.updateDraft);
+    const toggleAdditive = usePublicStore((s) => s.toggleAdditive);
 
     // Memoize active additives to prevent recalculation on every render
     const additives = useMemo(() =>
@@ -46,13 +46,7 @@ export function AdditivesForm() {
                             label={addon.label}
                             description={`${addon.description} (${priceLabel})`}
                             isSelected={isSelected}
-                            onChange={() => {
-                                const isSelected = draft.additives.includes(addon.id);
-                                const newAdditives = isSelected
-                                    ? draft.additives.filter((a) => a !== addon.id)
-                                    : [...draft.additives, addon.id];
-                                updateDraft({ additives: newAdditives });
-                            }}
+                            onChange={() => toggleAdditive(addon.id)}
                             customIndicator={isSelected ? <span>✔</span> : null}
                         />
                     );

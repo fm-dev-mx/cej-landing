@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import QuoteDrawer from './QuoteDrawer';
-import { useCejStore } from '@/store/useCejStore';
+import { usePublicStore } from '@/store/public/usePublicStore';
 
 // --- Mocks ---
-vi.mock('@/store/useCejStore');
+vi.mock('@/store/public/usePublicStore');
 // Mock Child Components
 vi.mock('@/components/Calculator/modals/SchedulingModal', () => ({
     SchedulingModal: ({ isOpen }: { isOpen: boolean }) => isOpen ? <div data-testid="scheduling-modal">Programar Pedido</div> : null
@@ -28,7 +28,7 @@ describe('QuoteDrawer', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        (useCejStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
+        (usePublicStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
             isDrawerOpen: true,
             setDrawerOpen: mockSetDrawerOpen,
             activeTab: 'order',
@@ -46,7 +46,7 @@ describe('QuoteDrawer', () => {
     });
 
     it('does not render if drawer is closed', () => {
-        (useCejStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ isDrawerOpen: false });
+        (usePublicStore as unknown as ReturnType<typeof vi.fn>).mockReturnValue({ isDrawerOpen: false });
         const { container } = render(<QuoteDrawer />);
         expect(container).toBeEmptyDOMElement();
     });

@@ -2,7 +2,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Calculator from '../Calculator';
-import { useCejStore } from '@/store/useCejStore';
+import { usePublicStore } from '@/store/public/usePublicStore';
 import { DEFAULT_CALCULATOR_STATE } from '@/types/domain';
 
 // --- Mocks ---
@@ -33,19 +33,21 @@ window.IntersectionObserver = vi.fn().mockReturnValue({
 
 // Helper to reset store - Phase 1: Added breakdownViewed reset
 const resetStore = () => {
-  useCejStore.setState({
+  usePublicStore.setState({
     isDrawerOpen: false,
     activeTab: 'order',
     draft: { ...DEFAULT_CALCULATOR_STATE },
     cart: [],
-    // history: [],
+    history: [],
     user: {
       visitorId: 'test-id',
       hasConsentedPersistence: true
     },
     breakdownViewed: false,
-    submittedQuote: null
-  } as unknown as Partial<ReturnType<typeof useCejStore.getState>>);
+    submittedQuote: null,
+    editingItemId: null,
+    savedDrafts: {}
+  } as unknown as Partial<ReturnType<typeof usePublicStore.getState>>);
 };
 
 describe('Calculator Navigation & Button Logic', () => {
@@ -59,18 +61,19 @@ describe('Calculator Navigation & Button Logic', () => {
     render(<Calculator />);
 
     // Select Known Mode
-    fireEvent.click(screen.getByRole('radio', { name: /Sé la cantidad/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Ya sé cuántos m³/i }));
 
     const input = screen.getByLabelText(/¿Cuánto concreto necesitas?/i);
 
-    // Initially, CTA is present but disabled
-    const addBtnInitial = screen.getByRole('button', { name: /Ver Total/i });
-    expect(addBtnInitial).toBeDisabled();
+    // Initially, CTA is NOT present (Phase 3: conditional render)
+    expect(screen.queryByRole('button', { name: /Programar Pedido/i })).not.toBeInTheDocument();
 
-    // Check for the hint text
+    // Check for the prompt text
+    expect(screen.getByText(/Ingresa los detalles para ver tu cotización/i)).toBeInTheDocument();
+
     // Simulate user typing '0'
     fireEvent.change(input, { target: { value: '0' } });
-    expect(screen.getByRole('button', { name: /Ver Total/i })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: /Programar Pedido/i })).not.toBeInTheDocument();
 
     // Simulate user typing '5'
     fireEvent.change(input, { target: { value: '5' } });
@@ -84,27 +87,30 @@ describe('Calculator Navigation & Button Logic', () => {
     fireEvent.click(serviceTrigger);
     fireEvent.click(screen.getByRole('option', { name: /Tiro directo/i }));
 
-    // Now button should appear and be enabled (Phase 1: "Ver Total" instead of "Solicitar")
-    const addBtn = screen.getByRole('button', { name: /Ver Total/i });
+    // Now button should appear and be enabled
+    const addBtn = screen.getByRole('button', { name: /Programar Pedido/i });
     expect(addBtn).toBeEnabled();
   });
 
   it('Mode switching resets/adjusts form correctly', () => {
     // ... existing content ...
     render(<Calculator />);
-    const radioKnown = screen.getByRole('radio', { name: /Sé la cantidad/i });
-    fireEvent.click(radioKnown);
+    const buttonKnown = screen.getByRole('button', { name: /Ya sé cuántos m³/i });
+    fireEvent.click(buttonKnown);
     expect(screen.getByLabelText(/¿Cuánto concreto necesitas?/i)).toBeInTheDocument();
 
-    // ... existing content ...
-    const radioAssist = screen.getByRole('radio', { name: /Ayúdame a calcular/i });
-    fireEvent.click(radioAssist);
+    // Switch to assist mode
+    const buttonChange = screen.getByRole('button', { name: /Cambiar método/i });
+    fireEvent.click(buttonChange);
+
+    const buttonAssist = screen.getByRole('button', { name: /Ayúdame a calcularlo/i });
+    fireEvent.click(buttonAssist);
     expect(screen.getByRole('combobox', { name: /¿Para qué usarás el concreto?/i })).toBeInTheDocument();
   });
 
   it('Step 3 (Assist): Validates thickness correctly for Solid vs Coffered', () => {
     render(<Calculator />);
-    fireEvent.click(screen.getByRole('radio', { name: /Ayúdame a calcular/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Ayúdame a calcularlo/i }));
 
     const workTypeSelect = screen.getByRole('combobox', { name: /¿Para qué usarás el concreto?/i });
     fireEvent.click(workTypeSelect);
@@ -113,8 +119,8 @@ describe('Calculator Navigation & Button Logic', () => {
     const lengthInput = screen.getByLabelText('Largo');
     const widthInput = screen.getByLabelText('Ancho');
 
-    // CTA is visible but disabled while required fields are incomplete
-    expect(screen.getByRole('button', { name: /Ver Total/i })).toBeDisabled();
+    // CTA is NOT visible while required fields are incomplete
+    expect(screen.queryByRole('button', { name: /Programar Pedido/i })).not.toBeInTheDocument();
 
     fireEvent.change(lengthInput, { target: { value: '10' } });
     fireEvent.change(widthInput, { target: { value: '5' } });
@@ -125,13 +131,13 @@ describe('Calculator Navigation & Button Logic', () => {
     const thicknessInput = screen.getByLabelText('Espesor Total de Losa');
     expect(thicknessInput).toBeVisible();
 
-    // Empty -> Button disabled
+    // Empty -> Button NOT in doc
     fireEvent.change(thicknessInput, { target: { value: '' } });
-    expect(screen.getByRole('button', { name: /Ver Total/i })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: /Programar Pedido/i })).not.toBeInTheDocument();
 
     // Filled -> Button appears
     fireEvent.change(thicknessInput, { target: { value: '10' } });
-    expect(screen.getByRole('button', { name: /Ver Total/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Programar Pedido/i })).toBeEnabled();
 
     // --- SCENARIO B: Coffered Slab ---
     fireEvent.click(screen.getByRole('radio', { name: /Aligerada/i }));
@@ -141,7 +147,7 @@ describe('Calculator Navigation & Button Logic', () => {
     const radio7cm = screen.getByRole('radio', { name: /7 cm/i });
     fireEvent.click(radio7cm);
 
-    expect(screen.getByRole('button', { name: /Ver Total/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /Programar Pedido/i })).toBeEnabled();
 
   });
 });

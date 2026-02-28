@@ -77,7 +77,7 @@ export function CalculatorForm() {
 
     // Auto-confirm for knownM3 if valid
     const isVolumeReady = draft.mode === 'knownM3'
-        ? (billedM3 > 0 && !error)
+        ? (billedM3 > 0)
         : volumeConfirmed;
 
     // Friction Analysis Tracking

@@ -54,7 +54,7 @@ describe('SchedulingModal', () => {
         );
     };
 
-    const fillForm = (values = { name: 'Juan Test', phone: '6561234567', address: 'Calle Test 123', date: '2024-12-20' }) => {
+    const fillForm = (values = { name: 'Juan Test', phone: '656 123 4567', address: 'Calle Test 123', date: '2024-12-20' }) => {
         fireEvent.change(screen.getByLabelText(/Nombre quien recibe/i), { target: { value: values.name } });
         fireEvent.change(screen.getByLabelText(/Teléfono de contacto/i), { target: { value: values.phone } });
         fireEvent.change(screen.getByLabelText(/Dirección de entrega/i), { target: { value: values.address } });
@@ -150,7 +150,7 @@ describe('SchedulingModal', () => {
 
         await waitFor(() => {
             expect(mockProcessOrder).toHaveBeenCalledWith(
-                { name: 'Juan Test', phone: '6561234567' },
+                { name: 'Juan Test', phone: '656 123 4567' },
                 true,
                 undefined // No quote provided in this test (drawer flow)
             );
@@ -171,7 +171,7 @@ describe('SchedulingModal', () => {
         setup();
 
         // Fill form
-        fillForm({ name: 'Test User', phone: '6561234567', address: 'Calle Test 123', date: '2024-12-20' });
+        fillForm({ name: 'Test User', phone: '656 123 4567', address: 'Calle Test 123', date: '2024-12-20' });
         fireEvent.click(screen.getByRole('checkbox'));
 
         fireEvent.click(screen.getByRole('button', { name: /Generar Pedido en WhatsApp/i }));

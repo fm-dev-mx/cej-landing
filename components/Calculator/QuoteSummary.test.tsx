@@ -2,11 +2,11 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { QuoteSummary } from './QuoteSummary';
-import { useCejStore } from '@/store/useCejStore';
+import { usePublicStore } from '@/store/public/usePublicStore';
 import { useQuoteCalculator } from '@/hooks/useQuoteCalculator';
 
 // Mock dependencies
-vi.mock('@/store/useCejStore');
+vi.mock('@/store/public/usePublicStore');
 vi.mock('@/hooks/useQuoteCalculator');
 vi.mock('@/app/actions/getPriceConfig', () => ({
     getPriceConfig: vi.fn().mockResolvedValue(undefined)
@@ -16,6 +16,12 @@ vi.mock('@/app/actions/getPriceConfig', () => ({
 const { mockProcessOrder } = vi.hoisted(() => ({
     mockProcessOrder: vi.fn().mockResolvedValue({ success: true, folio: 'WEB-AUTO-GENERATED' })
 }));
+
+const createMockQuote = (overrides = {}) => ({
+    quote: { total: 5000, subtotal: 4630, vat: 370, breakdownLines: [], volume: { billedM3: 1 }, strength: '250', concreteType: 'pumped', ...overrides },
+    isValid: true,
+    warning: null
+});
 
 vi.mock('@/hooks/useCheckOutUI', () => ({
     useCheckoutUI: vi.fn().mockReturnValue({
@@ -39,7 +45,9 @@ vi.mock('./modals/SchedulingModal', () => ({
 // Mock lib/tracking/visitor
 vi.mock('@/lib/tracking/visitor', () => ({
     trackContact: vi.fn(),
-    trackLead: vi.fn()
+    trackLead: vi.fn(),
+    trackViewContent: vi.fn(),
+    trackAddToCart: vi.fn(),
 }));
 
 // Mock TicketDisplay
@@ -73,7 +81,7 @@ describe('QuoteSummary Integration - Streamlined Flow', () => {
         };
 
         const state = { ...baseState, ...overrides };
-        (useCejStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector: (store: unknown) => unknown) => selector(state));
+        (usePublicStore as unknown as ReturnType<typeof vi.fn>).mockImplementation((selector: (store: unknown) => unknown) => selector(state));
         return state;
     };
 
@@ -82,21 +90,24 @@ describe('QuoteSummary Integration - Streamlined Flow', () => {
 
         // Mock scrollIntoView
         window.HTMLElement.prototype.scrollIntoView = mockScrollIntoView;
-        // Mock getState on useCejStore
-        (useCejStore as unknown as { getState: () => { user: { phone: string } } }).getState = vi.fn().mockReturnValue({
+        // Mock getState on usePublicStore
+        (usePublicStore as unknown as { getState: () => { user: { phone: string } } }).getState = vi.fn().mockReturnValue({
             user: { phone: '5555555555' }
         });
 
         setupStore();
     });
 
-    it('shows disabled "Ver Total" CTA in preview stage when quote is invalid', async () => {
+    it('shows incomplete prompt when quote is invalid', async () => {
         (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
             quote: {
                 total: 0,
                 subtotal: 0,
                 vat: 0,
-                breakdownLines: []
+                breakdownLines: [],
+                volume: { billedM3: 0 },
+                strength: '250',
+                concreteType: 'standard'
             },
             isValid: false,
             warning: null
@@ -106,17 +117,20 @@ describe('QuoteSummary Integration - Streamlined Flow', () => {
             render(<QuoteSummary />);
         });
 
-        expect(screen.getByRole('button', { name: /Ver Total/i })).toBeDisabled();
-        expect(screen.queryByTestId('ticket-display')).not.toBeInTheDocument();
+        expect(screen.getByText(/Ingresa los detalles para ver tu cotización/i)).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /Programar Pedido/i })).not.toBeInTheDocument();
     });
 
-    it('shows enabled "Ver Total" CTA in preview stage when quote is valid', async () => {
+    it('shows enabled "Programar Pedido" CTA when quote is valid', async () => {
         (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
             quote: {
                 total: 5000,
                 subtotal: 4630,
                 vat: 370,
-                breakdownLines: [{ label: 'Concreto', value: 4630, type: 'base' }]
+                breakdownLines: [{ label: 'Concreto', value: 4630, type: 'base' }],
+                volume: { billedM3: 1 },
+                strength: '250',
+                concreteType: 'pumped'
             },
             isValid: true,
             warning: null
@@ -125,113 +139,35 @@ describe('QuoteSummary Integration - Streamlined Flow', () => {
         await act(async () => {
             render(<QuoteSummary />);
         });
-        expect(screen.getByRole('button', { name: /Ver Total/i })).toBeEnabled();
+        expect(screen.getByRole('button', { name: /Programar Pedido/i })).toBeEnabled();
     });
 
-    it('keeps preview stage and hides ticket when breakdownViewed is true but quote is invalid', () => {
-        setupStore({ breakdownViewed: true });
-
-        (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-            quote: {
-                total: 0,
-                subtotal: 0,
-                vat: 0,
-                breakdownLines: []
-            },
-            isValid: false,
-            warning: null
-        });
+    it('opens scheduling modal on "Programar Pedido" click', async () => {
+        (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue(createMockQuote({ breakdownLines: [] }));
 
         render(<QuoteSummary />);
 
-        expect(screen.getByRole('button', { name: /Ver Total/i })).toBeDisabled();
-        expect(screen.queryByTestId('ticket-display')).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: /Programar/i })).not.toBeInTheDocument();
-    });
-
-    it('does not switch stage when clicking disabled "Ver Total"', () => {
-        const setBreakdownViewed = vi.fn();
-        setupStore({
-            breakdownViewed: false,
-            setBreakdownViewed
-        });
-
-        (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-            quote: {
-                total: 0,
-                subtotal: 0,
-                vat: 0,
-                breakdownLines: []
-            },
-            isValid: false,
-            warning: null
-        });
-
-        render(<QuoteSummary />);
-        const cta = screen.getByRole('button', { name: /Ver Total/i });
-        fireEvent.click(cta);
-
-        expect(setBreakdownViewed).not.toHaveBeenCalled();
-        expect(screen.queryByTestId('ticket-display')).not.toBeInTheDocument();
-    });
-
-    it('shows "Programar Pedido" and Actions in actions stage (after Ver Total)', () => {
-        // Mock breakdownViewed = true (user clicked "Ver Total")
-        setupStore({ breakdownViewed: true });
-
-        (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-            quote: {
-                total: 5000,
-                subtotal: 4630,
-                vat: 370,
-                breakdownLines: [{ label: 'Concreto', value: 4630, type: 'base' }]
-            },
-            isValid: true
-        });
-
-        render(<QuoteSummary />);
-        // Expect New Buttons
-        expect(screen.getByRole('button', { name: /Programar/i })).toBeDefined();
-        // Expect Finalizar to be GONE
-        expect(screen.queryByRole('button', { name: /Finalizar Cotización/i })).toBeNull();
-    });
-
-    it('opens scheduling modal on "Programar" click', async () => {
-        // Mock breakdownViewed = true
-        setupStore({ breakdownViewed: true });
-
-        (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-            quote: { total: 5000, subtotal: 4630, vat: 370, breakdownLines: [] },
-            isValid: true
-        });
-
-        render(<QuoteSummary />);
-
-        const ctaButton = screen.getByRole('button', { name: /Programar/i });
+        const ctaButton = screen.getByRole('button', { name: /Programar Pedido/i });
         await act(async () => {
             fireEvent.click(ctaButton);
         });
 
-        expect(screen.getByTestId('scheduling-modal')).toBeDefined();
+        expect(screen.getByTestId('scheduling-modal')).toBeInTheDocument();
     });
 
     it('switches to success view after scheduling success', async () => {
         const mockSetSubmittedQuote = vi.fn();
 
         setupStore({
-            breakdownViewed: true,
             setSubmittedQuote: mockSetSubmittedQuote
         });
 
-        (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-            quote: { total: 5000, subtotal: 4630, vat: 370, breakdownLines: [] },
-            isValid: true
-        });
+        (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue(createMockQuote({ breakdownLines: [] }));
 
         render(<QuoteSummary />);
 
         await act(async () => {
-            fireEvent.click(screen.getByRole('button', { name: /Programar/i }));
+            fireEvent.click(screen.getByRole('button', { name: /Programar Pedido/i }));
         });
 
         await act(async () => {
@@ -245,20 +181,19 @@ describe('QuoteSummary Integration - Streamlined Flow', () => {
         }));
     });
 
-    it('accepts onScrollToTop prop for scroll-after-reset behavior', () => {
+    it('accepts onScrollToTop prop for reset behavior', () => {
         const mockScrollToTop = vi.fn();
 
-        (useCejStore as unknown as { getState: () => unknown }).getState = vi.fn().mockReturnValue({
+        (usePublicStore as unknown as { getState: () => unknown }).getState = vi.fn().mockReturnValue({
             user: { phone: '5555555555' }
         });
 
         setupStore({
-            draft: { mode: 'assistM3', workType: 'slab' },
-            breakdownViewed: false
+            draft: { mode: 'assistM3', workType: 'slab' }
         });
 
         (useQuoteCalculator as unknown as ReturnType<typeof vi.fn>).mockReturnValue({
-            quote: { total: 5000, subtotal: 4630, vat: 370, breakdownLines: [] },
+            quote: { total: 5000, subtotal: 4630, vat: 370, breakdownLines: [], volume: { billedM3: 1 }, strength: '250', concreteType: 'pumped' },
             isValid: false
         });
 
@@ -266,7 +201,7 @@ describe('QuoteSummary Integration - Streamlined Flow', () => {
         // The actual scroll invocation is tested via integration (CalculatorForm).
         // This test ensures the prop interface is correctly typed and accepted.
         render(<QuoteSummary onScrollToTop={mockScrollToTop} />);
-        expect(screen.queryByTestId('ticket-display')).not.toBeInTheDocument();
+        expect(screen.getByTestId('ticket-display')).toBeInTheDocument();
 
         // The prop is a callback, not auto-invoked on render
         expect(mockScrollToTop).not.toHaveBeenCalled();
