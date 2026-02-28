@@ -85,4 +85,11 @@ describe('Proxy Middleware', () => {
 
         expect(res?.status).toBe(200);
     });
+
+    it('allows legacy /auth/login route for canonical redirect handling', async () => {
+        const req = new NextRequest('http://localhost/auth/login?redirect=%2Fdashboard');
+        const res = await proxy(req);
+
+        expect(res?.status).toBe(200);
+    });
 });

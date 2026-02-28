@@ -1,19 +1,17 @@
-import { Metadata } from "next";
-import { LoginForm } from "@/components/Auth";
-import styles from "./login.module.scss";
+import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-    title: "Iniciar Sesión | CEJ Pro",
-    description: "Acceso administrativo para Concreto y Equipos de Juárez.",
-    robots: "noindex, nofollow",
-};
+interface LegacyLoginPageProps {
+    searchParams: Promise<{ redirect?: string }>;
+}
 
-export default function LoginPage() {
-    return (
-        <main className={styles.loginPage}>
-            <div className={styles.container}>
-                <LoginForm />
-            </div>
-        </main>
-    );
+export default async function LegacyLoginPage({ searchParams }: LegacyLoginPageProps) {
+    const params = await searchParams;
+    const target = new URLSearchParams();
+
+    if (params.redirect) {
+        target.set('redirect', params.redirect);
+    }
+
+    const suffix = target.toString();
+    redirect(suffix ? `/login?${suffix}` : '/login');
 }
