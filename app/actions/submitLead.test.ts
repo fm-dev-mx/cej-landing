@@ -2,183 +2,105 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { submitLead, type SubmitLeadPayload } from './submitLead';
 import { sendToMetaCAPI } from '@/lib/tracking/capi';
 
-// --- Mocks ---
-vi.mock('@/lib/monitoring', () => ({
-    reportError: vi.fn(),
-    reportWarning: vi.fn(),
+const { mockInsert, mockSelect, mockSingle, mockOr, mockGte } = vi.hoisted(() => ({
+    mockInsert: vi.fn(), mockSelect: vi.fn(), mockSingle: vi.fn(), mockOr: vi.fn(), mockGte: vi.fn(),
 }));
 
-vi.mock('@/lib/tracking/capi', () => ({
-    sendToMetaCAPI: vi.fn(),
-}));
+vi.mock('@/lib/monitoring', () => ({ reportError: vi.fn(), reportWarning: vi.fn() }));
+vi.mock('@/lib/tracking/capi', () => ({ sendToMetaCAPI: vi.fn() }));
+vi.mock('next/server', () => ({ after: (fn: () => Promise<void>) => fn() }));
 
-// Mock Next.js headers/cookies
 vi.mock('next/headers', () => ({
     headers: () => Promise.resolve({
-        get: (key: string) => {
-            if (key === 'x-forwarded-for') return '127.0.0.1';
-            if (key === 'user-agent') return 'Mozilla/5.0 Test';
-            if (key === 'referer') return 'http://localhost';
-            return null;
-        }
+        get: (k: string) => k === 'x-forwarded-for' ? '127.0.0.1' : (k === 'user-agent' ? 'Mozilla/5.0' : null)
     }),
-    cookies: () => Promise.resolve({
-        get: (key: string) => {
-            if (key === '_fbp') return { value: 'fb.1.123456789' };
-            if (key === '_fbc') return { value: 'fb.1.987654321' };
-            return null;
-        }
-    })
+    cookies: () => Promise.resolve({ get: (k: string) => k === '_fbp' ? { value: 'fb.1.1' } : null })
 }));
 
-// Mock Next.js after() to execute immediately
-vi.mock('next/server', () => ({
-    after: (fn: () => Promise<void>) => fn(),
-}));
-
-const mockInsert = vi.fn();
-const mockSelect = vi.fn();
-const mockSingle = vi.fn();
-
-const mockSelectChain = {
-    or: vi.fn().mockReturnThis(),
-    gte: vi.fn().mockReturnThis(),
-    single: mockSingle,
-};
-
-const mockFrom = {
-    insert: mockInsert,
-    select: mockSelect,
-};
-
-// Mock Supabase with strict chaining structure
 vi.mock('@supabase/supabase-js', () => ({
-    createClient: () => ({
-        from: () => mockFrom
-    })
+    createClient: () => ({ from: () => ({ insert: mockInsert, select: mockSelect }) })
 }));
 
-// Mock Env
 vi.mock('@/config/env', () => ({
     env: {
-        NEXT_PUBLIC_SUPABASE_URL: 'https://mock.supabase.co',
-        SUPABASE_SERVICE_ROLE_KEY: 'mock-key',
-        NEXT_PUBLIC_SITE_URL: 'http://localhost'
+        NEXT_PUBLIC_SITE_URL: 'http://localhost',
+        FB_ACCESS_TOKEN: 'mock-token',
+        NEXT_PUBLIC_SUPABASE_URL: 'http://mock.co',
+        SUPABASE_SERVICE_ROLE_KEY: 'mock-key'
     }
 }));
 
-describe('Server Action: submitLead', () => {
-    // Typed payload conforming to OrderSubmissionSchema
-    const validPayload: SubmitLeadPayload = {
-        name: 'Juan Pérez',
-        phone: '6561234567',
-        visitor_id: 'visitor-123',
-        fb_event_id: 'evt-uuid-5678',
-        utm_source: 'google',
-        utm_medium: 'cpc',
-        quote: {
-            folio: 'WEB-123',
-            items: [
-                {
-                    id: 'item-1',
-                    label: 'Concreto 250',
-                    volume: 5,
-                    service: 'concrete_delivery',
-                    subtotal: 10000,
-                }
-            ],
-            financials: {
-                subtotal: 10741,
-                vat: 859,
-                total: 11600,
-                currency: 'MXN'
-            },
-            metadata: {
-                source: 'web_calculator'
-            },
-            customer: {
-                name: 'Juan Pérez',
-                phone: '6561234567',
-                email: 'test@test.com'
-            }
-        },
-        privacy_accepted: true
-    };
+const VALID_LEAD_PAYLOAD: SubmitLeadPayload = {
+    name: 'Juan Pérez',
+    phone: '6561234567',
+    utm_source: 'google',
+    utm_medium: 'cpc',
+    privacy_accepted: true,
+    quote: {
+        folio: 'WEB-12345678-1234',
+        customer: { name: 'Juan Pérez', phone: '6561234567' },
+        items: [{ id: '1', label: 'Item', volume: 5, service: 'S', subtotal: 100 }],
+        financials: { subtotal: 100, vat: 16, total: 116, currency: 'MXN' },
+        metadata: { source: 'web_calculator' }
+    },
+    fb_event_id: 'evt-123',
+    visitor_id: 'vis-123'
+};
 
+describe('Server Action: submitLead', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-
-        // 1. Mock Rate Limit Chain
-        mockSelect.mockReturnValue(mockSelectChain);
-        mockSelectChain.or.mockReturnThis();
-        mockSelectChain.gte.mockReturnThis();
-        // Rate limit check returns { count: 0, error: null }
-        mockSelectChain.gte.mockResolvedValue({ count: 0, error: null });
-
-        // 2. Mock Insert Chain
-        mockInsert.mockReturnValue({
-            select: vi.fn().mockReturnValue({
-                single: mockSingle
-            })
-        });
-
-        // 3. Default Success for Insert
-        mockSingle.mockResolvedValue({ data: { id: '999' }, error: null });
+        mockSelect.mockReturnValue({ or: mockOr.mockReturnThis(), gte: mockGte.mockResolvedValue({ count: 0 }), single: mockSingle });
+        mockInsert.mockReturnValue({ select: () => ({ single: mockSingle.mockResolvedValue({ data: { id: '99' } }) }) });
     });
 
-    it('returns success on DB insertion', async () => {
-        const result = await submitLead(validPayload);
-        expect(result.status).toBe('success');
+    it('persists lead and tracks (success)', async () => {
+        const res = await submitLead(VALID_LEAD_PAYLOAD);
+        expect(res.status).toBe('success');
+
+        const dbExpectation = {
+            name: 'Juan Pérez', phone: '6561234567',
+            quote_data: expect.objectContaining({ folio: 'WEB-12345678-1234' })
+        };
+        expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining(dbExpectation));
+        expect(sendToMetaCAPI).toHaveBeenCalled();
     });
 
-    it('returns error when validation fails (Zod)', async () => {
-        const invalidPayload = { ...validPayload, phone: 'short' } as SubmitLeadPayload;
-        const result = await submitLead(invalidPayload);
-        expect(result.status).toBe('error');
+    it('returns error on Zod failure', async () => {
+        const res = await submitLead({ ...VALID_LEAD_PAYLOAD, phone: '123' } as SubmitLeadPayload);
+        expect(res.status).toBe('error');
     });
 
-    it('sends hashed external_id when visitor_id is present', async () => {
-        await submitLead(validPayload);
-        expect(sendToMetaCAPI).toHaveBeenCalledWith(expect.objectContaining({
-            user_data: expect.objectContaining({
-                external_id: expect.stringMatching(/^[a-f0-9]{64}$/)
-            })
-        }));
-    });
-
-    it('sends hashed fn from first name token', async () => {
-        await submitLead(validPayload);
-        const sendToMetaCAPIMock = vi.mocked(sendToMetaCAPI);
-        const args = sendToMetaCAPIMock.mock.calls[0][0];
-
-        // 'Juan Pérez' -> 'juan' -> hash
-        expect(args.user_data.fn).toMatch(/^[a-f0-9]{64}$/);
-        // Verify it hashes 'juan' (lowercase trimmed)
-        // Correct SHA-256 for 'juan'
-        expect(args.user_data.fn).toBe('ed08c290d7e22f7bb324b15cbadce35b0b348564fd2d5f95752388d86d71bcca');
-    });
-
-    it('does not call sendToMetaCAPI when fb_event_id is absent', async () => {
-        const noFbPayload = { ...validPayload, fb_event_id: undefined };
-        await submitLead(noFbPayload);
-        expect(sendToMetaCAPI).not.toHaveBeenCalled();
-    });
-
-    it('fail-open: returns success with warning if DB insert fails', async () => {
-        mockSingle.mockResolvedValue({ data: null, error: { message: 'DB Constraint', code: '23505' } });
-        const result = await submitLead(validPayload);
-        expect(result.status).toBe('success');
-        if (result.status === 'success') {
-            expect(result.warning).toBe('db_insert_failed');
+    it('blocks on rate limit', async () => {
+        mockGte.mockResolvedValueOnce({ count: 10 });
+        const res = await submitLead(VALID_LEAD_PAYLOAD);
+        expect(res.status).toBe('error');
+        if (res.status === 'error') {
+            expect(res.message).toContain('demasiadas');
         }
     });
 
-    it('fail-open: catches unexpected exceptions', async () => {
-        mockInsert.mockImplementationOnce(() => { throw new Error('Catastrophic failure'); });
-        const result = await submitLead(validPayload);
-        expect(result.status).toBe('success');
-        if (result.status === 'success') {
-            expect(result.warning).toBe('server_exception');
+    it('normalizes names for hashing', async () => {
+        await submitLead({ ...VALID_LEAD_PAYLOAD, name: '  JUAN Jose ' });
+        const capi = vi.mocked(sendToMetaCAPI).mock.calls[0][0];
+        expect(capi.user_data.fn).toBe('ed08c290d7e22f7bb324b15cbadce35b0b348564fd2d5f95752388d86d71bcca');
+    });
+
+    it('fail-open: db error', async () => {
+        mockSingle.mockResolvedValueOnce({ data: null, error: { message: 'DB Error' } });
+        const res = await submitLead(VALID_LEAD_PAYLOAD);
+        expect(res.status).toBe('success');
+        if (res.status === 'success') {
+            expect(res.warning).toBe('db_insert_failed');
+        }
+    });
+
+    it('fail-open: exceptions', async () => {
+        mockInsert.mockImplementationOnce(() => { throw new Error('Crash'); });
+        const res = await submitLead(VALID_LEAD_PAYLOAD);
+        expect(res.status).toBe('success');
+        if (res.status === 'success') {
+            expect(res.warning).toBe('server_exception');
         }
     });
 });

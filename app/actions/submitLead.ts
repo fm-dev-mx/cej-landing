@@ -230,7 +230,7 @@ export async function submitLead(
                         fbp,
                         fbc,
                         external_id: hashData(visitor_id),
-                        fn: hashData(name.split(' ')[0]),
+                        fn: hashData(name.trim().split(/\s+/)[0]),
                     },
                     custom_data: {
                         currency: typedQuote.financials.currency,
