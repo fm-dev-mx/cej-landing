@@ -9,7 +9,7 @@
 ## Implementation Progress
 
 > **Last audited:** 2026-02-27 by Audit v3 — Full Codebase Re-verification
-> **Completion:** 60% (6/10 items — 1 partial)
+> **Completion:** 100% (10/10 items)
 
 | # | Item | Status | Evidence |
 | --- | --- | --- | --- |
@@ -17,10 +17,10 @@
 | 2 | Add server-side `Contact` CAPI endpoint (`/api/track-contact`) | ✅ | `app/api/track-contact/route.ts` + `route.test.ts` — fires Contact event via `sendToMetaCAPI` with `event_id` dedup |
 | 3 | Ensure `_fbc` cookie capture at the Proxy layer from `fbclid` | ✅ | `proxy.ts` sets `_fbc` as the authoritative entry point |
 | 4 | Normalize phone digits/country before hashing for CAPI | ✅ | `app/actions/submitLead.ts` — `normalizePhone()` strips non-digits, adds `52` prefix for 10-digit numbers |
-| 5 | Add retry-with-backoff + timeout in `sendToMetaCAPI` | ⬜ | Not found (`lib/tracking/capi.ts` is still fire-and-forget) |
-| 6 | Add dead-letter queue persistence for exhausted CAPI failures | ⬜ | Not found |
+| 5 | Add retry-with-backoff + timeout in `sendToMetaCAPI` | ✅ | `lib/tracking/capi.ts` (3 retries, exponential backoff) |
+| 6 | Add dead-letter queue persistence for exhausted CAPI failures | ✅ | `lib/tracking/capi-deadletters.server.ts` + `capi_dead_letters` table |
 | 7 | Use fire-before-navigate WhatsApp tracking with `keepalive` CAPI call | ✅ | `lib/tracking/visitor.ts` — `trackContact()` fires both Pixel + `fetch('/api/track-contact', { keepalive: true })` |
-| 8 | Consolidate UTM to single cookie-first system (`cej_utm`) | 🔶 | `proxy.ts` captures UTM into `cej_utm` cookie; old systems `hooks/useAttribution.ts` + `lib/tracking/utm.ts` not yet deprecated |
+| 8 | Consolidate UTM to single cookie-first system (`cej_utm`) | ✅ | `proxy.ts` + `useIdentity.ts` (Legacy systems deleted) |
 | 9 | Include advanced matching fields (`external_id`, `fn`, `fbp`, `fbc`) in Lead CAPI | ✅ | `app/actions/submitLead.ts` |
 | 10 | Drive `test_event_code` from server env variable | ✅ | `lib/tracking/capi.ts`, `config/env.ts` |
 
