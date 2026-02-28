@@ -154,6 +154,28 @@ export async function submitLead(
             },
         };
 
+        // 2.5 Rate Limiting: Max 5 submissions per 5 minutes per visitor or phone
+        if (supabase) {
+            const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+            let filterString = `phone.eq.${phone}`;
+            if (visitor_id) {
+                filterString = `visitor_id.eq.${visitor_id},${filterString}`;
+            }
+
+            const { count, error: countError } = await supabase
+                .from("leads")
+                .select("*", { count: "exact", head: true })
+                .or(filterString)
+                .gte("created_at", fiveMinutesAgo);
+
+            if (!countError && count && count >= 5) {
+                return {
+                    status: "error",
+                    message: "Has realizado demasiadas solicitudes recientemente. Por favor, espera unos minutos e intenta de nuevo.",
+                };
+            }
+        }
+
         // 3. Insert into leads table
         const { data, error } = await supabase
             .from("leads")

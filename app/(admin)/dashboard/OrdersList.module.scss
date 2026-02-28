@@ -42,14 +42,14 @@
     font-weight: 500;
 }
 
-.statusDraft {
-    color: var(--c-muted-strong);
-    background: var(--c-surface-dark);
+.statusNew {
+    color: var(--c-primary);
+    background: var(--c-step-current-soft);
 }
 
-.statusPending {
-    color: var(--c-warning);
-    background: var(--c-warning-soft);
+.statusConfirmed {
+    color: var(--c-text);
+    background: var(--c-accent);
 }
 
 .statusScheduled {
@@ -57,7 +57,22 @@
     background: var(--c-step-current-soft);
 }
 
+.statusTransit {
+    color: var(--c-warning);
+    background: var(--c-warning-soft);
+}
+
 .statusDelivered {
+    color: var(--c-success);
+    background: var(--c-success-soft);
+}
+
+.statusInvoiced {
+    color: var(--c-muted-strong);
+    background: var(--c-surface-dark);
+}
+
+.statusPaid {
     color: var(--c-success);
     background: var(--c-success-soft);
 }
@@ -65,6 +80,11 @@
 .statusCancelled {
     color: var(--c-error-text);
     background: var(--c-error-soft);
+}
+
+.statusExpired {
+    color: var(--c-muted);
+    background: var(--c-border);
 }
 
 .cardBody {
@@ -132,5 +152,36 @@
 
     &:hover {
         background-color: var(--c-accent-hover);
+    }
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--sp-6);
+}
+
+.loadMoreButton {
+    cursor: pointer;
+
+    padding: var(--sp-2) var(--sp-8);
+    border: 1px solid var(--c-primary);
+    border-radius: var(--radius);
+
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--c-primary);
+
+    background: var(--c-surface);
+
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+        background: var(--c-step-current-soft);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
     }
 }

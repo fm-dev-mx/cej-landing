@@ -17,7 +17,7 @@ export default async function DashboardPage() {
     const { data: { user } } = await supabase.auth.getUser();
 
     // Fetch user's orders
-    const { orders, success, error } = await getMyOrders();
+    const { orders, nextCursor, success, error } = await getMyOrders();
 
     // Get user name for greeting
     const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuario';
@@ -57,7 +57,7 @@ export default async function DashboardPage() {
                             </Link>
                         </div>
                     ) : (
-                        <OrdersList orders={orders} />
+                        <OrdersList orders={orders} nextCursor={nextCursor} />
                     )}
                 </section>
             </div>
