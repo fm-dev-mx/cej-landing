@@ -81,6 +81,23 @@ export const trackLead = ({
     }
 };
 
+type CheckoutData = {
+    value: number;
+    currency?: string;
+};
+
+/**
+ * InitiateCheckout — fires when user opens the optional lead capture form.
+ * No eventID needed (intent signal, not a conversion — no CAPI counterpart required).
+ */
+export const trackInitiateCheckout = ({
+    value,
+    currency = 'MXN',
+}: CheckoutData): void => {
+    if (!hasFbq()) return;
+    window.fbq?.('track', 'InitiateCheckout', { value, currency });
+};
+
 export type ContactMethod = 'WhatsApp' | 'Phone' | 'Email' | 'whatsapp' | 'phone' | 'email' | 'WhatsApp_Direct' | 'whatsapp_direct';
 
 /**
