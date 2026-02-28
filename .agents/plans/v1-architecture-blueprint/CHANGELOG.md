@@ -2,6 +2,25 @@
 
 All notable changes to these plan documents are tracked here.
 
+## [2026-02-27] — Audit v3 — Full Codebase Re-verification
+
+### Key Findings (status changes)
+
+- **structure.md #4** — 🔶→✅ `useCejStore` is now a deprecated bridge re-exporting `usePublicStore`
+- **01-architectural-audit.md #7** — 🔶→✅ Store split complete; all production components migrated
+
+### Metrics
+
+| Document | Prev % | New % | Δ | ✅ | 🔶 | ⬜ |
+| --- | --- | --- | --- | --- | --- | --- |
+| structure.md | 60% | 65% | +5 | 7 | 0 | 3 |
+| 01-architectural-audit.md | 54% | 58% | +4 | 6 | 1 | 5 |
+| 02-conversion-capi-strategy.md | 60% | 60% | 0 | 7 | 1 | 2 |
+| 03-ux-friction-reduction.md | 56% | 56% | 0 | 3 | 4 | 2 |
+| 04-dashboard-roadmap.md | 25% | 25% | 0 | 1 | 2 | 5 |
+| 05-compliance-checklist.md | 50% | 50% | 0 | 5 | 1 | 4 |
+| **Total** | **51%** | **53%** | **+2** | **29** | **9** | **21** |
+
 ## [2026-02-27] — Sync Audit v2
 
 ### Changed

@@ -2,6 +2,32 @@
 
 All notable changes to these plan documents are tracked here.
 
+## [2026-02-27] — Audit v3 — Full Codebase Re-verification
+
+### Key Findings (status changes)
+
+- **00-tracking-fixes.md #6** — ⬜→✅ `.env.local` and `.env.example` now contain `META_TEST_EVENT_CODE`
+- **02-admin-dashboard.md #9** — ⬜→✅ `proxy.test.ts` exists with 4 test cases (redirect, 404, auth, fail-open)
+- **03-optional-form-ux.md #2** — 🔶→✅ `QuoteCTA` supports `onOpenForm` secondary path with `trackInitiateCheckout`
+- **03-optional-form-ux.md #3** — 🔶→✅ `buildQuoteMessage` added to `lib/utils.ts` with tests
+- **03-optional-form-ux.md #8** — ⬜→✅ `QuoteCTA.test.tsx` covers all 5 test cases
+- **04-calculator-conversion.md #1** — ⬜→✅ `trackInitiateCheckout` exported from `visitor.ts`
+- **04-calculator-conversion.md #2** — 🔶→✅ `QuoteSummary.tsx` fires `trackViewContent` with stable `quoteKey`
+- **04-calculator-conversion.md #3** — ⬜→✅ `QuoteCTA.tsx:L33` fires `trackInitiateCheckout` on form open
+- **04-calculator-conversion.md #5** — ⬜→✅ Inline `fbq('track', 'PageView')` removed from layout
+- **04-calculator-conversion.md #7** — ⬜→✅ Full test coverage in `visitor.test.ts` + `PageViewTracker.test.tsx`
+
+### Metrics
+
+| Document | Prev % | New % | Δ | ✅ | 🔶 | ⬜ |
+| --- | --- | --- | --- | --- | --- | --- |
+| 00-tracking-fixes.md | 88% | 100% | +12 | 8 | 0 | 0 |
+| 01-remove-public-login.md | 100% | 100% | 0 | 4 | 0 | 0 |
+| 02-admin-dashboard.md | 80% | 89% | +9 | 8 | 1 | 0 |
+| 03-optional-form-ux.md | 75% | 100% | +25 | 8 | 0 | 0 |
+| 04-calculator-conversion.md | 36% | 100% | +64 | 7 | 0 | 0 |
+| **Total** | **74%** | **86%** | **+12** | **35** | **1** | **0** |
+
 ## [2026-02-27] — Proxy Alignment (v3)
 
 ### Changed

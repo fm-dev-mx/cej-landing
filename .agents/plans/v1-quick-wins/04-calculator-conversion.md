@@ -9,18 +9,18 @@
 
 ## Implementation Progress
 
-> **Last audited:** 2026-02-27 by Sync Audit (v2)
-> **Completion:** 36% (2/7 items — 1 partial)
+> **Last audited:** 2026-02-27 by Audit v3 — Full Codebase Re-verification
+> **Completion:** 100% (7/7 items — 0 partial)
 
 | # | Item | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Add `trackInitiateCheckout` helper to tracking visitor module | ⬜ | Not found |
-| 2 | Trigger `trackViewContent` from quote-result render path using stable key | 🔶 | `components/Calculator/CalculatorForm.tsx` calls `trackViewContent`, but planned result-level/stable-key integration is missing |
-| 3 | Fire `trackInitiateCheckout` when opening optional form CTA | ⬜ | Not found |
+| 1 | Add `trackInitiateCheckout` helper to tracking visitor module | ✅ | `lib/tracking/visitor.ts:L93-98` — exported and tested |
+| 2 | Trigger `trackViewContent` from quote-result render path using stable key | ✅ | `components/Calculator/QuoteSummary.tsx:L68-77` — `quoteKey` derived from volume/strength/type, `useEffect` fires per unique config |
+| 3 | Fire `trackInitiateCheckout` when opening optional form CTA | ✅ | `components/Calculator/QuoteCTA.tsx:L33` — `trackInitiateCheckout({ value: quote.total })` |
 | 4 | Add SPA route-aware `PageViewTracker` component | ✅ | `components/tracking/PageViewTracker.tsx` |
-| 5 | Remove duplicate inline `PageView` trigger from root layout | ⬜ | Not found (`app/layout.tsx` still includes inline PageView) |
+| 5 | Remove duplicate inline `PageView` trigger from root layout | ✅ | `app/layout.tsx` — inline `fbq('track', 'PageView')` removed; only `fbq('init')` remains; `PageViewTracker` handles all PageViews |
 | 6 | Verify/persist quote result across navigation via store persistence | ✅ | `store/useCejStore.ts` |
-| 7 | Add tests for InitiateCheckout + PageViewTracker behavior | ⬜ | Not found |
+| 7 | Add tests for InitiateCheckout + PageViewTracker behavior | ✅ | `lib/tracking/visitor.test.ts` (InitiateCheckout: default MXN, custom currency, skip absent fbq), `components/tracking/PageViewTracker.test.tsx` (3 test cases) |
 
 ## Pre-conditions
 

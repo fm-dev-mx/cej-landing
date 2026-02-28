@@ -9,8 +9,8 @@
 
 ## Implementation Progress
 
-> **Last audited:** 2026-02-27 by Sync Audit (v3 — proxy alignment)
-> **Completion:** 80% (7/9 items — 1 partial)
+> **Last audited:** 2026-02-27 by Audit v3 — Full Codebase Re-verification
+> **Completion:** 89% (8/9 items — 1 partial)
 
 | # | Item | Status | Evidence |
 | --- | --- | --- | --- |
@@ -22,7 +22,7 @@
 | 6 | Add `+ Nuevo Pedido` CTA in dashboard page | ✅ | `app/(admin)/dashboard/page.tsx` |
 | 7 | Render status badge mapping in dashboard order list | ✅ | `app/(admin)/dashboard/OrdersList.tsx` |
 | 8 | Add `/dashboard/new` page + admin order form fields | ✅ | `app/(admin)/dashboard/new/page.tsx` |
-| 9 | Add proxy/auth guard tests (`proxy.test.ts`) | ⬜ | Not found |
+| 9 | Add proxy/auth guard tests (`proxy.test.ts`) | ✅ | `proxy.test.ts` — 4 test cases (redirect unauth, 404, authenticated access, fail-open) |
 | 10 | Add createAdminOrder tests including explicit no-CAPI assertion | 🔶 | `app/actions/createAdminOrder.test.ts` covers insert/error/auth; missing explicit `sendToMetaCAPI` assertion |
 
 ## Pre-conditions
