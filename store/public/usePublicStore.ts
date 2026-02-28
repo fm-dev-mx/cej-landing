@@ -87,7 +87,7 @@ export const usePublicStore = create<PublicStore>()(
                         hasConsentedPersistence: true,
                     };
                 }
-                if (!state.draft) state.draft = { ...DEFAULT_CALCULATOR_STATE };
+                state.draft = { ...DEFAULT_CALCULATOR_STATE, ...state.draft };
 
                 // v7 cleanup: ensured structural integrity of migration
                 delete state.orders;

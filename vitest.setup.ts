@@ -1,7 +1,9 @@
-// vitest.setup.ts
 import '@testing-library/jest-dom/vitest';
+import { vi, afterEach, beforeAll } from 'vitest';
 import { cleanup } from '@testing-library/react';
-import { afterEach, beforeAll } from 'vitest';
+
+// Mock Next.js 'server-only' for tests
+vi.mock('server-only', () => ({}));
 
 // Fix Zod validation error by providing required env var
 process.env.NEXT_PUBLIC_PIXEL_ID = 'test-pixel-id';
