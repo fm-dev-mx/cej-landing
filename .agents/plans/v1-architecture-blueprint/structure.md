@@ -2,21 +2,21 @@
 
 > **Blueprint:** v1-architecture-blueprint
 > **Last Updated:** 2026-02-27
-> **Status:** Draft — Pending Review
+> **Status:** In Progress — Audited 2026-02-27
 
 ---
 
 ## Implementation Progress
 
-> **Last audited:** 2026-02-27 by Implementation Audit
-> **Completion:** 50% (4/10 items — 2 partial)
+> **Last audited:** 2026-02-27 by Sync Audit (v2)
+> **Completion:** 60% (5/10 items — 1 partial)
 
 | # | Item | Status | Evidence |
 | --- | --- | --- | --- |
 | 1 | Adopt `(public)` and `(admin)` route-group split | ✅ | `app/(public)/layout.tsx`, `app/(admin)/layout.tsx` |
 | 2 | Keep admin route group focused on dashboard surface (remove `cotizador`) | ✅ | `app/(admin)` |
 | 3 | Introduce split stores (`usePublicStore`, `useAdminStore`) | ✅ | `store/public/usePublicStore.ts`, `store/admin/useAdminStore.ts` |
-| 4 | Fully replace monolithic `useCejStore` usage with bounded stores | 🔶 | `store/useCejStore.ts` is still active across public flow |
+| 4 | Fully replace monolithic `useCejStore` usage with bounded stores | 🔶 | All production components use `usePublicStore`; `useCejStore.ts` only imported in test files — test migration pending |
 | 5 | Scope `GlobalUI` to public layout instead of root | ⬜ | Not found (`app/layout.tsx` still mounts `GlobalUI`) |
 | 6 | Scope `AuthProvider` to admin layout instead of root | ⬜ | Not found (`app/layout.tsx` still mounts `AuthProvider`) |
 | 7 | Scope `PageViewTracker` and Pixel script to public layout | ⬜ | Not found (`app/layout.tsx` still mounts both) |

@@ -2,25 +2,25 @@
 
 > **Blueprint:** v1-architecture-blueprint
 > **Last Updated:** 2026-02-27
-> **Status:** Draft — Pending Review
+> **Status:** In Progress — Audited 2026-02-27
 
 ---
 
 ## Implementation Progress
 
-> **Last audited:** 2026-02-27 by Implementation Audit
-> **Completion:** 40% (3/10 items — 2 partial)
+> **Last audited:** 2026-02-27 by Sync Audit (v2)
+> **Completion:** 50% (4/10 items — 2 partial)
 
 | # | Item | Status | Evidence |
 | --- | --- | --- | --- |
 | 1 | Enforce protected dashboard routing via root `proxy.ts` official entry point | ✅ | `proxy.ts` is the authoritative routing engine (Next.js 16) |
 | 2 | Keep auth/session code out of public bundle surface | ⬜ | Not found (`app/layout.tsx` still mounts `AuthProvider`) |
 | 3 | Maintain Lead event dedup between Pixel and CAPI | ✅ | `hooks/useCheckOutUI.ts`, `lib/logic/orderDispatcher.ts`, `app/actions/submitLead.ts` |
-| 4 | Deliver Contact CAPI fallback endpoint | ⬜ | Not found |
+| 4 | Deliver Contact CAPI fallback endpoint | ✅ | `app/api/track-contact/route.ts` + `route.test.ts` |
 | 5 | Implement CAPI retry + dead-letter handling | ⬜ | Not found |
-| 6 | Consolidate UTM attribution to one cookie-only source | ⬜ | Not found |
-| 7 | Configure security headers for all responses | ✅ | `next.config.ts` |
-| 8 | Remove placeholder image domain usage from production config | ✅ | `next.config.ts` |
+| 6 | Consolidate UTM attribution to one cookie-only source | ⬜ | Not found (old systems still active) |
+| 7 | Configure security headers for all responses | ✅ | `next.config.ts` — all 4 headers applied via `headers()` |
+| 8 | Remove placeholder image domain usage from production config | ✅ | `next.config.ts` (only `images.unsplash.com` and `res.cloudinary.com`) |
 | 9 | Add server-side RBAC/rate-limiting safeguards for auth and form abuse | ⬜ | Not found |
 | 10 | Maintain baseline a11y affordances (skip link, labels, alert semantics) | 🔶 | `app/(public)/layout.tsx`, `components/Calculator/modals/SchedulingModal.tsx` include partial coverage; full checklist coverage not evidenced |
 

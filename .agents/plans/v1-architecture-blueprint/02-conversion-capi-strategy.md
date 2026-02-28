@@ -2,25 +2,25 @@
 
 > **Blueprint:** v1-architecture-blueprint
 > **Last Updated:** 2026-02-27
-> **Status:** Draft — Pending Review
+> **Status:** In Progress — Audited 2026-02-27
 
 ---
 
 ## Implementation Progress
 
-> **Last audited:** 2026-02-27 by Implementation Audit
-> **Completion:** 35% (3/10 items — 1 partial)
+> **Last audited:** 2026-02-27 by Sync Audit (v2)
+> **Completion:** 60% (6/10 items — 1 partial)
 
 | # | Item | Status | Evidence |
 | --- | --- | --- | --- |
 | 1 | Keep Lead Pixel+CAPI dedup with shared `event_id` | ✅ | `hooks/useCheckOutUI.ts`, `lib/logic/orderDispatcher.ts`, `app/actions/submitLead.ts` |
-| 2 | Add server-side `Contact` CAPI endpoint (`/api/track-contact`) | ⬜ | Not found |
+| 2 | Add server-side `Contact` CAPI endpoint (`/api/track-contact`) | ✅ | `app/api/track-contact/route.ts` + `route.test.ts` — fires Contact event via `sendToMetaCAPI` with `event_id` dedup |
 | 3 | Ensure `_fbc` cookie capture at the Proxy layer from `fbclid` | ✅ | `proxy.ts` sets `_fbc` as the authoritative entry point |
-| 4 | Normalize phone digits/country before hashing for CAPI | ⬜ | Not found (`app/actions/submitLead.ts` hashes without phone normalization) |
-| 5 | Add retry-with-backoff + timeout in `sendToMetaCAPI` | ⬜ | Not found |
+| 4 | Normalize phone digits/country before hashing for CAPI | ✅ | `app/actions/submitLead.ts` — `normalizePhone()` strips non-digits, adds `52` prefix for 10-digit numbers |
+| 5 | Add retry-with-backoff + timeout in `sendToMetaCAPI` | ⬜ | Not found (`lib/tracking/capi.ts` is still fire-and-forget) |
 | 6 | Add dead-letter queue persistence for exhausted CAPI failures | ⬜ | Not found |
-| 7 | Use fire-before-navigate WhatsApp tracking with `keepalive` CAPI call | ⬜ | Not found |
-| 8 | Consolidate UTM to single cookie-first system (`cej_utm`) | ⬜ | Not found |
+| 7 | Use fire-before-navigate WhatsApp tracking with `keepalive` CAPI call | ✅ | `lib/tracking/visitor.ts` — `trackContact()` fires both Pixel + `fetch('/api/track-contact', { keepalive: true })` |
+| 8 | Consolidate UTM to single cookie-first system (`cej_utm`) | 🔶 | `proxy.ts` captures UTM into `cej_utm` cookie; old systems `hooks/useAttribution.ts` + `lib/tracking/utm.ts` not yet deprecated |
 | 9 | Include advanced matching fields (`external_id`, `fn`, `fbp`, `fbc`) in Lead CAPI | ✅ | `app/actions/submitLead.ts` |
 | 10 | Drive `test_event_code` from server env variable | ✅ | `lib/tracking/capi.ts`, `config/env.ts` |
 

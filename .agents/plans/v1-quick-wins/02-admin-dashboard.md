@@ -1,7 +1,7 @@
 # Step 02 — Admin Dashboard: Route Protection & Order Registration
 
 **Estimated effort:** ~3–4h
-**Risk:** Medium — introduces middleware, new route group, new Supabase queries
+**Risk:** Medium — new route group, new Supabase queries (route protection handled by existing `proxy.ts`)
 **Depends on:** Step 01 (login link removed from public; login page must exist independently)
 **Blocks:** Nothing (the public funnel is independent of this)
 
@@ -9,20 +9,20 @@
 
 ## Implementation Progress
 
-> **Last audited:** 2026-02-27 by Implementation Audit
-> **Completion:** 70% (6/10 items — 2 partial)
+> **Last audited:** 2026-02-27 by Sync Audit (v3 — proxy alignment)
+> **Completion:** 80% (7/9 items — 1 partial)
 
 | # | Item | Status | Evidence |
 | --- | --- | --- | --- |
 | 1 | Add server-side auth redirect in dashboard layout | ✅ | `app/(admin)/dashboard/layout.tsx` |
-| 2 | Create `lib/supabase/middleware.ts` helper | ⬜ | Not found |
-| 3 | Add root `middleware.ts` dashboard preflight guard | 🔶 | `proxy.ts` exists with equivalent guard logic, but required `middleware.ts` file is missing |
+| 2 | ~~Create `lib/supabase/middleware.ts` helper~~ | N/A | Absorbed by `proxy.ts` — Supabase client is created inline in the proxy function |
+| 3 | Add edge-level dashboard preflight guard | ✅ | `proxy.ts` — `isDashboardRoute()` + `getUser()` check + redirect to `/login` with `redirect` param |
 | 4 | Ensure login route/page supports admin access and redirect semantics | ✅ | `app/(public)/login/page.tsx` |
 | 5 | Create dedicated admin server action (no Pixel/CAPI) | ✅ | `app/actions/createAdminOrder.ts` |
 | 6 | Add `+ Nuevo Pedido` CTA in dashboard page | ✅ | `app/(admin)/dashboard/page.tsx` |
 | 7 | Render status badge mapping in dashboard order list | ✅ | `app/(admin)/dashboard/OrdersList.tsx` |
 | 8 | Add `/dashboard/new` page + admin order form fields | ✅ | `app/(admin)/dashboard/new/page.tsx` |
-| 9 | Add middleware unit tests (`lib/supabase/middleware.test.ts`, `middleware.test.ts`) | ⬜ | Not found |
+| 9 | Add proxy/auth guard tests (`proxy.test.ts`) | ⬜ | Not found |
 | 10 | Add createAdminOrder tests including explicit no-CAPI assertion | 🔶 | `app/actions/createAdminOrder.test.ts` covers insert/error/auth; missing explicit `sendToMetaCAPI` assertion |
 
 ## Pre-conditions
@@ -48,27 +48,24 @@ Only authenticated Supabase users will exist; one team. Full RBAC (roles table, 
 
 ## Route Architecture
 
-```
+```text
 app/
-├── (marketing)/              ← Public, no auth
-├── (app)/
-│   ├── cotizador/
-│   └── dashboard/            ← PROTECTED — redirect to /login if no session
-│       ├── layout.tsx        ← [FIX] Add redirect() after auth check
+├── (public)/                 ← Public, no auth
+├── (admin)/
+│   └── dashboard/            ← PROTECTED — proxy.ts redirects to /login if no session
+│       ├── layout.tsx        ← Server-side auth redirect (defense-in-depth)
 │       ├── page.tsx          ← [MODIFY] Add "+ Nuevo Pedido" button
 │       └── new/              ← [NEW] Admin order creation form
 │           └── page.tsx
-├── auth/
-│   └── login/                ← [VERIFY] Login page still accessible at /login
-│       └── page.tsx
+├── (public)/login/           ← Login page accessible at /login
+│   └── page.tsx
 ├── actions/
 │   └── createAdminOrder.ts   ← [NEW] Dedicated admin Server Action
-└── middleware.ts             ← [NEW] Secondary preflight guard (defense-in-depth)
+proxy.ts                      ← Edge-level auth guard for /dashboard/** (Next.js 16 convention)
 lib/
 └── supabase/
     ├── server.ts             ← existing, unchanged
-    ├── client.ts             ← existing, unchanged
-    └── middleware.ts         ← [NEW] Supabase client helper for middleware context
+    └── client.ts             ← existing, unchanged
 ```
 
 ---
@@ -97,63 +94,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
 This is the **correct and sufficient** primary auth guard per the existing codebase pattern.
 
-### 2. `lib/supabase/middleware.ts` — NEW
-
-Create a Supabase client factory for the middleware context, following the same encapsulation pattern as `lib/supabase/server.ts`. This avoids duplicating cookie-handling logic inline in `middleware.ts`:
-
-```ts
-import { createServerClient } from '@supabase/ssr';
-import type { NextRequest, NextResponse } from 'next/server';
-import { getSupabaseConfig } from '@/config/env';
-
-export function createMiddlewareClient(request: NextRequest, response: NextResponse) {
-  const { url, anonKey, isConfigured } = getSupabaseConfig();
-  if (!isConfigured) return null;
-
-  return createServerClient(url!, anonKey!, {
-    cookies: {
-      getAll: () => request.cookies.getAll(),
-      setAll: (cookiesToSet) => {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
-      },
-    },
-  });
-}
-```
-
-### 3. `middleware.ts` — NEW (project root, next to `package.json`)
-
-Secondary preflight guard to prevent flash of unauthenticated dashboard content:
-
-```ts
-import { NextResponse, type NextRequest } from 'next/server';
-import { createMiddlewareClient } from '@/lib/supabase/middleware';
-
-export async function middleware(request: NextRequest) {
-  const response = NextResponse.next({ request });
-
-  const supabase = createMiddlewareClient(request, response);
-
-  // If Supabase is not configured (e.g. local dev without env), pass through.
-  if (!supabase) return response;
-
-  // Refresh session — required to keep server-side session alive.
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirectTo', request.nextUrl.pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  return response;
-}
-
-export const config = {
-  matcher: ['/dashboard/:path*'],
-};
-```
+> **Note:** The original plan proposed creating `lib/supabase/middleware.ts` and a root `middleware.ts` as a secondary preflight guard. This is **no longer needed** — `proxy.ts` (the project's authoritative routing engine, Next.js 16 convention) already implements the equivalent edge-level guard with `isDashboardRoute()` + `getUser()` + redirect logic. See `proxy.ts` lines 47–126 for the full implementation.
 
 ### 4. `app/auth/login/page.tsx` — VERIFY / CREATE IF MISSING
 
@@ -268,16 +209,12 @@ On success: redirect to `/dashboard` with a success toast/banner.
 
 ## Tests to Write
 
-### `lib/supabase/middleware.test.ts`
+### `proxy.test.ts` (edge-level auth guard)
 
-- [ ] `it('returns null when Supabase is not configured')`
-- [ ] `it('creates client with correct cookie handling')`
-
-### `middleware.test.ts`
-
-- [ ] `it('redirects unauthenticated requests to /login with redirectTo param')`
-- [ ] `it('allows authenticated requests to pass through')`
+- [ ] `it('redirects unauthenticated /dashboard requests to /login with redirect param')`
+- [ ] `it('allows authenticated /dashboard requests to pass through')`
 - [ ] `it('passes through if Supabase is not configured (fail-open)')`
+- [ ] `it('returns 404 for unknown routes')`
 
 ### `app/actions/createAdminOrder.test.ts`
 
@@ -290,20 +227,15 @@ On success: redirect to `/dashboard` with a success toast/banner.
 
 ## Commit Strategy
 
-```
-# Commit A — auth guard fix (primary)
+```text
+# Commit A — auth guard (layout + proxy already handles edge)
 fix(dashboard): add redirect on unauthenticated access in layout
 
 - dashboard/layout.tsx now redirects to /login when no session
-- Add lib/supabase/middleware.ts Supabase client factory
+- proxy.ts already handles edge-level guard (no middleware.ts needed)
+- Add proxy.test.ts auth guard tests
 
-# Commit B — middleware (secondary guard)
-feat(auth): add Next.js middleware as preflight guard for /dashboard
-
-- middleware.ts intercepts /dashboard/** without session
-- Add middleware unit tests
-
-# Commit C — admin order creation
+# Commit B — admin order creation
 feat(dashboard): add admin-only order creation flow
 
 - New createAdminOrder Server Action (never calls CAPI or Pixel)

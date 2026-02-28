@@ -2,14 +2,14 @@
 
 > **Blueprint:** v1-architecture-blueprint
 > **Last Updated:** 2026-02-27
-> **Status:** Draft — Pending Review
+> **Status:** In Progress — Audited 2026-02-27
 
 ---
 
 ## Implementation Progress
 
-> **Last audited:** 2026-02-27 by Implementation Audit
-> **Completion:** 44% (2/9 items — 4 partial)
+> **Last audited:** 2026-02-27 by Sync Audit (v2)
+> **Completion:** 56% (3/9 items — 4 partial)
 
 | # | Item | Status | Evidence |
 | --- | --- | --- | --- |
@@ -17,8 +17,8 @@
 | 2 | Make checkout modal dismissible/returnable | ✅ | `components/Calculator/modals/SchedulingModal.tsx` |
 | 3 | Implement strict-on-blur validation UX patterns for fields | 🔶 | `components/Calculator/modals/SchedulingModal.tsx` validates, but prescribed onBlur pattern/field-level behavior is incomplete |
 | 4 | Add enhanced phone input normalization/format/counter flow | ⬜ | Not found |
-| 5 | Implement fire-before-navigate outbound tracking (`keepalive` + delay) | ⬜ | Not found |
-| 6 | Implement full SmartBottomBar visibility/dismiss behavior spec | 🔶 | `components/layouts/SmartBottomBar.tsx` exists, but full spec alignment is incomplete |
+| 5 | Implement fire-before-navigate outbound tracking (`keepalive` + delay) | ✅ | `lib/tracking/visitor.ts` — `trackContact()` fires Pixel + CAPI via `fetch('/api/track-contact', { keepalive: true })` |
+| 6 | Implement full SmartBottomBar visibility/dismiss behavior spec | 🔶 | `components/SmartBottomBar/SmartBottomBar.tsx` exists, but full spec alignment is incomplete |
 | 7 | Apply viewport/input responsiveness requirements across public flow | 🔶 | `components/Calculator/modals/SchedulingModal.tsx` includes tel input mode; remaining viewport/public-layout requirements are incomplete |
 | 8 | Provide robust server-failure recovery with fallback WhatsApp path | 🔶 | `components/Calculator/modals/SchedulingModal.tsx` provides offline folio fallback; retry-centric recovery UI remains incomplete |
 | 9 | Handle empty/incomplete quote recovery with redirect + preserved form draft + analytics log | ⬜ | Not found |

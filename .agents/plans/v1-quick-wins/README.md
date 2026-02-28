@@ -13,7 +13,7 @@ This plan contains **five sequential, tactical steps** that deliver immediate va
 
 1. Fix Meta Pixel/CAPI data quality issues (EMQ boost)
 2. Remove the public login button (reduce visual noise)
-3. Protect the admin dashboard with middleware
+3. Protect the admin dashboard with route-level auth (via `proxy.ts`)
 4. Add a WhatsApp-first dual CTA (reduce form friction)
 5. Activate missing analytics events (ViewContent, InitiateCheckout, SPA PageView)
 
@@ -34,7 +34,7 @@ All steps must be executed in strict order. Each plan file is self-contained and
 ```
 Step 00 → Meta Pixel / CAPI quick fixes (non-breaking, isolated)
 Step 01 → Remove login button from public Header
-Step 02 → Protect /dashboard with middleware + login page
+Step 02 → Protect /dashboard with proxy.ts auth guard + login page
 Step 03 → Redesign post-quote UX (optional form + WhatsApp-first)
 Step 04 → Activate missing analytics events (ViewContent, InitiateCheckout, PageView SPA)
 ```

@@ -2,27 +2,27 @@
 
 > **Blueprint:** v1-architecture-blueprint
 > **Last Updated:** 2026-02-27
-> **Status:** Draft — Pending Review
+> **Status:** In Progress — Audited 2026-02-27
 
 ---
 
 ## Implementation Progress
 
-> **Last audited:** 2026-02-27 by Implementation Audit
-> **Completion:** 38% (3/12 items — 3 partial)
+> **Last audited:** 2026-02-27 by Sync Audit (v2)
+> **Completion:** 54% (5/12 items — 3 partial)
 
 | # | Item | Status | Evidence |
 | --- | --- | --- | --- |
 | 1 | Adopt root `proxy.ts` official entry point for protected routes | ✅ | `proxy.ts` is the authoritative routing engine (Next.js 16 convention) |
 | 2 | Move `AuthProvider` out of root to admin-only layout | ⬜ | Not found (`app/layout.tsx` still mounts `AuthProvider`) |
 | 3 | Move `GlobalUI` out of root to public-only layout | ⬜ | Not found (`app/layout.tsx` still mounts `GlobalUI`) |
-| 4 | Implement CAPI retry/queue instead of fire-and-forget | ⬜ | Not found |
-| 5 | Consolidate dual UTM systems into one authoritative source | ⬜ | Not found (`hooks/useAttribution.ts` + `lib/tracking/utm.ts` both active) |
-| 6 | Add security headers in Next config | ✅ | `next.config.ts` |
-| 7 | Split monolithic Zustand store for public/admin boundaries | 🔶 | `store/public/usePublicStore.ts` and `store/admin/useAdminStore.ts` exist, but `store/useCejStore.ts` monolith remains active |
+| 4 | Implement CAPI retry/queue instead of fire-and-forget | ⬜ | Not found (`lib/tracking/capi.ts` is still fire-and-forget) |
+| 5 | Consolidate dual UTM systems into one authoritative source | 🔶 | `proxy.ts` now captures UTM into `cej_utm` cookie; however `hooks/useAttribution.ts` and `lib/tracking/utm.ts` still exist — deprecation incomplete |
+| 6 | Add security headers in Next config | ✅ | `next.config.ts` — all 4 headers configured |
+| 7 | Split monolithic Zustand store for public/admin boundaries | 🔶 | All production components migrated to `usePublicStore`; `useCejStore.ts` only referenced in test files — migration functionally complete, test cleanup pending |
 | 8 | Remove Pixel loading from admin routes | ⬜ | Not found (`app/layout.tsx` initializes Pixel globally) |
 | 9 | Remove orphan `/cotizador` route from admin/app group | ✅ | `app/(admin)` (no `cotizador` route present) |
-| 10 | Remove placeholder image domain from production config | ✅ | `next.config.ts` |
+| 10 | Remove placeholder image domain from production config | ✅ | `next.config.ts` (only `images.unsplash.com` and `res.cloudinary.com`) |
 | 11 | Align identity cookie key naming between docs and implementation | ⬜ | Not found (`lib/tracking/identity.ts` still uses `cej_visitor_id`; doc alignment pending) |
 | 12 | Adopt `proxy.ts` as the official Next.js 16 routing convention | ✅ | `proxy.ts` is present, functional, and aligned with Next.js 16 standards |
 

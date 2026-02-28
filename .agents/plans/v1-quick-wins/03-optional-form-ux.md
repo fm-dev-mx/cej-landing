@@ -9,7 +9,7 @@
 
 ## Implementation Progress
 
-> **Last audited:** 2026-02-27 by Implementation Audit
+> **Last audited:** 2026-02-27 by Sync Audit (v2)
 > **Completion:** 75% (5/8 items — 2 partial)
 
 | # | Item | Status | Evidence |
