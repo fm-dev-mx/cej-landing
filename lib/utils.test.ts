@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { getWhatsAppUrl, getPhoneUrl, fmtMXN, parseNum, clamp } from './utils';
+import { getWhatsAppUrl, getPhoneUrl, fmtMXN, parseNum, clamp, buildQuoteMessage } from './utils';
+import type { QuoteBreakdown } from '@/types/domain';
 
 describe('Lib Utils', () => {
 
@@ -76,6 +77,36 @@ describe('Lib Utils', () => {
             expect(clamp(5, 0, 10)).toBe(5); // in range
             expect(clamp(-5, 0, 10)).toBe(0); // too low
             expect(clamp(15, 0, 10)).toBe(10); // too high
+        });
+    });
+
+    describe('buildQuoteMessage', () => {
+        const mockQuote: QuoteBreakdown = {
+            volume: {
+                requestedM3: 5,
+                roundedM3: 5,
+                minM3ForType: 3,
+                billedM3: 5,
+                isBelowMinimum: false,
+            },
+            strength: '200',
+            concreteType: 'direct',
+            unitPricePerM3: 2000,
+            baseSubtotal: 10000,
+            additivesSubtotal: 0,
+            subtotal: 10000,
+            vat: 1600,
+            total: 11600,
+            breakdownLines: [],
+        };
+
+        it('includes volume, strength, concreteType, total, and folio', () => {
+            const message = buildQuoteMessage(mockQuote, 'WEB-20260227-1234');
+            expect(message).toContain('5.00 m³');
+            expect(message).toContain("f'c 200");
+            expect(message).toContain('Directo');
+            expect(message).toContain('WEB-20260227-1234');
+            expect(message).toContain('$');
         });
     });
 

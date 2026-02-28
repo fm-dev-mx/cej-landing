@@ -137,3 +137,25 @@ export function buildDirectQuoteMessage(
 
     return message;
 }
+
+/**
+ * Builds a folio-aware WhatsApp message for the dual CTA (Path A).
+ * Includes volume, strength, concrete type, total, and folio.
+ */
+export function buildQuoteMessage(
+    quote: QuoteBreakdown,
+    folio: string
+): string {
+    const concreteTypeLabel = quote.concreteType === 'pumped' ? 'Bombeado' : 'Directo';
+    const volume = quote.volume?.billedM3 ?? 0;
+    const strength = quote.strength ?? '';
+
+    let message = `Hola, me interesa una cotización:\n\n`;
+    message += `📦 *${concreteTypeLabel} f'c ${strength}*\n`;
+    message += `📐 Volumen: ${volume.toFixed(2)} m³\n`;
+    message += `💰 Precio estimado: ${fmtMXN(quote.total)} (IVA incluido)\n`;
+    message += `📋 Folio: ${folio}\n\n`;
+    message += `¿Podrían confirmarme disponibilidad y condiciones de entrega?`;
+
+    return message;
+}

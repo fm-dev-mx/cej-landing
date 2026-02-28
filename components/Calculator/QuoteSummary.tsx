@@ -9,7 +9,7 @@ import { TicketDisplay } from './TicketDisplay/TicketDisplay';
 import { SchedulingModal } from './modals/SchedulingModal';
 import { QuoteCTA } from './QuoteCTA';
 import { Button } from '@/components/ui/Button/Button';
-import { trackContact } from '@/lib/tracking/visitor';
+import { trackContact, trackViewContent } from '@/lib/tracking/visitor';
 
 import { getWhatsAppUrl } from '@/lib/utils';
 import { env } from '@/config/env';
@@ -64,6 +64,17 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
 
     const [isSchedulingOpen, setSchedulingOpen] = useState(false);
     const ticketRef = useRef<HTMLDivElement>(null);
+
+    // Derive a stable key that changes only when the quote configuration changes
+    const quoteKey = quote
+        ? `${quote.volume.billedM3}-${quote.strength}-${quote.concreteType}`
+        : null;
+
+    // Fire ViewContent once per unique quote configuration
+    useEffect(() => {
+        if (!quote || !quoteKey) return;
+        trackViewContent(quote.total, 'MXN', `Concreto ${quote.concreteType} f'c ${quote.strength}`);
+    }, [quoteKey, quote]);
 
     const scrollToTicket = () => {
         setTimeout(() => {
@@ -221,7 +232,7 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                                 Agenda tu entrega o recibe asistencia personalizada.
                             </p>
 
-                            <QuoteCTA quote={quote} />
+                            <QuoteCTA quote={quote} onOpenForm={() => setSchedulingOpen(true)} />
 
 
 

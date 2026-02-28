@@ -1,26 +1,37 @@
 'use client';
 
-import { usePublicStore } from '@/store/public/usePublicStore';
 import { Button } from '@/components/ui/Button/Button';
-import { getWhatsAppUrl, buildDirectQuoteMessage } from '@/lib/utils';
+import { generateQuoteId, getWhatsAppUrl, buildQuoteMessage } from '@/lib/utils';
 import { env } from '@/config/env';
-import { trackContact } from '@/lib/tracking/visitor';
+import { trackContact, trackInitiateCheckout } from '@/lib/tracking/visitor';
 import type { QuoteBreakdown } from '@/types/domain';
 import styles from './QuoteCTA.module.scss';
 
 interface QuoteCTAProps {
     quote: QuoteBreakdown;
+    onOpenForm?: () => void;
 }
 
-export function QuoteCTA({ quote }: QuoteCTAProps) {
-    const moveToHistory = usePublicStore((s) => s.moveToHistory);
-
-    const message = buildDirectQuoteMessage(quote);
-    const whatsappUrl = getWhatsAppUrl(env.NEXT_PUBLIC_WHATSAPP_NUMBER, message);
-
-    const handleClick = () => {
+export function QuoteCTA({ quote, onOpenForm }: QuoteCTAProps) {
+    /**
+     * Path A — WhatsApp direct (no form, no server call).
+     * Generates a folio on the client for reference tracking.
+     */
+    const handleWhatsAppDirect = () => {
+        const folio = generateQuoteId();
+        const message = buildQuoteMessage(quote, folio);
+        const url = getWhatsAppUrl(env.NEXT_PUBLIC_WHATSAPP_NUMBER, message);
         trackContact('WhatsApp_Direct');
-        moveToHistory();
+        if (url) window.open(url, '_blank', 'noopener,noreferrer');
+    };
+
+    /**
+     * Path B — Open the existing form (handled by parent via useCheckoutUI).
+     * Fires InitiateCheckout mid-funnel event before opening the form.
+     */
+    const handleOpenForm = () => {
+        trackInitiateCheckout({ value: quote.total });
+        onOpenForm?.();
     };
 
     return (
@@ -35,12 +46,23 @@ export function QuoteCTA({ quote }: QuoteCTAProps) {
             <Button
                 variant="whatsapp"
                 fullWidth
-                href={whatsappUrl}
-                target="_blank"
-                onClick={handleClick}
+                onClick={handleWhatsAppDirect}
             >
-                WhatsApp Directo
+                📱 Consultar por WhatsApp
             </Button>
+
+            {onOpenForm && (
+                <div className={styles.secondaryCta}>
+                    <p className={styles.secondaryLabel}>¿Prefieres que te contactemos?</p>
+                    <Button
+                        variant="secondary"
+                        fullWidth
+                        onClick={handleOpenForm}
+                    >
+                        Enviar mis datos
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }
