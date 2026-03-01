@@ -9,5 +9,9 @@
 
 ---
 
-## [YYYY-MM-DD]
-- Initial draft of Phase 2 plan based on Tech Lead strategic audit.
+## [2026-02-28]
+- ✅ Data Attribution Layer (ROI Tracking) implemented.
+    - Persistent UTM tracking in `orders` and `leads`.
+    - Automated normalization helper for attribution data.
+    - Synchronized `gclid` and `fbclid` capture via `proxy.ts`.
+    - New `getAttributionStats` server action for admin reporting.
