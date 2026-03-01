@@ -52,6 +52,8 @@ export type SubmitLeadResult =
  */
 function normalizePhone(phone: string): string {
     const digits = phone.replace(/\D/g, "");
+    // Strict Mexico E.164: 52 + 10 digits
+    if (digits.length === 12 && digits.startsWith("52")) return digits;
     if (digits.length === 10) return `52${digits}`;
     return digits;
 }
@@ -65,7 +67,16 @@ function hashData(data: string | undefined, isPhone = false): string | undefined
     let normalized = data.trim().toLowerCase();
 
     if (isPhone) {
-        normalized = normalizePhone(normalized);
+        const digits = normalized.replace(/\D/g, "");
+        // Strict Mexico E.164: 52 + 10 digits.
+        // If it doesn't match, we return undefined to avoid sending poor data to Meta.
+        if (digits.length === 12 && digits.startsWith("52")) {
+            normalized = digits;
+        } else if (digits.length === 10) {
+            normalized = `52${digits}`;
+        } else {
+            return undefined;
+        }
     }
 
     if (!normalized) return undefined;
@@ -114,13 +125,6 @@ export async function submitLead(
             phone,
             quote,
             visitor_id,
-            utm_source,
-            utm_medium,
-            utm_campaign,
-            utm_term,
-            utm_content,
-            fbclid,
-            gclid,
             fb_event_id,
             privacy_accepted,
         } = parseResult.data;
@@ -131,7 +135,7 @@ export async function submitLead(
         const headerStore = await headers();
         const cookieStore = await cookies();
 
-        const clientIp = headerStore.get("x-forwarded-for")?.split(",")[0].trim() || "0.0.0.0";
+        const clientIp = headerStore.get("x-forwarded-for")?.split(",")[0].trim() || headerStore.get("x-real-ip") || undefined;
         const userAgent = headerStore.get("user-agent") || "";
         const refererUrl = headerStore.get("referer") || env.NEXT_PUBLIC_SITE_URL;
 
@@ -170,7 +174,8 @@ export async function submitLead(
         // 2.5 Rate Limiting: Max 5 submissions per 5 minutes per visitor or phone
         if (supabase) {
             const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-            let filterString = `phone.eq.${phone}`;
+            const phone_norm = normalizePhone(phone);
+            let filterString = `phone_norm.eq.${phone_norm}`;
             if (visitor_id) {
                 filterString = `visitor_id.eq.${visitor_id},${filterString}`;
             }
@@ -190,32 +195,37 @@ export async function submitLead(
         }
 
         // 3. Insert into leads table
-        const { data, error } = await supabase
-            .from("leads")
-            .insert({
-                name,
-                phone,
-                quote_data: quoteSnapshot,
-                visitor_id: visitor_id || null,
-                fb_event_id: fb_event_id || null,
-                utm_source: attribution.utm_source,
-                utm_medium: attribution.utm_medium,
-                utm_campaign: attribution.utm_campaign,
-                utm_term: attribution.utm_term,
-                utm_content: attribution.utm_content,
-                fbclid: attribution.fbclid,
-                gclid: attribution.gclid,
-                status: "new",
-                privacy_accepted,
-                privacy_accepted_at: privacy_accepted ? now : null,
-            })
+        const insertData: Database['public']['Tables']['leads']['Insert'] = {
+            name,
+            phone,
+            phone_norm: normalizePhone(phone),
+            quote_data: quoteSnapshot,
+            visitor_id: visitor_id || null,
+            fb_event_id: fb_event_id || null,
+            utm_source: attribution.utm_source ?? null,
+            utm_medium: attribution.utm_medium ?? null,
+            utm_campaign: attribution.utm_campaign ?? null,
+            utm_term: attribution.utm_term ?? null,
+            utm_content: attribution.utm_content ?? null,
+            fbclid: attribution.fbclid ?? null,
+            gclid: attribution.gclid ?? null,
+            status: "new",
+            privacy_accepted,
+            privacy_accepted_at: privacy_accepted ? now : null,
+        };
+
+        const { data, error } = await (supabase
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .from("leads") as any)
+            .insert(insertData)
             .select("id")
             .single();
 
-        if (error) {
-            reportError(new Error(`Supabase Insert Failed: ${error.message}`), {
-                code: error.code,
-                details: error.details,
+        if (error || !data) {
+            const msg = error?.message ?? "No data returned";
+            reportError(new Error(`Supabase Insert Failed: ${msg}`), {
+                code: error?.code,
+                details: error?.details,
                 payloadPhone: phone,
             });
 
@@ -228,42 +238,41 @@ export async function submitLead(
         }
 
         // 4. Fire Meta CAPI event asynchronously
-        // Using 'after' allows the response to return immediately while CAPI sends in background
-        if (fb_event_id) {
-            after(async () => {
-                const hashedPhone = hashData(phone, true);
-                const hashedEmail = hashData(typedQuote.customer?.email);
+        // Always fires, generating a fallback event_id if needed
+        after(async () => {
+            const hashedPhone = hashData(phone, true);
+            const hashedEmail = hashData(typedQuote.customer?.email);
+            const finalEventId = fb_event_id || `lead_${data.id}_${Date.now()}`;
 
-                await sendToMetaCAPI({
-                    event_name: "Lead",
-                    event_time: Math.floor(Date.now() / 1000),
-                    event_id: fb_event_id,
-                    event_source_url: refererUrl,
-                    action_source: "website",
-                    user_data: {
-                        client_ip_address: clientIp,
-                        client_user_agent: userAgent,
-                        ph: hashedPhone,
-                        em: hashedEmail,
-                        fbp,
-                        fbc,
-                        external_id: hashData(visitor_id),
-                        fn: hashData(name.trim().split(/\s+/)[0]),
-                    },
-                    custom_data: {
-                        currency: typedQuote.financials.currency,
-                        value: typedQuote.financials.total,
-                        content_name: "Concrete Quote",
-                        status: "new",
-                        contents: typedQuote.items.map((item) => ({
-                            id: item.id,
-                            quantity: item.volume,
-                            item_price: item.subtotal,
-                        })),
-                    },
-                });
+            await sendToMetaCAPI({
+                event_name: "Lead",
+                event_time: Math.floor(Date.now() / 1000),
+                event_id: finalEventId,
+                event_source_url: refererUrl,
+                action_source: "website",
+                user_data: {
+                    client_ip_address: clientIp,
+                    client_user_agent: userAgent,
+                    ph: hashedPhone,
+                    em: hashedEmail,
+                    fbp,
+                    fbc,
+                    external_id: hashData(visitor_id),
+                    fn: hashData(name.trim().split(/\s+/)[0]),
+                },
+                custom_data: {
+                    currency: typedQuote.financials.currency,
+                    value: typedQuote.financials.total,
+                    content_name: "Concrete Quote",
+                    status: "new",
+                    contents: typedQuote.items.map((item) => ({
+                        id: item.id,
+                        quantity: item.volume,
+                        item_price: item.subtotal,
+                    })),
+                },
             });
-        }
+        });
 
         return { status: "success", id: String(data.id) };
 
@@ -274,9 +283,8 @@ export async function submitLead(
         });
 
         return {
-            status: "success",
-            id: "fallback-exception",
-            warning: "server_exception",
+            status: "error",
+            message: "Ocurrió un error inesperado al procesar su solicitud. Por favor, intente más tarde.",
         };
     }
 }

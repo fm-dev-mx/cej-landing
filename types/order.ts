@@ -1,5 +1,5 @@
 import { type CalculatorState } from './calculator';
-import { type QuoteBreakdown, type QuoteLineItem } from './quote';
+import { type QuoteBreakdown, type QuoteLineItem, type ConcreteType } from './quote';
 
 export type OrderStatus =
     | 'Pendiente volumetría'
@@ -121,7 +121,7 @@ export type OrderPayload = {
         id: string;
         label: string;
         volume: number;
-        service: string;
+        service: ConcreteType;
         subtotal: number;
         additives?: string[];
     }[];

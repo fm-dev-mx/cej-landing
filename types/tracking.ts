@@ -4,8 +4,8 @@
 export interface CapiUserData {
     em?: string; // Hashed Email
     ph?: string; // Hashed Phone
-    client_ip_address: string;
-    client_user_agent: string;
+    client_ip_address?: string;
+    client_user_agent?: string;
     fbc?: string;
     fbp?: string;
     external_id?: string;

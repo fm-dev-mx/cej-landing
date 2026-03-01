@@ -101,8 +101,8 @@ export async function getQuoteByFolio(folio: string): Promise<QuoteSnapshot | nu
 
         if (!data) return null;
 
-        // Cast to our domain type
-        const snapshot = data.quote_data as QuoteSnapshot;
+        // Cast to our domain type. We check for existence first to avoid 'never' inference.
+        const snapshot = (data as { quote_data: QuoteSnapshot }).quote_data;
 
         // 3. Sanitize data (Mask PII for public sharing)
         const sanitizedSnapshot: QuoteSnapshot = {

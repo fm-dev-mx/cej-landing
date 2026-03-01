@@ -35,7 +35,7 @@ export interface GeoLocation {
  * IMPORTANT: This snapshot captures the exact state at submission time
  * to ensure the shared quote page renders identically to what the user saw.
  */
-export interface QuoteSnapshot {
+export type QuoteSnapshot = {
     folio: string;
     customer?: {
         name: string;
@@ -62,7 +62,7 @@ export interface QuoteSnapshot {
     /** Display-ready line items matching TicketDisplay format */
     breakdownLines?: QuoteLineItem[];
     metadata?: Record<string, unknown>;
-}
+};
 
 export interface InternalOrderItemSnapshot {
     id: string;
@@ -119,6 +119,7 @@ export interface DatabaseRowLeads extends AttributionFields, DeliveryFields {
     name: string;
     phone: string;
     status: string;
+    phone_norm: string;
     quote_data: QuoteSnapshot | Json;
     visitor_id: string | null;
     fb_event_id: string | null;
@@ -165,6 +166,7 @@ export interface Database {
                     created_at?: string;
                     name: string;
                     phone: string;
+                    phone_norm: string;
                     status?: string;
                     quote_data: QuoteSnapshot;
                     visitor_id?: string | null;
@@ -172,7 +174,7 @@ export interface Database {
                     notes?: string | null;
                     lost_reason?: string | null;
                     privacy_accepted?: boolean | null;
-                    privacy_accepted_at?: boolean | null | string;
+                    privacy_accepted_at?: string | null;
                 } & Partial<AttributionFields> & Partial<DeliveryFields>;
                 Update: Partial<Database['public']['Tables']['leads']['Insert']>;
                 Relationships: [];

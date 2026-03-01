@@ -95,12 +95,32 @@ describe('Server Action: submitLead', () => {
         }
     });
 
-    it('fail-open: exceptions', async () => {
+    it('blocks on rate limit with different phone formats', async () => {
+        // Mock 5 existing leads for the same normalized phone
+        mockGte.mockResolvedValueOnce({ count: 5 });
+
+        // Try with a different format that normalizes to the same
+        const res = await submitLead({ ...VALID_LEAD_PAYLOAD, phone: '+52 656 123 4567' });
+        expect(res.status).toBe('error');
+        if (res.status === 'error') {
+            expect(res.message).toContain('demasiadas');
+        }
+    });
+
+    it('strict PII: does not send invalid phone to Meta (valid length but no MX prefix)', async () => {
+        // Zod passes min(10), but my strict check needs 12 (52...) or 10 (which I prefix with 52)
+        // Let's test with 11 digits: Zod passes, but my strict check returns undefined
+        await submitLead({ ...VALID_LEAD_PAYLOAD, phone: '12345678901' });
+        const capi = vi.mocked(sendToMetaCAPI).mock.calls[0][0];
+        expect(capi.user_data.ph).toBeUndefined();
+    });
+
+    it('fail-safe: exceptions return error', async () => {
         mockInsert.mockImplementationOnce(() => { throw new Error('Crash'); });
         const res = await submitLead(VALID_LEAD_PAYLOAD);
-        expect(res.status).toBe('success');
-        if (res.status === 'success') {
-            expect(res.warning).toBe('server_exception');
+        expect(res.status).toBe('error');
+        if (res.status === 'error') {
+            expect(res.message).toContain('error inesperado');
         }
     });
 });

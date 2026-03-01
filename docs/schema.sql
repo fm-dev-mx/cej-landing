@@ -150,7 +150,8 @@ ALTER TABLE public.leads
   ADD COLUMN IF NOT EXISTS lost_reason          text,
   ADD COLUMN IF NOT EXISTS privacy_accepted     boolean,
   ADD COLUMN IF NOT EXISTS privacy_accepted_at  timestamptz,
-  ADD COLUMN IF NOT EXISTS gclid                text;
+  ADD COLUMN IF NOT EXISTS gclid                text,
+  ADD COLUMN IF NOT EXISTS phone_norm           text;
 
 ALTER TABLE public.leads
   ALTER COLUMN created_at SET DEFAULT now();
@@ -399,6 +400,9 @@ CREATE INDEX IF NOT EXISTS idx_leads_visitor_id ON public.leads(visitor_id);
 
 -- Search by phone (basic CRM / deduplication)
 CREATE INDEX IF NOT EXISTS idx_leads_phone ON public.leads(phone);
+
+-- Search by normalized phone (rate limiting, CAPI)
+CREATE INDEX IF NOT EXISTS idx_leads_phone_norm ON public.leads(phone_norm);
 
 -- Filter/sort by creation date (dashboards, reporting)
 CREATE INDEX IF NOT EXISTS idx_leads_created_at ON public.leads(created_at);
