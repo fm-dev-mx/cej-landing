@@ -6,8 +6,11 @@ import { reportError } from '@/lib/monitoring';
 import { generateQuoteId } from '@/lib/utils';
 import { getUserRole, hasPermission } from '@/lib/auth/rbac';
 import { adminOrderPayloadSchema } from '@/lib/schemas/internal/order';
-import type { AdminOrderPayload, InternalOrderItem } from '@/types/internal/order';
+import type { AdminOrderPayload } from '@/types/internal/order';
 import { getAttributionData, extractAttribution } from '@/lib/logic/attribution';
+import { getPriceConfig } from './getPriceConfig';
+import { calcQuote } from '@/lib/pricing';
+import { InternalOrderItemSnapshot } from '@/types/database';
 
 export type { AdminOrderPayload };
 
@@ -45,18 +48,27 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
 
         const normalizedPayload = parsedPayload.data;
         const folio = generateQuoteId();
-        const orderItem: InternalOrderItem = {
+        const deliveryDate = normalizedPayload.deliveryDate
+            ? new Date(normalizedPayload.deliveryDate).toISOString()
+            : null;
+
+        // 3. Pricing Calculation
+        const pricingRules = await getPriceConfig();
+        const quoteBreakdown = calcQuote(normalizedPayload.volume, {
+            strength: normalizedPayload.strength as '100' | '150' | '200' | '250' | '300',
+            type: normalizedPayload.concreteType,
+            additives: [],
+        }, pricingRules);
+
+        const orderItem: InternalOrderItemSnapshot = {
             id: crypto.randomUUID(),
             label: `Concreto ${normalizedPayload.concreteType === 'pumped' ? 'Bomba' : 'Directo'} f'c ${normalizedPayload.strength}`,
             volume: normalizedPayload.volume,
             service: normalizedPayload.concreteType,
-            subtotal: 0,
+            subtotal: quoteBreakdown.baseSubtotal,
             strength: normalizedPayload.strength,
             notes: normalizedPayload.notes,
         };
-        const deliveryDate = normalizedPayload.deliveryDate
-            ? new Date(normalizedPayload.deliveryDate).toISOString()
-            : null;
 
         const attribution = await getAttributionData(extractAttribution(normalizedPayload));
 
@@ -71,7 +83,7 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
                 user_id: user.id,
                 folio,
                 status: 'draft',
-                total_amount: 0,
+                total_amount: quoteBreakdown.total,
                 currency: 'MXN',
                 items: [orderItem],
                 delivery_date: deliveryDate,
@@ -83,6 +95,8 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
                 utm_content: attribution.utm_content,
                 fbclid: attribution.fbclid,
                 gclid: attribution.gclid,
+                pricing_version: pricingRules.version,
+                price_breakdown: quoteBreakdown.pricingSnapshot ? JSON.parse(JSON.stringify(quoteBreakdown.pricingSnapshot)) : null,
             })
             .select('id')
             .single();

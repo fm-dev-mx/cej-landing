@@ -11,8 +11,27 @@ vi.mock('@/lib/monitoring', () => ({
     reportError: vi.fn(),
 }));
 
+vi.mock('next/headers', () => ({
+    headers: () => Promise.resolve({
+        get: (k: string) => k === 'x-forwarded-for' ? '127.0.0.1' : (k === 'user-agent' ? 'Mozilla/5.0' : null)
+    }),
+    cookies: () => Promise.resolve({ get: (k: string) => k === 'cej_utm' ? { value: JSON.stringify({ source: 'fb' }) } : null })
+}));
+
 vi.mock('@/lib/utils', () => ({
     generateQuoteId: vi.fn(() => 'ADMIN-123'),
+}));
+
+vi.mock('./getPriceConfig', () => ({
+    getPriceConfig: vi.fn(() => Promise.resolve({ version: 1, base: {}, additives: [], vatRate: 0.16, minOrderQuantity: {} })),
+}));
+
+vi.mock('@/lib/pricing', () => ({
+    calcQuote: vi.fn(() => ({
+        total: 1160,
+        baseSubtotal: 1000,
+        pricingSnapshot: { rules_version: 1 }
+    })),
 }));
 
 describe('createAdminOrder', () => {
@@ -55,7 +74,7 @@ describe('createAdminOrder', () => {
             user_id: 'admin-id',
             folio: 'ADMIN-123',
             status: 'draft',
-            total_amount: 0,
+            total_amount: 1160,
             currency: 'MXN',
             delivery_address: 'Test Address 123',
             items: expect.arrayContaining([
@@ -63,9 +82,11 @@ describe('createAdminOrder', () => {
                     label: "Concreto Directo f'c 250",
                     volume: 5,
                     service: 'direct',
-                    subtotal: 0,
+                    subtotal: 1000,
                 }),
             ]),
+            pricing_version: 1,
+            price_breakdown: expect.any(Object),
         }));
     });
 
