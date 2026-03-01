@@ -160,6 +160,29 @@ export default function OrderDetailClient({ initialData }: OrderDetailClientProp
             </section>
 
             <section className={styles.section}>
+                <h2>Cliente y contacto</h2>
+                <div className={styles.grid}>
+                    <p><strong>Cliente:</strong> {initialData.customer?.display_name || 'Sin vincular'}</p>
+                    <p><strong>Customer ID:</strong> {initialData.order.customer_id || 'Sin vincular'}</p>
+                    <p><strong>Teléfono:</strong> {initialData.customer?.primary_phone_norm || '-'}</p>
+                    <p><strong>Lead origen:</strong> {initialData.order.lead_id || 'Sin lead'}</p>
+                    <p><strong>Visitor ID:</strong> {initialData.order.visitor_id || 'Sin visitor'}</p>
+                    <p><strong>Vendedor:</strong> {initialData.order.seller_id || 'Sin asignar'}</p>
+                </div>
+            </section>
+
+            <section className={styles.section}>
+                <h2>Origen y atribución</h2>
+                <div className={styles.grid}>
+                    <p><strong>UTM Source:</strong> {initialData.order.utm_source || 'direct'}</p>
+                    <p><strong>UTM Medium:</strong> {initialData.order.utm_medium || '-'}</p>
+                    <p><strong>UTM Campaign:</strong> {initialData.order.utm_campaign || '-'}</p>
+                    <p><strong>FBCLID:</strong> {initialData.order.fbclid || '-'}</p>
+                    <p><strong>GCLID:</strong> {initialData.order.gclid || '-'}</p>
+                </div>
+            </section>
+
+            <section className={styles.section}>
                 <h2>Editar datos operativos</h2>
                 <div className={styles.formGrid}>
                     <label>

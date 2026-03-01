@@ -1,4 +1,5 @@
 -- CEJ Database bootstrap script for Supabase
+-- Snapshot: updated for branch commit-gatekeeper workflow
 -- CLEAN SLATE MODE: Drops existing tables/types to enforce the new canonical schema.
 -- Note: The auth.users trigger requires elevated privileges (typically handled in Supabase SQL editor).
 
@@ -12,12 +13,15 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 DROP TABLE IF EXISTS public.order_fiscal_data CASCADE;
 DROP TABLE IF EXISTS public.order_status_history CASCADE;
 DROP TABLE IF EXISTS public.order_payments CASCADE;
+DROP TABLE IF EXISTS public.customer_merge_log CASCADE;
+DROP TABLE IF EXISTS public.customer_identities CASCADE;
 DROP TABLE IF EXISTS public.orders CASCADE;
 DROP TABLE IF EXISTS public.service_slots CASCADE;
 DROP TABLE IF EXISTS public.price_config CASCADE;
 DROP TABLE IF EXISTS public.expenses CASCADE;
 DROP TABLE IF EXISTS public.payroll CASCADE;
 DROP TABLE IF EXISTS public.leads CASCADE;
+DROP TABLE IF EXISTS public.customers CASCADE;
 DROP TABLE IF EXISTS public.profiles CASCADE;
 
 -- Drop Enums
@@ -124,6 +128,7 @@ CREATE TABLE public.leads (
   phone_norm  text,
   status      public.lead_status_enum NOT NULL DEFAULT 'new',
   quote_data  jsonb NOT NULL,
+  customer_id uuid,
   visitor_id  text,
   fb_event_id text,
   utm_source  text,
@@ -150,6 +155,65 @@ CREATE POLICY "leads service_role all" ON public.leads FOR ALL TO service_role U
 CREATE TRIGGER set_leads_updated_at
   BEFORE UPDATE ON public.leads
   FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
+
+-- ============================================================
+-- 5.5 TABLE: CUSTOMERS
+-- ============================================================
+
+CREATE TABLE public.customers (
+  id                      uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  display_name            text NOT NULL,
+  primary_phone_norm      text,
+  primary_email_norm      text,
+  identity_status         text NOT NULL DEFAULT 'unverified' CHECK (identity_status IN ('unverified', 'verified', 'merged')),
+  merged_into_customer_id uuid REFERENCES public.customers(id) ON DELETE SET NULL,
+  created_at              timestamptz NOT NULL DEFAULT now(),
+  updated_at              timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "customers service_role all" ON public.customers FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+CREATE TRIGGER set_customers_updated_at
+  BEFORE UPDATE ON public.customers
+  FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
+
+CREATE TABLE public.customer_identities (
+  id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  customer_id uuid NOT NULL REFERENCES public.customers(id) ON DELETE CASCADE,
+  type        text NOT NULL CHECK (type IN ('phone', 'email', 'visitor_id')),
+  value_norm  text NOT NULL,
+  is_primary  boolean NOT NULL DEFAULT false,
+  verified_at timestamptz,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  updated_at  timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT customer_identities_unique_identity UNIQUE(type, value_norm)
+);
+
+ALTER TABLE public.customer_identities ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "customer_identities service_role all" ON public.customer_identities FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+CREATE TRIGGER set_customer_identities_updated_at
+  BEFORE UPDATE ON public.customer_identities
+  FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
+
+CREATE TABLE public.customer_merge_log (
+  id                   uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  survivor_customer_id uuid NOT NULL REFERENCES public.customers(id) ON DELETE CASCADE,
+  merged_customer_id   uuid NOT NULL REFERENCES public.customers(id) ON DELETE CASCADE,
+  reason               text,
+  merged_by            uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  merged_at            timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.customer_merge_log ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "customer_merge_log service_role all" ON public.customer_merge_log FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+ALTER TABLE public.leads
+  ADD CONSTRAINT leads_customer_id_fkey
+  FOREIGN KEY (customer_id)
+  REFERENCES public.customers(id)
+  ON DELETE SET NULL;
 
 -- ============================================================
 -- 6. TABLE: SERVICE_SLOTS
@@ -212,6 +276,7 @@ CREATE TABLE public.orders (
 
   -- Attribution
   lead_id          bigint REFERENCES public.leads(id) ON DELETE SET NULL,
+  customer_id      uuid REFERENCES public.customers(id) ON DELETE SET NULL,
   visitor_id       text,
   fb_event_id      text,
   utm_source       text,
@@ -538,12 +603,15 @@ CREATE TRIGGER set_payroll_updated_at
 CREATE INDEX IF NOT EXISTS idx_orders_order_status_scheduled_date ON public.orders(order_status, scheduled_date);
 CREATE INDEX IF NOT EXISTS idx_orders_scheduled_date ON public.orders(scheduled_date);
 CREATE INDEX IF NOT EXISTS idx_orders_lead_id ON public.orders(lead_id);
+CREATE INDEX IF NOT EXISTS idx_orders_customer_id_ordered_at ON public.orders(customer_id, ordered_at DESC);
 CREATE INDEX IF NOT EXISTS idx_orders_import_source_row_hash ON public.orders(import_source, import_row_hash);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON public.orders(created_at);
 CREATE INDEX IF NOT EXISTS idx_orders_ordered_at ON public.orders(ordered_at);
 CREATE INDEX IF NOT EXISTS idx_orders_seller_id ON public.orders(seller_id);
 CREATE INDEX IF NOT EXISTS idx_orders_payment_status ON public.orders(payment_status);
 CREATE INDEX IF NOT EXISTS idx_orders_fiscal_status ON public.orders(fiscal_status);
+CREATE INDEX IF NOT EXISTS idx_orders_order_status_payment_status_ordered_at ON public.orders(order_status, payment_status, ordered_at DESC);
+CREATE INDEX IF NOT EXISTS idx_orders_visitor_id ON public.orders(visitor_id);
 
 -- Payments
 CREATE INDEX IF NOT EXISTS idx_order_payments_order_paid_at ON public.order_payments(order_id, paid_at DESC);
@@ -557,3 +625,9 @@ CREATE INDEX IF NOT EXISTS idx_leads_status ON public.leads(status);
 CREATE INDEX IF NOT EXISTS idx_leads_phone ON public.leads(phone);
 CREATE INDEX IF NOT EXISTS idx_leads_phone_norm ON public.leads(phone_norm);
 CREATE INDEX IF NOT EXISTS idx_leads_visitor_id ON public.leads(visitor_id);
+CREATE INDEX IF NOT EXISTS idx_leads_customer_id_created_at ON public.leads(customer_id, created_at DESC);
+
+-- Customers
+CREATE INDEX IF NOT EXISTS idx_customers_primary_phone_norm ON public.customers(primary_phone_norm);
+CREATE INDEX IF NOT EXISTS idx_customers_primary_email_norm ON public.customers(primary_email_norm);
+CREATE INDEX IF NOT EXISTS idx_customer_identities_customer_id ON public.customer_identities(customer_id);

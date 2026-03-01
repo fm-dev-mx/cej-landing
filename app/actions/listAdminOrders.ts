@@ -48,7 +48,7 @@ export async function listAdminOrders(input: OrderListQuery = {}): Promise<Order
 
         let query = adminSupabase
             .from('orders')
-            .select('id, folio, order_status, payment_status, total_with_vat, balance_amount, quantity_m3, ordered_at, scheduled_date, seller_id', { count: 'exact' })
+            .select('id, folio, order_status, payment_status, total_with_vat, balance_amount, quantity_m3, ordered_at, scheduled_date, seller_id, customer_id, utm_source', { count: 'exact' })
             .range(from, to);
 
         const sortColumn = SORT_COLUMN_MAP[params.sortBy];
@@ -63,6 +63,19 @@ export async function listAdminOrders(input: OrderListQuery = {}): Promise<Order
         if (params.dateFrom) query = query.gte('scheduled_date', params.dateFrom);
         if (params.dateTo) query = query.lte('scheduled_date', params.dateTo);
         if (params.sellerId) query = query.eq('seller_id', params.sellerId);
+        if (params.search) {
+            const term = params.search.trim();
+            query = query.or(`folio.ilike.%${term}%,external_ref.ilike.%${term}%`);
+        }
+        if (params.stage === 'draft_order') {
+            query = query.eq('order_status', 'draft');
+        } else if (params.stage === 'confirmed') {
+            query = query.in('order_status', ['confirmed', 'scheduled', 'in_progress']);
+        } else if (params.stage === 'completed') {
+            query = query.eq('order_status', 'completed');
+        } else if (params.stage === 'cancelled') {
+            query = query.eq('order_status', 'cancelled');
+        }
 
         const { data, count, error } = await query;
         if (error) {
@@ -83,6 +96,8 @@ export async function listAdminOrders(input: OrderListQuery = {}): Promise<Order
         const typedRows = (data || []) as Array<{
             id: string;
             folio: string;
+            customer_id: string | null;
+            utm_source: string | null;
             order_status: Database['public']['Tables']['orders']['Row']['order_status'];
             payment_status: Database['public']['Tables']['orders']['Row']['payment_status'];
             total_with_vat: number | null;
@@ -93,11 +108,38 @@ export async function listAdminOrders(input: OrderListQuery = {}): Promise<Order
             seller_id: string | null;
         }>;
 
+        const customerIds = Array.from(new Set(typedRows.map((order) => order.customer_id).filter(Boolean))) as string[];
+        let customerNames = new Map<string, string>();
+        if (customerIds.length > 0) {
+            const { data: customersData, error: customerError } = await adminSupabase
+                .from('customers')
+                .select('id, display_name')
+                .in('id', customerIds);
+            if (customerError) {
+                reportError(customerError, { action: 'listAdminOrders', phase: 'customer_lookup' });
+            } else {
+                customerNames = new Map(
+                    ((customersData || []) as Array<{ id: string; display_name: string }>).map((customer) => [customer.id, customer.display_name])
+                );
+            }
+        }
+
         return {
             success: true,
             orders: typedRows.map((order) => ({
                 id: order.id,
                 folio: order.folio,
+                customer_id: order.customer_id,
+                customer_name: order.customer_id ? (customerNames.get(order.customer_id) || null) : null,
+                source: order.utm_source,
+                stage:
+                    order.order_status === 'draft'
+                        ? 'draft_order'
+                        : order.order_status === 'completed'
+                            ? 'completed'
+                            : order.order_status === 'cancelled'
+                                ? 'cancelled'
+                                : 'confirmed',
                 order_status: order.order_status,
                 payment_status: order.payment_status,
                 total_with_vat: Number(order.total_with_vat || 0),

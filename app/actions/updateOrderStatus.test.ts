@@ -89,6 +89,6 @@ describe('updateOrderStatus', () => {
         });
 
         expect(result.success).toBe(false);
-        expect(result.error).toContain('No autorizado');
+        expect(result.error).toContain('Permisos insuficientes');
     });
 });

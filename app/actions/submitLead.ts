@@ -153,6 +153,47 @@ export async function submitLead(
         }
 
         const attribution = await getAttributionData(extractAttribution(parseResult.data));
+        const phone_norm = normalizePhone(phone);
+
+        let customerId: string | null = null;
+        if (phone_norm) {
+            try {
+                const { data: existingCustomer, error: customerLookupError } = await supabase
+                    .from('customers')
+                    .select('id')
+                    .eq('primary_phone_norm', phone_norm)
+                    .is('merged_into_customer_id', null)
+                    .maybeSingle();
+
+                if (!customerLookupError && existingCustomer?.id) {
+                    customerId = existingCustomer.id;
+                } else {
+                    const { data: newCustomer, error: customerCreateError } = await supabase
+                        .from('customers')
+                        .insert({
+                            display_name: name,
+                            primary_phone_norm: phone_norm,
+                            identity_status: 'unverified',
+                        })
+                        .select('id')
+                        .maybeSingle();
+
+                    if (!customerCreateError && newCustomer?.id) {
+                        customerId = newCustomer.id;
+                        await supabase
+                            .from('customer_identities')
+                            .insert({
+                                customer_id: customerId,
+                                type: 'phone',
+                                value_norm: phone_norm,
+                                is_primary: true,
+                            });
+                    }
+                }
+            } catch (customerResolutionError) {
+                reportWarning('CUSTOMER_RESOLUTION_FALLBACK', { reason: String(customerResolutionError) });
+            }
+        }
 
         const now = new Date().toISOString();
 
@@ -198,7 +239,8 @@ export async function submitLead(
         const insertData: Database['public']['Tables']['leads']['Insert'] = {
             name,
             phone,
-            phone_norm: normalizePhone(phone),
+            phone_norm,
+            customer_id: customerId,
             quote_data: quoteSnapshot as unknown as Json,
             visitor_id: visitor_id || null,
             fb_event_id: fb_event_id || null,

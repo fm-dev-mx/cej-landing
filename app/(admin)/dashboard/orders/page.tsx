@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { listAdminOrders } from '@/app/actions/listAdminOrders';
 import styles from '../admin-common.module.scss';
-import type { AdminOrderSortBy, SortDir } from '@/types/internal/order-admin';
+import type { AdminOrderSortBy, OrderStageFilter, SortDir } from '@/types/internal/order-admin';
 import type { DbOrderStatus, DbPaymentStatus } from '@/types/database-enums';
 
 export const metadata: Metadata = { title: 'Gestión de Pedidos | CEJ Pro', robots: 'noindex' };
@@ -46,6 +46,8 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
     const dateFrom = typeof params.dateFrom === 'string' ? params.dateFrom : undefined;
     const dateTo = typeof params.dateTo === 'string' ? params.dateTo : undefined;
     const sellerId = typeof params.sellerId === 'string' ? params.sellerId : undefined;
+    const stage = (typeof params.stage === 'string' ? params.stage : undefined) as OrderStageFilter | undefined;
+    const search = typeof params.search === 'string' ? params.search : undefined;
     const sortBy = (typeof params.sortBy === 'string' ? params.sortBy : 'ordered_at') as AdminOrderSortBy;
     const sortDir = (typeof params.sortDir === 'string' ? params.sortDir : 'desc') as SortDir;
     const page = parseNum(typeof params.page === 'string' ? params.page : undefined, 1);
@@ -58,6 +60,8 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
         dateFrom,
         dateTo,
         sellerId,
+        stage,
+        search,
         sortBy,
         sortDir,
     };
@@ -81,6 +85,20 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                     <div className={styles.formGroup}>
                         <label htmlFor="folio" className={styles.label}>Folio</label>
                         <input id="folio" name="folio" placeholder="Buscar por folio..." defaultValue={folio} className={styles.input} />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="search" className={styles.label}>Búsqueda rápida</label>
+                        <input id="search" name="search" placeholder="Folio o referencia..." defaultValue={search} className={styles.input} />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="stage" className={styles.label}>Etapa</label>
+                        <select id="stage" name="stage" defaultValue={stage || ''} className={styles.input}>
+                            <option value="">Todas</option>
+                            <option value="draft_order">Pedido borrador</option>
+                            <option value="confirmed">Confirmado</option>
+                            <option value="completed">Completado</option>
+                            <option value="cancelled">Cancelado</option>
+                        </select>
                     </div>
                     <div className={styles.formGroup}>
                         <label htmlFor="status" className={styles.label}>Estado del pedido</label>
@@ -139,6 +157,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                     <thead>
                         <tr className={styles.tableHeaderRow}>
                             <th className={styles.tableHeader}>Folio</th>
+                            <th className={styles.tableHeader}>Etapa</th>
                             {SORTABLE_COLUMNS.map((column) => {
                                 const nextDir: SortDir = (sortBy === column.key && sortDir === 'asc') ? 'desc' : 'asc';
                                 const href = withQuery(queryState, {
@@ -155,6 +174,8 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                                     </th>
                                 );
                             })}
+                            <th className={styles.tableHeader}>Cliente</th>
+                            <th className={styles.tableHeader}>Fuente</th>
                             <th className={styles.tableHeader}>Acciones</th>
                         </tr>
                     </thead>
@@ -162,6 +183,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                         {listResult.orders.map((o) => (
                             <tr key={o.id}>
                                 <td className={styles.tableCell}>{o.folio}</td>
+                                <td className={styles.tableCell}>{o.stage}</td>
                                 <td className={styles.tableCell}>{new Date(o.ordered_at).toLocaleDateString('es-MX', { timeZone: 'UTC' })}</td>
                                 <td className={styles.tableCell}>
                                     {o.scheduled_date ? new Date(o.scheduled_date).toLocaleDateString('es-MX', { timeZone: 'UTC' }) : 'Pendiente'}
@@ -170,6 +192,8 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                                 <td className={styles.tableCell}>${o.balance_amount.toLocaleString('es-MX')}</td>
                                 <td className={styles.tableCell}>{o.order_status}</td>
                                 <td className={styles.tableCell}>{o.payment_status}</td>
+                                <td className={styles.tableCell}>{o.customer_name || 'Sin vincular'}</td>
+                                <td className={styles.tableCell}>{o.source || 'direct'}</td>
                                 <td className={styles.tableCell}>
                                     <Link href={`/dashboard/orders/${o.id}`} className={styles.backLink}>
                                         Ver detalle
@@ -178,7 +202,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                             </tr>
                         ))}
                         {listResult.orders.length === 0 && (
-                            <tr><td colSpan={9} className={styles.emptyCell}>No hay pedidos encontrados</td></tr>
+                            <tr><td colSpan={11} className={styles.emptyCell}>No hay pedidos encontrados</td></tr>
                         )}
                     </tbody>
                 </table>

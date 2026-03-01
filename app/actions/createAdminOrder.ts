@@ -18,6 +18,13 @@ export type AdminOrderResult =
     | { status: 'success'; id: string }
     | { status: 'error'; message: string };
 
+function normalizePhone(phone: string): string {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length === 12 && digits.startsWith('52')) return digits;
+    if (digits.length === 10) return `52${digits}`;
+    return digits;
+}
+
 /**
  * createAdminOrder
  * Dedicated server action for admins to manually register orders.
@@ -91,6 +98,54 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
         const serviceType: Database['public']['Tables']['orders']['Row']['service_type'] =
             normalizedPayload.concreteType === 'pumped' ? 'bombeado' : 'tirado';
 
+        const adminSupabase = await createAdminClient();
+        const phoneNorm = normalizePhone(normalizedPayload.phone);
+        let customerId: string | null = null;
+
+        if (phoneNorm) {
+            try {
+                const { data: existingCustomer, error: customerLookupError } = await adminSupabase
+                    .from('customers')
+                    .select('id')
+                    .eq('primary_phone_norm', phoneNorm)
+                    .is('merged_into_customer_id', null)
+                    .maybeSingle();
+
+                if (customerLookupError) {
+                    reportError(customerLookupError, { source: 'createAdminOrder', phase: 'customer_lookup' });
+                } else if (existingCustomer?.id) {
+                    customerId = existingCustomer.id;
+                } else {
+                    const { data: newCustomer, error: customerCreateError } = await adminSupabase
+                        .from('customers')
+                        .insert({
+                            display_name: normalizedPayload.name,
+                            primary_phone_norm: phoneNorm,
+                            identity_status: 'verified',
+                        })
+                        .select('id')
+                        .single();
+
+                    if (customerCreateError) {
+                        reportError(customerCreateError, { source: 'createAdminOrder', phase: 'customer_create' });
+                    } else {
+                        customerId = newCustomer.id;
+                        await adminSupabase
+                            .from('customer_identities')
+                            .insert({
+                                customer_id: customerId,
+                                type: 'phone',
+                                value_norm: phoneNorm,
+                                is_primary: true,
+                            });
+                    }
+                }
+            } catch (customerError) {
+                // Customer linkage is best-effort and must not block order creation.
+                reportError(customerError, { source: 'createAdminOrder', phase: 'customer_resolution_fallback' });
+            }
+        }
+
         const canonicalPayload = {
             folio,
             user_id: user.id, // Using current user as tenant for now, but should be clarified later
@@ -117,6 +172,7 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
             scheduled_time_label: normalizedPayload.scheduledTimeLabel ?? null,
             scheduled_window_start: scheduledWindowStart,
             scheduled_window_end: scheduledWindowEnd,
+            customer_id: customerId,
 
             utm_source: attribution.utm_source,
             utm_medium: attribution.utm_medium,
@@ -132,7 +188,6 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
         };
 
         const canonicalInsert: Database['public']['Tables']['orders']['Insert'] = canonicalPayload;
-        const adminSupabase = await createAdminClient();
         const { data, error } = await adminSupabase
             .from('orders')
             .insert(canonicalInsert)

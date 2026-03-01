@@ -17,6 +17,9 @@ export default function NewOrderPage() {
                     <p className={styles.subtitle}>
                         Registra una orden directamente en el sistema.
                     </p>
+                    <p className={styles.subtitle}>
+                        El módulo de Prospectos ahora vive en <strong>Clientes</strong>.
+                    </p>
                 </header>
 
                 <div className={styles.formCard}>

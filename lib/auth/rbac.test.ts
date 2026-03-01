@@ -39,10 +39,10 @@ describe('RBAC utility', () => {
             expect(getUserRole({ role: 'operator' })).toBe('operator');
         });
 
-        it('defaults to operator for unknown roles', () => {
-            expect(getUserRole({ role: 'hacker' })).toBe('operator');
-            expect(getUserRole({})).toBe('operator');
-            expect(getUserRole(null)).toBe('operator');
+        it('defaults to guest for unknown roles', () => {
+            expect(getUserRole({ role: 'hacker' })).toBe('guest');
+            expect(getUserRole({})).toBe('guest');
+            expect(getUserRole(null)).toBe('guest');
         });
     });
 });

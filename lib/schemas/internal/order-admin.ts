@@ -1,4 +1,5 @@
 import { z } from 'zod';
+// Note: Additional comments/documentation for future schema evolution
 import { orderStatusSchema } from './order-status';
 import { paymentDirectionSchema, paymentKindSchema, paymentMethodSchema } from './order-payments';
 
@@ -30,6 +31,8 @@ export const orderListQuerySchema = z.object({
     dateFrom: dateOnlySchema.optional(),
     dateTo: dateOnlySchema.optional(),
     sellerId: z.string().uuid('Vendedor inválido').optional(),
+    stage: z.enum(['', 'draft_order', 'confirmed', 'completed', 'cancelled']).optional(),
+    search: z.string().trim().max(100).optional(),
 }).superRefine((data, ctx) => {
     if (data.dateFrom && data.dateTo && data.dateFrom > data.dateTo) {
         ctx.addIssue({
@@ -98,4 +101,3 @@ export type OrderListQueryInput = z.infer<typeof orderListQuerySchema>;
 export type OrderUpdatePayloadInput = z.infer<typeof orderUpdatePayloadSchema>;
 export type CancelOrderPayloadInput = z.infer<typeof cancelOrderPayloadSchema>;
 export type CreatePaymentForOrderInput = z.infer<typeof createPaymentForOrderSchema>;
-

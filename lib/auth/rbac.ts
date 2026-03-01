@@ -6,7 +6,7 @@
  * - admin: Management access to orders and general settings.
  * - operator: Daily operation access (viewing and creating orders).
  */
-export type UserRole = 'admin' | 'operator' | 'owner';
+export type UserRole = 'admin' | 'operator' | 'owner' | 'guest';
 
 /**
  * Specific permissions that can be checked against a role.
@@ -28,6 +28,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     owner: ['orders:view', 'orders:create', 'orders:edit', 'orders:update', 'settings:view', 'financials:view', 'financials:write', 'admin:all'],
     admin: ['orders:view', 'orders:create', 'orders:edit', 'orders:update', 'settings:view', 'financials:view', 'financials:write'],
     operator: ['orders:view', 'orders:create', 'orders:update'],
+    guest: [],
 };
 
 /**
@@ -50,5 +51,6 @@ export function getUserRole(userMetadata: { role?: string } | null | undefined):
     if (role === 'owner' || role === 'admin' || role === 'operator') {
         return role as UserRole;
     }
-    return 'operator';
+    // Default to the most restrictive role to minimize access for unknown/undefined roles
+    return 'guest';
 }

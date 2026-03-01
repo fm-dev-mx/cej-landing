@@ -1,4 +1,5 @@
 'use client';
+// Utility: route highlighting helpers
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -23,16 +24,21 @@ interface NavGroup {
 
 const NAV_GROUPS: NavGroup[] = [
     {
-        title: 'Resumen',
+        title: 'Operación',
         items: [
-            { href: '/dashboard', label: 'Panel y KPIs', available: true },
+            { href: '/dashboard/operations', label: 'Flujo', available: true },
+            { href: '/dashboard/orders', label: 'Pedidos', available: true },
+            { href: '/dashboard/customers', label: 'Clientes', available: true },
+            { href: '/dashboard/leads', label: 'Leads', available: true },
+            { href: '/dashboard/new', label: 'Nuevo pedido', available: true },
         ],
     },
     {
-        title: 'Operaciones',
+        title: 'Análisis',
         items: [
-            { href: '/dashboard/orders', label: 'Pedidos', available: true },
-            { href: '/dashboard/new', label: 'Prospectos', available: true },
+            { href: '/dashboard', label: 'Dashboard y KPIs', available: true },
+            { href: '/dashboard/reports', label: 'Reportes', available: true },
+            { href: '/dashboard/calendar', label: 'Calendario', available: true },
         ],
     },
     {
@@ -48,13 +54,6 @@ const NAV_GROUPS: NavGroup[] = [
             { href: '/dashboard/settings', label: 'Configuración general', available: true },
             { href: '/dashboard/settings/pricing', label: 'Editor de precios', available: true },
             { href: '/dashboard/settings/users', label: 'Usuarios y permisos', available: false, comingSoonLabel: 'Próximamente' },
-        ],
-    },
-    {
-        title: 'Reportes',
-        items: [
-            { href: '/dashboard/reports', label: 'Analítica y exportaciones', available: true },
-            { href: '/dashboard/calendar', label: 'Calendario de despachos', available: true },
         ],
     },
 ];

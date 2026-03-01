@@ -132,6 +132,7 @@ export interface DatabaseRowOrders extends TimestampFields, AttributionFields {
 
     // Attribution extensions
     lead_id: number | null;
+    customer_id: string | null;
     visitor_id: string | null;
     fb_event_id: string | null;
 
@@ -151,6 +152,7 @@ export interface DatabaseRowLeads extends AttributionFields {
     phone_norm: string | null;
     status: DbLeadStatus;
     quote_data: Json;
+    customer_id: string | null;
     visitor_id: string | null;
     fb_event_id: string | null;
     delivery_date: string | null;
@@ -161,6 +163,33 @@ export interface DatabaseRowLeads extends AttributionFields {
     privacy_accepted_at: string | null;
     created_at: string;
     updated_at: string;
+}
+
+export interface DatabaseRowCustomers extends TimestampFields {
+    id: string;
+    display_name: string;
+    primary_phone_norm: string | null;
+    primary_email_norm: string | null;
+    identity_status: 'unverified' | 'verified' | 'merged';
+    merged_into_customer_id: string | null;
+}
+
+export interface DatabaseRowCustomerIdentity extends TimestampFields {
+    id: string;
+    customer_id: string;
+    type: 'phone' | 'email' | 'visitor_id';
+    value_norm: string;
+    is_primary: boolean;
+    verified_at: string | null;
+}
+
+export interface DatabaseRowCustomerMergeLog {
+    id: string;
+    survivor_customer_id: string;
+    merged_customer_id: string;
+    reason: string | null;
+    merged_by: string | null;
+    merged_at: string;
 }
 
 export interface DatabaseRowServiceSlots {
@@ -242,7 +271,61 @@ export type Database = {
                 Row: DatabaseRowLeads;
                 Insert: Partial<DatabaseRowLeads> & { name: string; phone: string; quote_data: Json };
                 Update: Partial<DatabaseRowLeads>;
-                Relationships: [];
+                Relationships: [{
+                    foreignKeyName: 'leads_customer_id_fkey';
+                    columns: ['customer_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'customers';
+                    referencedColumns: ['id'];
+                }];
+            };
+            customers: {
+                Row: DatabaseRowCustomers;
+                Insert: Partial<DatabaseRowCustomers> & { display_name: string };
+                Update: Partial<DatabaseRowCustomers>;
+                Relationships: [{
+                    foreignKeyName: 'customers_merged_into_customer_id_fkey';
+                    columns: ['merged_into_customer_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'customers';
+                    referencedColumns: ['id'];
+                }];
+            };
+            customer_identities: {
+                Row: DatabaseRowCustomerIdentity;
+                Insert: Partial<DatabaseRowCustomerIdentity> & { customer_id: string; type: 'phone' | 'email' | 'visitor_id'; value_norm: string };
+                Update: Partial<DatabaseRowCustomerIdentity>;
+                Relationships: [{
+                    foreignKeyName: 'customer_identities_customer_id_fkey';
+                    columns: ['customer_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'customers';
+                    referencedColumns: ['id'];
+                }];
+            };
+            customer_merge_log: {
+                Row: DatabaseRowCustomerMergeLog;
+                Insert: Partial<DatabaseRowCustomerMergeLog> & { survivor_customer_id: string; merged_customer_id: string };
+                Update: Partial<DatabaseRowCustomerMergeLog>;
+                Relationships: [{
+                    foreignKeyName: 'customer_merge_log_survivor_customer_id_fkey';
+                    columns: ['survivor_customer_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'customers';
+                    referencedColumns: ['id'];
+                }, {
+                    foreignKeyName: 'customer_merge_log_merged_customer_id_fkey';
+                    columns: ['merged_customer_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'customers';
+                    referencedColumns: ['id'];
+                }, {
+                    foreignKeyName: 'customer_merge_log_merged_by_fkey';
+                    columns: ['merged_by'];
+                    isOneToOne: false;
+                    referencedRelation: 'profiles';
+                    referencedColumns: ['id'];
+                }];
             };
             service_slots: {
                 Row: DatabaseRowServiceSlots;
@@ -291,6 +374,12 @@ export type Database = {
                     columns: ['lead_id'];
                     isOneToOne: false;
                     referencedRelation: 'leads';
+                    referencedColumns: ['id'];
+                }, {
+                    foreignKeyName: 'orders_customer_id_fkey';
+                    columns: ['customer_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'customers';
                     referencedColumns: ['id'];
                 }];
             };

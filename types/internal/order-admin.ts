@@ -16,6 +16,7 @@ export type AdminOrderSortBy =
     | 'payment_status';
 
 export type SortDir = 'asc' | 'desc';
+export type OrderStageFilter = '' | 'draft_order' | 'confirmed' | 'completed' | 'cancelled';
 
 export interface OrderListQuery {
     page?: number;
@@ -28,11 +29,17 @@ export interface OrderListQuery {
     dateFrom?: string;
     dateTo?: string;
     sellerId?: string;
+    stage?: OrderStageFilter;
+    search?: string;
 }
 
 export interface OrderListItem {
     id: string;
     folio: string;
+    customer_id: string | null;
+    customer_name: string | null;
+    stage: Exclude<OrderStageFilter, ''>;
+    source: string | null;
     order_status: DbOrderStatus;
     payment_status: DbPaymentStatus;
     total_with_vat: number;
@@ -65,6 +72,13 @@ export interface ServiceSlotOption {
     label: string;
     start_time: string;
     end_time: string;
+}
+
+export interface CustomerOption {
+    id: string;
+    display_name: string;
+    primary_phone_norm: string | null;
+    primary_email_norm: string | null;
 }
 
 export interface OrderPaymentRecord {
@@ -107,6 +121,7 @@ export interface OrderDetail {
     fiscalData: OrderFiscalRecord | null;
     profiles: Record<string, ProfileOption>;
     serviceSlot: ServiceSlotOption | null;
+    customer: CustomerOption | null;
 }
 
 export interface OrderUpdatePayload {

@@ -10,11 +10,10 @@ describe('AdminSidebar', () => {
     it('renders grouped navigation sections', () => {
         render(<AdminSidebar isOpen={false} onClose={() => undefined} />);
 
-        expect(screen.getByRole('heading', { name: 'Resumen' })).toBeInTheDocument();
-        expect(screen.getByRole('heading', { name: 'Operaciones' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Operación' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Análisis' })).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Finanzas' })).toBeInTheDocument();
         expect(screen.getByRole('heading', { name: 'Configuración' })).toBeInTheDocument();
-        expect(screen.getByRole('heading', { name: 'Reportes' })).toBeInTheDocument();
     });
 
     it('marks the active route with aria-current', () => {

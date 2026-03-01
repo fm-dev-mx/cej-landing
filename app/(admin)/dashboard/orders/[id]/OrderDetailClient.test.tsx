@@ -56,6 +56,7 @@ const mockInitialData: OrderDetail = {
         scheduled_window_start: null,
         scheduled_window_end: null,
         lead_id: null,
+        customer_id: null,
         visitor_id: null,
         fb_event_id: null,
         import_source: null,
@@ -77,6 +78,7 @@ const mockInitialData: OrderDetail = {
     fiscalData: null,
     profiles: {},
     serviceSlot: null,
+    customer: null,
 };
 
 describe('OrderDetailClient', () => {
