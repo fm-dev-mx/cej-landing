@@ -5,6 +5,7 @@
 - FK-only drift checks between `docs/schema.sql` and `types/database.ts`.
 - Production `any` usage reporting with separate counters.
 - Exported inline object signature reporting with canonical allowlist.
+- Action pipeline contract enforcement (Auth, RBAC, Validation, Typed result).
 - Deterministic governance artifact generation.
 - RLS policy completeness + auditability documentation.
 - Server action typing refactors to remove production `as any`.
@@ -39,6 +40,7 @@ All non-FK statements are ignored for drift purposes.
 
 All governance checks are report-only by default (exit `0`).
 Use `--fail` to make violations blocking.
+All checks are now **BLOCKING** in CI by default.
 
 Supported flags:
 
@@ -54,6 +56,7 @@ Supported flags:
 - `typed_any_count`
 - `array_any_count`
 - `inline_exported_signature_count`
+- `action_pipeline_violation_count`
 
 ## Canonical Inline Allowlist Schema
 

@@ -8,10 +8,13 @@ Provide an actionable path to bring `cej-landing` into full compliance with the 
 
 Selected default: **Phased Gates**.
 
+Enforcement Mode: **Hard Enforcement (Blocking CI)**.
+
 Rationale:
 
-- Enables immediate risk reduction without blocking delivery on historical debt.
-- Prevents net-new debt while existing debt is remediated incrementally.
+- All governance scripts are now wired into `.github/workflows/ci.yml`.
+- All baseline tests have been satisfied.
+- No new debt is allowed in production paths.
 
 ## 3. Baseline Compliance Snapshot (2026-03-01)
 
@@ -31,7 +34,7 @@ Rationale:
 
 ## 5. Phased Execution Plan
 
-## Phase 0: Baseline and Instrumentation (Week 1)
+## Phase 0: Baseline and Instrumentation (Week 1) [COMPLETED 2026-03-01]
 
 Goals:
 
@@ -40,17 +43,18 @@ Goals:
 
 Actions:
 
-1. Add script to validate SQL tables/enums/FKs vs `types/database.ts`.
-2. Add script to detect exported inline object signatures.
-3. Add script/report for production `any` count.
-4. Publish PR checklist template for architecture-sensitive changes.
+1. Add script to validate SQL tables/enums/FKs vs `types/database.ts`. [DONE]
+2. Add script to detect exported inline object signatures. [DONE]
+3. Add script/report for production `any` count. [DONE]
+4. Publish PR checklist template for architecture-sensitive changes. [DONE]
+5. Add script to check Action Pipeline compliance. [DONE]
 
 Exit Criteria:
 
-1. Baseline metrics generated in CI artifacts.
-2. Scripts run in CI in report-only mode.
+1. Baseline metrics generated in CI artifacts. [DONE]
+2. Scripts run in CI in fail mode (Blocking). [DONE]
 
-## Phase 1: Guard New and Changed Code (Weeks 2-3)
+## Phase 1: Guard New and Changed Code (Weeks 2-3) [ENFORCED]
 
 Goals:
 
@@ -59,10 +63,10 @@ Goals:
 
 Actions:
 
-1. Fail CI on new production `any` in changed files.
-2. Fail CI on new exported inline signature violations in changed files.
-3. Require schema-type-doc parity for PRs touching `docs/schema.sql` or `types/database.ts`.
-4. Enforce action pipeline checklist for modified `app/actions/*`.
+1. Fail CI on new production `any` in changed files. [DONE - Global fail enabled]
+2. Fail CI on new exported inline signature violations in changed files. [DONE - Global fail enabled]
+3. Require schema-type-doc parity for PRs touching `docs/schema.sql` or `types/database.ts`. [DONE]
+4. Enforce action pipeline checklist for modified `app/actions/*`. [DONE]
 
 Exit Criteria:
 
