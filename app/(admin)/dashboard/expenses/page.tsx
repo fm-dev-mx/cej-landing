@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import Link from 'next/link';
 import { listExpenses } from '@/app/actions/listFinancials';
 import { ExpenseForm } from '@/components/internal/financials/ExpenseForm';
 import styles from '../admin-common.module.scss';
@@ -13,7 +12,6 @@ export default async function ExpensesPage() {
         <main className={styles.main}>
             <div className={styles.header}>
                 <h1>Gastos Operativos</h1>
-                <Link href="/dashboard" className={styles.backLink}>Volver al dashboard</Link>
             </div>
 
             <div className={styles.contentGrid}>

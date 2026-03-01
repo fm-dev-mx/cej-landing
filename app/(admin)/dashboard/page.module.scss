@@ -2,10 +2,8 @@
 @use "@/styles/mixins" as *;
 
 .main {
-    min-height: 100vh;
-    padding-top: calc(var(--header-h) + var(--sp-6));
-    padding-bottom: var(--sp-8);
-    background: var(--c-surface-light);
+    padding-top: var(--sp-2);
+    padding-bottom: var(--sp-6);
 }
 
 .container {

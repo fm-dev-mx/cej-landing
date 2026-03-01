@@ -1,9 +1,4 @@
-// Note: This is an internal file that will be written to app/(app)/dashboard/new/page.tsx
-// I will separate it into its own tool call to avoid size limits if needed,
-// but for now I'll write the full component.
-
 import { Metadata } from 'next';
-import Link from 'next/link';
 import { AdminOrderForm } from './AdminOrderForm';
 import styles from './page.module.scss';
 
@@ -18,9 +13,6 @@ export default function NewOrderPage() {
         <main className={styles.main}>
             <div className={styles.container}>
                 <header className={styles.header}>
-                    <Link href="/dashboard" className={styles.backLink}>
-                        ← Volver al Dashboard
-                    </Link>
                     <h1 className={styles.title}>Nuevo Pedido Manual</h1>
                     <p className={styles.subtitle}>
                         Registra una orden directamente en el sistema.

@@ -68,7 +68,6 @@ export default async function CalendarPage() {
             <div className={styles.container}>
                 <header className={styles.header}>
                     <h1 className={styles.title}>Calendario de Despachos</h1>
-                    <Link href="/dashboard" className={styles.backLink}>← Volver a Dashboard</Link>
                 </header>
 
                 <div className={styles.calendarGrid}>

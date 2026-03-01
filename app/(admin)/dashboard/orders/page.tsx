@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import Link from 'next/link';
 import { listOrders } from '@/app/actions/listOrders';
 import styles from '../admin-common.module.scss';
 export const metadata: Metadata = { title: 'Gestión de Pedidos | CEJ Pro', robots: 'noindex' };
@@ -14,7 +13,6 @@ export default async function OrdersPage({ searchParams }: { searchParams: { [ke
         <main className={styles.main}>
             <div className={styles.header}>
                 <h1>Gestión de Pedidos (Kanban / Lista)</h1>
-                <Link href="/dashboard" className={styles.backLink}>Volver al dashboard</Link>
             </div>
 
             <form className={styles.form}>

@@ -5,8 +5,8 @@
   @include p.container;
 
   max-width: 1200px;
-  padding-top: calc(var(--header-h) + var(--sp-6));
-  padding-bottom: var(--sp-8);
+  padding-top: var(--sp-2);
+  padding-bottom: var(--sp-6);
 }
 
 .header {
@@ -171,7 +171,7 @@
 
 .formSidebar {
   position: sticky;
-  top: calc(var(--header-h) + var(--sp-6));
+  top: var(--sp-4);
 }
 
 .listSection {

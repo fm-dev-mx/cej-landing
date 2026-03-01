@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import Link from 'next/link';
 import { listPayrollEntries } from '@/app/actions/listFinancials';
 import { PayrollForm } from '@/components/internal/financials/PayrollForm';
 import styles from '../admin-common.module.scss';
@@ -13,7 +12,6 @@ export default async function PayrollPage() {
         <main className={styles.main}>
             <div className={styles.header}>
                 <h1>Nómina Operativa</h1>
-                <Link href="/dashboard" className={styles.backLink}>Volver al dashboard</Link>
             </div>
 
             <div className={styles.contentGrid}>

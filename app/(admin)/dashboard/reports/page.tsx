@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { exportReport } from '@/app/actions/exportReport';
 import styles from '../admin-common.module.scss';
 export default function ReportsPage() {
@@ -43,7 +42,6 @@ export default function ReportsPage() {
         <main className={styles.main}>
             <div className={styles.header}>
                 <h1>Reportes (CSV)</h1>
-                <Link href="/dashboard" className={styles.backLink}>Volver al dashboard</Link>
             </div>
 
             <form onSubmit={handleExport} className={styles.form}>
