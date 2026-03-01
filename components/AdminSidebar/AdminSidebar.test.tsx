@@ -10,11 +10,11 @@ describe('AdminSidebar', () => {
     it('renders grouped navigation sections', () => {
         render(<AdminSidebar isOpen={false} onClose={() => undefined} />);
 
-        expect(screen.getByRole('heading', { name: 'Overview' })).toBeInTheDocument();
-        expect(screen.getByRole('heading', { name: 'Operations' })).toBeInTheDocument();
-        expect(screen.getByRole('heading', { name: 'Financials' })).toBeInTheDocument();
-        expect(screen.getByRole('heading', { name: 'Configuration' })).toBeInTheDocument();
-        expect(screen.getByRole('heading', { name: 'Reports' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Resumen' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Operaciones' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Finanzas' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Configuración' })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: 'Reportes' })).toBeInTheDocument();
     });
 
     it('marks the active route with aria-current', () => {
@@ -24,10 +24,11 @@ describe('AdminSidebar', () => {
         expect(activeLink).toHaveAttribute('aria-current', 'page');
     });
 
-    it('renders settings as disabled when route is unavailable', () => {
+    it('renders unavailable modules as non-clickable with coming soon label', () => {
         render(<AdminSidebar isOpen={false} onClose={() => undefined} />);
-        const disabled = screen.getByText('Configuración general');
+        const disabled = screen.getByText('Usuarios y permisos');
 
         expect(disabled).toHaveAttribute('aria-disabled', 'true');
+        expect(screen.getByText('Próximamente')).toBeInTheDocument();
     });
 });
