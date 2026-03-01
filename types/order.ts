@@ -14,6 +14,23 @@ export type PaymentStatus =
     | 'Pagado'
     | 'Cancelado';
 
+export type PaymentDirection = 'in' | 'out';
+
+export type PaymentKind =
+    | 'Anticipo'
+    | 'Abono'
+    | 'Liquidación'
+    | 'Ajuste'
+    | 'Reembolso'
+    | 'Contra cargo';
+
+export type PaymentMethod =
+    | 'Efectivo'
+    | 'Transferencia'
+    | 'Crédito'
+    | 'Depósito'
+    | 'Otro';
+
 export type Client = {
     id: string;
     type: 'individual' | 'business';
@@ -55,6 +72,24 @@ export type OrderFinancials = {
     currency: string;
 };
 
+export type OrderPayment = {
+    id: string;
+    direction: PaymentDirection;
+    kind: PaymentKind;
+    method: PaymentMethod;
+    amount: number;
+    paidAt: string;
+    reference?: string;
+    receiptNumber?: string;
+    notes?: string;
+};
+
+export type PaymentSummary = {
+    paidAmount: number;
+    balanceAmount: number;
+    lastPaidAt?: string | null;
+};
+
 export type OrderItem = {
     id: string;
     product_id: string;
@@ -79,6 +114,8 @@ export type Order = {
     seller?: Seller;
     items: OrderItem[];
     financials: OrderFinancials;
+    payments?: OrderPayment[];
+    paymentSummary?: PaymentSummary;
     status: OrderStatus;
     paymentStatus: PaymentStatus;
     notes?: string;

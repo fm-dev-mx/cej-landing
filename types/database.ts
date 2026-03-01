@@ -1,11 +1,8 @@
-// types/database.ts
-
 import type { PricingRules } from '@/lib/schemas/pricing';
-import type {
-    ConcreteType,
-    QuoteLineItem,
-    PricingSnapshot
-} from './quote';
+import type { ConcreteType, QuoteLineItem, PricingSnapshot } from './quote';
+import type { DbOrderStatus, DbPaymentStatus, DbFiscalStatus, DbPaymentDirection, DbPaymentKind, DbPaymentMethod } from './database-enums';
+
+export type { DbOrderStatus, DbPaymentStatus, DbFiscalStatus, DbPaymentDirection, DbPaymentKind, DbPaymentMethod };
 
 export type Json =
     | string
@@ -15,26 +12,13 @@ export type Json =
     | { [key: string]: Json | undefined }
     | Json[];
 
-/**
- * Shared service type derived from domain
- */
 export type ServiceType = ConcreteType;
 
-/**
- * Structured geospatial data
- */
 export interface GeoLocation {
     lat: number;
     lng: number;
 }
 
-/**
- * Snapshot inmutable de la cotización al momento de la creación.
- * Debe coincidir con la estructura de salida de lib/schemas.ts
- *
- * IMPORTANT: This snapshot captures the exact state at submission time
- * to ensure the shared quote page renders identically to what the user saw.
- */
 export type QuoteSnapshot = {
     folio: string;
     customer?: {
@@ -43,7 +27,6 @@ export type QuoteSnapshot = {
         email?: string;
         visitorId?: string;
     };
-    /** Cart items for OMS/billing purposes */
     items: Array<{
         id: string;
         label: string;
@@ -52,14 +35,12 @@ export type QuoteSnapshot = {
         subtotal: number;
         additives?: string[];
     }>;
-    /** Complete financial breakdown for accurate display */
     financials: {
         subtotal: number;
         vat: number;
         total: number;
         currency: string;
     };
-    /** Display-ready line items matching TicketDisplay format */
     breakdownLines?: QuoteLineItem[];
     metadata?: Record<string, unknown>;
 };
@@ -74,10 +55,6 @@ export interface InternalOrderItemSnapshot {
     additives?: string[];
     notes?: string;
 }
-
-/**
- * Base database fields common across entities
- */
 
 export interface TimestampFields {
     created_at: string;
@@ -99,11 +76,28 @@ export interface DeliveryFields {
     delivery_address: string | null;
 }
 
+export interface PaymentsSummaryJson {
+    paid_amount: number;
+    balance_amount: number;
+    last_paid_at: string | null;
+}
+
+export interface PricingSnapshotJson {
+    version: number;
+    computed_at: string;
+    inputs: {
+        volume: number;
+        concreteType: 'direct' | 'pumped';
+        strength: string;
+    };
+    breakdown: unknown;
+}
+
 export interface DatabaseRowOrders extends TimestampFields, AttributionFields, DeliveryFields {
     id: string;
     user_id: string;
     folio: string;
-    status: string;
+    status: DbOrderStatus;
     total_amount: number;
     currency: string;
     items: InternalOrderItemSnapshot[];
@@ -111,10 +105,41 @@ export interface DatabaseRowOrders extends TimestampFields, AttributionFields, D
     lead_id: number | null;
     pricing_version: number | null;
     price_breakdown: PricingSnapshot | null;
+    legacy_folio_raw: string | null;
+    external_ref: string | null;
+    ordered_at: string | null;
+    customer_id: string | null;
+    seller_id: string | null;
+    delivery_address_text: string | null;
+    delivery_address_id: string | null;
+    scheduled_date: string | null;
+    scheduled_window_start: string | null;
+    scheduled_window_end: string | null;
+    scheduled_slot_code: string | null;
+    scheduled_time_label: string | null;
+    service_type: 'bombeado' | 'tirado' | null;
+    product_id: string | null;
+    quantity_m3: number | null;
+    unit_price_before_vat: number | null;
+    vat_rate: number | null;
+    total_before_vat: number | null;
+    total_with_vat: number | null;
+    pricing_snapshot_json: PricingSnapshotJson | null;
+    payments_summary_json: PaymentsSummaryJson | null;
+    balance_amount: number | null;
+    order_status: DbOrderStatus | null;
+    payment_status: DbPaymentStatus | null;
+    fiscal_status: DbFiscalStatus | null;
+    supplier_name_text: string | null;
+    commission_snapshot_json: Json | null;
+    internal_notes: string | null;
+    import_source: string | null;
+    import_batch_id: string | null;
+    import_row_hash: string | null;
 }
 
 export interface DatabaseRowLeads extends AttributionFields, DeliveryFields {
-    id: number; // Note: bigint in Postgres. Safe up to 2^53-1 in JS number.
+    id: number;
     created_at: string;
     name: string;
     phone: string;
@@ -136,6 +161,44 @@ export interface DatabaseRowPriceConfig extends TimestampFields {
     active: boolean | null;
 }
 
+export interface DatabaseRowOrderPayment extends TimestampFields {
+    id: string;
+    order_id: string;
+    direction: DbPaymentDirection;
+    kind: DbPaymentKind;
+    method: DbPaymentMethod;
+    amount: number;
+    currency: string;
+    paid_at: string;
+    reference: string | null;
+    receipt_number: string | null;
+    notes: string | null;
+    created_by: string | null;
+    voided_at: string | null;
+    void_reason: string | null;
+}
+
+export interface DatabaseRowOrderStatusHistory {
+    id: string;
+    order_id: string;
+    from_status: DbOrderStatus | null;
+    to_status: DbOrderStatus;
+    reason: string | null;
+    changed_by: string | null;
+    changed_at: string;
+}
+
+export interface DatabaseRowOrderFiscalData extends TimestampFields {
+    order_id: string;
+    requires_invoice: boolean;
+    invoice_status: DbFiscalStatus;
+    invoice_requested_at: string | null;
+    invoice_number: string | null;
+    rfc: string | null;
+    razon_social: string | null;
+    cfdi_use: string | null;
+}
+
 export interface Database {
     public: {
         Tables: {
@@ -145,7 +208,7 @@ export interface Database {
                     id?: string;
                     user_id: string;
                     folio: string;
-                    status?: string;
+                    status?: DbOrderStatus;
                     total_amount: number;
                     currency?: string;
                     items: InternalOrderItemSnapshot[];
@@ -155,6 +218,37 @@ export interface Database {
                     lead_id?: number | null;
                     pricing_version?: number | null;
                     price_breakdown?: PricingSnapshot | null;
+                    legacy_folio_raw?: string | null;
+                    external_ref?: string | null;
+                    ordered_at?: string | null;
+                    customer_id?: string | null;
+                    seller_id?: string | null;
+                    delivery_address_text?: string | null;
+                    delivery_address_id?: string | null;
+                    scheduled_date?: string | null;
+                    scheduled_window_start?: string | null;
+                    scheduled_window_end?: string | null;
+                    scheduled_slot_code?: string | null;
+                    scheduled_time_label?: string | null;
+                    service_type?: 'bombeado' | 'tirado' | null;
+                    product_id?: string | null;
+                    quantity_m3?: number | null;
+                    unit_price_before_vat?: number | null;
+                    vat_rate?: number | null;
+                    total_before_vat?: number | null;
+                    total_with_vat?: number | null;
+                    pricing_snapshot_json?: PricingSnapshotJson | null;
+                    payments_summary_json?: PaymentsSummaryJson | null;
+                    balance_amount?: number | null;
+                    order_status?: DbOrderStatus | null;
+                    payment_status?: DbPaymentStatus | null;
+                    fiscal_status?: DbFiscalStatus | null;
+                    supplier_name_text?: string | null;
+                    commission_snapshot_json?: Json | null;
+                    internal_notes?: string | null;
+                    import_source?: string | null;
+                    import_batch_id?: string | null;
+                    import_row_hash?: string | null;
                 } & Partial<AttributionFields> & Partial<DeliveryFields>;
                 Update: Partial<Database['public']['Tables']['orders']['Insert']>;
                 Relationships: [];
@@ -192,6 +286,60 @@ export interface Database {
                 Update: Partial<Database['public']['Tables']['price_config']['Insert']>;
                 Relationships: [];
             };
+            order_payments: {
+                Row: DatabaseRowOrderPayment;
+                Insert: {
+                    id?: string;
+                    order_id: string;
+                    direction: DbPaymentDirection;
+                    kind: DbPaymentKind;
+                    method: DbPaymentMethod;
+                    amount: number;
+                    currency?: string;
+                    paid_at?: string;
+                    reference?: string | null;
+                    receipt_number?: string | null;
+                    notes?: string | null;
+                    created_by?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                    voided_at?: string | null;
+                    void_reason?: string | null;
+                };
+                Update: Partial<Database['public']['Tables']['order_payments']['Insert']>;
+                Relationships: [];
+            };
+            order_status_history: {
+                Row: DatabaseRowOrderStatusHistory;
+                Insert: {
+                    id?: string;
+                    order_id: string;
+                    from_status?: DbOrderStatus | null;
+                    to_status: DbOrderStatus;
+                    reason?: string | null;
+                    changed_by?: string | null;
+                    changed_at?: string;
+                };
+                Update: Partial<Database['public']['Tables']['order_status_history']['Insert']>;
+                Relationships: [];
+            };
+            order_fiscal_data: {
+                Row: DatabaseRowOrderFiscalData;
+                Insert: {
+                    order_id: string;
+                    requires_invoice?: boolean;
+                    invoice_status?: DbFiscalStatus;
+                    invoice_requested_at?: string | null;
+                    invoice_number?: string | null;
+                    rfc?: string | null;
+                    razon_social?: string | null;
+                    cfdi_use?: string | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: Partial<Database['public']['Tables']['order_fiscal_data']['Insert']>;
+                Relationships: [];
+            };
         };
         Views: {
             [_ in never]: never;
@@ -200,7 +348,12 @@ export interface Database {
             [_ in never]: never;
         };
         Enums: {
-            [_ in never]: never;
+            order_status: DbOrderStatus;
+            payment_status: DbPaymentStatus;
+            fiscal_status: DbFiscalStatus;
+            payment_direction: DbPaymentDirection;
+            payment_kind: DbPaymentKind;
+            payment_method: DbPaymentMethod;
         };
         CompositeTypes: {
             [_ in never]: never;
