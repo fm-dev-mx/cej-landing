@@ -15,16 +15,19 @@ export type Permission =
     | 'orders:view'
     | 'orders:create'
     | 'orders:edit'
+    | 'orders:update'
     | 'settings:view'
+    | 'financials:view'
+    | 'financials:write'
     | 'admin:all';
 
 /**
  * Permission matrix defining what each role can do.
  */
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
-    owner: ['orders:view', 'orders:create', 'orders:edit', 'settings:view', 'admin:all'],
-    admin: ['orders:view', 'orders:create', 'orders:edit', 'settings:view'],
-    operator: ['orders:view', 'orders:create'],
+    owner: ['orders:view', 'orders:create', 'orders:edit', 'orders:update', 'settings:view', 'financials:view', 'financials:write', 'admin:all'],
+    admin: ['orders:view', 'orders:create', 'orders:edit', 'orders:update', 'settings:view', 'financials:view', 'financials:write'],
+    operator: ['orders:view', 'orders:create', 'orders:update'],
 };
 
 /**

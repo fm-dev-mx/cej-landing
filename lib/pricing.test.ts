@@ -101,7 +101,7 @@ describe('Pricing Engine (Core Logic)', () => {
 
     describe('Quote Calculation (calcQuote)', () => {
 
-        const baseDirect = { strength: '200', type: 'direct' as const, additives: [] };
+        const baseDirect = { strength: '200' as const, type: 'direct' as const, additives: [] };
 
 
         it('calculates base price correctly (Simple Tier)', () => {
@@ -179,7 +179,7 @@ describe('Pricing Engine (Core Logic)', () => {
 
         it('keeps MXN financial contract stable for checkout and lead submission', () => {
             const quote = calcQuote(3.2, {
-                strength: '200',
+                strength: '200' as const,
                 type: 'pumped',
                 additives: []
             }, MOCK_RULES);
