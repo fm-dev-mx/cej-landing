@@ -9,4 +9,11 @@ export const adminOrderPayloadSchema = z.object({
     deliveryAddress: z.string().trim().min(5, 'La dirección de entrega es obligatoria.'),
     deliveryDate: z.string().trim().optional(),
     notes: z.string().trim().optional(),
+    utm_source: z.string().optional(),
+    utm_medium: z.string().optional(),
+    utm_campaign: z.string().optional(),
+    utm_term: z.string().optional(),
+    utm_content: z.string().optional(),
+    fbclid: z.string().optional(),
+    gclid: z.string().optional(),
 });

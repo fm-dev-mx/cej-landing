@@ -64,6 +64,11 @@ export const OrderSubmissionSchema = z.object({
     visitor_id: z.string().optional(),
     utm_source: z.string().optional(),
     utm_medium: z.string().optional(),
+    utm_campaign: z.string().optional(),
+    utm_term: z.string().optional(),
+    utm_content: z.string().optional(),
+    fbclid: z.string().optional(),
+    gclid: z.string().optional(),
     privacy_accepted: z.literal(true, {
         errorMap: () => ({ message: "Debes aceptar el aviso de privacidad" }),
     }),
