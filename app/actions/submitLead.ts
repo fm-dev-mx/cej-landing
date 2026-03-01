@@ -19,6 +19,7 @@ import { env } from "@/config/env";
 import { reportError, reportWarning } from "@/lib/monitoring";
 import type { Database, QuoteSnapshot } from "@/types/database";
 import { sendToMetaCAPI } from "@/lib/tracking/capi";
+import { getAttributionData, extractAttribution } from "@/lib/logic/attribution";
 
 // Initialize Supabase only if keys are present
 const supabase =
@@ -82,6 +83,11 @@ export type SubmitLeadPayload = {
     visitor_id?: string;
     utm_source?: string;
     utm_medium?: string;
+    utm_campaign?: string;
+    utm_term?: string;
+    utm_content?: string;
+    fbclid?: string;
+    gclid?: string;
     fb_event_id?: string;
     privacy_accepted: boolean;
 };
@@ -110,6 +116,11 @@ export async function submitLead(
             visitor_id,
             utm_source,
             utm_medium,
+            utm_campaign,
+            utm_term,
+            utm_content,
+            fbclid,
+            gclid,
             fb_event_id,
             privacy_accepted,
         } = parseResult.data;
@@ -136,6 +147,8 @@ export async function submitLead(
                 warning: "db_not_configured",
             };
         }
+
+        const attribution = await getAttributionData(extractAttribution(parseResult.data));
 
         const now = new Date().toISOString();
 
@@ -185,8 +198,13 @@ export async function submitLead(
                 quote_data: quoteSnapshot,
                 visitor_id: visitor_id || null,
                 fb_event_id: fb_event_id || null,
-                utm_source: utm_source || "direct",
-                utm_medium: utm_medium || "none",
+                utm_source: attribution.utm_source,
+                utm_medium: attribution.utm_medium,
+                utm_campaign: attribution.utm_campaign,
+                utm_term: attribution.utm_term,
+                utm_content: attribution.utm_content,
+                fbclid: attribution.fbclid,
+                gclid: attribution.gclid,
                 status: "new",
                 privacy_accepted,
                 privacy_accepted_at: privacy_accepted ? now : null,

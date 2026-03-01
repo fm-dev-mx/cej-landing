@@ -7,6 +7,7 @@ import { generateQuoteId } from '@/lib/utils';
 import { getUserRole, hasPermission } from '@/lib/auth/rbac';
 import { adminOrderPayloadSchema } from '@/lib/schemas/internal/order';
 import type { AdminOrderPayload, InternalOrderItem } from '@/types/internal/order';
+import { getAttributionData, extractAttribution } from '@/lib/logic/attribution';
 
 export type { AdminOrderPayload };
 
@@ -57,6 +58,13 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
             ? new Date(normalizedPayload.deliveryDate).toISOString()
             : null;
 
+        const attribution = await getAttributionData(extractAttribution(normalizedPayload));
+
+        // Default for admin-created orders if no specific marketing UTMs are present
+        if (attribution.utm_source === 'direct') {
+            attribution.utm_source = 'admin_dashboard';
+        }
+
         const { data, error } = await supabase
             .from('orders')
             .insert({
@@ -68,6 +76,13 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
                 items: [orderItem],
                 delivery_date: deliveryDate,
                 delivery_address: normalizedPayload.deliveryAddress,
+                utm_source: attribution.utm_source,
+                utm_medium: attribution.utm_medium,
+                utm_campaign: attribution.utm_campaign,
+                utm_term: attribution.utm_term,
+                utm_content: attribution.utm_content,
+                fbclid: attribution.fbclid,
+                gclid: attribution.gclid,
             })
             .select('id')
             .single();
