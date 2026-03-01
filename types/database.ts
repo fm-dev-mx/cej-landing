@@ -74,6 +74,16 @@ export interface Database {
                     geo_location: Json | null;
                     created_at: string;
                     updated_at: string;
+                    utm_source?: string | null;
+                    utm_medium?: string | null;
+                    utm_campaign?: string | null;
+                    utm_term?: string | null;
+                    utm_content?: string | null;
+                    fbclid?: string | null;
+                    gclid?: string | null;
+                    lead_id?: number | null;
+                    pricing_version?: number | null;
+                    price_breakdown?: Json | null;
                 };
                 Insert: {
                     id?: string;
@@ -88,6 +98,16 @@ export interface Database {
                     geo_location?: Json | null;
                     created_at?: string;
                     updated_at?: string;
+                    utm_source?: string | null;
+                    utm_medium?: string | null;
+                    utm_campaign?: string | null;
+                    utm_term?: string | null;
+                    utm_content?: string | null;
+                    fbclid?: string | null;
+                    gclid?: string | null;
+                    lead_id?: number | null;
+                    pricing_version?: number | null;
+                    price_breakdown?: Json | null;
                 };
                 Update: Partial<Database['public']['Tables']['orders']['Insert']>;
                 Relationships: [];
@@ -114,6 +134,7 @@ export interface Database {
                     lost_reason: string | null;
                     privacy_accepted: boolean | null;
                     privacy_accepted_at: string | null;
+                    gclid: string | null;
                 };
                 Insert: {
                     id?: number;
@@ -136,8 +157,29 @@ export interface Database {
                     lost_reason?: string | null;
                     privacy_accepted?: boolean | null;
                     privacy_accepted_at?: string | null;
+                    gclid?: string | null;
                 };
                 Update: Partial<Database['public']['Tables']['leads']['Insert']>;
+                Relationships: [];
+            };
+            price_config: {
+                Row: {
+                    id: number;
+                    version: number;
+                    pricing_rules: Json;
+                    active: boolean | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: number;
+                    version?: number;
+                    pricing_rules: Json;
+                    active?: boolean | null;
+                    created_at?: string;
+                    updated_at?: string;
+                };
+                Update: Partial<Database['public']['Tables']['price_config']['Insert']>;
                 Relationships: [];
             };
         };

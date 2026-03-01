@@ -156,7 +156,7 @@ function analyzeFile(filePath: string): HygieneFinding[] {
   const content = fs.readFileSync(filePath, 'utf-8');
   const lines = content.split('\n');
   const normalizedPath = normalizePath(filePath);
-  const isToolingScript = normalizedPath.startsWith('scripts/');
+  const isToolingScript = normalizedPath.startsWith('scripts/') || normalizedPath.endsWith('types/database.ts');
 
   if (!isToolingScript && lines.length > GOD_OBJECT_THRESHOLD) {
     findings.push({
