@@ -248,3 +248,66 @@ CREATE INDEX IF NOT EXISTS idx_leads_quote_gin
 -- ORDERS
 -- Fast lookup of user order history
 CREATE INDEX IF NOT EXISTS idx_orders_user_id ON public.orders(user_id);
+
+-- ============================================================
+-- 8. TABLE: EXPENSES (Internal MVP - Phase 1)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.expenses (
+  id           uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id      uuid REFERENCES public.profiles(id) NOT NULL,
+  amount       numeric(10,2) NOT NULL,
+  currency     text DEFAULT 'MXN',
+  category     text NOT NULL,
+  expense_date timestamptz NOT NULL,
+  reference    text,
+  notes        text,
+  created_at   timestamptz DEFAULT now(),
+  updated_at   timestamptz DEFAULT now()
+);
+
+ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users view expenses"
+  ON public.expenses FOR SELECT
+  USING (user_id = (SELECT auth.uid()));
+
+CREATE POLICY "Users insert expenses"
+  ON public.expenses FOR INSERT
+  WITH CHECK (user_id = (SELECT auth.uid()));
+
+CREATE TRIGGER set_expenses_updated_at
+  BEFORE UPDATE ON public.expenses
+  FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
+
+-- ============================================================
+-- 9. TABLE: PAYROLL (Internal MVP - Phase 1)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.payroll (
+  id           uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id      uuid REFERENCES public.profiles(id) NOT NULL,
+  employee     text NOT NULL,
+  period_start timestamptz NOT NULL,
+  period_end   timestamptz NOT NULL,
+  amount       numeric(10,2) NOT NULL,
+  currency     text DEFAULT 'MXN',
+  notes        text,
+  created_at   timestamptz DEFAULT now(),
+  updated_at   timestamptz DEFAULT now()
+);
+
+ALTER TABLE public.payroll ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users view payroll"
+  ON public.payroll FOR SELECT
+  USING (user_id = (SELECT auth.uid()));
+
+CREATE POLICY "Users insert payroll"
+  ON public.payroll FOR INSERT
+  WITH CHECK (user_id = (SELECT auth.uid()));
+
+CREATE TRIGGER set_payroll_updated_at
+  BEFORE UPDATE ON public.payroll
+  FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
+

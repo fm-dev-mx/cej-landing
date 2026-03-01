@@ -48,3 +48,13 @@ This document captures the "safe start" contracts and checks completed for `01-r
 - `pnpm typecheck`
 - `pnpm test`
 - `pnpm build` (release readiness gate)
+
+## Phase 2 MVP Operations
+
+Task list 1–7 complete:
+
+- Orders list path fully migrated and dashboard KPI active (`types/internal/reporting.ts`).
+- Calendar views generated.
+- Backend status transition matrix enforced (`lib/schemas/internal/order-status.ts`).
+- Expenses / Payroll schemas active in local application memory and added to `docs/schema.sql` (requires explicit apply in prod).
+- Report exports integrated with functional CSV generation.
