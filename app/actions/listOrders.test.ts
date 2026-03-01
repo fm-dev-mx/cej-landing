@@ -7,7 +7,6 @@ const mockOrder = vi.fn();
 const mockOrder2 = vi.fn();
 const mockSelect = vi.fn();
 const mockEq = vi.fn();
-const mockOr = vi.fn();
 const mockGte = vi.fn();
 const mockLte = vi.fn();
 const mockIlike = vi.fn();
@@ -31,10 +30,9 @@ describe('listOrders', () => {
 
         // Base promise simulation on the query builder
         mockOrder2.mockImplementation(() => Promise.resolve({ data: [], error: null }));
+        mockOrder2.mockReturnValue({ eq: mockEq, gte: mockGte, lte: mockLte, ilike: mockIlike });
 
-        mockOrder2.mockReturnValue({ eq: mockEq, or: mockOr, gte: mockGte, lte: mockLte, ilike: mockIlike });
         mockEq.mockReturnValue({ gte: mockGte, lte: mockLte, ilike: mockIlike, then: (cb: any) => Promise.resolve({ data: [], error: null }).then(cb) });
-        mockOr.mockReturnValue({ gte: mockGte, lte: mockLte, ilike: mockIlike, then: (cb: any) => Promise.resolve({ data: [], error: null }).then(cb) });
         mockGte.mockReturnValue({ lte: mockLte, ilike: mockIlike, then: (cb: any) => Promise.resolve({ data: [], error: null }).then(cb) });
         mockLte.mockReturnValue({ ilike: mockIlike, then: (cb: any) => Promise.resolve({ data: [], error: null }).then(cb) });
         mockIlike.mockReturnValue({ then: (cb: any) => Promise.resolve({ data: [], error: null }).then(cb) });
@@ -53,12 +51,12 @@ describe('listOrders', () => {
         expect(result.orders).toEqual([]);
     });
 
-    it('applies filters correctly', async () => {
-        await listOrders({ status: 'draft', startDate: '2026-01-01', endDate: '2026-12-31', folio: '123' });
+    it('applies filters correctly using the canonical schema', async () => {
+        await listOrders({ status: 'confirmed', startDate: '2026-01-01', endDate: '2026-12-31', folio: '123' });
 
-        expect(mockOr).toHaveBeenCalledWith('status.eq.draft,order_status.eq.draft');
-        expect(mockGte).toHaveBeenCalledWith('delivery_date', '2026-01-01');
-        expect(mockLte).toHaveBeenCalledWith('delivery_date', '2026-12-31');
+        expect(mockEq).toHaveBeenCalledWith('order_status', 'confirmed');
+        expect(mockGte).toHaveBeenCalledWith('scheduled_date', '2026-01-01');
+        expect(mockLte).toHaveBeenCalledWith('scheduled_date', '2026-12-31');
         expect(mockIlike).toHaveBeenCalledWith('folio', '%123%');
     });
 

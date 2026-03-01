@@ -17,7 +17,7 @@ import {
 import type { OrderPayload } from "@/types/domain"; // Import strict type
 import { env } from "@/config/env";
 import { reportError, reportWarning } from "@/lib/monitoring";
-import type { Database, QuoteSnapshot } from "@/types/database";
+import type { Database, QuoteSnapshot, Json } from "@/types/database";
 import { sendToMetaCAPI } from "@/lib/tracking/capi";
 import { getAttributionData, extractAttribution } from "@/lib/logic/attribution";
 
@@ -199,7 +199,7 @@ export async function submitLead(
             name,
             phone,
             phone_norm: normalizePhone(phone),
-            quote_data: quoteSnapshot,
+            quote_data: quoteSnapshot as unknown as Json,
             visitor_id: visitor_id || null,
             fb_event_id: fb_event_id || null,
             utm_source: attribution.utm_source ?? null,

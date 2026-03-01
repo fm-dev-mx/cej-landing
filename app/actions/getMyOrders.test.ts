@@ -42,12 +42,12 @@ describe('getMyOrders', () => {
         const data = Array.from({ length: 2 }).map((_, idx) => ({
             id: `order-${idx}`,
             folio: `FOL-${idx}`,
-            status: 'draft',
-            total_amount: 1000,
-            currency: 'MXN',
-            items: [{ id: 'item-1', label: 'Concreto', volume: 5 }],
-            created_at: `2026-02-0${idx + 1}T12:00:00.000Z`,
-            delivery_date: null,
+            order_status: 'draft',
+            payment_status: 'pending',
+            total_with_vat: 1000,
+            balance_amount: 1000,
+            ordered_at: `2026-02-0${idx + 1}T12:00:00.000Z`,
+            scheduled_date: null,
         }));
 
         mockLimit.mockResolvedValueOnce({ data, error: null });
@@ -58,13 +58,13 @@ describe('getMyOrders', () => {
         expect(result.nextCursor).toBe('2026-02-02T12:00:00.000Z');
     });
 
-    it('applies cursor filter when cursor exists', async () => {
+    it('applies cursor filter on ordered_at when cursor exists', async () => {
         const cursor = '2026-02-20T00:00:00.000Z';
         mockLimit.mockReturnValueOnce({ lt: mockLt });
 
         await getMyOrders(cursor, 10);
 
-        expect(mockLt).toHaveBeenCalledWith('created_at', cursor);
+        expect(mockLt).toHaveBeenCalledWith('ordered_at', cursor);
     });
 
     it('returns unauthenticated error when user is missing', async () => {

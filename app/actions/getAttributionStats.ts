@@ -17,8 +17,7 @@ export type AttributionStatsResult =
 
 /**
  * getAttributionStats
- * Aggregates orders and total sales by utm_source.
- * Restricted to admin/owner roles.
+ * Aggregates orders and total sales by utm_source using canonical schema.
  */
 export async function getAttributionStats(): Promise<AttributionStatsResult> {
     try {
@@ -34,31 +33,28 @@ export async function getAttributionStats(): Promise<AttributionStatsResult> {
             return { status: 'error', message: 'No tienes permiso para ver estadísticas de atribución.' };
         }
 
-        // We use query instead of RPC if we want to stay within standard Supabase JS client
-        // but for grouping/aggregating, SQL is better.
-        // Given we don't have an RPC yet, we'll do a simple grouped select if possible,
-        // or aggregate client-side if the volume is low (standard for MVP).
-        // Better: use Supabase's powerful filtering or an RPC.
-
         const { data, error } = await supabase
             .from('orders')
-            .select('utm_source, total_amount')
-            .not('status', 'eq', 'cancelled');
+            .select('utm_source, total_with_vat')
+            .not('order_status', 'eq', 'cancelled');
 
         if (error) {
             reportError(error, { source: 'getAttributionStats' });
             return { status: 'error', message: 'Error al consultar estadísticas.' };
         }
 
-        // Aggregate results
+        interface OrderRow {
+            utm_source: string | null;
+            total_with_vat: number;
+        }
         const statsMap = new Map<string, { count: number; total: number }>();
 
-        data.forEach((order) => {
+        data?.forEach((order: OrderRow) => {
             const source = order.utm_source || 'unknown';
             const current = statsMap.get(source) || { count: 0, total: 0 };
             statsMap.set(source, {
                 count: current.count + 1,
-                total: current.total + Number(order.total_amount),
+                total: current.total + Number(order.total_with_vat),
             });
         });
 

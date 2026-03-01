@@ -12,9 +12,8 @@ export interface GetDashboardKpisResult {
 }
 
 /**
- * Fetches the Dashboard KPIs based on orders.
- * A more complex version would also subtract expenses and payroll.
- * For Phase 1, we pull direct totals from the orders table.
+ * getDashboardKpis
+ * Fetches the Dashboard KPIs based on orders using the canonical schema.
  */
 export async function getDashboardKpis(period: KpiPeriodType = 'current_month'): Promise<GetDashboardKpisResult> {
     try {
@@ -26,25 +25,23 @@ export async function getDashboardKpis(period: KpiPeriodType = 'current_month'):
         }
 
         const role = getUserRole(user.user_metadata);
-        if (!hasPermission(role, 'orders:view')) {
+        if (!hasPermission(role, 'orders:view') && !hasPermission(role, 'admin:all')) {
             return { success: false, error: 'Sin permisos' };
         }
 
-        // Base query - RLS will restrict to the correct tenant/user internally
-        let query = supabase.from('orders').select('status, total_amount, currency, delivery_date');
+        // Base query - uses canonical fields: order_status, total_with_vat, scheduled_date
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let query = (supabase as any).from('orders').select('order_status, total_with_vat, scheduled_date, ordered_at');
 
-        // Note: For 'current_month'/week in a robust app we filter via date strings or DB functions.
-        // For MVP frontend simplicity we pull orders and reduce in JS since RLS limits data size per user.
-        // Or we can apply gt/lt filters.
         const now = new Date();
         if (period === 'current_month') {
             const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-            query = query.gte('created_at', startOfMonth);
+            query = query.gte('ordered_at', startOfMonth);
         } else if (period === 'current_week') {
             const startOfWeek = new Date();
-            startOfWeek.setDate(now.getDate() - now.getDay());
+            startOfWeek.setDate(now.getDate() - now.getDay() + (now.getDay() === 0 ? -6 : 1)); // Adjust to Monday
             startOfWeek.setHours(0, 0, 0, 0);
-            query = query.gte('created_at', startOfWeek.toISOString());
+            query = query.gte('ordered_at', startOfWeek.toISOString());
         }
 
         const { data: orders, error } = await query;
@@ -64,21 +61,20 @@ export async function getDashboardKpis(period: KpiPeriodType = 'current_month'):
 
         const todayStr = now.toISOString().split('T')[0];
 
-        for (const order of (orders || [])) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for (const order of (orders || []) as any[]) {
             kpis.totalOrders += 1;
 
-            if (['draft', 'pending_payment'].includes(order.status)) {
+            if (['draft', 'confirmed'].includes(order.order_status)) {
                 kpis.pendingOrders += 1;
             }
 
-            if (order.status === 'scheduled' && order.delivery_date && order.delivery_date.startsWith(todayStr)) {
+            if (order.order_status === 'scheduled' && order.scheduled_date === todayStr) {
                 kpis.scheduledToday += 1;
             }
 
-            // Simple MVP revenue: sum total amounts.
-            // Ideally we exclude cancelled orders.
-            if (order.status !== 'cancelled') {
-                kpis.revenueTotal += Number(order.total_amount || 0);
+            if (order.order_status !== 'cancelled') {
+                kpis.revenueTotal += Number(order.total_with_vat || 0);
             }
         }
 

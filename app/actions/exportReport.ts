@@ -11,13 +11,18 @@ export interface ExportReportResult {
     error?: string;
 }
 
+/**
+ * exportReport
+ * Generates a basic CSV report with sales, expenses, and payroll data.
+ * - Uses the canonical schema fields (total_with_vat, order_status).
+ */
 export async function exportReport(startDate: string, endDate: string): Promise<ExportReportResult> {
     try {
         const supabase = await createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
         if (!user) return { success: false, error: 'No autenticado' };
-        if (!hasPermission(getUserRole(user.user_metadata), 'financials:view')) {
+        if (!hasPermission(getUserRole(user.user_metadata), 'financials:view') && !hasPermission(getUserRole(user.user_metadata), 'admin:all')) {
             return { success: false, error: 'Sin permisos' };
         }
 
@@ -42,9 +47,9 @@ export async function exportReport(startDate: string, endDate: string): Promise<
         let totalNomina = 0;
 
         orders.forEach(o => {
-            if (o.status !== 'cancelled') {
-                totalVenta += Number(o.total_amount);
-                csv += `Venta,${o.created_at},${o.folio},${o.total_amount},Ingreso\n`;
+            if (o.order_status !== 'cancelled') {
+                totalVenta += Number(o.total_with_vat);
+                csv += `Venta,${o.ordered_at},${o.folio},${o.total_with_vat},Ingreso\n`;
             }
         });
 

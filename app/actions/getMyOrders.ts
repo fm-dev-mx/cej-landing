@@ -4,28 +4,8 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { reportError } from '@/lib/monitoring';
 import { getUserRole, hasPermission } from '@/lib/auth/rbac';
-import type { Database } from '@/types/database';
-
-export interface OrderSummary {
-    id: string;
-    folio: string;
-    status: string;
-    total_amount: number;
-    currency: string;
-    items: Array<{
-        id: string;
-        label: string;
-        volume?: number;
-    }>;
-    created_at: string;
-    delivery_date: string | null;
-}
-
-type OrderRow = Database['public']['Tables']['orders']['Row'];
-type SelectedOrderRow = Pick<
-    OrderRow,
-    'id' | 'folio' | 'status' | 'order_status' | 'total_amount' | 'total_with_vat' | 'currency' | 'items' | 'created_at' | 'ordered_at' | 'delivery_date' | 'scheduled_date'
->;
+import type { OrderSummary } from '@/types/internal/order';
+import type { DbOrderStatus, DbPaymentStatus } from '@/types/database-enums';
 
 export interface GetMyOrdersResult {
     success: boolean;
@@ -38,7 +18,7 @@ export interface GetMyOrdersResult {
  * Fetches orders for the currently authenticated user with cursor-based pagination.
  * Uses RLS to ensure users can only see their own orders.
  *
- * @param cursor - The 'created_at' timestamp of the last item from the previous page.
+ * @param cursor - The 'ordered_at' timestamp of the last item from the previous page.
  * @param pageSize - Number of items to fetch (default: 25).
  */
 export async function getMyOrders(cursor?: string, pageSize = 25): Promise<GetMyOrdersResult> {
@@ -69,31 +49,25 @@ export async function getMyOrders(cursor?: string, pageSize = 25): Promise<GetMy
         // Fetch orders - RLS ensures we only get this user's orders
         let query = supabase
             .from('orders')
-            .select('id, folio, status, order_status, total_amount, total_with_vat, currency, items, created_at, ordered_at, delivery_date, scheduled_date')
-            .order('created_at', { ascending: false })
+            .select(`
+                id,
+                folio,
+                order_status,
+                payment_status,
+                total_with_vat,
+                balance_amount,
+                quantity_m3,
+                ordered_at,
+                scheduled_date
+            `)
+            .order('ordered_at', { ascending: false })
             .limit(pageSize);
 
         if (cursor) {
-            query = query.lt('created_at', cursor);
+            query = query.lt('ordered_at', cursor);
         }
 
-        let { data: orders, error: dbError } = await query;
-
-        if (dbError && /column|schema cache|order_status|scheduled_date|ordered_at/i.test(dbError.message)) {
-            let legacyQuery = supabase
-                .from('orders')
-                .select('id, folio, status, total_amount, currency, items, created_at, delivery_date')
-                .order('created_at', { ascending: false })
-                .limit(pageSize);
-
-            if (cursor) {
-                legacyQuery = legacyQuery.lt('created_at', cursor);
-            }
-
-            const legacyResult = await legacyQuery;
-            orders = legacyResult.data as SelectedOrderRow[] | null;
-            dbError = legacyResult.error;
-        }
+        const { data: orders, error: dbError } = await query;
 
         if (dbError) {
             reportError(dbError, { action: 'getMyOrders', phase: 'db_query' });
@@ -104,22 +78,34 @@ export async function getMyOrders(cursor?: string, pageSize = 25): Promise<GetMy
             };
         }
 
-        const mappedOrders: OrderSummary[] = ((orders || []) as SelectedOrderRow[]).map((order) => ({
-            id: order.id,
-            folio: order.folio,
-            status: order.order_status || order.status,
-            total_amount: Number(order.total_with_vat || order.total_amount || 0),
-            currency: order.currency || 'MXN',
-            items: Array.isArray(order.items) ? order.items : [],
-            created_at: order.ordered_at || order.created_at,
-            delivery_date: order.scheduled_date || order.delivery_date,
+        interface OrderRow {
+            id: string;
+            folio: string;
+            order_status: DbOrderStatus;
+            payment_status: DbPaymentStatus;
+            total_with_vat: number;
+            balance_amount: number;
+            quantity_m3: number;
+            ordered_at: string;
+            scheduled_date: string | null;
+        }
+        const mappedOrders: OrderSummary[] = (orders || []).map((o: OrderRow) => ({
+            id: o.id,
+            folio: o.folio,
+            order_status: o.order_status,
+            payment_status: o.payment_status,
+            total_with_vat: Number(o.total_with_vat),
+            balance_amount: Number(o.balance_amount),
+            quantity_m3: Number(o.quantity_m3 || 0),
+            ordered_at: o.ordered_at,
+            scheduled_date: o.scheduled_date,
         }));
 
         return {
             success: true,
             orders: mappedOrders,
             nextCursor: (mappedOrders.length === pageSize)
-                ? mappedOrders[mappedOrders.length - 1].created_at
+                ? mappedOrders[mappedOrders.length - 1].ordered_at
                 : null,
         };
     } catch (error) {
