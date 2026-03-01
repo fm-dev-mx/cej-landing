@@ -225,6 +225,7 @@ CREATE TABLE public.orders (
   import_row_hash  text,
   legacy_folio_raw text,
   external_ref     text,
+  notes            text,
 
   -- Invariants
   CONSTRAINT valid_scheduling_window CHECK (
