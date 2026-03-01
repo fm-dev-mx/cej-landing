@@ -71,6 +71,7 @@ export interface AdminOrderPayload {
     concreteType: InternalConcreteType;
     strength: string;
     deliveryAddress: string;
+    sellerId?: string;
     orderedAt?: string;
     deliveryDate?: string;
     scheduledWindowStart?: string;

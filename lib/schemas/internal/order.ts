@@ -7,6 +7,7 @@ export const adminOrderPayloadSchema = z.object({
     concreteType: z.enum(['direct', 'pumped']),
     strength: z.string().trim().min(1, 'La resistencia es obligatoria.'),
     deliveryAddress: z.string().trim().min(5, 'La dirección de entrega es obligatoria.'),
+    sellerId: z.string().uuid('El vendedor seleccionado no es válido.').optional(),
     orderedAt: z.string().datetime().optional(),
     deliveryDate: z.string().trim().optional(),
     scheduledWindowStart: z.string().datetime().optional(),
