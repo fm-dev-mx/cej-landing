@@ -1,0 +1,122 @@
+.topbar {
+    position: sticky;
+    z-index: var(--z-sticky-bar);
+    top: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    min-height: var(--header-h-stuck);
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: 1px solid var(--c-border);
+
+    background: color-mix(in oklab, var(--c-surface) 96%, transparent);
+    backdrop-filter: blur(8px);
+}
+
+.leftColumn {
+    display: flex;
+    gap: var(--sp-3);
+    align-items: center;
+    min-width: 0;
+}
+
+.menuButton {
+    cursor: pointer;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+
+    color: var(--c-text);
+
+    background: var(--c-surface);
+
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+
+    &:hover {
+        border-color: var(--c-border-strong);
+        background-color: var(--c-surface-light);
+    }
+
+    &:focus-visible {
+        outline: none;
+        box-shadow: 0 0 0 3px var(--c-interactive-ring);
+    }
+}
+
+.menuIcon {
+    font-size: 1.1rem;
+}
+
+.context {
+    min-width: 0;
+}
+
+.title {
+    margin: 0;
+    font-size: var(--fs-lg);
+    font-weight: 700;
+    color: var(--c-text);
+}
+
+.breadcrumbs {
+    margin-top: var(--sp-1);
+}
+
+.breadcrumbList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.breadcrumbItem {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: center;
+
+    font-size: var(--fs-xs);
+    color: var(--c-muted);
+
+    & + .breadcrumbItem::before {
+        content: '/';
+        color: var(--c-border-strong);
+    }
+
+    a {
+        color: var(--c-muted-strong);
+        text-decoration: none;
+        transition: color 0.2s ease;
+
+        &:hover {
+            color: var(--c-text);
+        }
+
+        &:focus-visible {
+            border-radius: 4px;
+            outline: 2px solid var(--c-interactive-ring);
+            outline-offset: 2px;
+        }
+    }
+}
+
+@media (width >= 1024px) {
+    .topbar {
+        padding: var(--sp-3) var(--sp-6);
+    }
+
+    .menuButton {
+        display: none;
+    }
+}

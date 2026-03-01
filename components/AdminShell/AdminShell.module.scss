@@ -1,0 +1,42 @@
+.shell {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 100vh;
+    background: var(--c-surface-light);
+}
+
+.mainColumn {
+    min-width: 0;
+}
+
+.content {
+    min-width: 0;
+    min-height: calc(100vh - var(--header-h-stuck));
+    padding: var(--sp-4);
+}
+
+.overlay {
+    position: fixed;
+    z-index: calc(var(--z-mobile-menu) - 1);
+    inset: 0;
+
+    border: 0;
+
+    background: rgb(15 23 42 / 40%);
+}
+
+@media (width >= 1024px) {
+    .shell {
+        grid-template-columns: 280px 1fr;
+    }
+
+    .overlay {
+        display: none;
+    }
+
+    .content {
+        overflow-y: auto;
+        height: calc(100vh - var(--header-h-stuck));
+        padding: var(--sp-6);
+    }
+}
