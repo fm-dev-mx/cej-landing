@@ -124,6 +124,20 @@ These tables form the core of the SaaS infrastructure implemented in Phase 4B.
 - profiles: Maintains a 1-to-1 relationship with auth.users.
 - orders: Represents the lifecycle of a confirmed job.
 
+### `public.order_payments`, `public.order_status_history`, `public.order_fiscal_data` (Active - Dual Write)
+
+Operational sales and collections are now modeled with additive tables to preserve backward compatibility:
+
+- `order_payments`: immutable ledger for `anticipo`, `abono`, `liquidacion`, `ajuste`, `refund`, `chargeback`.
+- `order_status_history`: transition audit trail (`from_status` -> `to_status`) with actor and reason.
+- `order_fiscal_data`: minimum fiscal capture for invoice request lifecycle (without PAC integration).
+
+Additional additive fields on `orders` include:
+
+- Capture and scheduling: `ordered_at`, `delivery_address_text`, `scheduled_window_start`, `scheduled_window_end`, `scheduled_slot_code`, `scheduled_time_label`.
+- Financial summary: `payments_summary_json`, `balance_amount`, `payment_status`.
+- Import idempotency: `import_source`, `import_batch_id`, `import_row_hash`.
+
 ## 3. Security & RLS Policies
 
 **Row Level Security (RLS)** is strictly enforced to ensure multi-tenant isolation and data privacy.

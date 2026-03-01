@@ -10,6 +10,37 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ============================================================
+-- 1.1 ENUM TYPES FOR ORDERS DOMAIN (Operational Sales Model)
+-- ============================================================
+
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'order_status_enum') THEN
+    CREATE TYPE public.order_status_enum AS ENUM ('draft','pending_payment','scheduled','delivered','cancelled');
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_status_enum') THEN
+    CREATE TYPE public.payment_status_enum AS ENUM ('pending','partial','paid','cancelled');
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'fiscal_status_enum') THEN
+    CREATE TYPE public.fiscal_status_enum AS ENUM ('not_requested','requested','issued','cancelled');
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_direction_enum') THEN
+    CREATE TYPE public.payment_direction_enum AS ENUM ('in','out');
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_kind_enum') THEN
+    CREATE TYPE public.payment_kind_enum AS ENUM ('anticipo','abono','liquidacion','ajuste','refund','chargeback');
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_method_enum') THEN
+    CREATE TYPE public.payment_method_enum AS ENUM ('efectivo','transferencia','credito','deposito','otro');
+  END IF;
+END $$;
+
+-- ============================================================
 -- 2. GENERIC FUNCTION: updated_at
 -- ============================================================
 
@@ -238,7 +269,38 @@ ALTER TABLE public.orders
   ADD COLUMN IF NOT EXISTS gclid            text,
   ADD COLUMN IF NOT EXISTS lead_id          bigint,
   ADD COLUMN IF NOT EXISTS pricing_version  int,
-  ADD COLUMN IF NOT EXISTS price_breakdown  jsonb;
+  ADD COLUMN IF NOT EXISTS price_breakdown  jsonb,
+  ADD COLUMN IF NOT EXISTS legacy_folio_raw text,
+  ADD COLUMN IF NOT EXISTS external_ref text,
+  ADD COLUMN IF NOT EXISTS ordered_at timestamptz,
+  ADD COLUMN IF NOT EXISTS customer_id uuid,
+  ADD COLUMN IF NOT EXISTS seller_id uuid,
+  ADD COLUMN IF NOT EXISTS delivery_address_text text,
+  ADD COLUMN IF NOT EXISTS delivery_address_id uuid,
+  ADD COLUMN IF NOT EXISTS scheduled_date timestamptz,
+  ADD COLUMN IF NOT EXISTS scheduled_window_start timestamptz,
+  ADD COLUMN IF NOT EXISTS scheduled_window_end timestamptz,
+  ADD COLUMN IF NOT EXISTS scheduled_slot_code text,
+  ADD COLUMN IF NOT EXISTS scheduled_time_label text,
+  ADD COLUMN IF NOT EXISTS service_type text,
+  ADD COLUMN IF NOT EXISTS product_id text,
+  ADD COLUMN IF NOT EXISTS quantity_m3 numeric(10,2),
+  ADD COLUMN IF NOT EXISTS unit_price_before_vat numeric(12,2),
+  ADD COLUMN IF NOT EXISTS vat_rate numeric(6,4),
+  ADD COLUMN IF NOT EXISTS total_before_vat numeric(12,2),
+  ADD COLUMN IF NOT EXISTS total_with_vat numeric(12,2),
+  ADD COLUMN IF NOT EXISTS pricing_snapshot_json jsonb,
+  ADD COLUMN IF NOT EXISTS payments_summary_json jsonb,
+  ADD COLUMN IF NOT EXISTS balance_amount numeric(12,2),
+  ADD COLUMN IF NOT EXISTS order_status public.order_status_enum,
+  ADD COLUMN IF NOT EXISTS payment_status public.payment_status_enum,
+  ADD COLUMN IF NOT EXISTS fiscal_status public.fiscal_status_enum,
+  ADD COLUMN IF NOT EXISTS supplier_name_text text,
+  ADD COLUMN IF NOT EXISTS commission_snapshot_json jsonb,
+  ADD COLUMN IF NOT EXISTS internal_notes text,
+  ADD COLUMN IF NOT EXISTS import_source text,
+  ADD COLUMN IF NOT EXISTS import_batch_id text,
+  ADD COLUMN IF NOT EXISTS import_row_hash text;
 
 -- SAFE CONSTRAINT INJECTION (IDEMPOTENT)
 DO $$
@@ -270,6 +332,18 @@ ALTER TABLE public.orders
 
 ALTER TABLE public.orders
   ALTER COLUMN updated_at SET DEFAULT now();
+
+ALTER TABLE public.orders
+  ALTER COLUMN order_status SET DEFAULT 'draft'::public.order_status_enum;
+
+ALTER TABLE public.orders
+  ALTER COLUMN payment_status SET DEFAULT 'pending'::public.payment_status_enum;
+
+ALTER TABLE public.orders
+  ALTER COLUMN fiscal_status SET DEFAULT 'not_requested'::public.fiscal_status_enum;
+
+ALTER TABLE public.orders
+  ALTER COLUMN ordered_at SET DEFAULT now();
 
 -- Add / enforce status CHECK without failing on historical data (NOT VALID).
 DO $$
@@ -345,6 +419,113 @@ CREATE TRIGGER set_orders_updated_at
   EXECUTE PROCEDURE public.set_updated_at();
 
 -- ============================================================
+-- 5.1 TABLE: ORDER_PAYMENTS (Operational Ledger)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.order_payments (
+  id             uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_id       uuid NOT NULL REFERENCES public.orders(id) ON DELETE CASCADE,
+  direction      public.payment_direction_enum NOT NULL,
+  kind           public.payment_kind_enum NOT NULL,
+  method         public.payment_method_enum NOT NULL,
+  amount         numeric(12,2) NOT NULL CHECK (amount > 0),
+  currency       text NOT NULL DEFAULT 'MXN',
+  paid_at        timestamptz NOT NULL DEFAULT now(),
+  reference      text,
+  receipt_number text,
+  notes          text,
+  created_by     uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  created_at     timestamptz NOT NULL DEFAULT now(),
+  updated_at     timestamptz NOT NULL DEFAULT now(),
+  voided_at      timestamptz,
+  void_reason    text
+);
+
+ALTER TABLE public.order_payments ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users view order payments" ON public.order_payments;
+CREATE POLICY "Users view order payments"
+  ON public.order_payments FOR SELECT
+  USING (EXISTS (SELECT 1 FROM public.orders o WHERE o.id = order_id AND o.user_id = auth.uid()));
+
+DROP POLICY IF EXISTS "Users insert order payments" ON public.order_payments;
+CREATE POLICY "Users insert order payments"
+  ON public.order_payments FOR INSERT
+  WITH CHECK (EXISTS (SELECT 1 FROM public.orders o WHERE o.id = order_id AND o.user_id = auth.uid()));
+
+DROP TRIGGER IF EXISTS set_order_payments_updated_at ON public.order_payments;
+CREATE TRIGGER set_order_payments_updated_at
+  BEFORE UPDATE ON public.order_payments
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.set_updated_at();
+
+-- ============================================================
+-- 5.2 TABLE: ORDER_STATUS_HISTORY
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.order_status_history (
+  id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_id    uuid NOT NULL REFERENCES public.orders(id) ON DELETE CASCADE,
+  from_status public.order_status_enum,
+  to_status   public.order_status_enum NOT NULL,
+  reason      text,
+  changed_by  uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  changed_at  timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.order_status_history ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users view order history" ON public.order_status_history;
+CREATE POLICY "Users view order history"
+  ON public.order_status_history FOR SELECT
+  USING (EXISTS (SELECT 1 FROM public.orders o WHERE o.id = order_id AND o.user_id = auth.uid()));
+
+DROP POLICY IF EXISTS "Users insert order history" ON public.order_status_history;
+CREATE POLICY "Users insert order history"
+  ON public.order_status_history FOR INSERT
+  WITH CHECK (EXISTS (SELECT 1 FROM public.orders o WHERE o.id = order_id AND o.user_id = auth.uid()));
+
+-- ============================================================
+-- 5.3 TABLE: ORDER_FISCAL_DATA
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.order_fiscal_data (
+  order_id            uuid PRIMARY KEY REFERENCES public.orders(id) ON DELETE CASCADE,
+  requires_invoice    boolean NOT NULL DEFAULT false,
+  invoice_status      public.fiscal_status_enum NOT NULL DEFAULT 'not_requested',
+  invoice_requested_at timestamptz,
+  invoice_number      text,
+  rfc                 text,
+  razon_social        text,
+  cfdi_use            text,
+  created_at          timestamptz NOT NULL DEFAULT now(),
+  updated_at          timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.order_fiscal_data ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users view order fiscal data" ON public.order_fiscal_data;
+CREATE POLICY "Users view order fiscal data"
+  ON public.order_fiscal_data FOR SELECT
+  USING (EXISTS (SELECT 1 FROM public.orders o WHERE o.id = order_id AND o.user_id = auth.uid()));
+
+DROP POLICY IF EXISTS "Users upsert order fiscal data" ON public.order_fiscal_data;
+CREATE POLICY "Users upsert order fiscal data"
+  ON public.order_fiscal_data FOR INSERT
+  WITH CHECK (EXISTS (SELECT 1 FROM public.orders o WHERE o.id = order_id AND o.user_id = auth.uid()));
+
+DROP POLICY IF EXISTS "Users update order fiscal data" ON public.order_fiscal_data;
+CREATE POLICY "Users update order fiscal data"
+  ON public.order_fiscal_data FOR UPDATE
+  USING (EXISTS (SELECT 1 FROM public.orders o WHERE o.id = order_id AND o.user_id = auth.uid()));
+
+DROP TRIGGER IF EXISTS set_order_fiscal_data_updated_at ON public.order_fiscal_data;
+CREATE TRIGGER set_order_fiscal_data_updated_at
+  BEFORE UPDATE ON public.order_fiscal_data
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.set_updated_at();
+
+-- ============================================================
 -- 6. TABLE: PRICE_CONFIG (Pricing Configuration - Phase 5)
 -- ============================================================
 
@@ -366,7 +547,7 @@ ALTER TABLE public.price_config
   ADD COLUMN IF NOT EXISTS updated_at    timestamptz;
 
 ALTER TABLE public.price_config
-  ALTER COLUMN currency SET DEFAULT 'MXN';
+  ALTER COLUMN version SET DEFAULT 1;
 
 ALTER TABLE public.price_config
   ALTER COLUMN active SET DEFAULT true;
@@ -426,6 +607,9 @@ CREATE INDEX IF NOT EXISTS idx_orders_status ON public.orders(status);
 
 -- Attribution lookup: Fast join for lead source analysis
 CREATE INDEX IF NOT EXISTS idx_orders_lead_id ON public.orders(lead_id);
+CREATE INDEX IF NOT EXISTS idx_orders_order_status_scheduled_date ON public.orders(order_status, scheduled_date);
+CREATE INDEX IF NOT EXISTS idx_orders_import_source_row_hash ON public.orders(import_source, import_row_hash);
+CREATE INDEX IF NOT EXISTS idx_order_payments_order_paid_at ON public.order_payments(order_id, paid_at DESC);
 
 -- ============================================================
 -- 8. TABLE: EXPENSES (Internal MVP - Phase 1)
