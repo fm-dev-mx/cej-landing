@@ -64,7 +64,7 @@ describe('createAdminOrder', () => {
         } as unknown as any);
     });
 
-    it('inserts a new order row compatible with dashboard list shape', async () => {
+    it('inserts a new order row using the canonical schema', async () => {
         mockSingle.mockResolvedValue({ data: { id: '999' }, error: null });
 
         const result = await createAdminOrder(validPayload);
@@ -73,26 +73,21 @@ describe('createAdminOrder', () => {
         expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({
             user_id: 'admin-id',
             folio: 'ADMIN-123',
-            status: 'draft',
             order_status: 'draft',
             payment_status: 'pending',
             fiscal_status: 'not_requested',
-            total_amount: 1160,
-            currency: 'MXN',
-            delivery_address: 'Test Address 123',
+            total_with_vat: 1160,
             delivery_address_text: 'Test Address 123',
-            balance_amount: 1160,
-            items: expect.arrayContaining([
-                expect.objectContaining({
-                    label: "Concreto Directo f'c 250",
-                    volume: 5,
-                    service: 'direct',
-                    subtotal: 1000,
-                }),
-            ]),
-            pricing_version: 1,
-            price_breakdown: expect.any(Object),
+            service_type: 'tirado',
+            quantity_m3: 5,
+            pricing_snapshot_json: expect.any(Object),
         }));
+
+        // Negative check: should NOT contain legacy fields
+        const capturedPayload = mockInsert.mock.calls[0][0];
+        expect(capturedPayload.status).toBeUndefined();
+        expect(capturedPayload.items).toBeUndefined();
+        expect(capturedPayload.total_amount).toBeUndefined();
     });
 
     it('returns error result on validation failure', async () => {

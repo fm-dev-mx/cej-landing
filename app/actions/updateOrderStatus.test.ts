@@ -9,7 +9,6 @@ const mockUpdate = vi.fn();
 const mockUpdateEq = vi.fn();
 const mockSelect = vi.fn();
 const mockFrom = vi.fn();
-const mockInsertHistory = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
     createClient: vi.fn(),
@@ -27,9 +26,6 @@ describe('updateOrderStatus', () => {
             if (table === 'orders') {
                 return { select: mockSelect, update: mockUpdate };
             }
-            if (table === 'order_status_history') {
-                return { insert: mockInsertHistory };
-            }
             return {};
         });
         mockSelect.mockReturnValue({ eq: mockEq });
@@ -37,7 +33,6 @@ describe('updateOrderStatus', () => {
 
         mockUpdate.mockReturnValue({ eq: mockUpdateEq });
         mockUpdateEq.mockResolvedValue({ error: null });
-        mockInsertHistory.mockResolvedValue({ error: null });
 
         vi.mocked(createClient).mockResolvedValue({
             auth: {
@@ -48,11 +43,11 @@ describe('updateOrderStatus', () => {
     });
 
     it('successfully updates when transition is valid', async () => {
-        mockSingle.mockResolvedValueOnce({ data: { status: 'draft', user_id: 'user-val' }, error: null });
+        mockSingle.mockResolvedValueOnce({ data: { order_status: 'draft', user_id: 'user-val' }, error: null });
 
         const result = await updateOrderStatus({
             orderId: 'c2e811c7-c752-4011-8012-1f4803d29a00',
-            newStatus: 'pending_payment'
+            newStatus: 'confirmed'
         });
 
         expect(result.success).toBe(true);
@@ -60,8 +55,8 @@ describe('updateOrderStatus', () => {
     });
 
     it('fails when transition is invalid on backend matrix', async () => {
-        // e.g., delivered -> scheduled
-        mockSingle.mockResolvedValueOnce({ data: { status: 'delivered', user_id: 'user-val' }, error: null });
+        // e.g., completed -> scheduled
+        mockSingle.mockResolvedValueOnce({ data: { order_status: 'completed', user_id: 'user-val' }, error: null });
 
         const result = await updateOrderStatus({
             orderId: 'c2e811c7-c752-4011-8012-1f4803d29a00',
@@ -74,24 +69,21 @@ describe('updateOrderStatus', () => {
     });
 
     it('returns unauthorized when user mismatch and not superadmin', async () => {
-        // RLS fallback check
         vi.mocked(createClient).mockResolvedValue({
             auth: {
-                // simple user not admin:all
                 getUser: () => Promise.resolve({ data: { user: { id: 'other-user', user_metadata: { role: 'user' } } }, error: null }),
             },
             from: mockFrom,
         } as unknown as any);
 
-        mockSingle.mockResolvedValueOnce({ data: { status: 'draft', user_id: 'secret-user' }, error: null });
+        mockSingle.mockResolvedValueOnce({ data: { order_status: 'draft', user_id: 'secret-user' }, error: null });
 
         const result = await updateOrderStatus({
             orderId: 'c2e811c7-c752-4011-8012-1f4803d29a00',
-            newStatus: 'pending_payment'
+            newStatus: 'confirmed'
         });
 
         expect(result.success).toBe(false);
-        expect(result.error).toContain('No autorizado'); // from RLS fallback check
+        expect(result.error).toContain('No autorizado');
     });
 });
-

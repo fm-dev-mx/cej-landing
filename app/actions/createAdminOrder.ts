@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { reportError } from '@/lib/monitoring';
 import { generateQuoteId } from '@/lib/utils';
@@ -10,7 +10,7 @@ import type { AdminOrderPayload } from '@/types/internal/order';
 import { getAttributionData, extractAttribution } from '@/lib/logic/attribution';
 import { getPriceConfig } from './getPriceConfig';
 import { calcQuote } from '@/lib/pricing';
-import { InternalOrderItemSnapshot, type PricingSnapshotJson, type PaymentsSummaryJson } from '@/types/database';
+import { type PricingSnapshotJson } from '@/types/database';
 
 export type { AdminOrderPayload };
 
@@ -22,8 +22,7 @@ export type AdminOrderResult =
  * createAdminOrder
  * Dedicated server action for admins to manually register orders.
  * - Requires authenticated user with proper RBAC permissions.
- * - Does NOT trigger Meta CAPI or Pixel events.
- * - Uses 'admin_dashboard' as utm_source.
+ * - Uses the canonical schema defined in docs/schema.sql.
  */
 export async function createAdminOrder(payload: AdminOrderPayload): Promise<AdminOrderResult> {
     try {
@@ -51,8 +50,8 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
         const orderedAt = normalizedPayload.orderedAt
             ? new Date(normalizedPayload.orderedAt).toISOString()
             : new Date().toISOString();
-        const deliveryDate = normalizedPayload.deliveryDate
-            ? new Date(normalizedPayload.deliveryDate).toISOString()
+        const scheduledDate = normalizedPayload.deliveryDate
+            ? new Date(normalizedPayload.deliveryDate).toISOString().split('T')[0]
             : null;
         const scheduledWindowStart = normalizedPayload.scheduledWindowStart
             ? new Date(normalizedPayload.scheduledWindowStart).toISOString()
@@ -69,17 +68,13 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
             additives: [],
         }, pricingRules);
 
-        const orderItem: InternalOrderItemSnapshot = {
-            id: crypto.randomUUID(),
-            label: `Concreto ${normalizedPayload.concreteType === 'pumped' ? 'Bomba' : 'Directo'} f'c ${normalizedPayload.strength}`,
-            volume: normalizedPayload.volume,
-            service: normalizedPayload.concreteType,
-            subtotal: quoteBreakdown.baseSubtotal,
-            strength: normalizedPayload.strength,
-            notes: normalizedPayload.notes,
-        };
-
         const attribution = await getAttributionData(extractAttribution(normalizedPayload));
+
+        // Default for admin-created orders if no specific marketing UTMs are present
+        if (attribution.utm_source === 'direct') {
+            attribution.utm_source = 'admin_dashboard';
+        }
+
         const pricingSnapshotJson: PricingSnapshotJson = {
             version: pricingRules.version,
             computed_at: new Date().toISOString(),
@@ -92,26 +87,34 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
                 ? JSON.parse(JSON.stringify(quoteBreakdown.pricingSnapshot))
                 : {},
         };
-        const paymentsSummary: PaymentsSummaryJson = {
-            paid_amount: 0,
-            balance_amount: quoteBreakdown.total,
-            last_paid_at: null,
-        };
 
-        // Default for admin-created orders if no specific marketing UTMs are present
-        if (attribution.utm_source === 'direct') {
-            attribution.utm_source = 'admin_dashboard';
-        }
-
-        const legacyPayload = {
-            user_id: user.id,
+        const canonicalPayload = {
             folio,
-            status: 'draft' as const,
-            total_amount: quoteBreakdown.total,
-            currency: 'MXN',
-            items: [orderItem],
-            delivery_date: deliveryDate,
-            delivery_address: normalizedPayload.deliveryAddress,
+            user_id: user.id, // Using current user as tenant for now, but should be clarified later
+            seller_id: user.id, // Current user is the seller
+            created_by: user.id, // Current user is the creator
+
+            order_status: 'draft' as const,
+            payment_status: 'pending' as const,
+            fiscal_status: 'not_requested' as const,
+            ordered_at: orderedAt,
+
+            service_type: normalizedPayload.concreteType === 'pumped' ? 'bombeado' : 'tirado',
+            product_id: `concreto-f'c-${normalizedPayload.strength}`,
+            quantity_m3: normalizedPayload.volume,
+            unit_price_before_vat: quoteBreakdown.baseSubtotal / normalizedPayload.volume,
+            vat_rate: 0.16,
+            total_before_vat: quoteBreakdown.baseSubtotal,
+            total_with_vat: quoteBreakdown.total,
+            pricing_snapshot_json: pricingSnapshotJson,
+
+            delivery_address_text: normalizedPayload.deliveryAddress,
+            scheduled_date: scheduledDate,
+            scheduled_slot_code: normalizedPayload.scheduledSlotCode ?? null,
+            scheduled_time_label: normalizedPayload.scheduledTimeLabel ?? null,
+            scheduled_window_start: scheduledWindowStart,
+            scheduled_window_end: scheduledWindowEnd,
+
             utm_source: attribution.utm_source,
             utm_medium: attribution.utm_medium,
             utm_campaign: attribution.utm_campaign,
@@ -119,57 +122,19 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
             utm_content: attribution.utm_content,
             fbclid: attribution.fbclid,
             gclid: attribution.gclid,
-            pricing_version: pricingRules.version,
-            price_breakdown: quoteBreakdown.pricingSnapshot ? JSON.parse(JSON.stringify(quoteBreakdown.pricingSnapshot)) : null,
-        };
 
-        const enhancedPayload = {
-            ...legacyPayload,
-            ordered_at: orderedAt,
-            delivery_address_text: normalizedPayload.deliveryAddress,
-            scheduled_date: deliveryDate,
-            scheduled_window_start: scheduledWindowStart,
-            scheduled_window_end: scheduledWindowEnd,
-            scheduled_slot_code: normalizedPayload.scheduledSlotCode ?? null,
-            scheduled_time_label: normalizedPayload.scheduledTimeLabel ?? null,
-            service_type: normalizedPayload.concreteType === 'pumped' ? 'bombeado' : 'tirado',
-            quantity_m3: normalizedPayload.volume,
-            unit_price_before_vat: quoteBreakdown.baseSubtotal / normalizedPayload.volume,
-            vat_rate: 0.16,
-            total_before_vat: quoteBreakdown.baseSubtotal,
-            total_with_vat: quoteBreakdown.total,
-            balance_amount: quoteBreakdown.total,
-            order_status: 'draft' as const,
-            payment_status: 'pending' as const,
-            fiscal_status: 'not_requested' as const,
-            payments_summary_json: paymentsSummary,
-            pricing_snapshot_json: pricingSnapshotJson,
-            internal_notes: normalizedPayload.notes ?? null,
+            notes: normalizedPayload.notes ?? null,
             external_ref: normalizedPayload.externalRef ?? null,
             legacy_folio_raw: normalizedPayload.legacyFolioRaw ?? null,
         };
 
-        let data: { id: string } | null = null;
-        let error: { message: string; code?: string } | null = null;
-
-        const enhancedInsert = await supabase
+        const adminSupabase = await createAdminClient();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error } = await (adminSupabase as any)
             .from('orders')
-            .insert(enhancedPayload)
+            .insert(canonicalPayload)
             .select('id')
             .single();
-
-        data = enhancedInsert.data as { id: string } | null;
-        error = enhancedInsert.error as { message: string; code?: string } | null;
-
-        if (error && /column|schema cache|order_status|payment_status|fiscal_status/i.test(error.message)) {
-            const fallbackInsert = await supabase
-                .from('orders')
-                .insert(legacyPayload)
-                .select('id')
-                .single();
-            data = fallbackInsert.data as { id: string } | null;
-            error = fallbackInsert.error as { message: string; code?: string } | null;
-        }
 
         if (error) {
             reportError(new Error(error.message), {
@@ -187,7 +152,7 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
         return { status: 'success', id: String(data.id) };
     } catch (err) {
         if (err instanceof Error && err.message === 'NEXT_REDIRECT') {
-            throw err; // Allow Next.js redirect to work
+            throw err;
         }
         reportError(err, { source: 'createAdminOrder' });
         return { status: 'error', message: 'Error inesperado al registrar el pedido.' };

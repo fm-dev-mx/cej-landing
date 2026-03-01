@@ -13,39 +13,11 @@ vi.mock('@/lib/monitoring', () => ({
 
 describe('createOrderPayment', () => {
     const mockOrderPaymentsInsert = vi.fn();
-    const mockOrdersSelect = vi.fn();
-    const mockOrdersEq = vi.fn();
-    const mockOrdersSingle = vi.fn();
-    const mockOrderPaymentsSelect = vi.fn();
-    const mockOrderPaymentsEq = vi.fn();
-    const mockOrderPaymentsIs = vi.fn();
-    const mockOrdersUpdate = vi.fn();
-    const mockOrdersUpdateEq = vi.fn();
 
     beforeEach(() => {
         vi.clearAllMocks();
 
         mockOrderPaymentsInsert.mockResolvedValue({ error: null });
-
-        mockOrdersSingle.mockResolvedValue({
-            data: { total_with_vat: 1000, total_amount: 1000 },
-            error: null,
-        });
-        mockOrdersEq.mockReturnValue({ single: mockOrdersSingle });
-        mockOrdersSelect.mockReturnValue({ eq: mockOrdersEq });
-
-        mockOrderPaymentsIs.mockResolvedValue({
-            data: [
-                { amount: 300, direction: 'in', paid_at: '2026-02-15T10:00:00.000Z' },
-                { amount: 200, direction: 'in', paid_at: '2026-02-16T10:00:00.000Z' },
-            ],
-            error: null,
-        });
-        mockOrderPaymentsEq.mockReturnValue({ is: mockOrderPaymentsIs });
-        mockOrderPaymentsSelect.mockReturnValue({ eq: mockOrderPaymentsEq });
-
-        mockOrdersUpdateEq.mockResolvedValue({ error: null });
-        mockOrdersUpdate.mockReturnValue({ eq: mockOrdersUpdateEq });
 
         vi.mocked(createClient).mockResolvedValue({
             auth: {
@@ -55,13 +27,6 @@ describe('createOrderPayment', () => {
                 if (table === 'order_payments') {
                     return {
                         insert: mockOrderPaymentsInsert,
-                        select: mockOrderPaymentsSelect,
-                    };
-                }
-                if (table === 'orders') {
-                    return {
-                        select: mockOrdersSelect,
-                        update: mockOrdersUpdate,
                     };
                 }
                 return {};
@@ -69,7 +34,7 @@ describe('createOrderPayment', () => {
         } as any);
     });
 
-    it('stores payment and updates balance summary on order', async () => {
+    it('stores payment and relies on DB triggers for summary updates', async () => {
         const paymentData = {
             orderId: 'c2e811c7-c752-4011-8012-1f4803d29a00',
             direction: 'in' as const,
@@ -81,17 +46,18 @@ describe('createOrderPayment', () => {
         const result = await createOrderPayment(paymentData);
 
         expect(result.success).toBe(true);
+
+        // Check that it mapped 'amount' to 'amount_mxn' and 'orderId' to 'order_id'
         expect(mockOrderPaymentsInsert).toHaveBeenCalledWith(expect.objectContaining({
-            ...paymentData,
+            order_id: paymentData.orderId,
+            amount_mxn: paymentData.amount,
+            direction: paymentData.direction,
+            kind: paymentData.kind,
+            method: paymentData.method,
             created_by: 'admin-id',
         }));
-        expect(mockOrdersUpdate).toHaveBeenCalledWith(expect.objectContaining({
-            payment_status: 'partial',
-            balance_amount: 500,
-            payments_summary_json: expect.objectContaining({
-                paid_amount: 500,
-                balance_amount: 500,
-            }),
-        }));
+
+        // The action NO LONGER updates the order table directly.
+        // We do not expect any call to 'orders' table.
     });
 });

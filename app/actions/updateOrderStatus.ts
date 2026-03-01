@@ -1,17 +1,23 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { reportError } from '@/lib/monitoring';
 import { getUserRole, hasPermission } from '@/lib/auth/rbac';
 import { updateOrderStatusPayloadSchema, canTransition } from '@/lib/schemas/internal/order-status';
 import type { UpdateOrderStatusPayload } from '@/lib/schemas/internal/order-status';
-import type { InternalOrderStatus } from '@/types/internal/order';
+import type { DbOrderStatus } from '@/types/database-enums';
 
 export interface UpdateOrderStatusResult {
     success: boolean;
     error?: string;
 }
 
+/**
+ * updateOrderStatus
+ * Updates the order_status of an order.
+ * - Transitions are validated against a state machine.
+ * - History logging is handled automatically by DB filters and triggers.
+ */
 export async function updateOrderStatus(payload: UpdateOrderStatusPayload): Promise<UpdateOrderStatusResult> {
     try {
         const supabase = await createClient();
@@ -22,7 +28,6 @@ export async function updateOrderStatus(payload: UpdateOrderStatusPayload): Prom
         }
 
         const role = getUserRole(user.user_metadata);
-        // We require update permission to change statuses. Or admin:all.
         if (!hasPermission(role, 'orders:update') && !hasPermission(role, 'admin:all')) {
             return { success: false, error: 'Permisos insuficientes' };
         }
@@ -32,38 +37,29 @@ export async function updateOrderStatus(payload: UpdateOrderStatusPayload): Prom
             return { success: false, error: 'Payload inválido' };
         }
 
-        const { orderId, newStatus, reason } = parsed.data;
+        const { orderId, newStatus } = parsed.data;
 
         // Fetch current status to validate transition
-        let { data: order, error: fetchErr } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: order, error: fetchErr } = await (supabase as any)
             .from('orders')
-            .select('status, order_status, user_id')
+            .select('order_status, user_id')
             .eq('id', orderId)
             .single();
-
-        if (fetchErr && /column|schema cache|order_status/i.test(fetchErr.message)) {
-            const legacyFetch = await supabase
-                .from('orders')
-                .select('status, user_id')
-                .eq('id', orderId)
-                .single();
-            order = legacyFetch.data as typeof order;
-            fetchErr = legacyFetch.error;
-        }
 
         if (fetchErr || !order) {
             return { success: false, error: 'Pedido no encontrado' };
         }
 
-        // RLS enforcement for standard users (though technically handled by RLS on UPDATE,
-        // we preemptively validate since we need to check the transition anyways).
+        // RBAC / Ownership check
         if (order.user_id !== user.id && !hasPermission(role, 'admin:all')) {
             return { success: false, error: 'No autorizado' };
         }
 
-        const currentStatus = (order.order_status || order.status) as InternalOrderStatus;
+        const currentStatus = order.order_status as DbOrderStatus;
 
-        if (!canTransition(currentStatus, newStatus as InternalOrderStatus)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (!canTransition(currentStatus as any, newStatus as any)) {
             return {
                 success: false,
                 error: `Transición no permitida: de ${currentStatus} a ${newStatus}`
@@ -73,37 +69,20 @@ export async function updateOrderStatus(payload: UpdateOrderStatusPayload): Prom
         // If idempotent, just return success
         if (currentStatus === newStatus) return { success: true };
 
-        let { error: updateErr } = await supabase
+        const adminSupabase = await createAdminClient();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: updateErr } = await (adminSupabase as any)
             .from('orders')
-            .update({ status: newStatus, order_status: newStatus })
+            .update({ order_status: newStatus as DbOrderStatus })
             .eq('id', orderId);
-
-        if (updateErr && /column|schema cache|order_status/i.test(updateErr.message)) {
-            const legacyUpdate = await supabase
-                .from('orders')
-                .update({ status: newStatus })
-                .eq('id', orderId);
-            updateErr = legacyUpdate.error;
-        }
 
         if (updateErr) {
             reportError(updateErr, { action: 'updateOrderStatus', orderId });
             return { success: false, error: 'Fallo al actualizar el pedido' };
         }
 
-        const { error: historyErr } = await supabase
-            .from('order_status_history')
-            .insert({
-                order_id: orderId,
-                from_status: currentStatus,
-                to_status: newStatus,
-                reason: reason ?? null,
-                changed_by: user.id,
-            });
-
-        if (historyErr && !/relation|schema cache|order_status_history/i.test(historyErr.message)) {
-            reportError(historyErr, { action: 'updateOrderStatus:history', orderId });
-        }
+        // NO MANUAL HISTORY INSERT NEEDED.
+        // The Postgres trigger 'order_status_history_trigger' handles it.
 
         return { success: true };
 
