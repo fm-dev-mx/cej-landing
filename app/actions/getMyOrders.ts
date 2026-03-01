@@ -122,5 +122,9 @@ export async function getMyOrders(cursor?: string, pageSize = 25): Promise<GetMy
  * Refreshes the dashboard data.
  */
 export async function refreshDashboard() {
-    revalidatePath('/dashboard');
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+        revalidatePath('/dashboard');
+    }
 }
