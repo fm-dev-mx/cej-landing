@@ -2,15 +2,19 @@
 
 ## [Unreleased]
 
-### Planned - Phase 1 MVP
-- Align internal order creation and listing to a single persistence source.
-- Add dashboard KPI v1 (operational + financial snapshot).
-- Add `/dashboard/calendar` with day/week slot visibility.
-- Add `/dashboard/orders` filtered list and controlled status transitions.
-- Add `/dashboard/expenses` basic capture and list flow.
-- Add `/dashboard/payroll` basic capture and list flow.
-- Add `/dashboard/reports` with date-range summary and CSV export.
-- Add internal schemas/types for orders, expenses, payroll, reporting filters.
+### Phase 1 MVP Progress (Updated 2025-02-28)
+- ✅ Internal order creation aligned to `orders` table
+- ✅ Dashboard KPI v1 implemented
+- ✅ `/dashboard/calendar` week view implemented
+- ✅ `/dashboard/orders` with filters and status transitions
+- ⚠️ `/dashboard/expenses` - list only, create form needed
+- ⚠️ `/dashboard/payroll` - list only, create form needed
+- ✅ `/dashboard/reports` with CSV export implemented
+
+### Planned - Phase 1 MVP (Remaining)
+- Add expense create form to `/dashboard/expenses`
+- Add payroll create form to `/dashboard/payroll`
+- Normalize duplicate login routes
 
 ### Planned - Phase 2 Growth
 - Normalize order origin and attribution fields for internal analytics.

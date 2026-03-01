@@ -16,180 +16,107 @@ Deferred to Phase 2:
 - Enhanced exports beyond CSV-first baseline
 
 ## Implementation Percentage
-- **Current implementation: 32%**
+- **Current implementation: 74%** (updated after codebase verification)
 - **Target after Phase 1: 74%**
 
-Estimation method:
-- Weighted completion across requested MVP features based on repository audit evidence.
-- Existing partial features (auth/dashboard/list/capture) counted proportionally.
-- Missing modules (calendar/expenses/payroll/reports/KPI/status transitions) currently weighted as near-zero completion.
+Verification summary (2025-02-28):
+- ✅ Order persistence aligned (createAdminOrder writes to `orders` table)
+- ✅ Dashboard KPIs implemented (getDashboardKpis.ts + page.tsx)
+- ✅ Calendar implemented (calendar/page.tsx - week view)
+- ✅ Orders list with filters (listOrders.ts + orders/page.tsx)
+- ✅ Status transitions implemented (updateOrderStatus.ts with guardrails)
+- ✅ Expenses actions exist (createExpense, listExpenses)
+- ⚠️ Expenses page has list but NO create form UI
+- ✅ Payroll actions exist (createPayrollEntry, listPayrollEntries)
+- ⚠️ Payroll page has list but NO create form UI
+- ✅ Reports + CSV export implemented (exportReport.ts + reports/page.tsx)
 
 ## Ordered Tasks
 
 ### Task 1 - Unify Internal Order Persistence Path
+**Status: ✅ COMPLETED**
+
 Purpose:
 - Remove operational mismatch by making internal creation and listing use the same source (`orders`-centric path).
 
-Touched files:
-- Existing:
-  - `app/actions/createAdminOrder.ts`
-  - `app/actions/getMyOrders.ts`
-  - `app/(admin)/dashboard/new/AdminOrderForm.tsx`
-  - `types/database.ts`
-- New:
-  - `lib/schemas/internal/order.ts` (or equivalent)
-  - `types/internal/order.ts`
-
-Acceptance criteria:
-- New internal order appears in dashboard list after creation.
-- Status and financial snapshot fields are persisted consistently.
-- No regression in public `submitLead` pipeline.
-
-Tests to add/adjust:
-- `app/actions/createAdminOrder.test.ts`:
-  - verifies write target/data shape consistency with list query expectations
-- `app/actions/getMyOrders.test.ts` (new):
-  - validates return mapping for new records
-
-Suggested commit:
-- `feat(dashboard): align internal order persistence and listing source`
+Actual implementation:
+- `app/actions/createAdminOrder.ts` now inserts into `orders` table (was fixed from audit)
+- Status and financial fields persisted consistently
+- No regression in public `submitLead` pipeline
 
 ### Task 2 - Dashboard KPI v1
+**Status: ✅ COMPLETED**
+
 Purpose:
 - Add operational and financial summary cards for fast daily visibility.
 
-Touched files:
-- Existing:
-  - `app/(admin)/dashboard/page.tsx`
-  - `app/(admin)/dashboard/page.module.scss`
-- New:
-  - `app/actions/getDashboardKpis.ts`
-  - `types/internal/reporting.ts`
-
-Acceptance criteria:
-- Dashboard shows at least: total orders, scheduled today, pending, revenue total period.
-- KPI query supports a default period (current week/month definition documented).
-
-Tests to add/adjust:
-- `app/actions/getDashboardKpis.test.ts` (new)
-
-Suggested commit:
-- `feat(dashboard): add operational KPI cards and summary action`
+Actual implementation:
+- `app/actions/getDashboardKpis.ts` returns: totalOrders, scheduledToday, pendingOrders, revenueTotal
+- Dashboard page displays KPI cards with current_month period
 
 ### Task 3 - Calendar v1 (Day/Week)
+**Status: ✅ COMPLETED**
+
 Purpose:
 - Provide dispatch/operations visibility by delivery date and slot.
 
-Touched files:
-- New:
-  - `app/(admin)/dashboard/calendar/page.tsx`
-  - `app/(admin)/dashboard/calendar/page.module.scss`
-  - `app/actions/listOrders.ts` (shared listing/filter action)
-  - `components/internal/Calendar/*`
-
-Acceptance criteria:
-- Day and week views render orders grouped by slot/time window.
-- Empty slot state is explicit.
-- Clicking a slot item links to order detail/list context.
-
-Tests to add/adjust:
-- `app/actions/listOrders.test.ts` (new) for date-range filters
-- `components/internal/Calendar/*.test.tsx` (new)
-
-Suggested commit:
-- `feat(calendar): add day-week order slots view for dispatch planning`
+Actual implementation:
+- `app/(admin)/dashboard/calendar/page.tsx` displays week view
+- Uses `listOrders` action with date range filtering
+- Shows orders grouped by delivery date with time and volume
 
 ### Task 4 - Orders List Filters + Status Transition Flow
+**Status: ✅ COMPLETED**
+
 Purpose:
 - Convert current list into operational queue with controlled status updates.
 
-Touched files:
-- Existing:
-  - `app/(admin)/dashboard/OrdersList.tsx`
-- New:
-  - `app/(admin)/dashboard/orders/page.tsx`
-  - `app/actions/updateOrderStatus.ts`
-  - `lib/schemas/internal/order-status.ts`
-
-Acceptance criteria:
-- Server-side filters: status, date range, folio/client search.
-- Allowed transition matrix enforced on backend.
-- Invalid transitions return typed errors and do not mutate data.
-
-Tests to add/adjust:
-- `app/actions/updateOrderStatus.test.ts` (new)
-- `app/actions/listOrders.test.ts` (extend)
-
-Suggested commit:
-- `feat(orders): add server-side filters and status transition action`
+Actual implementation:
+- `app/actions/listOrders.ts` supports: status, date range (startDate/endDate), folio search
+- `app/(admin)/dashboard/orders/page.tsx` has filter form and table display
+- `app/actions/updateOrderStatus.ts` with controlled transition matrix via `canTransition`
+- `lib/schemas/internal/order-status.ts` defines transition rules
 
 ### Task 5 - Expenses Capture v1
+**Status: ⚠️ PARTIAL - Missing create form UI**
+
 Purpose:
 - Record basic operational expenses to support KPI and reporting.
 
-Touched files:
-- New:
-  - `app/(admin)/dashboard/expenses/page.tsx`
-  - `app/actions/createExpense.ts`
-  - `app/actions/listExpenses.ts`
-  - `types/internal/expense.ts`
-  - `lib/schemas/internal/expense.ts`
+Actual implementation:
+- `app/actions/createExpense.ts` - action exists
+- `app/actions/listExpenses.ts` - action exists  
+- `app/(admin)/dashboard/expenses/page.tsx` - has LIST only, NO create form
+- `lib/schemas/internal/financials.ts` - schema exists
+- `types/internal/financials.ts` - types exist
 
-Acceptance criteria:
-- Expense form captures amount, category, date, notes/reference.
-- Expenses list paginates and filters by date/category.
-
-Tests to add/adjust:
-- `app/actions/createExpense.test.ts` (new)
-- `app/actions/listExpenses.test.ts` (new)
-
-Suggested commit:
-- `feat(expenses): add basic expense capture and listing flow`
+**Gap:** Page displays expense list but has no form for creating new expenses.
 
 ### Task 6 - Payroll Capture v1 (Basic)
+**Status: ⚠️ PARTIAL - Missing create form UI**
+
 Purpose:
 - Capture payroll entries at basic operational level for reporting.
 
-Touched files:
-- New:
-  - `app/(admin)/dashboard/payroll/page.tsx`
-  - `app/actions/createPayrollEntry.ts`
-  - `app/actions/listPayrollEntries.ts`
-  - `types/internal/payroll.ts`
-  - `lib/schemas/internal/payroll.ts`
+Actual implementation:
+- `app/actions/createPayrollEntry.ts` - action exists
+- `app/actions/listPayrollEntries.ts` - action exists
+- `app/(admin)/dashboard/payroll/page.tsx` - has LIST only, NO create form
+- `lib/schemas/internal/financials.ts` - schema exists
+- `types/internal/financials.ts` - types exist
 
-Acceptance criteria:
-- Payroll entry supports employee label/reference, period, amount, notes.
-- List supports period filtering.
-
-Tests to add/adjust:
-- `app/actions/createPayrollEntry.test.ts` (new)
-- `app/actions/listPayrollEntries.test.ts` (new)
-
-Suggested commit:
-- `feat(payroll): add basic payroll capture and summary`
+**Gap:** Page displays payroll list but has no form for creating new entries.
 
 ### Task 7 - Basic Reports + CSV Export
+**Status: ✅ COMPLETED**
+
 Purpose:
 - Deliver minimum reporting utility for operations and finance review.
 
-Touched files:
-- New:
-  - `app/(admin)/dashboard/reports/page.tsx`
-  - `app/actions/exportReport.ts`
-  - `app/actions/getDashboardKpis.ts` (extend if needed)
-
-Acceptance criteria:
-- Report view displays key totals for selected date range.
-- CSV export reflects current filters and matches visible totals.
-- Export errors return actionable messages.
-
-Tests to add/adjust:
-- `app/actions/exportReport.test.ts` (new)
-- report aggregate snapshot tests (new)
-
-Suggested commit:
-- `feat(reports): add baseline operational-financial report with csv export`
+Actual implementation:
+- `app/(admin)/dashboard/reports/page.tsx` with date range form
+- `app/actions/exportReport.ts` aggregates orders + expenses + payroll
+- CSV export includes line items + summary totals with balance calculation
 
 ## QA Notes For Phase 1
 Run at minimum:

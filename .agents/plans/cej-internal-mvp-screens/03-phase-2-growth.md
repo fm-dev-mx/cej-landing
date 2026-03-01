@@ -8,11 +8,11 @@ Phase 2 adds growth and observability enhancements once Phase 1 data contracts a
 - Export enhancements beyond baseline CSV
 
 ## Implementation Percentage
-- **Current implementation (Phase 2 scope): 18%**
+- **Current implementation (Phase 2 scope): 25%**
 - **Target after Phase 2: 88%**
 
-Estimation method:
-- Existing attribution/tracking primitives in public funnel provide partial foundation.
+Existing work:
+- Attribution primitives in public funnel provide partial foundation.
 - Internal analytics normalization, automation, and advanced exports are mostly absent.
 
 ## Ordered Tasks

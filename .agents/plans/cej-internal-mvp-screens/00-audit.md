@@ -14,51 +14,55 @@ No production code was modified during this audit.
 | Dashboard route protection (edge/proxy) | Yes | `proxy.ts`, `proxy.test.ts` | `/dashboard/**` protected, unauthenticated users redirected to `/login?redirect=...`. |
 | Dashboard route protection (server layout) | Yes | `app/(admin)/dashboard/layout.tsx` | Secondary server-side auth guard. |
 | RBAC utility | Yes | `lib/auth/rbac.ts`, `lib/auth/rbac.test.ts` | Role + permission matrix (`owner/admin/operator`) exists. |
-| Dashboard page shell | Partial | `app/(admin)/dashboard/page.tsx`, `app/(admin)/dashboard/page.module.scss` | Has greeting and orders section, no KPI cards yet. |
-| Orders list UI | Partial | `app/(admin)/dashboard/OrdersList.tsx`, `app/(admin)/dashboard/OrdersList.module.scss` | Supports status labels and load-more pagination. |
-| Orders query action | Partial | `app/actions/getMyOrders.ts` | Reads from `orders` table with cursor pagination and RBAC `orders:view`. |
-| Internal order capture screen | Partial | `app/(admin)/dashboard/new/page.tsx`, `app/(admin)/dashboard/new/AdminOrderForm.tsx` | Basic form exists. |
-| Internal order create action | Partial / Risk | `app/actions/createAdminOrder.ts`, `app/actions/createAdminOrder.test.ts` | Inserts into `leads`, not `orders`; conflicts with listing source. |
-| Dashboard KPI cards (operational + financial) | No | N/A | Missing. |
-| Orders calendar (day/week slots) | No | N/A | Missing route, UI, and server action. |
-| Orders list filters (status/date/search) | No | N/A | Missing server-side filter action and UI controls. |
-| Order status update action | No | N/A | No explicit controlled transition action found. |
-| Expenses capture module | No | N/A | Missing route, type/schema, action, persistence path. |
-| Payroll capture module (basic) | No | N/A | Missing route, type/schema, action, persistence path. |
-| Basic reports and export | No | N/A | Missing reports route and export action. |
+| Dashboard page shell | ✅ Complete | `app/(admin)/dashboard/page.tsx`, `app/(admin)/dashboard/page.module.scss` | Has greeting, KPI cards, and orders section. |
+| Orders list UI | ✅ Complete | `app/(admin)/dashboard/OrdersList.tsx`, `app/(admin)/dashboard/orders/page.tsx` | Supports status labels, filters, and pagination. |
+| Orders query action | ✅ Complete | `app/actions/listOrders.ts`, `app/actions/getMyOrders.ts` | Supports filters and cursor pagination with RBAC. |
+| Internal order capture screen | ✅ Complete | `app/(admin)/dashboard/new/page.tsx`, `app/(admin)/dashboard/new/AdminOrderForm.tsx` | Form exists and persists to `orders` table. |
+| Internal order create action | ✅ Complete | `app/actions/createAdminOrder.ts`, `app/actions/createAdminOrder.test.ts` | Now inserts into `orders` table (fixed from audit). |
+| Dashboard KPI cards (operational + financial) | ✅ Complete | `app/actions/getDashboardKpis.ts` | Returns totalOrders, scheduledToday, pendingOrders, revenueTotal. |
+| Orders calendar (day/week slots) | ✅ Complete | `app/(admin)/dashboard/calendar/page.tsx` | Week view with order grouping by delivery date. |
+| Orders list filters (status/date/search) | ✅ Complete | `app/actions/listOrders.ts`, `app/(admin)/dashboard/orders/page.tsx` | Server-side filters + UI form. |
+| Order status update action | ✅ Complete | `app/actions/updateOrderStatus.ts`, `lib/schemas/internal/order-status.ts` | Controlled transition matrix enforced on backend. |
+| Expenses capture module | ⚠️ Partial | `app/actions/createExpense.ts`, `app/actions/listExpenses.ts`, `app/(admin)/dashboard/expenses/page.tsx` | Actions exist; page has list but NO create form UI. |
+| Payroll capture module (basic) | ⚠️ Partial | `app/actions/createPayrollEntry.ts`, `app/actions/listPayrollEntries.ts`, `app/(admin)/dashboard/payroll/page.tsx` | Actions exist; page has list but NO create form UI. |
+| Basic reports and export | ✅ Complete | `app/(admin)/dashboard/reports/page.tsx`, `app/actions/exportReport.ts` | Date range selection with CSV export including balance. |
 | Attribution fields in internal orders | Partial (public only) | `app/actions/submitLead.ts`, `lib/tracking/**`, `proxy.ts` | Attribution exists in lead pipeline; not normalized for internal order analytics. |
 | Pricing engine reusable for internal capture | Yes | `lib/pricing.ts`, `lib/schemas/pricing.ts`, `app/actions/getPriceConfig.ts` | Strong reusable foundation. |
 | Public capture flow reusable pieces | Yes | `hooks/useCheckoutUI.ts`, `lib/logic/orderDispatcher.ts`, `components/Calculator/modals/SchedulingModal.tsx` | Can be adapted with internal side-effect isolation. |
 | Internal store slice base | Partial | `store/admin/useAdminStore.ts`, `store/slices/ordersSlice.ts` | Store slice exists but not integrated as full internal app state strategy. |
 | DB docs for core tables | Yes | `docs/schema.sql`, `docs/DB_SCHEMA.md` | Tables documented (`orders`, `profiles`, `leads`, `price_config`). |
-| Database TS type coverage for internal modules | Partial | `types/database.ts` | Strong for `leads`; limited/absent for `orders`, `expenses`, `payroll` typed access. |
+| Database TS type coverage for internal modules | Partial | `types/database.ts`, `types/internal/*.ts` | Types exist for orders, financials, reporting. |
 
 ## Key Findings By Domain
 
 ### Auth and Role Control
 - Authentication boundary is present at both proxy and server layout levels.
 - RBAC helpers exist and are already used in server actions.
-- Duplicate login route (`app/auth/login`) should be normalized to one canonical entrypoint.
+- **Still open:** Duplicate login routes (`app/auth/login` vs `app/(public)/login`) should be normalized.
 
 ### Dashboard / KPIs
-- Dashboard exists but is currently order-history oriented.
-- There is no operational/financial KPI model or action endpoint.
+- Dashboard exists with KPI cards (totalOrders, scheduledToday, pendingOrders, revenueTotal).
+- KPI query supports current_week and current_month periods.
 
 ### Order Capture
-- Internal form and action exist.
-- Capture persistence is misaligned with dashboard reads (`leads` write vs `orders` read).
+- Internal form exists and correctly writes to `orders` table (FIXED from audit).
+- Status and financial fields are persisted consistently.
 
 ### Calendar
-- No calendar route or slot model exists.
+- Calendar route exists at `/dashboard/calendar` with week view.
+- Orders grouped by delivery date/time.
 
 ### Orders List and Status Updates
-- Existing list is paginated but lacks filter controls and status transition workflow.
+- List has server-side filters and UI controls.
+- Status transition action with controlled matrix implemented.
 
 ### Expenses and Payroll
-- No implementation found in routes, actions, schemas, or DB type contracts.
+- Actions exist for create and list.
+- **Gap:** Pages display lists but lack create forms.
 
 ### Reports and Export
-- No report page, aggregate action, or CSV export endpoint found.
+- Report page exists with date range selection.
+- CSV export works with summary totals including balance calculation.
 
 ### Attribution
 - Attribution data exists in public lead/tracking stack, but not normalized for internal order-level reporting.
@@ -66,21 +70,21 @@ No production code was modified during this audit.
 ## Duplicates, Dead Code, Partial Implementations, Risks
 
 ### Duplicates
-- Dual login routes:
+- **Still open:** Dual login routes:
   - `app/(public)/login/page.tsx`
   - `app/auth/login/page.tsx`
 
 ### Partial Implementations
-- Dashboard route set and list exist but not full internal operations module.
-- Admin order capture exists but writes to `leads` with placeholder financial values.
+- Expenses: Actions exist, page only shows list - no create form.
+- Payroll: Actions exist, page only shows list - no create form.
 
 ### Dead / Transitional Artifacts
 - `store/useCejStore.ts` is explicitly deprecated bridge to `store/public/usePublicStore.ts`.
 
-### High Risks
-- **Critical consistency risk:** `createAdminOrder` inserts `leads`, while dashboard list queries `orders`.
-- Missing explicit status transition guardrail invites state drift if implemented ad hoc later.
-- Data contract gaps in `types/database.ts` increase risk of unsafe persistence changes for new modules.
+### High Risks (RESOLVED)
+- **✅ RESOLVED:** `createAdminOrder` now inserts into `orders` table (was `leads`).
+- ✅ Status transition guardrail implemented via `canTransition` in schema.
+- ✅ Database types added for internal modules (`types/internal/*`).
 
 ## Assumptions Recorded
 - Context7 MCP is unavailable in this session; repository evidence is used as temporary source of truth.

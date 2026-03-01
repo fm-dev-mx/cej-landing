@@ -14,10 +14,10 @@ Close implementation with consistent architecture, clean repository state, and r
 
 ## Cleanup Checklist
 - [ ] Remove duplicate login route or redirect it to canonical path.
-- [ ] Remove temporary adapters/shims used during persistence transition.
-- [ ] Ensure no new module uses deprecated `store/useCejStore.ts` bridge.
-- [ ] Normalize file naming and route grouping under `app/(admin)/dashboard/*`.
-- [ ] Align `types/database.ts` with implemented internal tables/contracts.
+- [x] Remove temporary adapters/shims used during persistence transition.
+- [x] Ensure no new module uses deprecated `store/useCejStore.ts` bridge.
+- [x] Normalize file naming and route grouping under `app/(admin)/dashboard/*`.
+- [x] Align `types/database.ts` with implemented internal tables/contracts.
 - [ ] Delete dead styles/components not referenced by internal routes.
 
 ## QA Checklist
