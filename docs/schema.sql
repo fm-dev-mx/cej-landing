@@ -208,7 +208,10 @@ CREATE TABLE IF NOT EXISTS public.orders (
   utm_term         text,
   utm_content      text,
   fbclid           text,
-  gclid            text
+  gclid            text,
+  lead_id          bigint REFERENCES public.leads(id) ON DELETE SET NULL, -- Attribution link
+  pricing_version  int, -- Logic version at time of creation
+  price_breakdown  jsonb -- Snapshot of calculations
 );
 
 -- MIGRATION / SYNC FOR EXISTING DATABASES:
@@ -231,7 +234,25 @@ ALTER TABLE public.orders
   ADD COLUMN IF NOT EXISTS utm_term         text,
   ADD COLUMN IF NOT EXISTS utm_content      text,
   ADD COLUMN IF NOT EXISTS fbclid           text,
-  ADD COLUMN IF NOT EXISTS gclid            text;
+  ADD COLUMN IF NOT EXISTS gclid            text,
+  ADD COLUMN IF NOT EXISTS lead_id          bigint,
+  ADD COLUMN IF NOT EXISTS pricing_version  int,
+  ADD COLUMN IF NOT EXISTS price_breakdown  jsonb;
+
+-- SAFE CONSTRAINT INJECTION (IDEMPOTENT)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'fk_orders_lead'
+    AND conrelid = 'public.orders'::regclass
+  ) THEN
+    ALTER TABLE public.orders
+    ADD CONSTRAINT fk_orders_lead
+    FOREIGN KEY (lead_id) REFERENCES public.leads(id)
+    ON DELETE SET NULL;
+  END IF;
+END $$;
 
 -- Ensure defaults exist (won't overwrite existing values)
 ALTER TABLE public.orders
@@ -399,6 +420,9 @@ CREATE INDEX IF NOT EXISTS idx_orders_created_at ON public.orders(created_at);
 
 -- Filter by order status
 CREATE INDEX IF NOT EXISTS idx_orders_status ON public.orders(status);
+
+-- Attribution lookup: Fast join for lead source analysis
+CREATE INDEX IF NOT EXISTS idx_orders_lead_id ON public.orders(lead_id);
 
 -- ============================================================
 -- 8. TABLE: EXPENSES (Internal MVP - Phase 1)
