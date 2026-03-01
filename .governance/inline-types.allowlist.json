@@ -1,0 +1,13 @@
+{
+  "entries": [
+    {
+      "path": "components/ui/Icon/WhatsAppIcon.tsx",
+      "reason": "Temporary exception pending props type extraction"
+    },
+    {
+      "path": "lib/auth/rbac.ts",
+      "symbol": "getUserRole",
+      "reason": "Temporary exception pending shared metadata type"
+    }
+  ]
+}

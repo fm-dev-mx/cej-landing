@@ -16,6 +16,13 @@
     "test:e2e:ui": "playwright test --ui",
     "db:seed": "tsx scripts/seed-leads.ts",
     "db:seed-pricing": "tsx scripts/seed-pricing.ts",
+    "governance:check-db-contracts": "tsx scripts/check-db-drift.ts --format text",
+    "governance:check-db-contracts:fail": "tsx scripts/check-db-drift.ts --fail --format text",
+    "governance:check-inline-types": "tsx scripts/check-exported-inline-signatures.ts --format text",
+    "governance:check-inline-types:fail": "tsx scripts/check-exported-inline-signatures.ts --fail --format text",
+    "governance:check-production-any": "tsx scripts/check-production-any.ts --format text",
+    "governance:check-production-any:fail": "tsx scripts/check-production-any.ts --fail --format text",
+    "governance:report-initial": "tsx scripts/governance-report.ts --out .artifacts/governance/initial-governance-report.json --format text",
     "lint-staged": "lint-staged",
     "prepare": "husky"
   },

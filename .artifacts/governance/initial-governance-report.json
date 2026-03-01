@@ -1,0 +1,62 @@
+{
+  "timestamp": "2026-03-01T19:59:49.017Z",
+  "git_sha": "f9261c15f73b8422617a03aacec273c19722148d",
+  "counts": {
+    "production_any_count": 0,
+    "db_fk_drift_count": 0,
+    "inline_exported_signature_count": 5
+  },
+  "violations": [
+    {
+      "code": "INLINE_EXPORTED_PARAM",
+      "file": "app/(admin)/dashboard/layout.tsx",
+      "line": 9,
+      "symbol": "DashboardLayout",
+      "message": "Exported signature uses inline object type for parameter."
+    },
+    {
+      "code": "INLINE_EXPORTED_PARAM",
+      "file": "app/(admin)/layout.tsx",
+      "line": 16,
+      "symbol": "AppLayout",
+      "message": "Exported signature uses inline object type for parameter."
+    },
+    {
+      "code": "INLINE_EXPORTED_PARAM",
+      "file": "app/(public)/layout.tsx",
+      "line": 17,
+      "symbol": "MarketingLayout",
+      "message": "Exported signature uses inline object type for parameter."
+    },
+    {
+      "code": "INLINE_EXPORTED_PARAM",
+      "file": "components/Auth/AuthProvider.tsx",
+      "line": 19,
+      "symbol": "AuthProvider",
+      "message": "Exported signature uses inline object type for parameter."
+    },
+    {
+      "code": "INLINE_EXPORTED_PARAM",
+      "file": "lib/logic/orderDispatcher.ts",
+      "line": 98,
+      "symbol": "dispatchOrder",
+      "message": "Exported signature uses inline object type for parameter."
+    }
+  ],
+  "meta": {
+    "context7_status": "unavailable",
+    "modes": {
+      "db_fk_drift": "report-only",
+      "inline_types": "report-only",
+      "production_any": "report-only"
+    },
+    "tool_versions": {
+      "node": "v22.17.0",
+      "pnpm": "10.24.0"
+    },
+    "repo_state": {
+      "branch": "refactor/internal-system-foundation",
+      "dirty": true
+    }
+  }
+}
