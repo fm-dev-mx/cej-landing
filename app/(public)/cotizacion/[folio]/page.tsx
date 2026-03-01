@@ -79,8 +79,7 @@ export default async function SharedQuotePage({ params }: Props) {
                     <TicketDisplay
                         variant="full"
                         quote={quote}
-                        folio={folio}
-                        customerName={quote.customer?.name}
+                        metadata={{ folio, customerName: quote.customer?.name }}
                         className={styles.ticketOverride}
                     />
                 </section>

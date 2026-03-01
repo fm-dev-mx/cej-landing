@@ -34,7 +34,6 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
     const moveToHistory = usePublicStore((s) => s.moveToHistory);
 
     // State
-    const breakdownViewed = usePublicStore((s) => s.breakdownViewed);
     const setBreakdownViewed = usePublicStore((s) => s.setBreakdownViewed);
 
     const submittedQuote = usePublicStore((s) => s.submittedQuote);
@@ -86,12 +85,6 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
     };
 
     // --- Handlers ---
-
-    const handleViewBreakdown = () => {
-        if (!canRevealBreakdown) return;
-        setBreakdownViewed(true);
-        scrollToTicket();
-    };
 
     const handleSchedulingSuccess = (folio: string, name: string) => {
         setSubmittedQuote({
@@ -185,12 +178,10 @@ export function QuoteSummary({ onScrollToTop }: QuoteSummaryProps) {
                     variant={stage === 'submitted' ? 'full' : 'preview'}
                     quote={quote}
                     isValidQuote={isValid}
-                    folio={submittedQuote?.folio}
-                    customerName={submittedQuote?.name}
+                    metadata={{ folio: submittedQuote?.folio, customerName: submittedQuote?.name, isVersionMismatch }}
                     warning={warning}
                     steps={getCalculatorSteps(draft)}
                     onReset={handleResetCurrentMode}
-                    isVersionMismatch={isVersionMismatch}
                 />
             </div>
 

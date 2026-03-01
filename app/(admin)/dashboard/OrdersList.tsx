@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { getMyOrders } from '@/app/actions/getMyOrders';
+import type { OrderSummary } from '@/types/internal/order';
 import Link from 'next/link';
-import { getMyOrders, type OrderSummary } from '@/app/actions/getMyOrders';
 import styles from './OrdersList.module.scss';
 
 interface OrdersListProps {
@@ -11,18 +12,19 @@ interface OrdersListProps {
 }
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-    new: { label: 'Nuevo', className: 'statusNew' },
+    draft: { label: 'Borrador', className: 'statusNew' },
     confirmed: { label: 'Confirmado', className: 'statusConfirmed' },
     scheduled: { label: 'Programado', className: 'statusScheduled' },
-    in_transit: { label: 'En Tránsito', className: 'statusTransit' },
-    delivered: { label: 'Entregado', className: 'statusDelivered' },
-    invoiced: { label: 'Facturado', className: 'statusInvoiced' },
-    paid: { label: 'Pagado', className: 'statusPaid' },
+    in_progress: { label: 'En Progreso', className: 'statusTransit' },
+    completed: { label: 'Completado', className: 'statusDelivered' },
     cancelled: { label: 'Cancelado', className: 'statusCancelled' },
-    expired: { label: 'Expirado', className: 'statusExpired' },
-    // Legacy support
-    draft: { label: 'Borrador', className: 'statusNew' },
-    pending_payment: { label: 'Pendiente', className: 'statusTransit' },
+};
+
+const PAYMENT_LABELS: Record<string, string> = {
+    pending: 'Pendiente',
+    partial: 'Parcial',
+    paid: 'Pagado',
+    overpaid: 'Excedente',
 };
 
 function formatDate(dateString: string): string {
@@ -34,10 +36,10 @@ function formatDate(dateString: string): string {
     });
 }
 
-function formatCurrency(amount: number, currency: string = 'MXN'): string {
+function formatCurrency(amount: number): string {
     return new Intl.NumberFormat('es-MX', {
         style: 'currency',
-        currency,
+        currency: 'MXN',
     }).format(amount);
 }
 
@@ -67,8 +69,8 @@ export function OrdersList({ orders: initialOrders, nextCursor: initialCursor }:
         <>
             <div className={styles.list}>
                 {orders.map((order) => {
-                    const status = STATUS_LABELS[order.status] || { label: order.status, className: '' };
-                    const itemCount = order.items?.length || 0;
+                    const status = STATUS_LABELS[order.order_status] || { label: order.order_status, className: '' };
+                    const payStatus = PAYMENT_LABELS[order.payment_status] || order.payment_status;
 
                     return (
                         <article key={order.id} className={styles.card}>
@@ -82,21 +84,29 @@ export function OrdersList({ orders: initialOrders, nextCursor: initialCursor }:
                             <div className={styles.cardBody}>
                                 <div className={styles.info}>
                                     <span className={styles.date}>
-                                        📅 {formatDate(order.created_at)}
+                                        📅 {formatDate(order.ordered_at)}
                                     </span>
-                                    <span className={styles.items}>
-                                        📦 {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                                    <span className={styles.payment}>
+                                        💰 {payStatus}
                                     </span>
                                 </div>
 
-                                <div className={styles.total}>
-                                    {formatCurrency(order.total_amount, order.currency)}
+                                <div className={styles.totalContainer}>
+                                    <div className={styles.totalLabel}>Total</div>
+                                    <div className={styles.totalValue}>
+                                        {formatCurrency(order.total_with_vat)}
+                                    </div>
+                                    {order.balance_amount > 0 && (
+                                        <div className={styles.balance}>
+                                            Saldo: {formatCurrency(order.balance_amount)}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
                             <div className={styles.cardActions}>
                                 <Link
-                                    href={`/cotizacion/${order.folio}`}
+                                    href={`/dashboard/orders?folio=${order.folio}`}
                                     className={styles.viewButton}
                                 >
                                     Ver Detalles
