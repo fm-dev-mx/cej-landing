@@ -74,6 +74,7 @@ CREATE TABLE public.profiles (
 
 -- RLS: Service Role Only (no public/anon policies)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "profiles service_role all" ON public.profiles FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 CREATE TRIGGER set_profiles_updated_at
   BEFORE UPDATE ON public.profiles
@@ -144,6 +145,7 @@ CREATE TABLE public.leads (
 
 -- RLS: Service Role Only
 ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "leads service_role all" ON public.leads FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 CREATE TRIGGER set_leads_updated_at
   BEFORE UPDATE ON public.leads
@@ -162,6 +164,7 @@ CREATE TABLE public.service_slots (
 
 -- RLS: Service Role Only
 ALTER TABLE public.service_slots ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "service_slots service_role all" ON public.service_slots FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- ============================================================
 -- 7. TABLE: ORDERS
@@ -254,6 +257,7 @@ CREATE TABLE public.orders (
 
 -- RLS: Service Role Only
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "orders service_role all" ON public.orders FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 CREATE TRIGGER set_orders_updated_at
   BEFORE UPDATE ON public.orders
@@ -382,6 +386,7 @@ CREATE TRIGGER recompute_order_payments_trigger
 
 -- RLS: Service Role Only
 ALTER TABLE public.order_payments ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "order_payments service_role all" ON public.order_payments FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 CREATE TRIGGER set_order_payments_updated_at
   BEFORE UPDATE ON public.order_payments
@@ -432,6 +437,7 @@ CREATE TRIGGER order_status_history_trigger
 
 -- RLS: Service Role Only
 ALTER TABLE public.order_status_history ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "order_status_history service_role all" ON public.order_status_history FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- ============================================================
 -- 10. TABLE: ORDER_FISCAL_DATA
@@ -451,6 +457,7 @@ CREATE TABLE public.order_fiscal_data (
 
 -- RLS: Service Role Only
 ALTER TABLE public.order_fiscal_data ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "order_fiscal_data service_role all" ON public.order_fiscal_data FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 CREATE TRIGGER set_order_fiscal_data_updated_at
   BEFORE UPDATE ON public.order_fiscal_data
@@ -470,8 +477,8 @@ CREATE TABLE public.price_config (
 );
 
 ALTER TABLE public.price_config ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public read prices" ON public.price_config FOR SELECT USING (true);
--- All writes handled via Service Role
+CREATE POLICY "price_config public read" ON public.price_config FOR SELECT USING (true);
+CREATE POLICY "price_config service_role all" ON public.price_config FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 CREATE TRIGGER set_price_config_updated_at
   BEFORE UPDATE ON public.price_config
@@ -496,6 +503,7 @@ CREATE TABLE public.expenses (
 
 -- RLS: Service Role Only
 ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "expenses service_role all" ON public.expenses FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 CREATE TRIGGER set_expenses_updated_at
   BEFORE UPDATE ON public.expenses
@@ -516,6 +524,7 @@ CREATE TABLE public.payroll (
 
 -- RLS: Service Role Only
 ALTER TABLE public.payroll ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "payroll service_role all" ON public.payroll FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 CREATE TRIGGER set_payroll_updated_at
   BEFORE UPDATE ON public.payroll

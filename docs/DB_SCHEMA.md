@@ -140,19 +140,27 @@ Additional additive fields on `orders` include:
 
 ## 3. Security & RLS Policies
 
-**Row Level Security (RLS)** is strictly enforced to ensure multi-tenant isolation and data privacy.
+RLS policy definitions in `docs/schema.sql` are maintained for **policy completeness and auditability**.
+This improves governance clarity, but it does **not** override the service-role bypass behavior.
+When a Server Action uses the service-role key, RLS is bypassed by PostgreSQL/Supabase design.
 
-### Anon Key (Public)
+### Policy Matrix (Canonical Names)
 
-- **Policy**: Public read access on `price_config`.
-- **Rationale**: Pricing is public marketing data; anonymous calculators must function without login.
+| Table | RLS Enabled | Explicit Policies |
+|---|---|---|
+| `profiles` | Yes | `profiles service_role all` |
+| `leads` | Yes | `leads service_role all` |
+| `service_slots` | Yes | `service_slots service_role all` |
+| `orders` | Yes | `orders service_role all` |
+| `order_payments` | Yes | `order_payments service_role all` |
+| `order_status_history` | Yes | `order_status_history service_role all` |
+| `order_fiscal_data` | Yes | `order_fiscal_data service_role all` |
+| `price_config` | Yes | `price_config public read`, `price_config service_role all` |
+| `expenses` | Yes | `expenses service_role all` |
+| `payroll` | Yes | `payroll service_role all` |
 
-### Service Role (Private/Server)
+### Access Context Notes
 
-- **Usage**: Used exclusively within Server Actions (e.g., `submitLead`).
-- **Rationale**: Anonymous writes to `leads` require bypassing RLS as there is no authenticated user context.
-
-### Auth User (Authenticated)
-
-- **Policy**: CRUD permissions restricted by `user_id` on `profiles` and `orders`.
-- **Rationale**: A logged-in contractor has zero visibility into the data of other users.
+- **Anon key**: only `price_config public read` is exposed for public pricing reads.
+- **Service role**: used in server-only paths; policies are declared for auditable intent, while service-role access bypasses RLS internally.
+- **Authenticated users**: user-context clients remain constrained by RLS and app-level RBAC checks.
