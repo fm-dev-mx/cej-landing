@@ -214,9 +214,8 @@ export async function submitLead(
             privacy_accepted_at: privacy_accepted ? now : null,
         };
 
-        const { data, error } = await (supabase
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .from("leads") as any)
+        const { data, error } = await supabase
+            .from("leads")
             .insert(insertData)
             .select("id")
             .single();

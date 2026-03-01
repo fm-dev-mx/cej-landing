@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { updateOrderStatus } from './updateOrderStatus';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient, createClient } from '@/lib/supabase/server';
 
 const mockEq = vi.fn();
 const mockSingle = vi.fn();
@@ -12,6 +12,7 @@ const mockFrom = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
     createClient: vi.fn(),
+    createAdminClient: vi.fn(),
 }));
 
 vi.mock('@/lib/monitoring', () => ({
@@ -38,7 +39,11 @@ describe('updateOrderStatus', () => {
             auth: {
                 getUser: () => Promise.resolve({ data: { user: { id: 'user-val', user_metadata: { role: 'admin' } } }, error: null }),
             },
-            from: mockFrom,
+            from: () => ({ select: mockSelect }),
+        } as unknown as any);
+
+        vi.mocked(createAdminClient).mockResolvedValue({
+            from: () => ({ update: mockUpdate }),
         } as unknown as any);
     });
 
@@ -73,7 +78,7 @@ describe('updateOrderStatus', () => {
             auth: {
                 getUser: () => Promise.resolve({ data: { user: { id: 'other-user', user_metadata: { role: 'user' } } }, error: null }),
             },
-            from: mockFrom,
+            from: () => ({ select: mockSelect }),
         } as unknown as any);
 
         mockSingle.mockResolvedValueOnce({ data: { order_status: 'draft', user_id: 'secret-user' }, error: null });

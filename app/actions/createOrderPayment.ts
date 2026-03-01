@@ -5,6 +5,7 @@ import { reportError } from '@/lib/monitoring';
 import { getUserRole, hasPermission } from '@/lib/auth/rbac';
 import { createOrderPaymentPayloadSchema } from '@/lib/schemas/internal/order-payments';
 import type { CreateOrderPaymentPayload } from '@/lib/schemas/internal/order-payments';
+import type { Database } from '@/types/database';
 
 export interface CreateOrderPaymentResult {
     success: boolean;
@@ -40,22 +41,23 @@ export async function createOrderPayment(payload: CreateOrderPaymentPayload): Pr
         const paidAt = data.paidAt ? new Date(data.paidAt).toISOString() : new Date().toISOString();
 
         // Canonical mapping to amount_mxn
+        const insertPayload: Database['public']['Tables']['order_payments']['Insert'] = {
+            order_id: data.orderId,
+            direction: data.direction,
+            kind: data.kind,
+            method: data.method,
+            amount_mxn: data.amount,
+            paid_at: paidAt,
+            reference: data.reference ?? null,
+            receipt_number: data.receiptNumber ?? null,
+            notes: data.notes ?? null,
+            created_by: user.id,
+        };
+
         const adminSupabase = await createAdminClient();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: insertError } = await (adminSupabase as any)
+        const { error: insertError } = await adminSupabase
             .from('order_payments')
-            .insert({
-                order_id: data.orderId,
-                direction: data.direction,
-                kind: data.kind,
-                method: data.method,
-                amount_mxn: data.amount, // Mapping amount from UI to amount_mxn in DB
-                paid_at: paidAt,
-                reference: data.reference ?? null,
-                receipt_number: data.receiptNumber ?? null,
-                notes: data.notes ?? null,
-                created_by: user.id,
-            });
+            .insert(insertPayload);
 
         if (insertError) {
             reportError(insertError, { action: 'createOrderPayment', orderId: data.orderId });

@@ -6,6 +6,7 @@ import { getUserRole, hasPermission } from '@/lib/auth/rbac';
 import { updateOrderStatusPayloadSchema, canTransition } from '@/lib/schemas/internal/order-status';
 import type { UpdateOrderStatusPayload } from '@/lib/schemas/internal/order-status';
 import type { DbOrderStatus } from '@/types/database-enums';
+import type { Database } from '@/types/database';
 
 export interface UpdateOrderStatusResult {
     success: boolean;
@@ -39,27 +40,28 @@ export async function updateOrderStatus(payload: UpdateOrderStatusPayload): Prom
 
         const { orderId, newStatus } = parsed.data;
 
-        // Fetch current status to validate transition
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data: order, error: fetchErr } = await (supabase as any)
+        // Fetch current status to validate transition.
+        // Existing behavior assumes a single order row for a unique id.
+        type OrderStatusRow = Pick<Database['public']['Tables']['orders']['Row'], 'order_status' | 'user_id'>;
+        const { data: order, error: fetchErr } = await supabase
             .from('orders')
             .select('order_status, user_id')
             .eq('id', orderId)
             .single();
 
-        if (fetchErr || !order) {
+        const typedOrder = order as OrderStatusRow | null;
+        if (fetchErr || !typedOrder) {
             return { success: false, error: 'Pedido no encontrado' };
         }
 
         // RBAC / Ownership check
-        if (order.user_id !== user.id && !hasPermission(role, 'admin:all')) {
+        if (typedOrder.user_id !== user.id && !hasPermission(role, 'admin:all')) {
             return { success: false, error: 'No autorizado' };
         }
 
-        const currentStatus = order.order_status as DbOrderStatus;
+        const currentStatus = typedOrder.order_status as DbOrderStatus;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (!canTransition(currentStatus as any, newStatus as any)) {
+        if (!canTransition(currentStatus, newStatus)) {
             return {
                 success: false,
                 error: `Transición no permitida: de ${currentStatus} a ${newStatus}`
@@ -70,10 +72,9 @@ export async function updateOrderStatus(payload: UpdateOrderStatusPayload): Prom
         if (currentStatus === newStatus) return { success: true };
 
         const adminSupabase = await createAdminClient();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: updateErr } = await (adminSupabase as any)
+        const { error: updateErr } = await adminSupabase
             .from('orders')
-            .update({ order_status: newStatus as DbOrderStatus })
+            .update({ order_status: newStatus })
             .eq('id', orderId);
 
         if (updateErr) {

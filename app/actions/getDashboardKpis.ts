@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { reportError } from '@/lib/monitoring';
 import { getUserRole, hasPermission } from '@/lib/auth/rbac';
 import type { DashboardKpis, KpiPeriodType } from '@/types/internal/reporting';
+import type { Database } from '@/types/database';
 
 export interface GetDashboardKpisResult {
     success: boolean;
@@ -29,9 +30,15 @@ export async function getDashboardKpis(period: KpiPeriodType = 'current_month'):
             return { success: false, error: 'Sin permisos' };
         }
 
+        type DashboardOrderRow = Pick<
+            Database['public']['Tables']['orders']['Row'],
+            'order_status' | 'total_with_vat' | 'scheduled_date' | 'ordered_at'
+        >;
+
         // Base query - uses canonical fields: order_status, total_with_vat, scheduled_date
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let query = (supabase as any).from('orders').select('order_status, total_with_vat, scheduled_date, ordered_at');
+        let query = supabase
+            .from('orders')
+            .select('order_status, total_with_vat, scheduled_date, ordered_at');
 
         const now = new Date();
         if (period === 'current_month') {
@@ -60,9 +67,9 @@ export async function getDashboardKpis(period: KpiPeriodType = 'current_month'):
         };
 
         const todayStr = now.toISOString().split('T')[0];
+        const typedOrders = (orders || []) as DashboardOrderRow[];
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        for (const order of (orders || []) as any[]) {
+        for (const order of typedOrders) {
             kpis.totalOrders += 1;
 
             if (['draft', 'confirmed'].includes(order.order_status)) {

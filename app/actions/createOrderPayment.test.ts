@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createOrderPayment } from './createOrderPayment';
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient, createClient } from '@/lib/supabase/server';
 
 vi.mock('@/lib/supabase/server', () => ({
     createClient: vi.fn(),
+    createAdminClient: vi.fn(),
 }));
 
 vi.mock('@/lib/monitoring', () => ({
@@ -23,6 +24,10 @@ describe('createOrderPayment', () => {
             auth: {
                 getUser: () => Promise.resolve({ data: { user: { id: 'admin-id', user_metadata: { role: 'admin' } } }, error: null }),
             },
+            from: () => ({}),
+        } as any);
+
+        vi.mocked(createAdminClient).mockResolvedValue({
             from: (table: string) => {
                 if (table === 'order_payments') {
                     return {

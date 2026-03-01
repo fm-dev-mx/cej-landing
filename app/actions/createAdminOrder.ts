@@ -10,7 +10,7 @@ import type { AdminOrderPayload } from '@/types/internal/order';
 import { getAttributionData, extractAttribution } from '@/lib/logic/attribution';
 import { getPriceConfig } from './getPriceConfig';
 import { calcQuote } from '@/lib/pricing';
-import { type PricingSnapshotJson } from '@/types/database';
+import { type Database, type PricingSnapshotJson } from '@/types/database';
 
 export type { AdminOrderPayload };
 
@@ -88,6 +88,9 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
                 : {},
         };
 
+        const serviceType: Database['public']['Tables']['orders']['Row']['service_type'] =
+            normalizedPayload.concreteType === 'pumped' ? 'bombeado' : 'tirado';
+
         const canonicalPayload = {
             folio,
             user_id: user.id, // Using current user as tenant for now, but should be clarified later
@@ -99,7 +102,7 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
             fiscal_status: 'not_requested' as const,
             ordered_at: orderedAt,
 
-            service_type: normalizedPayload.concreteType === 'pumped' ? 'bombeado' : 'tirado',
+            service_type: serviceType,
             product_id: `concreto-f'c-${normalizedPayload.strength}`,
             quantity_m3: normalizedPayload.volume,
             unit_price_before_vat: quoteBreakdown.baseSubtotal / normalizedPayload.volume,
@@ -128,11 +131,11 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
             legacy_folio_raw: normalizedPayload.legacyFolioRaw ?? null,
         };
 
+        const canonicalInsert: Database['public']['Tables']['orders']['Insert'] = canonicalPayload;
         const adminSupabase = await createAdminClient();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data, error } = await (adminSupabase as any)
+        const { data, error } = await adminSupabase
             .from('orders')
-            .insert(canonicalPayload)
+            .insert(canonicalInsert)
             .select('id')
             .single();
 
