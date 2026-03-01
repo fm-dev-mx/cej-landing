@@ -1,4 +1,4 @@
- 
+
 import fs from 'fs';
 import path from 'path';
 import { spawnSync } from 'child_process';
@@ -11,6 +11,7 @@ interface CliArgs {
   failDb: boolean;
   failAny: boolean;
   failInline: boolean;
+  failPipeline: boolean;
 }
 
 interface CheckResult {
@@ -33,6 +34,7 @@ interface AggregatedReport {
     production_any_count: number;
     db_fk_drift_count: number;
     inline_exported_signature_count: number;
+    action_pipeline_violation_count: number;
   };
   violations: AggregatedViolation[];
   meta: {
@@ -41,6 +43,7 @@ interface AggregatedReport {
       db_fk_drift: 'report-only' | 'fail';
       inline_types: 'report-only' | 'fail';
       production_any: 'report-only' | 'fail';
+      action_pipeline: 'report-only' | 'fail';
     };
     tool_versions: {
       node: string;
@@ -59,6 +62,7 @@ function parseArgs(argv: string[]): CliArgs {
   let failDb = false;
   let failAny = false;
   let failInline = false;
+  let failPipeline = false;
 
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -88,10 +92,14 @@ function parseArgs(argv: string[]): CliArgs {
     }
     if (arg === '--fail-inline') {
       failInline = true;
+      continue;
+    }
+    if (arg === '--fail-pipeline') {
+      failPipeline = true;
     }
   }
 
-  return { format, out, failDb, failAny, failInline };
+  return { format, out, failDb, failAny, failInline, failPipeline };
 }
 
 function run(command: string, args: string[]): { status: number; stdout: string } {
@@ -190,6 +198,7 @@ function renderText(report: AggregatedReport, outPath: string): string {
     `- db_fk_drift_count: ${report.counts.db_fk_drift_count}`,
     `- production_any_count: ${report.counts.production_any_count}`,
     `- inline_exported_signature_count: ${report.counts.inline_exported_signature_count}`,
+    `- action_pipeline_violation_count: ${report.counts.action_pipeline_violation_count}`,
     `- violations: ${report.violations.length}`,
     `- out: ${outPath}`,
   ].join('\n');
@@ -200,10 +209,12 @@ const args = parseArgs(process.argv.slice(2));
 const db = runCheck('scripts/check-db-drift.ts', args.failDb);
 const prodAny = runCheck('scripts/check-production-any.ts', args.failAny);
 const inlineTypes = runCheck('scripts/check-exported-inline-signatures.ts', args.failInline);
+const pipeline = runCheck('scripts/check-action-pipeline.ts', args.failPipeline);
 
 const dbViolations = toAggregatedViolations('db_fk_drift', (db.parsed.violations ?? []) as Array<Record<string, unknown>>);
 const anyViolations = toAggregatedViolations('production_any', (prodAny.parsed.violations ?? []) as Array<Record<string, unknown>>);
 const inlineViolations = toAggregatedViolations('inline_types', (inlineTypes.parsed.violations ?? []) as Array<Record<string, unknown>>);
+const pipelineViolations = toAggregatedViolations('action_pipeline', (pipeline.parsed.violations ?? []) as Array<Record<string, unknown>>);
 
 const report: AggregatedReport = {
   timestamp: new Date().toISOString(),
@@ -212,14 +223,16 @@ const report: AggregatedReport = {
     production_any_count: Number(prodAny.parsed.counts?.production_any_count ?? 0),
     db_fk_drift_count: Number(db.parsed.counts?.db_fk_drift_count ?? 0),
     inline_exported_signature_count: Number(inlineTypes.parsed.counts?.inline_exported_signature_count ?? 0),
+    action_pipeline_violation_count: Number(pipeline.parsed.counts?.action_pipeline_violation_count ?? 0),
   },
-  violations: sortViolations([...dbViolations, ...anyViolations, ...inlineViolations]),
+  violations: sortViolations([...dbViolations, ...anyViolations, ...inlineViolations, ...pipelineViolations]),
   meta: {
     context7_status: 'unavailable',
     modes: {
       db_fk_drift: args.failDb ? 'fail' : 'report-only',
       inline_types: args.failInline ? 'fail' : 'report-only',
       production_any: args.failAny ? 'fail' : 'report-only',
+      action_pipeline: args.failPipeline ? 'fail' : 'report-only',
     },
     tool_versions: {
       node: process.version,
@@ -240,6 +253,6 @@ if (args.format === 'json') {
   process.stdout.write(`${renderText(report, args.out)}\n`);
 }
 
-if ((args.failDb && !db.ok) || (args.failAny && !prodAny.ok) || (args.failInline && !inlineTypes.ok)) {
+if ((args.failDb && !db.ok) || (args.failAny && !prodAny.ok) || (args.failInline && !inlineTypes.ok) || (args.failPipeline && !pipeline.ok)) {
   process.exit(1);
 }

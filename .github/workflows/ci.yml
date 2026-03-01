@@ -28,6 +28,23 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # --- Governance Checks ---
+      - name: Governance - DB Drift
+        run: pnpm governance:check-db-contracts:fail
+
+      - name: Governance - Inline Types
+        run: pnpm governance:check-inline-types:fail
+
+      - name: Governance - Production Any
+        run: pnpm governance:check-production-any:fail
+
+      - name: Governance - Action Pipeline
+        run: pnpm governance:check-action-pipeline:fail
+      # -------------------------
+
       # --- Build Application ---
       - name: Build Application
         run: pnpm build

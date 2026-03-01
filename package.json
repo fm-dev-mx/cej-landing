@@ -22,6 +22,8 @@
     "governance:check-inline-types:fail": "tsx scripts/check-exported-inline-signatures.ts --fail --format text",
     "governance:check-production-any": "tsx scripts/check-production-any.ts --format text",
     "governance:check-production-any:fail": "tsx scripts/check-production-any.ts --fail --format text",
+    "governance:check-action-pipeline": "tsx scripts/check-action-pipeline.ts --format text",
+    "governance:check-action-pipeline:fail": "tsx scripts/check-action-pipeline.ts --fail --format text",
     "governance:report-initial": "tsx scripts/governance-report.ts --out .artifacts/governance/initial-governance-report.json --format text",
     "lint-staged": "lint-staged",
     "prepare": "husky"
