@@ -24,6 +24,13 @@
       "exact": []
     },
     {
+      "domain": "contracts",
+      "prefixes": [
+        "types/"
+      ],
+      "exact": []
+    },
+    {
       "domain": "audit",
       "prefixes": [
         ".agents/plans/"
@@ -41,7 +48,9 @@
       "domain": "tooling",
       "prefixes": [
         ".husky/",
-        "scripts/"
+        "scripts/",
+        ".agents/",
+        "config/"
       ],
       "exact": [
         "package.json",

@@ -20,12 +20,12 @@ async function seedPricing() {
 
     const { data, error } = await supabase
         .from('price_config')
-        .insert([
+        .upsert([
             {
                 version: FALLBACK_PRICING_RULES.version,
                 pricing_rules: FALLBACK_PRICING_RULES,
             },
-        ])
+        ], { onConflict: 'version' })
         .select();
 
     if (error) {
