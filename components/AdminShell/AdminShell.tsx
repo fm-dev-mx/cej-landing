@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import styles from './AdminShell.module.scss';
 import AdminSidebar from '@/components/AdminSidebar';
 import AdminTopbar from '@/components/AdminTopbar';
@@ -16,12 +17,14 @@ export default function AdminShell({
     userName,
     userEmail,
 }: AdminShellProps) {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [openedOnPath, setOpenedOnPath] = useState<string | null>(null);
+    const pathname = usePathname();
+    const isSidebarOpen = openedOnPath === pathname;
 
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
-                setIsSidebarOpen(false);
+                setOpenedOnPath(null);
             }
         };
 
@@ -30,7 +33,7 @@ export default function AdminShell({
     }, []);
 
     const handleCloseSidebar = () => {
-        setIsSidebarOpen(false);
+        setOpenedOnPath(null);
     };
 
     return (
@@ -53,7 +56,9 @@ export default function AdminShell({
                 <AdminTopbar
                     userName={userName}
                     userEmail={userEmail}
-                    onMenuToggle={() => setIsSidebarOpen((value) => !value)}
+                    onMenuToggle={() =>
+                        setOpenedOnPath((value) => (value === pathname ? null : pathname))
+                    }
                 />
                 <main className={styles.content}>{children}</main>
             </div>

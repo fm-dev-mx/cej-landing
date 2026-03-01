@@ -12,7 +12,8 @@ interface AdminSidebarProps {
 interface NavItem {
     href: string;
     label: string;
-    disabled?: boolean;
+    available: boolean;
+    comingSoonLabel?: string;
 }
 
 interface NavGroup {
@@ -22,37 +23,38 @@ interface NavGroup {
 
 const NAV_GROUPS: NavGroup[] = [
     {
-        title: 'Overview',
+        title: 'Resumen',
         items: [
-            { href: '/dashboard', label: 'Dashboard / KPIs' },
+            { href: '/dashboard', label: 'Panel y KPIs', available: true },
         ],
     },
     {
-        title: 'Operations',
+        title: 'Operaciones',
         items: [
-            { href: '/dashboard/orders', label: 'Pedidos' },
-            { href: '/dashboard/new', label: 'Leads' },
+            { href: '/dashboard/orders', label: 'Pedidos', available: true },
+            { href: '/dashboard/new', label: 'Prospectos', available: true },
         ],
     },
     {
-        title: 'Financials',
+        title: 'Finanzas',
         items: [
-            { href: '/dashboard/expenses', label: 'Gastos' },
-            { href: '/dashboard/payroll', label: 'Nómina' },
+            { href: '/dashboard/expenses', label: 'Gastos', available: true },
+            { href: '/dashboard/payroll', label: 'Nómina', available: true },
         ],
     },
     {
-        title: 'Configuration',
+        title: 'Configuración',
         items: [
-            { href: '/dashboard/settings/pricing', label: 'Editor de precios' },
-            { href: '/dashboard/settings', label: 'Configuración general', disabled: true },
+            { href: '/dashboard/settings', label: 'Configuración general', available: true },
+            { href: '/dashboard/settings/pricing', label: 'Editor de precios', available: true },
+            { href: '/dashboard/settings/users', label: 'Usuarios y permisos', available: false, comingSoonLabel: 'Próximamente' },
         ],
     },
     {
-        title: 'Reports',
+        title: 'Reportes',
         items: [
-            { href: '/dashboard/reports', label: 'Analítica y exportaciones' },
-            { href: '/dashboard/calendar', label: 'Calendario de despachos' },
+            { href: '/dashboard/reports', label: 'Analítica y exportaciones', available: true },
+            { href: '/dashboard/calendar', label: 'Calendario de despachos', available: true },
         ],
     },
 ];
@@ -75,7 +77,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         >
             <div className={styles.brand}>
                 <p className={styles.brandEyebrow}>CEJ Pro</p>
-                <p className={styles.brandTitle}>Panel Admin</p>
+                <p className={styles.brandTitle}>Panel administrativo</p>
             </div>
 
             <nav className={styles.nav}>
@@ -84,16 +86,20 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                         <h2 className={styles.groupTitle}>{group.title}</h2>
                         <ul className={styles.groupList}>
                             {group.items.map((item) => {
-                                const active = !item.disabled && isRouteActive(pathname, item.href);
+                                const active = item.available && isRouteActive(pathname, item.href);
 
-                                if (item.disabled) {
+                                if (!item.available) {
                                     return (
                                         <li key={item.href}>
                                             <span
-                                                className={`${styles.link} ${styles.disabled}`}
+                                                className={`${styles.link} ${styles.disabled} ${styles.comingSoon}`}
                                                 aria-disabled="true"
+                                                title={item.comingSoonLabel || 'Próximamente'}
                                             >
                                                 {item.label}
+                                                <span className={styles.comingSoonBadge}>
+                                                    {item.comingSoonLabel || 'Próximamente'}
+                                                </span>
                                             </span>
                                         </li>
                                     );

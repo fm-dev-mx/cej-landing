@@ -17,9 +17,9 @@ interface Breadcrumb {
 }
 
 const LABEL_MAP: Record<string, string> = {
-    dashboard: 'Dashboard',
+    dashboard: 'Resumen',
     orders: 'Pedidos',
-    new: 'Leads',
+    new: 'Prospectos',
     expenses: 'Gastos',
     payroll: 'Nómina',
     settings: 'Configuración',
@@ -30,7 +30,7 @@ const LABEL_MAP: Record<string, string> = {
 
 function buildBreadcrumbs(pathname: string): Breadcrumb[] {
     const segments = pathname.split('/').filter(Boolean);
-    const breadcrumbs: Breadcrumb[] = [{ href: '/dashboard', label: 'Dashboard' }];
+    const breadcrumbs: Breadcrumb[] = [{ href: '/dashboard', label: 'Resumen' }];
 
     if (segments.length <= 1) {
         return breadcrumbs;
@@ -52,7 +52,7 @@ function buildBreadcrumbs(pathname: string): Breadcrumb[] {
 function getSectionTitle(pathname: string): string {
     const segments = pathname.split('/').filter(Boolean);
     const last = segments[segments.length - 1] ?? 'dashboard';
-    return LABEL_MAP[last] ?? 'Dashboard';
+    return LABEL_MAP[last] ?? 'Resumen';
 }
 
 export default function AdminTopbar({

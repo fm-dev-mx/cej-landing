@@ -129,6 +129,27 @@
     opacity: 0.45;
 }
 
+.comingSoon {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: center;
+    justify-content: space-between;
+}
+
+.comingSoonBadge {
+    padding: 0.1rem 0.45rem;
+    border: 1px solid var(--c-border-strong);
+    border-radius: 999px;
+
+    font-size: var(--fs-xxs);
+    font-weight: 700;
+    color: var(--c-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+
+    background: var(--c-surface-light);
+}
+
 @media (width >= 1024px) {
     .sidebar {
         position: sticky;
