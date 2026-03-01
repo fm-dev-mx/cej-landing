@@ -94,7 +94,7 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
         const canonicalPayload = {
             folio,
             user_id: user.id, // Using current user as tenant for now, but should be clarified later
-            seller_id: user.id, // Current user is the seller
+            seller_id: normalizedPayload.sellerId ?? user.id,
             created_by: user.id, // Current user is the creator
 
             order_status: 'draft' as const,
