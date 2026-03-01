@@ -1,0 +1,171 @@
+@use "@/styles/primitives" as p;
+@use "@/styles/mixins" as *;
+
+.main {
+  @include p.container;
+
+  max-width: 1200px;
+  padding-top: calc(var(--header-h) + var(--sp-6));
+  padding-bottom: var(--sp-8);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: var(--sp-6);
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--c-border);
+
+  h1 {
+    margin: 0;
+    font-size: var(--fs-2xl);
+    font-weight: 700;
+    color: var(--c-text);
+  }
+}
+
+.backLink {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--c-muted);
+  text-decoration: none;
+
+  transition: color 0.2s;
+
+  &:hover {
+    color: var(--c-text);
+  }
+}
+
+.section {
+  margin-bottom: var(--sp-8);
+  padding: var(--sp-6);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--c-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.sectionTitle {
+  margin-bottom: var(--sp-4);
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--sp-4);
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.label {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--c-muted-strong);
+}
+
+.input {
+  padding: var(--sp-3);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+
+  font-size: var(--fs-base);
+
+  background: var(--c-surface);
+
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:focus {
+    border-color: var(--c-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px var(--c-interactive-ring);
+  }
+}
+
+.button {
+  cursor: pointer;
+
+  padding: var(--sp-3) var(--sp-6);
+  border: none;
+  border-radius: var(--radius-sm);
+
+  font-weight: 600;
+  color: white;
+
+  background: var(--c-primary);
+
+  transition: background 0.2s;
+
+  &:hover:not(:disabled) {
+    background: var(--c-primary-dark);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: var(--sp-4);
+}
+
+.tableHeader {
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 2px solid var(--c-border);
+
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-muted-strong);
+  text-align: left;
+
+  background: var(--c-surface-light);
+}
+
+.tableCell {
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--c-border);
+  font-size: var(--fs-sm);
+  color: var(--c-text);
+}
+
+.emptyCell {
+  padding: var(--sp-8);
+  font-style: italic;
+  color: var(--c-muted);
+  text-align: center;
+}
+
+.errorText, .resultText {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--c-error-base);
+}
+
+.successText {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--c-success);
+}
