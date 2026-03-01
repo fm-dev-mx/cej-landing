@@ -24,7 +24,7 @@ import { getAttributionData, extractAttribution } from "@/lib/logic/attribution"
 // Initialize Supabase only if keys are present
 const supabase =
     env.NEXT_PUBLIC_SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY
-        ? createClient<Database>(
+        ? createClient(
             env.NEXT_PUBLIC_SUPABASE_URL,
             env.SUPABASE_SERVICE_ROLE_KEY,
             {

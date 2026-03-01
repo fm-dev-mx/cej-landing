@@ -413,10 +413,10 @@ export type Database = {
             };
         };
         Views: {
-            [_ in never]: never;
+            [key: string]: never;
         };
         Functions: {
-            [_ in never]: never;
+            [key: string]: never;
         };
         Enums: {
             order_status_enum: DbOrderStatus;
@@ -428,7 +428,7 @@ export type Database = {
             lead_status_enum: DbLeadStatus;
         };
         CompositeTypes: {
-            [_ in never]: never;
+            [key: string]: never;
         };
     };
 }

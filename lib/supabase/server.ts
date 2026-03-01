@@ -1,5 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
-import { createClient as createBaseClient } from '@supabase/supabase-js';
+import { createClient as createBaseClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/database';
 import { cookies } from 'next/headers';
 import { getSupabaseConfig, env } from '@/config/env';
@@ -9,7 +9,8 @@ import { getSupabaseConfig, env } from '@/config/env';
  * Uses cookies for session management with proper Next.js App Router integration.
  * Throws an error if Supabase is not configured (env vars missing).
  */
-export async function createClient() {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function createClient(): Promise<SupabaseClient<any, 'public', any>> {
     const { url, anonKey, isConfigured } = getSupabaseConfig();
 
     if (!isConfigured) {
@@ -49,7 +50,8 @@ export async function createClient() {
  * Use ONLY in Server Actions or Route Handlers that require administrative privileges
  * after proper RBAC validation.
  */
-export async function createAdminClient() {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function createAdminClient(): Promise<SupabaseClient<any, 'public', any>> {
     const url = env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
 
