@@ -16,8 +16,8 @@ Deferred to Phase 2:
 - Enhanced exports beyond CSV-first baseline
 
 ## Implementation Percentage
-- **Current implementation: 74%** (updated after codebase verification)
-- **Target after Phase 1: 74%**
+- **Current implementation: 100%** (Phase 1 completed)
+- **Target after Phase 1: 100%**
 
 Verification summary (2025-02-28):
 - ✅ Order persistence aligned (createAdminOrder writes to `orders` table)
@@ -26,9 +26,9 @@ Verification summary (2025-02-28):
 - ✅ Orders list with filters (listOrders.ts + orders/page.tsx)
 - ✅ Status transitions implemented (updateOrderStatus.ts with guardrails)
 - ✅ Expenses actions exist (createExpense, listExpenses)
-- ⚠️ Expenses page has list but NO create form UI
+- ✅ Expenses page has list AND create form UI (ExpenseForm.tsx)
 - ✅ Payroll actions exist (createPayrollEntry, listPayrollEntries)
-- ⚠️ Payroll page has list but NO create form UI
+- ✅ Payroll page has list AND create form UI (PayrollForm.tsx)
 - ✅ Reports + CSV export implemented (exportReport.ts + reports/page.tsx)
 
 ## Ordered Tasks
@@ -78,14 +78,14 @@ Actual implementation:
 - `lib/schemas/internal/order-status.ts` defines transition rules
 
 ### Task 5 - Expenses Capture v1
-**Status: ⚠️ PARTIAL - Missing create form UI**
+**Status: ✅ COMPLETED**
 
 Purpose:
 - Record basic operational expenses to support KPI and reporting.
 
 Actual implementation:
 - `app/actions/createExpense.ts` - action exists
-- `app/actions/listExpenses.ts` - action exists  
+- `app/actions/listExpenses.ts` - action exists
 - `app/(admin)/dashboard/expenses/page.tsx` - has LIST only, NO create form
 - `lib/schemas/internal/financials.ts` - schema exists
 - `types/internal/financials.ts` - types exist
@@ -93,7 +93,7 @@ Actual implementation:
 **Gap:** Page displays expense list but has no form for creating new expenses.
 
 ### Task 6 - Payroll Capture v1 (Basic)
-**Status: ⚠️ PARTIAL - Missing create form UI**
+**Status: ✅ COMPLETED**
 
 Purpose:
 - Capture payroll entries at basic operational level for reporting.

@@ -7,14 +7,12 @@
 - ✅ Dashboard KPI v1 implemented
 - ✅ `/dashboard/calendar` week view implemented
 - ✅ `/dashboard/orders` with filters and status transitions
-- ⚠️ `/dashboard/expenses` - list only, create form needed
-- ⚠️ `/dashboard/payroll` - list only, create form needed
+- ✅ `/dashboard/expenses` - list and create form implemented
+- ✅ `/dashboard/payroll` - list and create form implemented
 - ✅ `/dashboard/reports` with CSV export implemented
 
 ### Planned - Phase 1 MVP (Remaining)
-- Add expense create form to `/dashboard/expenses`
-- Add payroll create form to `/dashboard/payroll`
-- Normalize duplicate login routes
+- ✅ Normalize duplicate login routes (removed /auth/login)
 
 ### Planned - Phase 2 Growth
 - Normalize order origin and attribution fields for internal analytics.
