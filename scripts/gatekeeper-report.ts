@@ -45,7 +45,7 @@ interface GatekeeperReport {
       id: string;
       domain: string;
       files: string[];
-      commitType: 'feat' | 'fix' | 'chore';
+      commitType: 'feat' | 'fix' | 'chore' | 'docs';
       scope: string;
     }>;
   };
@@ -296,7 +296,10 @@ function topViolations(findings: HygieneFinding[]) {
   }));
 }
 
-function nextStepForRoute(route: Route): string {
+function nextStepForRoute(route: Route, isDocsOnly: boolean): string {
+  if (isDocsOnly) {
+    return 'Documentation-only changes detected. Proposing ADU commit splits (docs type).';
+  }
   if (route === 'auto_fix') {
     return 'Run /auto-fix to resolve auto-fixable static failures.';
   }
@@ -358,12 +361,24 @@ function buildReport(args: ParsedArgs): GatekeeperReport {
       adu: { suggestedSplits: [] },
       violations: [],
       source: 'fresh',
-      nextStep: nextStepForRoute('proceed_adu'),
+      nextStep: nextStepForRoute('proceed_adu', false),
     };
   }
 
   const tsFiles = stagedFiles.filter((file) => file.endsWith('.ts') || file.endsWith('.tsx'));
-  const hygieneOutput = runHygiene(tsFiles, args.skipHygiene);
+  const scssFiles = stagedFiles.filter((file) => file.endsWith('.scss'));
+  const isDocsOnly = stagedFiles.length > 0 && stagedFiles.every(
+    (file) =>
+      file.toLowerCase().endsWith('.md') ||
+      file.toLowerCase().endsWith('.txt')
+  );
+
+  const needsLint = !isDocsOnly && (tsFiles.length > 0 || scssFiles.length > 0);
+
+  const hygieneOutput = isDocsOnly
+    ? { status: 'pass' as const, summary: { highestSeverity: 'none' as Severity, autoFixableOnly: true }, findings: [] }
+    : runHygiene(tsFiles, args.skipHygiene);
+
   const hygieneSeverity = summarizeSeverity(hygieneOutput.findings);
   const hygieneCheck: GatekeeperCheck = {
     status: hygieneOutput.status === 'pass' ? 'pass' : 'fail',
@@ -371,9 +386,9 @@ function buildReport(args: ParsedArgs): GatekeeperReport {
     autoFixable: hygieneOutput.findings.length === 0 || hygieneOutput.findings.every((item) => item.autoFixable),
   };
 
-  const lintCheck = runLintCheck(args.runLintStaged, args.lintStatusOverride);
+  const lintCheck = runLintCheck(args.runLintStaged && needsLint, args.lintStatusOverride);
   const domainMap = mapDomainsFromFiles(stagedFiles);
-  const route = computeRoute(hygieneCheck, lintCheck, hygieneOutput.findings);
+  const route = isDocsOnly ? 'proceed_adu' : computeRoute(hygieneCheck, lintCheck, hygieneOutput.findings);
   const status = route === 'proceed_adu' ? 'pass' : 'fail';
 
   const report: GatekeeperReport = {
@@ -395,7 +410,7 @@ function buildReport(args: ParsedArgs): GatekeeperReport {
     },
     violations: topViolations(hygieneOutput.findings),
     source: 'fresh',
-    nextStep: nextStepForRoute(route),
+    nextStep: nextStepForRoute(route, isDocsOnly),
   };
 
   if (args.writeArtifact) {

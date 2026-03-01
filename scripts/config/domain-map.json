@@ -2,32 +2,81 @@
   "rules": [
     {
       "domain": "ui",
-      "prefixes": ["components/", "styles/", "public/"],
+      "prefixes": [
+        "components/",
+        "styles/",
+        "public/"
+      ],
       "exact": []
     },
     {
       "domain": "routing",
-      "prefixes": ["app/"],
+      "prefixes": [
+        "app/"
+      ],
       "exact": []
     },
     {
       "domain": "domain",
-      "prefixes": ["lib/"],
+      "prefixes": [
+        "lib/"
+      ],
       "exact": []
     },
     {
-      "domain": "contracts",
-      "prefixes": ["types/", "schemas/"],
+      "domain": "audit",
+      "prefixes": [
+        ".agents/plans/"
+      ],
+      "exact": []
+    },
+    {
+      "domain": "prompts",
+      "prefixes": [
+        ".agents/prompts/"
+      ],
       "exact": []
     },
     {
       "domain": "tooling",
-      "prefixes": [".husky/", "scripts/", ".agents/"],
-      "exact": ["package.json", "pnpm-lock.yaml", "tsconfig.json"]
+      "prefixes": [
+        ".husky/",
+        "scripts/"
+      ],
+      "exact": [
+        "package.json",
+        "pnpm-lock.yaml",
+        "tsconfig.json"
+      ]
+    },
+    {
+      "domain": "docs",
+      "prefixes": [
+        "docs/"
+      ],
+      "exact": [
+        "README.md",
+        "CHANGELOG.md",
+        "CONTRIBUTING.md",
+        "LICENSE",
+        "AGENTS.md"
+      ]
     }
   ],
   "risk": {
-    "high": ["tooling", "domain", "contracts", "routing"],
-    "medium": ["ui"]
+    "high": [
+      "tooling",
+      "domain",
+      "contracts",
+      "routing"
+    ],
+    "medium": [
+      "ui",
+      "prompts"
+    ],
+    "low": [
+      "audit",
+      "docs"
+    ]
   }
 }

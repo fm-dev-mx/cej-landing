@@ -29,7 +29,7 @@ interface SuggestedSplit {
   id: string;
   domain: string;
   files: string[];
-  commitType: 'feat' | 'fix' | 'chore';
+  commitType: 'feat' | 'fix' | 'chore' | 'docs';
   scope: string;
 }
 
@@ -70,6 +70,16 @@ function inferDomain(filePath: string, config: DomainMapConfig): string {
 }
 
 function inferScope(domain: string, files: string[]): string {
+  if (domain === 'docs') {
+    if (files.some((f) => f.toLowerCase().includes('readme.md'))) {
+      return 'readme';
+    }
+  }
+
+  if (['audit', 'prompts', 'docs'].includes(domain)) {
+    return domain;
+  }
+
   const firstFile = files[0] ?? domain;
   const segments = normalizePath(firstFile).split('/');
   if (segments.length > 1) {
@@ -79,9 +89,13 @@ function inferScope(domain: string, files: string[]): string {
   return domain;
 }
 
-function inferCommitType(domain: string): 'feat' | 'fix' | 'chore' {
+function inferCommitType(domain: string): 'feat' | 'fix' | 'chore' | 'docs' {
   if (domain === 'tooling') {
     return 'chore';
+  }
+
+  if (domain === 'audit' || domain === 'docs' || domain === 'prompts') {
+    return 'docs';
   }
 
   if (domain === 'domain' || domain === 'contracts') {
