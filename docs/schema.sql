@@ -1,29 +1,28 @@
 -- CEJ Database bootstrap / sync script for Supabase
--- Safe to run multiple times (uses IF NOT EXISTS where possible)
+-- Idempotent: safe to run multiple times (uses IF NOT EXISTS + DROP/CREATE patterns)
+-- Note: The auth.users trigger requires elevated privileges (typical in Supabase SQL editor).
 
 -- ============================================================
 -- 1. INITIAL CONFIGURATION
 -- ============================================================
 
--- Enable UUID extension (if not already enabled)
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
+-- Enable pgcrypto for gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- ============================================================
 -- 2. GENERIC FUNCTION: updated_at
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION public.set_updated_at()
-RETURNS     trigger
-LANGUAGE    plpgsql
-SET         search_path = pg_catalog, public
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, public
 AS $$
 BEGIN
   NEW.updated_at = now();
   RETURN NEW;
 END;
 $$;
-
 
 -- ============================================================
 -- 3. TABLE: PROFILES (Auth Extension - Phase 3)
@@ -41,6 +40,23 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   updated_at   timestamptz DEFAULT now()
 );
 
+-- MIGRATION / SYNC FOR EXISTING DATABASES:
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS email        text,
+  ADD COLUMN IF NOT EXISTS full_name    text,
+  ADD COLUMN IF NOT EXISTS phone        text,
+  ADD COLUMN IF NOT EXISTS company_name text,
+  ADD COLUMN IF NOT EXISTS rfc          text,
+  ADD COLUMN IF NOT EXISTS address      jsonb,
+  ADD COLUMN IF NOT EXISTS created_at   timestamptz,
+  ADD COLUMN IF NOT EXISTS updated_at   timestamptz;
+
+ALTER TABLE public.profiles
+  ALTER COLUMN created_at SET DEFAULT now();
+
+ALTER TABLE public.profiles
+  ALTER COLUMN updated_at SET DEFAULT now();
+
 -- Enable Row Level Security for profiles
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
@@ -53,12 +69,12 @@ DROP POLICY IF EXISTS "Usuarios editan su propio perfil" ON public.profiles;
 -- RLS: Users can only read their own profile
 CREATE POLICY "Users can read their own profile"
   ON public.profiles FOR SELECT
-  USING (id = (SELECT auth.uid()));
+  USING (id = auth.uid());
 
 -- RLS: Users can only update their own profile
 CREATE POLICY "Users can update their own profile"
   ON public.profiles FOR UPDATE
-  USING (id = (SELECT auth.uid()));
+  USING (id = auth.uid());
 
 -- updated_at trigger for profiles
 DROP TRIGGER IF EXISTS set_profiles_updated_at ON public.profiles;
@@ -67,7 +83,7 @@ CREATE TRIGGER set_profiles_updated_at
   FOR EACH ROW
   EXECUTE PROCEDURE public.set_updated_at();
 
--- Trigger: automatically create profile for new auth users (with COALESCE fallback)
+-- Trigger: automatically create/update profile for new auth users
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -79,18 +95,21 @@ BEGIN
   VALUES (
     NEW.id,
     NEW.email,
-    -- Use metadata full_name if present, otherwise fallback to email local-part
     COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1))
-  );
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    email = EXCLUDED.email,
+    full_name = EXCLUDED.full_name,
+    updated_at = now();
   RETURN NEW;
 END;
 $$;
 
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
+-- Create trigger on auth.users (requires elevated privileges)
+DROP TRIGGER IF EXISTS cej_on_auth_user_created ON auth.users;
+CREATE TRIGGER cej_on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
-
 
 -- ============================================================
 -- 4. TABLE: LEADS (Anonymous Inbox - Phase 2)
@@ -111,52 +130,76 @@ CREATE TABLE IF NOT EXISTS public.leads (
 );
 
 -- MIGRATION / SYNC FOR EXISTING DATABASES:
--- Add missing columns without changing existing values.
 ALTER TABLE public.leads
-  ADD COLUMN IF NOT EXISTS fbclid              text,
-  ADD COLUMN IF NOT EXISTS delivery_date       timestamptz,
-  ADD COLUMN IF NOT EXISTS delivery_address    text,
-  ADD COLUMN IF NOT EXISTS utm_campaign        text,
-  ADD COLUMN IF NOT EXISTS utm_term            text,
-  ADD COLUMN IF NOT EXISTS utm_content         text,
-  ADD COLUMN IF NOT EXISTS notes               text,
-  ADD COLUMN IF NOT EXISTS lost_reason         text,
-  ADD COLUMN IF NOT EXISTS privacy_accepted    boolean,
-  ADD COLUMN IF NOT EXISTS privacy_accepted_at timestamptz,
-  ADD COLUMN IF NOT EXISTS gclid               text;
+  ADD COLUMN IF NOT EXISTS created_at           timestamptz,
+  ADD COLUMN IF NOT EXISTS name                 text,
+  ADD COLUMN IF NOT EXISTS phone                text,
+  ADD COLUMN IF NOT EXISTS status               text,
+  ADD COLUMN IF NOT EXISTS quote_data           jsonb,
+  ADD COLUMN IF NOT EXISTS visitor_id           text,
+  ADD COLUMN IF NOT EXISTS fb_event_id          text,
+  ADD COLUMN IF NOT EXISTS utm_source           text,
+  ADD COLUMN IF NOT EXISTS utm_medium           text,
+  ADD COLUMN IF NOT EXISTS fbclid               text,
+  ADD COLUMN IF NOT EXISTS delivery_date        timestamptz,
+  ADD COLUMN IF NOT EXISTS delivery_address     text,
+  ADD COLUMN IF NOT EXISTS utm_campaign         text,
+  ADD COLUMN IF NOT EXISTS utm_term             text,
+  ADD COLUMN IF NOT EXISTS utm_content          text,
+  ADD COLUMN IF NOT EXISTS notes                text,
+  ADD COLUMN IF NOT EXISTS lost_reason          text,
+  ADD COLUMN IF NOT EXISTS privacy_accepted     boolean,
+  ADD COLUMN IF NOT EXISTS privacy_accepted_at  timestamptz,
+  ADD COLUMN IF NOT EXISTS gclid                text;
 
--- Ensure new records default to false,
--- while historical rows remain NULL (unknown).
+ALTER TABLE public.leads
+  ALTER COLUMN created_at SET DEFAULT now();
+
+-- Ensure new records default to false, while historical rows remain NULL (unknown).
 ALTER TABLE public.leads
   ALTER COLUMN privacy_accepted SET DEFAULT false;
 
--- OPTIONAL (run separately if quote_data is still text in production):
--- This makes sure quote_data is jsonb everywhere.
--- ALTER TABLE public.leads
---   ALTER COLUMN quote_data TYPE jsonb
---   USING quote_data::jsonb;
+-- Add / enforce status CHECK without failing on historical data (NOT VALID).
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'leads_status_check'
+      AND conrelid = 'public.leads'::regclass
+  ) THEN
+    EXECUTE $SQL$
+      ALTER TABLE public.leads
+      ADD CONSTRAINT leads_status_check
+      CHECK (status IN ('new','contacted','qualified','converted','lost','archived'))
+      NOT VALID
+    $SQL$;
+  END IF;
+END $$;
+
+-- OPTIONAL: validate later once data is clean:
+-- ALTER TABLE public.leads VALIDATE CONSTRAINT leads_status_check;
 
 -- Enable Row Level Security for leads
 ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
 -- Note: no public INSERT policy on leads; inserts are done via Server Actions
 -- using the Supabase Service Role, which bypasses RLS.
 
-
 -- ============================================================
 -- 5. TABLE: ORDERS (SaaS Orders & History - Phase 4)
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS public.orders (
-  id               uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id               uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id          uuid REFERENCES public.profiles(id) NOT NULL,
-  folio            text NOT NULL,                    -- Human-friendly ID (e.g. WEB-2025-001)
-  status           text DEFAULT 'draft',             -- 'draft', 'pending_payment', 'scheduled', 'delivered', 'cancelled'
+  folio            text NOT NULL UNIQUE, -- Human-friendly ID (e.g. WEB-2025-001)
+  status           text DEFAULT 'draft',
   total_amount     numeric(10,2) NOT NULL,
   currency         text DEFAULT 'MXN',
   items            jsonb NOT NULL DEFAULT '[]'::jsonb, -- [{ id, label, inputs, results }]
   delivery_date    timestamptz,
   delivery_address text,
-  geo_location     jsonb,                            -- { lat, lng }
+  geo_location     jsonb, -- { lat, lng }
   created_at       timestamptz DEFAULT now(),
   updated_at       timestamptz DEFAULT now(),
   utm_source       text,
@@ -167,6 +210,84 @@ CREATE TABLE IF NOT EXISTS public.orders (
   fbclid           text,
   gclid            text
 );
+
+-- MIGRATION / SYNC FOR EXISTING DATABASES:
+ALTER TABLE public.orders
+  ADD COLUMN IF NOT EXISTS id               uuid,
+  ADD COLUMN IF NOT EXISTS user_id          uuid,
+  ADD COLUMN IF NOT EXISTS folio            text,
+  ADD COLUMN IF NOT EXISTS status           text,
+  ADD COLUMN IF NOT EXISTS total_amount     numeric(10,2),
+  ADD COLUMN IF NOT EXISTS currency         text,
+  ADD COLUMN IF NOT EXISTS items            jsonb,
+  ADD COLUMN IF NOT EXISTS delivery_date    timestamptz,
+  ADD COLUMN IF NOT EXISTS delivery_address text,
+  ADD COLUMN IF NOT EXISTS geo_location     jsonb,
+  ADD COLUMN IF NOT EXISTS created_at       timestamptz,
+  ADD COLUMN IF NOT EXISTS updated_at       timestamptz,
+  ADD COLUMN IF NOT EXISTS utm_source       text,
+  ADD COLUMN IF NOT EXISTS utm_medium       text,
+  ADD COLUMN IF NOT EXISTS utm_campaign     text,
+  ADD COLUMN IF NOT EXISTS utm_term         text,
+  ADD COLUMN IF NOT EXISTS utm_content      text,
+  ADD COLUMN IF NOT EXISTS fbclid           text,
+  ADD COLUMN IF NOT EXISTS gclid            text;
+
+-- Ensure defaults exist (won't overwrite existing values)
+ALTER TABLE public.orders
+  ALTER COLUMN id SET DEFAULT gen_random_uuid();
+
+ALTER TABLE public.orders
+  ALTER COLUMN currency SET DEFAULT 'MXN';
+
+ALTER TABLE public.orders
+  ALTER COLUMN items SET DEFAULT '[]'::jsonb;
+
+ALTER TABLE public.orders
+  ALTER COLUMN created_at SET DEFAULT now();
+
+ALTER TABLE public.orders
+  ALTER COLUMN updated_at SET DEFAULT now();
+
+-- Add / enforce status CHECK without failing on historical data (NOT VALID).
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'orders_status_check'
+      AND conrelid = 'public.orders'::regclass
+  ) THEN
+    EXECUTE $SQL$
+      ALTER TABLE public.orders
+      ADD CONSTRAINT orders_status_check
+      CHECK (status IN ('draft','pending_payment','scheduled','delivered','cancelled'))
+      NOT VALID
+    $SQL$;
+  END IF;
+END $$;
+
+-- OPTIONAL: validate later once data is clean:
+-- ALTER TABLE public.orders VALIDATE CONSTRAINT orders_status_check;
+
+-- Ensure folio uniqueness for existing DBs (CREATE TABLE IF NOT EXISTS won't add it)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_indexes
+    WHERE schemaname = 'public'
+      AND indexname = 'idx_orders_folio_unique'
+  ) THEN
+    BEGIN
+      EXECUTE 'CREATE UNIQUE INDEX idx_orders_folio_unique ON public.orders (folio)';
+    EXCEPTION
+      WHEN others THEN
+        -- If there are duplicates, this will fail. Fix duplicates and re-run to enforce.
+        RAISE NOTICE 'Could not create unique index idx_orders_folio_unique on orders(folio). Check for duplicate folio values.';
+    END;
+  END IF;
+END $$;
 
 -- Enable Row Level Security for orders
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
@@ -182,17 +303,17 @@ DROP POLICY IF EXISTS "Usuarios actualizan sus ordenes (draft)" ON public.orders
 -- RLS: Users can only read their own orders
 CREATE POLICY "Users can read their own orders"
   ON public.orders FOR SELECT
-  USING (user_id = (SELECT auth.uid()));
+  USING (user_id = auth.uid());
 
 -- RLS: Users can only create orders for themselves
 CREATE POLICY "Users can create their own orders"
   ON public.orders FOR INSERT
-  WITH CHECK (user_id = (SELECT auth.uid()));
+  WITH CHECK (user_id = auth.uid());
 
 -- RLS: Users can only update their own draft orders
 CREATE POLICY "Users can update their draft orders"
   ON public.orders FOR UPDATE
-  USING (user_id = (SELECT auth.uid()) AND status = 'draft');
+  USING (user_id = auth.uid() AND status = 'draft');
 
 -- updated_at trigger for orders
 DROP TRIGGER IF EXISTS set_orders_updated_at ON public.orders;
@@ -200,7 +321,6 @@ CREATE TRIGGER set_orders_updated_at
   BEFORE UPDATE ON public.orders
   FOR EACH ROW
   EXECUTE PROCEDURE public.set_updated_at();
-
 
 -- ============================================================
 -- 6. TABLE: PRICE_CONFIG (Pricing Configuration - Phase 5)
@@ -215,6 +335,24 @@ CREATE TABLE IF NOT EXISTS public.price_config (
   updated_at  timestamptz DEFAULT now()
 );
 
+-- MIGRATION / SYNC FOR EXISTING DATABASES (won't change existing PK if different)
+ALTER TABLE public.price_config
+  ADD COLUMN IF NOT EXISTS key         text,
+  ADD COLUMN IF NOT EXISTS price_cents integer,
+  ADD COLUMN IF NOT EXISTS currency    text,
+  ADD COLUMN IF NOT EXISTS description text,
+  ADD COLUMN IF NOT EXISTS active      boolean,
+  ADD COLUMN IF NOT EXISTS updated_at  timestamptz;
+
+ALTER TABLE public.price_config
+  ALTER COLUMN currency SET DEFAULT 'MXN';
+
+ALTER TABLE public.price_config
+  ALTER COLUMN active SET DEFAULT true;
+
+ALTER TABLE public.price_config
+  ALTER COLUMN updated_at SET DEFAULT now();
+
 -- Enable Row Level Security for price_config
 ALTER TABLE public.price_config ENABLE ROW LEVEL SECURITY;
 
@@ -222,11 +360,10 @@ ALTER TABLE public.price_config ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Public read access to prices" ON public.price_config;
 DROP POLICY IF EXISTS "Lectura publica de precios" ON public.price_config;
 
--- RLS: public read-only access (write access will be added later for admins)
+-- RLS: public read-only access (write access will be added later for admins/service role)
 CREATE POLICY "Public read access to prices"
   ON public.price_config FOR SELECT
   USING (true);
-
 
 -- ============================================================
 -- 7. INDEXES (Performance Optimization)
@@ -234,8 +371,8 @@ CREATE POLICY "Public read access to prices"
 
 -- LEADS
 -- Remove legacy duplicate indexes if they exist (to avoid duplicate_index warnings)
-DROP INDEX IF EXISTS leads_status_idx;
-DROP INDEX IF EXISTS leads_visitor_id_idx;
+DROP INDEX IF EXISTS public.leads_status_idx;
+DROP INDEX IF EXISTS public.leads_visitor_id_idx;
 
 -- Identify returning visitors
 CREATE INDEX IF NOT EXISTS idx_leads_visitor_id ON public.leads(visitor_id);
@@ -249,7 +386,7 @@ CREATE INDEX IF NOT EXISTS idx_leads_created_at ON public.leads(created_at);
 -- Filter by pipeline status (new/contacted/converted/archived)
 CREATE INDEX IF NOT EXISTS idx_leads_status ON public.leads(status);
 
--- Deep search inside quote_data JSON (e.g. by folio inside JSON)
+-- Deep search inside quote_data JSON (useful if you query JSON keys/paths)
 CREATE INDEX IF NOT EXISTS idx_leads_quote_gin
   ON public.leads USING gin (quote_data);
 
@@ -257,12 +394,18 @@ CREATE INDEX IF NOT EXISTS idx_leads_quote_gin
 -- Fast lookup of user order history
 CREATE INDEX IF NOT EXISTS idx_orders_user_id ON public.orders(user_id);
 
+-- Filter/sort by creation date (dashboards, reporting)
+CREATE INDEX IF NOT EXISTS idx_orders_created_at ON public.orders(created_at);
+
+-- Filter by order status
+CREATE INDEX IF NOT EXISTS idx_orders_status ON public.orders(status);
+
 -- ============================================================
 -- 8. TABLE: EXPENSES (Internal MVP - Phase 1)
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS public.expenses (
-  id           uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id           uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id      uuid REFERENCES public.profiles(id) NOT NULL,
   amount       numeric(10,2) NOT NULL,
   currency     text DEFAULT 'MXN',
@@ -274,16 +417,57 @@ CREATE TABLE IF NOT EXISTS public.expenses (
   updated_at   timestamptz DEFAULT now()
 );
 
+-- MIGRATION / SYNC FOR EXISTING DATABASES:
+ALTER TABLE public.expenses
+  ADD COLUMN IF NOT EXISTS id           uuid,
+  ADD COLUMN IF NOT EXISTS user_id      uuid,
+  ADD COLUMN IF NOT EXISTS amount       numeric(10,2),
+  ADD COLUMN IF NOT EXISTS currency     text,
+  ADD COLUMN IF NOT EXISTS category     text,
+  ADD COLUMN IF NOT EXISTS expense_date timestamptz,
+  ADD COLUMN IF NOT EXISTS reference    text,
+  ADD COLUMN IF NOT EXISTS notes        text,
+  ADD COLUMN IF NOT EXISTS created_at   timestamptz,
+  ADD COLUMN IF NOT EXISTS updated_at   timestamptz;
+
+ALTER TABLE public.expenses
+  ALTER COLUMN id SET DEFAULT gen_random_uuid();
+
+ALTER TABLE public.expenses
+  ALTER COLUMN currency SET DEFAULT 'MXN';
+
+ALTER TABLE public.expenses
+  ALTER COLUMN created_at SET DEFAULT now();
+
+ALTER TABLE public.expenses
+  ALTER COLUMN updated_at SET DEFAULT now();
+
 ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
 
+-- Policies (drop/create to stay idempotent)
+DROP POLICY IF EXISTS "Users view expenses" ON public.expenses;
 CREATE POLICY "Users view expenses"
   ON public.expenses FOR SELECT
-  USING (user_id = (SELECT auth.uid()));
+  USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Users insert expenses" ON public.expenses;
 CREATE POLICY "Users insert expenses"
   ON public.expenses FOR INSERT
-  WITH CHECK (user_id = (SELECT auth.uid()));
+  WITH CHECK (user_id = auth.uid());
 
+-- Optional but consistent: allow updates/deletes of own rows
+DROP POLICY IF EXISTS "Users update expenses" ON public.expenses;
+CREATE POLICY "Users update expenses"
+  ON public.expenses FOR UPDATE
+  USING (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "Users delete expenses" ON public.expenses;
+CREATE POLICY "Users delete expenses"
+  ON public.expenses FOR DELETE
+  USING (user_id = auth.uid());
+
+-- updated_at trigger
+DROP TRIGGER IF EXISTS set_expenses_updated_at ON public.expenses;
 CREATE TRIGGER set_expenses_updated_at
   BEFORE UPDATE ON public.expenses
   FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
@@ -293,7 +477,7 @@ CREATE TRIGGER set_expenses_updated_at
 -- ============================================================
 
 CREATE TABLE IF NOT EXISTS public.payroll (
-  id           uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
+  id           uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id      uuid REFERENCES public.profiles(id) NOT NULL,
   employee     text NOT NULL,
   period_start timestamptz NOT NULL,
@@ -305,17 +489,57 @@ CREATE TABLE IF NOT EXISTS public.payroll (
   updated_at   timestamptz DEFAULT now()
 );
 
+-- MIGRATION / SYNC FOR EXISTING DATABASES:
+ALTER TABLE public.payroll
+  ADD COLUMN IF NOT EXISTS id           uuid,
+  ADD COLUMN IF NOT EXISTS user_id      uuid,
+  ADD COLUMN IF NOT EXISTS employee     text,
+  ADD COLUMN IF NOT EXISTS period_start timestamptz,
+  ADD COLUMN IF NOT EXISTS period_end   timestamptz,
+  ADD COLUMN IF NOT EXISTS amount       numeric(10,2),
+  ADD COLUMN IF NOT EXISTS currency     text,
+  ADD COLUMN IF NOT EXISTS notes        text,
+  ADD COLUMN IF NOT EXISTS created_at   timestamptz,
+  ADD COLUMN IF NOT EXISTS updated_at   timestamptz;
+
+ALTER TABLE public.payroll
+  ALTER COLUMN id SET DEFAULT gen_random_uuid();
+
+ALTER TABLE public.payroll
+  ALTER COLUMN currency SET DEFAULT 'MXN';
+
+ALTER TABLE public.payroll
+  ALTER COLUMN created_at SET DEFAULT now();
+
+ALTER TABLE public.payroll
+  ALTER COLUMN updated_at SET DEFAULT now();
+
 ALTER TABLE public.payroll ENABLE ROW LEVEL SECURITY;
 
+-- Policies (drop/create to stay idempotent)
+DROP POLICY IF EXISTS "Users view payroll" ON public.payroll;
 CREATE POLICY "Users view payroll"
   ON public.payroll FOR SELECT
-  USING (user_id = (SELECT auth.uid()));
+  USING (user_id = auth.uid());
 
+DROP POLICY IF EXISTS "Users insert payroll" ON public.payroll;
 CREATE POLICY "Users insert payroll"
   ON public.payroll FOR INSERT
-  WITH CHECK (user_id = (SELECT auth.uid()));
+  WITH CHECK (user_id = auth.uid());
 
+-- Optional but consistent: allow updates/deletes of own rows
+DROP POLICY IF EXISTS "Users update payroll" ON public.payroll;
+CREATE POLICY "Users update payroll"
+  ON public.payroll FOR UPDATE
+  USING (user_id = auth.uid());
+
+DROP POLICY IF EXISTS "Users delete payroll" ON public.payroll;
+CREATE POLICY "Users delete payroll"
+  ON public.payroll FOR DELETE
+  USING (user_id = auth.uid());
+
+-- updated_at trigger
+DROP TRIGGER IF EXISTS set_payroll_updated_at ON public.payroll;
 CREATE TRIGGER set_payroll_updated_at
   BEFORE UPDATE ON public.payroll
   FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
-
