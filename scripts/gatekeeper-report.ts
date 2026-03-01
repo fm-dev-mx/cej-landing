@@ -85,12 +85,15 @@ function runGit(args: string[]): string {
 }
 
 function runCommand(command: string, args: string[]): { status: number; output: string } {
-  // Avoid `shell: true` on Windows (cmd.exe parsing / injection surface / quoting issues).
-  // Use the platform-specific executable name for pnpm on Windows.
+  // Quote arguments with special characters on Windows when using shell: true
+  const resolvedArgs = process.platform === 'win32'
+    ? args.map(arg => /[{()}[\]\s]/.test(arg) ? `"${arg.replace(/"/g, '\\"')}"` : arg)
+    : args;
+
   const resolvedCommand =
     process.platform === 'win32' && command === 'pnpm' ? 'pnpm.cmd' : command;
 
-  const result = spawnSync(resolvedCommand, args, {
+  const result = spawnSync(resolvedCommand, resolvedArgs, {
     encoding: 'utf-8',
     shell: process.platform === 'win32',
     windowsHide: true,
