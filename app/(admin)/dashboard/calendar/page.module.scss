@@ -1,0 +1,137 @@
+@use "@/styles/primitives" as p;
+@use "@/styles/mixins" as *;
+
+.main {
+    min-height: 100vh;
+    padding-top: calc(var(--header-h) + var(--sp-6));
+    padding-bottom: var(--sp-8);
+    background: var(--c-surface-light);
+}
+
+.container {
+    @include container;
+
+    max-width: 1200px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-6);
+}
+
+.title {
+    margin: 0;
+    font-size: var(--fs-2xl);
+    font-weight: 700;
+}
+
+.backLink {
+    font-weight: 500;
+    color: var(--c-muted);
+    text-decoration: none;
+
+    &:hover {
+        color: var(--c-text);
+    }
+}
+
+.calendarGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--sp-4);
+}
+
+.dayColumn {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-3);
+
+    min-height: 400px;
+    padding: var(--sp-4);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+
+    background: var(--c-surface);
+}
+
+.dayTitle {
+    margin: 0 0 var(--sp-2) 0;
+    padding-bottom: var(--sp-2);
+    border-bottom: 1px solid var(--c-border);
+
+    font-size: var(--fs-lg);
+    font-weight: 600;
+}
+
+.orderCard {
+    padding: var(--sp-3);
+    border: 1px solid var(--c-border-light);
+    border-radius: var(--radius);
+
+    color: inherit;
+    text-decoration: none;
+
+    background: var(--c-surface-light);
+
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    &:hover {
+        transform: translateY(-2px);
+        border-color: var(--c-primary);
+        box-shadow: var(--shadow-sm);
+    }
+}
+
+.orderFolio {
+    margin-bottom: var(--sp-1);
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    color: var(--c-primary-dark);
+}
+
+.orderDetail {
+    display: flex;
+    justify-content: space-between;
+
+    margin: 0;
+
+    font-size: var(--fs-sm);
+    color: var(--c-muted);
+}
+
+.statusBadge {
+    display: inline-block;
+
+    margin-top: var(--sp-2);
+    padding: 2px 6px;
+    border-radius: 4px;
+
+    font-size: var(--fs-xs);
+    font-weight: 600;
+
+    background: var(--c-border);
+}
+
+.emptySlot {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 100px;
+    border-radius: var(--radius);
+
+    font-size: var(--fs-sm);
+    font-style: italic;
+    color: var(--c-muted);
+
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        var(--c-surface-light) 10px,
+        var(--c-surface-light) 20px
+    );
+}

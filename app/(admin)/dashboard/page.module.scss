@@ -133,3 +133,37 @@
         box-shadow: var(--shadow-md);
     }
 }
+
+// KPI Grid
+.kpiGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--sp-4);
+    margin-bottom: var(--sp-8);
+}
+
+.kpiCard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+
+    padding: var(--sp-5);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-lg);
+
+    background: var(--c-surface);
+}
+
+.kpiLabel {
+    margin: 0;
+    font-size: var(--fs-sm);
+    font-weight: 500;
+    color: var(--c-muted);
+}
+
+.kpiValue {
+    margin: 0;
+    font-size: var(--fs-xl);
+    font-weight: 700;
+    color: var(--c-text);
+}

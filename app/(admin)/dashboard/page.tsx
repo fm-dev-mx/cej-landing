@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { getMyOrders } from '@/app/actions/getMyOrders';
+import { getDashboardKpis } from '@/app/actions/getDashboardKpis';
 import { OrdersList } from './OrdersList';
 import styles from './page.module.scss';
 
@@ -18,6 +19,10 @@ export default async function DashboardPage() {
 
     // Fetch user's orders
     const { orders, nextCursor, success, error } = await getMyOrders();
+
+    // Fetch KPIs
+    const kpisResult = await getDashboardKpis('current_month');
+    const kpis = kpisResult.data;
 
     // Get user name for greeting
     const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuario';
@@ -43,11 +48,35 @@ export default async function DashboardPage() {
                     </div>
                 )}
 
+                {kpis && (
+                    <section className={styles.kpiGrid}>
+                        <div className={styles.kpiCard}>
+                            <h3 className={styles.kpiLabel}>Pedidos Mensuales</h3>
+                            <p className={styles.kpiValue}>{kpis.totalOrders}</p>
+                        </div>
+                        <div className={styles.kpiCard}>
+                            <h3 className={styles.kpiLabel}>Pendientes (Draft/Pago)</h3>
+                            <p className={styles.kpiValue}>{kpis.pendingOrders}</p>
+                        </div>
+                        <div className={styles.kpiCard}>
+                            <h3 className={styles.kpiLabel}>Agendados Hoy</h3>
+                            <p className={styles.kpiValue}>{kpis.scheduledToday}</p>
+                        </div>
+                        <div className={styles.kpiCard}>
+                            <h3 className={styles.kpiLabel}>Venta Acumulada</h3>
+                            <p className={styles.kpiValue}>
+                                {new Intl.NumberFormat('es-MX', { style: 'currency', currency: kpis.currency }).format(kpis.revenueTotal)}
+                            </p>
+                        </div>
+                    </section>
+                )}
+
                 <section className={styles.ordersSection}>
                     <h2 className={styles.sectionTitle}>Mis Pedidos</h2>
 
                     {orders.length === 0 ? (
                         <div className={styles.emptyState}>
+
                             <span className={styles.emptyIcon}>📋</span>
                             <p className={styles.emptyMessage}>
                                 Aún no tienes pedidos registrados.
