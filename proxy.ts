@@ -72,13 +72,15 @@ export default async function proxy(request: NextRequest) {
 
     // Capture UTM parameters for attribution.
     const utmSource = searchParams.get("utm_source");
-    if (utmSource) {
+    const gclid = searchParams.get("gclid");
+    if (utmSource || gclid) {
         const utmData = {
-            source: utmSource,
+            source: utmSource || "direct",
             medium: searchParams.get("utm_medium") || "none",
             campaign: searchParams.get("utm_campaign") || undefined,
             term: searchParams.get("utm_term") || undefined,
             content: searchParams.get("utm_content") || undefined,
+            gclid: gclid || undefined,
             timestamp: new Date().toISOString(),
         };
         response.cookies.set("cej_utm", JSON.stringify(utmData), {

@@ -122,7 +122,8 @@ ALTER TABLE public.leads
   ADD COLUMN IF NOT EXISTS notes               text,
   ADD COLUMN IF NOT EXISTS lost_reason         text,
   ADD COLUMN IF NOT EXISTS privacy_accepted    boolean,
-  ADD COLUMN IF NOT EXISTS privacy_accepted_at timestamptz;
+  ADD COLUMN IF NOT EXISTS privacy_accepted_at timestamptz,
+  ADD COLUMN IF NOT EXISTS gclid               text;
 
 -- Ensure new records default to false,
 -- while historical rows remain NULL (unknown).
@@ -157,7 +158,14 @@ CREATE TABLE IF NOT EXISTS public.orders (
   delivery_address text,
   geo_location     jsonb,                            -- { lat, lng }
   created_at       timestamptz DEFAULT now(),
-  updated_at       timestamptz DEFAULT now()
+  updated_at       timestamptz DEFAULT now(),
+  utm_source       text,
+  utm_medium       text,
+  utm_campaign     text,
+  utm_term         text,
+  utm_content      text,
+  fbclid           text,
+  gclid            text
 );
 
 -- Enable Row Level Security for orders
