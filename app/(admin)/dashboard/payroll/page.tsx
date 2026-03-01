@@ -10,9 +10,7 @@ export default async function PayrollPage() {
 
     return (
         <main className={styles.main}>
-            <div className={styles.header}>
-                <h1>Nómina Operativa</h1>
-            </div>
+            <h2 className={styles.sectionTitle}>Registro de nómina operativa</h2>
 
             <div className={styles.contentGrid}>
                 <aside className={styles.formSidebar}>

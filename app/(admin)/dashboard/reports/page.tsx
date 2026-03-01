@@ -40,9 +40,7 @@ export default function ReportsPage() {
 
     return (
         <main className={styles.main}>
-            <div className={styles.header}>
-                <h1>Reportes (CSV)</h1>
-            </div>
+            <h2 className={styles.sectionTitle}>Exportación de reportes (CSV)</h2>
 
             <form onSubmit={handleExport} className={styles.form}>
                 <div className={styles.formGroup}>

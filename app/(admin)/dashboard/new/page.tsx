@@ -13,7 +13,7 @@ export default function NewOrderPage() {
         <main className={styles.main}>
             <div className={styles.container}>
                 <header className={styles.header}>
-                    <h1 className={styles.title}>Nuevo Pedido Manual</h1>
+                    <h2 className={styles.title}>Nuevo pedido manual</h2>
                     <p className={styles.subtitle}>
                         Registra una orden directamente en el sistema.
                     </p>

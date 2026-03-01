@@ -15,7 +15,7 @@ export default async function PricingManagementPage() {
     return (
         <main className={styles.container}>
             <header className={styles.header}>
-                <h1>Gestión de Precios</h1>
+                <p className={styles.sectionLead}>Configuración de reglas y tarifas</p>
                 <p className={styles.versionBadge}>Versión Actual: {pricingRules.version}</p>
             </header>
 

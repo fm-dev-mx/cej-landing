@@ -66,9 +66,7 @@ export default async function CalendarPage() {
     return (
         <main className={styles.main}>
             <div className={styles.container}>
-                <header className={styles.header}>
-                    <h1 className={styles.title}>Calendario de Despachos</h1>
-                </header>
+                <p className={styles.title}>Programación semanal de despachos</p>
 
                 <div className={styles.calendarGrid}>
                     {weekDays.map(d => (

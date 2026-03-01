@@ -10,9 +10,7 @@ export default async function ExpensesPage() {
 
     return (
         <main className={styles.main}>
-            <div className={styles.header}>
-                <h1>Gastos Operativos</h1>
-            </div>
+            <h2 className={styles.sectionTitle}>Registro de gastos operativos</h2>
 
             <div className={styles.contentGrid}>
                 <aside className={styles.formSidebar}>

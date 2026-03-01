@@ -11,10 +11,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: { [ke
 
     return (
         <main className={styles.main}>
-            <div className={styles.header}>
-                <h1>Gestión de Pedidos (Kanban / Lista)</h1>
-            </div>
-
+            <h2 className={styles.sectionTitle}>Filtros de pedidos</h2>
             <form className={styles.form}>
                 <div className={styles.formGroup}>
                     <input name="folio" placeholder="Buscar por folio..." defaultValue={folio} className={styles.input} />
@@ -34,6 +31,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: { [ke
                 </div>
             </form>
 
+            <h2 className={styles.sectionTitle}>Listado de pedidos</h2>
             <table className={styles.table}>
                 <thead>
                     <tr className={styles.tableHeaderRow}>
