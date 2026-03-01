@@ -6,11 +6,13 @@ import AdminShell from '@/components/AdminShell';
  * Dashboard layout with authentication boundary.
  * All routes under /dashboard require an authenticated user.
  */
+interface DashboardLayoutProps {
+    children: React.ReactNode;
+}
+
 export default async function DashboardLayout({
     children,
-}: {
-    children: React.ReactNode;
-}) {
+}: DashboardLayoutProps) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 

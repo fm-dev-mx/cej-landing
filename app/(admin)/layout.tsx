@@ -13,10 +13,12 @@ export const metadata: Metadata = {
     robots: "noindex, nofollow", // Keep app internal
 };
 
+interface AppLayoutProps {
+    children: React.ReactNode;
+}
+
 export default function AppLayout({
     children,
-}: {
-    children: React.ReactNode;
-}) {
+}: AppLayoutProps) {
     return <AuthProvider>{children}</AuthProvider>;
 }

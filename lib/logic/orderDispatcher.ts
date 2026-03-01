@@ -14,6 +14,12 @@ export type OrderSubmissionResult = {
     warning?: string;
 };
 
+export interface OrderIdentity {
+    visitorId?: string;
+    utm_source?: string;
+    utm_medium?: string;
+}
+
 /**
  * Maps a quote and calculator state to a standard OrderPayload.
  */
@@ -95,7 +101,7 @@ export function mapCartToOrder(
 export async function dispatchOrder(
     customer: CustomerInfo,
     orderPayload: OrderPayload,
-    identity: { visitorId?: string; utm_source?: string; utm_medium?: string },
+    identity: OrderIdentity,
     fbEventId: string
 ): Promise<OrderSubmissionResult> {
     try {

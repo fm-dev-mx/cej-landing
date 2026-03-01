@@ -16,7 +16,11 @@ const AuthContext = createContext<AuthContextType>({
     isConfigured: false,
 });
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+interface AuthProviderProps {
+    children: ReactNode;
+}
+
+export function AuthProvider({ children }: AuthProviderProps) {
     // Memoize the client to avoid recreating on every render
     const supabase = useMemo(() => createClient(), []);
     const isConfigured = supabase !== null;

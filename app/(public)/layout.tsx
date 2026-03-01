@@ -14,11 +14,13 @@ import { env, isDev } from "@/config/env";
 import { generateLocalBusinessSchema } from "@/lib/seo";
 import styles from "@/components/layouts/Layout.module.scss";
 
+interface MarketingLayoutProps {
+    children: ReactNode;
+}
+
 export default function MarketingLayout({
     children,
-}: {
-    children: ReactNode;
-}) {
+}: MarketingLayoutProps) {
     const jsonLd = generateLocalBusinessSchema();
     const pixelId = env.NEXT_PUBLIC_PIXEL_ID;
     const enableTracking = !isDev;
