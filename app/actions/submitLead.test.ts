@@ -39,7 +39,7 @@ const VALID_LEAD_PAYLOAD: SubmitLeadPayload = {
     quote: {
         folio: 'WEB-12345678-1234',
         customer: { name: 'Juan Pérez', phone: '6561234567' },
-        items: [{ id: '1', label: 'Item', volume: 5, service: 'S', subtotal: 100 }],
+        items: [{ id: '1', label: 'Item', volume: 5, service: 'direct', subtotal: 100 }],
         financials: { subtotal: 100, vat: 16, total: 116, currency: 'MXN' },
         metadata: { source: 'web_calculator' }
     },

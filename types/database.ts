@@ -1,5 +1,12 @@
 // types/database.ts
 
+import type { PricingRules } from '@/lib/schemas/pricing';
+import type {
+    ConcreteType,
+    QuoteLineItem,
+    PricingSnapshot
+} from './quote';
+
 export type Json =
     | string
     | number
@@ -7,6 +14,19 @@ export type Json =
     | null
     | { [key: string]: Json | undefined }
     | Json[];
+
+/**
+ * Shared service type derived from domain
+ */
+export type ServiceType = ConcreteType;
+
+/**
+ * Structured geospatial data
+ */
+export interface GeoLocation {
+    lat: number;
+    lng: number;
+}
 
 /**
  * Snapshot inmutable de la cotización al momento de la creación.
@@ -28,8 +48,9 @@ export interface QuoteSnapshot {
         id: string;
         label: string;
         volume: number;
-        service: string;
+        service: ServiceType;
         subtotal: number;
+        additives?: string[];
     }>;
     /** Complete financial breakdown for accurate display */
     financials: {
@@ -39,11 +60,7 @@ export interface QuoteSnapshot {
         currency: string;
     };
     /** Display-ready line items matching TicketDisplay format */
-    breakdownLines?: Array<{
-        label: string;
-        value: number;
-        type: 'base' | 'additive' | 'surcharge';
-    }>;
+    breakdownLines?: QuoteLineItem[];
     metadata?: Record<string, unknown>;
 }
 
@@ -51,40 +68,78 @@ export interface InternalOrderItemSnapshot {
     id: string;
     label: string;
     volume: number;
-    service: 'direct' | 'pumped';
+    service: ServiceType;
     subtotal: number;
     strength: string;
+    additives?: string[];
     notes?: string;
+}
+
+/**
+ * Base database fields common across entities
+ */
+
+export interface TimestampFields {
+    created_at: string;
+    updated_at: string;
+}
+
+export interface AttributionFields {
+    utm_source: string | null;
+    utm_medium: string | null;
+    utm_campaign: string | null;
+    utm_term: string | null;
+    utm_content: string | null;
+    fbclid: string | null;
+    gclid: string | null;
+}
+
+export interface DeliveryFields {
+    delivery_date: string | null;
+    delivery_address: string | null;
+}
+
+export interface DatabaseRowOrders extends TimestampFields, AttributionFields, DeliveryFields {
+    id: string;
+    user_id: string;
+    folio: string;
+    status: string;
+    total_amount: number;
+    currency: string;
+    items: InternalOrderItemSnapshot[];
+    geo_location: GeoLocation | null;
+    lead_id: number | null;
+    pricing_version: number | null;
+    price_breakdown: PricingSnapshot | null;
+}
+
+export interface DatabaseRowLeads extends AttributionFields, DeliveryFields {
+    id: number; // Note: bigint in Postgres. Safe up to 2^53-1 in JS number.
+    created_at: string;
+    name: string;
+    phone: string;
+    status: string;
+    quote_data: QuoteSnapshot | Json;
+    visitor_id: string | null;
+    fb_event_id: string | null;
+    notes: string | null;
+    lost_reason: string | null;
+    privacy_accepted: boolean | null;
+    privacy_accepted_at: string | null;
+}
+
+export interface DatabaseRowPriceConfig extends TimestampFields {
+    id: number;
+    version: number;
+    pricing_rules: PricingRules;
+    active: boolean | null;
 }
 
 export interface Database {
     public: {
         Tables: {
             orders: {
-                Row: {
-                    id: string;
-                    user_id: string;
-                    folio: string;
-                    status: string;
-                    total_amount: number;
-                    currency: string;
-                    items: InternalOrderItemSnapshot[];
-                    delivery_date: string | null;
-                    delivery_address: string | null;
-                    geo_location: Json | null;
-                    created_at: string;
-                    updated_at: string;
-                    utm_source?: string | null;
-                    utm_medium?: string | null;
-                    utm_campaign?: string | null;
-                    utm_term?: string | null;
-                    utm_content?: string | null;
-                    fbclid?: string | null;
-                    gclid?: string | null;
-                    lead_id?: number | null;
-                    pricing_version?: number | null;
-                    price_breakdown?: Json | null;
-                };
+                Row: DatabaseRowOrders;
                 Insert: {
                     id?: string;
                     user_id: string;
@@ -93,49 +148,18 @@ export interface Database {
                     total_amount: number;
                     currency?: string;
                     items: InternalOrderItemSnapshot[];
-                    delivery_date?: string | null;
-                    delivery_address?: string | null;
-                    geo_location?: Json | null;
+                    geo_location?: GeoLocation | null;
                     created_at?: string;
                     updated_at?: string;
-                    utm_source?: string | null;
-                    utm_medium?: string | null;
-                    utm_campaign?: string | null;
-                    utm_term?: string | null;
-                    utm_content?: string | null;
-                    fbclid?: string | null;
-                    gclid?: string | null;
                     lead_id?: number | null;
                     pricing_version?: number | null;
-                    price_breakdown?: Json | null;
-                };
+                    price_breakdown?: PricingSnapshot | null;
+                } & Partial<AttributionFields> & Partial<DeliveryFields>;
                 Update: Partial<Database['public']['Tables']['orders']['Insert']>;
                 Relationships: [];
             };
             leads: {
-                Row: {
-                    id: number; // bigint se convierte a number en JS (o string si es muy grande, pero supabase lo maneja)
-                    created_at: string;
-                    name: string;
-                    phone: string;
-                    status: string;
-                    quote_data: QuoteSnapshot; // JSONB fuertemente tipado
-                    visitor_id: string | null;
-                    fb_event_id: string | null;
-                    utm_source: string | null;
-                    utm_medium: string | null;
-                    utm_campaign: string | null;
-                    utm_term: string | null;
-                    utm_content: string | null;
-                    fbclid: string | null;
-                    delivery_date: string | null;
-                    delivery_address: string | null;
-                    notes: string | null;
-                    lost_reason: string | null;
-                    privacy_accepted: boolean | null;
-                    privacy_accepted_at: string | null;
-                    gclid: string | null;
-                };
+                Row: DatabaseRowLeads;
                 Insert: {
                     id?: number;
                     created_at?: string;
@@ -145,36 +169,20 @@ export interface Database {
                     quote_data: QuoteSnapshot;
                     visitor_id?: string | null;
                     fb_event_id?: string | null;
-                    utm_source?: string | null;
-                    utm_medium?: string | null;
-                    utm_campaign?: string | null;
-                    utm_term?: string | null;
-                    utm_content?: string | null;
-                    fbclid?: string | null;
-                    delivery_date?: string | null;
-                    delivery_address?: string | null;
                     notes?: string | null;
                     lost_reason?: string | null;
                     privacy_accepted?: boolean | null;
-                    privacy_accepted_at?: string | null;
-                    gclid?: string | null;
-                };
+                    privacy_accepted_at?: boolean | null | string;
+                } & Partial<AttributionFields> & Partial<DeliveryFields>;
                 Update: Partial<Database['public']['Tables']['leads']['Insert']>;
                 Relationships: [];
             };
             price_config: {
-                Row: {
-                    id: number;
-                    version: number;
-                    pricing_rules: Json;
-                    active: boolean | null;
-                    created_at: string;
-                    updated_at: string;
-                };
+                Row: DatabaseRowPriceConfig;
                 Insert: {
                     id?: number;
                     version?: number;
-                    pricing_rules: Json;
+                    pricing_rules: PricingRules;
                     active?: boolean | null;
                     created_at?: string;
                     updated_at?: string;

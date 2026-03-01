@@ -2,6 +2,7 @@
 // Description: Zod schemas for order and lead submission payloads.
 
 import { z } from "zod";
+import { ConcreteTypeEnum } from "./pricing";
 
 export const CustomerSchema = z.object({
     name: z.string().min(3, "El nombre es muy corto"),
@@ -15,7 +16,7 @@ const OrderItemSchema = z.object({
     id: z.string(),
     label: z.string(),
     volume: z.number(),
-    service: z.string(),
+    service: ConcreteTypeEnum,
     subtotal: z.number(),
     additives: z.array(z.string()).optional(),
 });
