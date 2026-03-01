@@ -158,6 +158,37 @@
   text-align: center;
 }
 
+.contentGrid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: var(--sp-8);
+  align-items: start;
+
+  @media (width <= 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formSidebar {
+  position: sticky;
+  top: calc(var(--header-h) + var(--sp-6));
+}
+
+.listSection {
+  padding: var(--sp-6);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--c-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--sp-4);
+}
+
 .errorText, .resultText {
   margin-top: var(--sp-2);
   font-size: var(--fs-sm);
