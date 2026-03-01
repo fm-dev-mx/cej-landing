@@ -230,7 +230,13 @@ export type Database = {
                 };
                 Insert: Partial<Database['public']['Tables']['profiles']['Row']> & { id: string };
                 Update: Partial<Database['public']['Tables']['profiles']['Row']>;
-                Relationships: [];
+                Relationships: [{
+                    foreignKeyName: 'profiles_id_fkey';
+                    columns: ['id'];
+                    isOneToOne: true;
+                    referencedRelation: 'users';
+                    referencedColumns: ['id'];
+                }];
             };
             leads: {
                 Row: DatabaseRowLeads;
@@ -256,7 +262,37 @@ export type Database = {
                     total_with_vat: number;
                 };
                 Update: Partial<DatabaseRowOrders>;
-                Relationships: [];
+                Relationships: [{
+                    foreignKeyName: 'orders_user_id_fkey';
+                    columns: ['user_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'profiles';
+                    referencedColumns: ['id'];
+                }, {
+                    foreignKeyName: 'orders_seller_id_fkey';
+                    columns: ['seller_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'profiles';
+                    referencedColumns: ['id'];
+                }, {
+                    foreignKeyName: 'orders_created_by_fkey';
+                    columns: ['created_by'];
+                    isOneToOne: false;
+                    referencedRelation: 'profiles';
+                    referencedColumns: ['id'];
+                }, {
+                    foreignKeyName: 'orders_scheduled_slot_code_fkey';
+                    columns: ['scheduled_slot_code'];
+                    isOneToOne: false;
+                    referencedRelation: 'service_slots';
+                    referencedColumns: ['slot_code'];
+                }, {
+                    foreignKeyName: 'orders_lead_id_fkey';
+                    columns: ['lead_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'leads';
+                    referencedColumns: ['id'];
+                }];
             };
             order_payments: {
                 Row: DatabaseRowOrderPayment;
@@ -268,7 +304,19 @@ export type Database = {
                     amount_mxn: number;
                 };
                 Update: Partial<DatabaseRowOrderPayment>;
-                Relationships: [];
+                Relationships: [{
+                    foreignKeyName: 'order_payments_order_id_fkey';
+                    columns: ['order_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'orders';
+                    referencedColumns: ['id'];
+                }, {
+                    foreignKeyName: 'order_payments_created_by_fkey';
+                    columns: ['created_by'];
+                    isOneToOne: false;
+                    referencedRelation: 'profiles';
+                    referencedColumns: ['id'];
+                }];
             };
             order_status_history: {
                 Row: DatabaseRowOrderStatusHistory;
@@ -277,7 +325,19 @@ export type Database = {
                     to_status: DbOrderStatus;
                 };
                 Update: Partial<DatabaseRowOrderStatusHistory>;
-                Relationships: [];
+                Relationships: [{
+                    foreignKeyName: 'order_status_history_order_id_fkey';
+                    columns: ['order_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'orders';
+                    referencedColumns: ['id'];
+                }, {
+                    foreignKeyName: 'order_status_history_changed_by_fkey';
+                    columns: ['changed_by'];
+                    isOneToOne: false;
+                    referencedRelation: 'profiles';
+                    referencedColumns: ['id'];
+                }];
             };
             order_fiscal_data: {
                 Row: DatabaseRowOrderFiscalData;
@@ -291,7 +351,13 @@ export type Database = {
                     cfdi_use?: string | null;
                 };
                 Update: Partial<Database['public']['Tables']['order_fiscal_data']['Insert']>;
-                Relationships: [];
+                Relationships: [{
+                    foreignKeyName: 'order_fiscal_data_order_id_fkey';
+                    columns: ['order_id'];
+                    isOneToOne: true;
+                    referencedRelation: 'orders';
+                    referencedColumns: ['id'];
+                }];
             };
             price_config: {
                 Row: DatabaseRowPriceConfig;
@@ -314,7 +380,13 @@ export type Database = {
                 };
                 Insert: Partial<Database['public']['Tables']['expenses']['Row']> & { user_id: string; amount: number; category: string; expense_date: string };
                 Update: Partial<Database['public']['Tables']['expenses']['Row']>;
-                Relationships: [];
+                Relationships: [{
+                    foreignKeyName: 'expenses_user_id_fkey';
+                    columns: ['user_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'profiles';
+                    referencedColumns: ['id'];
+                }];
             };
             payroll: {
                 Row: {
@@ -331,7 +403,13 @@ export type Database = {
                 };
                 Insert: Partial<Database['public']['Tables']['payroll']['Row']> & { user_id: string; employee: string; period_start: string; period_end: string; amount: number };
                 Update: Partial<Database['public']['Tables']['payroll']['Row']>;
-                Relationships: [];
+                Relationships: [{
+                    foreignKeyName: 'payroll_user_id_fkey';
+                    columns: ['user_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'profiles';
+                    referencedColumns: ['id'];
+                }];
             };
         };
         Views: {
