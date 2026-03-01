@@ -12,6 +12,7 @@ export const orderStatusSchema = z.enum([
 export const updateOrderStatusPayloadSchema = z.object({
     orderId: z.string().uuid('ID de pedido inválido'),
     newStatus: orderStatusSchema,
+    reason: z.string().trim().max(300).optional(),
 });
 
 export type UpdateOrderStatusPayload = z.infer<typeof updateOrderStatusPayloadSchema>;
