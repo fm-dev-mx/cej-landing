@@ -1,13 +1,20 @@
 import { z } from 'zod';
-import type { InternalOrderStatus } from '@/types/internal/order';
 
+/**
+ * orderStatusSchema
+ * Aligned with public.order_status_enum in Supabase canonical schema.
+ * ENUM: 'draft', 'confirmed', 'scheduled', 'in_progress', 'completed', 'cancelled'
+ */
 export const orderStatusSchema = z.enum([
     'draft',
-    'pending_payment',
+    'confirmed',
     'scheduled',
-    'delivered',
+    'in_progress',
+    'completed',
     'cancelled'
 ]);
+
+export type InternalOrderStatus = z.infer<typeof orderStatusSchema>;
 
 export const updateOrderStatusPayloadSchema = z.object({
     orderId: z.string().uuid('ID de pedido inválido'),
@@ -17,15 +24,20 @@ export const updateOrderStatusPayloadSchema = z.object({
 
 export type UpdateOrderStatusPayload = z.infer<typeof updateOrderStatusPayloadSchema>;
 
+/**
+ * ALLOWED_TRANSITIONS
+ * State machine for order processing.
+ */
 export const ALLOWED_TRANSITIONS: Record<InternalOrderStatus, InternalOrderStatus[]> = {
-    draft: ['pending_payment', 'scheduled', 'cancelled'],
-    pending_payment: ['scheduled', 'cancelled'],
-    scheduled: ['delivered', 'cancelled'],
-    delivered: [], // Terminal
-    cancelled: [], // Terminal
+    draft: ['confirmed', 'scheduled', 'cancelled'],
+    confirmed: ['scheduled', 'in_progress', 'cancelled'],
+    scheduled: ['in_progress', 'completed', 'cancelled'],
+    in_progress: ['completed', 'cancelled'],
+    completed: [], // Terminal successfully
+    cancelled: [], // Terminal failure
 };
 
 export function canTransition(current: InternalOrderStatus, next: InternalOrderStatus): boolean {
-    if (current === next) return true; // No-op is valid (idempotent UI)
+    if (current === next) return true;
     return ALLOWED_TRANSITIONS[current]?.includes(next) ?? false;
 }

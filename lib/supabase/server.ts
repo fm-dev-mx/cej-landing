@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient as createBaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database';
 import { cookies } from 'next/headers';
-import { getSupabaseConfig } from '@/config/env';
+import { getSupabaseConfig, env } from '@/config/env';
 
 /**
  * Creates a Supabase client for use in Server Components, Server Actions, and Route Handlers.
@@ -18,7 +20,7 @@ export async function createClient() {
 
     const cookieStore = await cookies();
 
-    return createServerClient(
+    return createServerClient<Database>(
         url!,
         anonKey!,
         {
@@ -36,6 +38,34 @@ export async function createClient() {
                         // This can be ignored if you have proxy refreshing sessions.
                     }
                 },
+            },
+        }
+    );
+}
+
+/**
+ * Creates a Supabase client using the SERVICE_ROLE_KEY.
+ * This client BYPASSES Row Level Security (RLS).
+ * Use ONLY in Server Actions or Route Handlers that require administrative privileges
+ * after proper RBAC validation.
+ */
+export async function createAdminClient() {
+    const url = env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceKey = env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!url || !serviceKey) {
+        throw new Error(
+            'Supabase Admin client missing configuration. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.'
+        );
+    }
+
+    return createBaseClient<Database>(
+        url,
+        serviceKey,
+        {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false,
             },
         }
     );
