@@ -31,7 +31,7 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
         search,
         page,
         pageSize,
-        identity_status: identityStatus as '' | 'unverified' | 'verified' | 'merged' | undefined,
+        identity_status: (identityStatus || undefined) as 'unverified' | 'verified' | 'merged' | undefined,
     });
 
     const queryState = {
