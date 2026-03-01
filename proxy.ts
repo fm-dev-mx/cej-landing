@@ -18,7 +18,6 @@ function isAllowedRoute(pathname: string): boolean {
     if (isSharedQuoteRoute(pathname)) return true;
     if (isDashboardRoute(pathname)) return true;
     if (pathname.startsWith("/auth/callback")) return true;
-    if (pathname.startsWith("/auth/login")) return true;
     return false;
 }
 
