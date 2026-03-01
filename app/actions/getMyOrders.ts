@@ -24,7 +24,7 @@ export interface OrderSummary {
 type OrderRow = Database['public']['Tables']['orders']['Row'];
 type SelectedOrderRow = Pick<
     OrderRow,
-    'id' | 'folio' | 'status' | 'total_amount' | 'currency' | 'items' | 'created_at' | 'delivery_date'
+    'id' | 'folio' | 'status' | 'order_status' | 'total_amount' | 'total_with_vat' | 'currency' | 'items' | 'created_at' | 'ordered_at' | 'delivery_date' | 'scheduled_date'
 >;
 
 export interface GetMyOrdersResult {
@@ -69,7 +69,7 @@ export async function getMyOrders(cursor?: string, pageSize = 25): Promise<GetMy
         // Fetch orders - RLS ensures we only get this user's orders
         let query = supabase
             .from('orders')
-            .select('id, folio, status, total_amount, currency, items, created_at, delivery_date')
+            .select('id, folio, status, order_status, total_amount, total_with_vat, currency, items, created_at, ordered_at, delivery_date, scheduled_date')
             .order('created_at', { ascending: false })
             .limit(pageSize);
 
@@ -77,7 +77,23 @@ export async function getMyOrders(cursor?: string, pageSize = 25): Promise<GetMy
             query = query.lt('created_at', cursor);
         }
 
-        const { data: orders, error: dbError } = await query;
+        let { data: orders, error: dbError } = await query;
+
+        if (dbError && /column|schema cache|order_status|scheduled_date|ordered_at/i.test(dbError.message)) {
+            let legacyQuery = supabase
+                .from('orders')
+                .select('id, folio, status, total_amount, currency, items, created_at, delivery_date')
+                .order('created_at', { ascending: false })
+                .limit(pageSize);
+
+            if (cursor) {
+                legacyQuery = legacyQuery.lt('created_at', cursor);
+            }
+
+            const legacyResult = await legacyQuery;
+            orders = legacyResult.data as SelectedOrderRow[] | null;
+            dbError = legacyResult.error;
+        }
 
         if (dbError) {
             reportError(dbError, { action: 'getMyOrders', phase: 'db_query' });
@@ -91,12 +107,12 @@ export async function getMyOrders(cursor?: string, pageSize = 25): Promise<GetMy
         const mappedOrders: OrderSummary[] = ((orders || []) as SelectedOrderRow[]).map((order) => ({
             id: order.id,
             folio: order.folio,
-            status: order.status,
-            total_amount: Number(order.total_amount || 0),
+            status: order.order_status || order.status,
+            total_amount: Number(order.total_with_vat || order.total_amount || 0),
             currency: order.currency || 'MXN',
             items: Array.isArray(order.items) ? order.items : [],
-            created_at: order.created_at,
-            delivery_date: order.delivery_date,
+            created_at: order.ordered_at || order.created_at,
+            delivery_date: order.scheduled_date || order.delivery_date,
         }));
 
         return {

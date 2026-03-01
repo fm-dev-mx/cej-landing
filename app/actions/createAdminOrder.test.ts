@@ -74,9 +74,14 @@ describe('createAdminOrder', () => {
             user_id: 'admin-id',
             folio: 'ADMIN-123',
             status: 'draft',
+            order_status: 'draft',
+            payment_status: 'pending',
+            fiscal_status: 'not_requested',
             total_amount: 1160,
             currency: 'MXN',
             delivery_address: 'Test Address 123',
+            delivery_address_text: 'Test Address 123',
+            balance_amount: 1160,
             items: expect.arrayContaining([
                 expect.objectContaining({
                     label: "Concreto Directo f'c 250",

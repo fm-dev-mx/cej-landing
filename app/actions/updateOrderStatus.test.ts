@@ -9,6 +9,7 @@ const mockUpdate = vi.fn();
 const mockUpdateEq = vi.fn();
 const mockSelect = vi.fn();
 const mockFrom = vi.fn();
+const mockInsertHistory = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
     createClient: vi.fn(),
@@ -22,12 +23,21 @@ describe('updateOrderStatus', () => {
     beforeEach(() => {
         vi.clearAllMocks();
 
-        mockFrom.mockReturnValue({ select: mockSelect, update: mockUpdate });
+        mockFrom.mockImplementation((table: string) => {
+            if (table === 'orders') {
+                return { select: mockSelect, update: mockUpdate };
+            }
+            if (table === 'order_status_history') {
+                return { insert: mockInsertHistory };
+            }
+            return {};
+        });
         mockSelect.mockReturnValue({ eq: mockEq });
         mockEq.mockReturnValue({ single: mockSingle });
 
         mockUpdate.mockReturnValue({ eq: mockUpdateEq });
         mockUpdateEq.mockResolvedValue({ error: null });
+        mockInsertHistory.mockResolvedValue({ error: null });
 
         vi.mocked(createClient).mockResolvedValue({
             auth: {

@@ -32,14 +32,24 @@ export async function updateOrderStatus(payload: UpdateOrderStatusPayload): Prom
             return { success: false, error: 'Payload inválido' };
         }
 
-        const { orderId, newStatus } = parsed.data;
+        const { orderId, newStatus, reason } = parsed.data;
 
         // Fetch current status to validate transition
-        const { data: order, error: fetchErr } = await supabase
+        let { data: order, error: fetchErr } = await supabase
             .from('orders')
-            .select('status, user_id')
+            .select('status, order_status, user_id')
             .eq('id', orderId)
             .single();
+
+        if (fetchErr && /column|schema cache|order_status/i.test(fetchErr.message)) {
+            const legacyFetch = await supabase
+                .from('orders')
+                .select('status, user_id')
+                .eq('id', orderId)
+                .single();
+            order = legacyFetch.data as typeof order;
+            fetchErr = legacyFetch.error;
+        }
 
         if (fetchErr || !order) {
             return { success: false, error: 'Pedido no encontrado' };
@@ -51,7 +61,7 @@ export async function updateOrderStatus(payload: UpdateOrderStatusPayload): Prom
             return { success: false, error: 'No autorizado' };
         }
 
-        const currentStatus = order.status as InternalOrderStatus;
+        const currentStatus = (order.order_status || order.status) as InternalOrderStatus;
 
         if (!canTransition(currentStatus, newStatus as InternalOrderStatus)) {
             return {
@@ -63,14 +73,36 @@ export async function updateOrderStatus(payload: UpdateOrderStatusPayload): Prom
         // If idempotent, just return success
         if (currentStatus === newStatus) return { success: true };
 
-        const { error: updateErr } = await supabase
+        let { error: updateErr } = await supabase
             .from('orders')
-            .update({ status: newStatus })
+            .update({ status: newStatus, order_status: newStatus })
             .eq('id', orderId);
+
+        if (updateErr && /column|schema cache|order_status/i.test(updateErr.message)) {
+            const legacyUpdate = await supabase
+                .from('orders')
+                .update({ status: newStatus })
+                .eq('id', orderId);
+            updateErr = legacyUpdate.error;
+        }
 
         if (updateErr) {
             reportError(updateErr, { action: 'updateOrderStatus', orderId });
             return { success: false, error: 'Fallo al actualizar el pedido' };
+        }
+
+        const { error: historyErr } = await supabase
+            .from('order_status_history')
+            .insert({
+                order_id: orderId,
+                from_status: currentStatus,
+                to_status: newStatus,
+                reason: reason ?? null,
+                changed_by: user.id,
+            });
+
+        if (historyErr && !/relation|schema cache|order_status_history/i.test(historyErr.message)) {
+            reportError(historyErr, { action: 'updateOrderStatus:history', orderId });
         }
 
         return { success: true };

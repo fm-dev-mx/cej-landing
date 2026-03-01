@@ -10,7 +10,7 @@ import type { AdminOrderPayload } from '@/types/internal/order';
 import { getAttributionData, extractAttribution } from '@/lib/logic/attribution';
 import { getPriceConfig } from './getPriceConfig';
 import { calcQuote } from '@/lib/pricing';
-import { InternalOrderItemSnapshot } from '@/types/database';
+import { InternalOrderItemSnapshot, type PricingSnapshotJson, type PaymentsSummaryJson } from '@/types/database';
 
 export type { AdminOrderPayload };
 
@@ -48,8 +48,17 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
 
         const normalizedPayload = parsedPayload.data;
         const folio = generateQuoteId();
+        const orderedAt = normalizedPayload.orderedAt
+            ? new Date(normalizedPayload.orderedAt).toISOString()
+            : new Date().toISOString();
         const deliveryDate = normalizedPayload.deliveryDate
             ? new Date(normalizedPayload.deliveryDate).toISOString()
+            : null;
+        const scheduledWindowStart = normalizedPayload.scheduledWindowStart
+            ? new Date(normalizedPayload.scheduledWindowStart).toISOString()
+            : null;
+        const scheduledWindowEnd = normalizedPayload.scheduledWindowEnd
+            ? new Date(normalizedPayload.scheduledWindowEnd).toISOString()
             : null;
 
         // 3. Pricing Calculation
@@ -71,35 +80,96 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
         };
 
         const attribution = await getAttributionData(extractAttribution(normalizedPayload));
+        const pricingSnapshotJson: PricingSnapshotJson = {
+            version: pricingRules.version,
+            computed_at: new Date().toISOString(),
+            inputs: {
+                volume: normalizedPayload.volume,
+                concreteType: normalizedPayload.concreteType,
+                strength: normalizedPayload.strength,
+            },
+            breakdown: quoteBreakdown.pricingSnapshot
+                ? JSON.parse(JSON.stringify(quoteBreakdown.pricingSnapshot))
+                : {},
+        };
+        const paymentsSummary: PaymentsSummaryJson = {
+            paid_amount: 0,
+            balance_amount: quoteBreakdown.total,
+            last_paid_at: null,
+        };
 
         // Default for admin-created orders if no specific marketing UTMs are present
         if (attribution.utm_source === 'direct') {
             attribution.utm_source = 'admin_dashboard';
         }
 
-        const { data, error } = await supabase
+        const legacyPayload = {
+            user_id: user.id,
+            folio,
+            status: 'draft' as const,
+            total_amount: quoteBreakdown.total,
+            currency: 'MXN',
+            items: [orderItem],
+            delivery_date: deliveryDate,
+            delivery_address: normalizedPayload.deliveryAddress,
+            utm_source: attribution.utm_source,
+            utm_medium: attribution.utm_medium,
+            utm_campaign: attribution.utm_campaign,
+            utm_term: attribution.utm_term,
+            utm_content: attribution.utm_content,
+            fbclid: attribution.fbclid,
+            gclid: attribution.gclid,
+            pricing_version: pricingRules.version,
+            price_breakdown: quoteBreakdown.pricingSnapshot ? JSON.parse(JSON.stringify(quoteBreakdown.pricingSnapshot)) : null,
+        };
+
+        const enhancedPayload = {
+            ...legacyPayload,
+            ordered_at: orderedAt,
+            delivery_address_text: normalizedPayload.deliveryAddress,
+            scheduled_date: deliveryDate,
+            scheduled_window_start: scheduledWindowStart,
+            scheduled_window_end: scheduledWindowEnd,
+            scheduled_slot_code: normalizedPayload.scheduledSlotCode ?? null,
+            scheduled_time_label: normalizedPayload.scheduledTimeLabel ?? null,
+            service_type: normalizedPayload.concreteType === 'pumped' ? 'bombeado' : 'tirado',
+            quantity_m3: normalizedPayload.volume,
+            unit_price_before_vat: quoteBreakdown.baseSubtotal / normalizedPayload.volume,
+            vat_rate: 0.16,
+            total_before_vat: quoteBreakdown.baseSubtotal,
+            total_with_vat: quoteBreakdown.total,
+            balance_amount: quoteBreakdown.total,
+            order_status: 'draft' as const,
+            payment_status: 'pending' as const,
+            fiscal_status: 'not_requested' as const,
+            payments_summary_json: paymentsSummary,
+            pricing_snapshot_json: pricingSnapshotJson,
+            internal_notes: normalizedPayload.notes ?? null,
+            external_ref: normalizedPayload.externalRef ?? null,
+            legacy_folio_raw: normalizedPayload.legacyFolioRaw ?? null,
+        };
+
+        let data: { id: string } | null = null;
+        let error: { message: string; code?: string } | null = null;
+
+        const enhancedInsert = await supabase
             .from('orders')
-            .insert({
-                user_id: user.id,
-                folio,
-                status: 'draft',
-                total_amount: quoteBreakdown.total,
-                currency: 'MXN',
-                items: [orderItem],
-                delivery_date: deliveryDate,
-                delivery_address: normalizedPayload.deliveryAddress,
-                utm_source: attribution.utm_source,
-                utm_medium: attribution.utm_medium,
-                utm_campaign: attribution.utm_campaign,
-                utm_term: attribution.utm_term,
-                utm_content: attribution.utm_content,
-                fbclid: attribution.fbclid,
-                gclid: attribution.gclid,
-                pricing_version: pricingRules.version,
-                price_breakdown: quoteBreakdown.pricingSnapshot ? JSON.parse(JSON.stringify(quoteBreakdown.pricingSnapshot)) : null,
-            })
+            .insert(enhancedPayload)
             .select('id')
             .single();
+
+        data = enhancedInsert.data as { id: string } | null;
+        error = enhancedInsert.error as { message: string; code?: string } | null;
+
+        if (error && /column|schema cache|order_status|payment_status|fiscal_status/i.test(error.message)) {
+            const fallbackInsert = await supabase
+                .from('orders')
+                .insert(legacyPayload)
+                .select('id')
+                .single();
+            data = fallbackInsert.data as { id: string } | null;
+            error = fallbackInsert.error as { message: string; code?: string } | null;
+        }
 
         if (error) {
             reportError(new Error(error.message), {
@@ -108,6 +178,10 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
                 customer: normalizedPayload.name
             });
             return { status: 'error', message: 'No se pudo registrar el pedido. Intente de nuevo.' };
+        }
+
+        if (!data?.id) {
+            return { status: 'error', message: 'No se obtuvo el identificador del pedido.' };
         }
 
         return { status: 'success', id: String(data.id) };

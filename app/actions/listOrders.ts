@@ -34,12 +34,12 @@ export async function listOrders(filters: ListOrdersFilters = {}): Promise<ListO
 
         let query = supabase
             .from('orders')
-            .select('id, folio, status, total_amount, currency, items, created_at, delivery_date')
+            .select('id, folio, status, order_status, total_amount, total_with_vat, currency, items, created_at, ordered_at, delivery_date, scheduled_date, payment_status, balance_amount')
             .order('delivery_date', { ascending: true, nullsFirst: false })
             .order('created_at', { ascending: false });
 
         if (filters.status) {
-            query = query.eq('status', filters.status);
+            query = query.or(`status.eq.${filters.status},order_status.eq.${filters.status}`);
         }
         if (filters.startDate) {
             query = query.gte('delivery_date', filters.startDate);
@@ -51,7 +51,34 @@ export async function listOrders(filters: ListOrdersFilters = {}): Promise<ListO
             query = query.ilike('folio', `%${filters.folio}%`);
         }
 
-        const { data, error } = await query;
+        const firstResult = await query;
+        let data: Array<Record<string, unknown>> | null = (firstResult.data as Array<Record<string, unknown>> | null);
+        let error = firstResult.error;
+
+        if (error && /column|schema cache|order_status|scheduled_date|payment_status/i.test(error.message)) {
+            let legacyQuery = supabase
+                .from('orders')
+                .select('id, folio, status, total_amount, currency, items, created_at, delivery_date')
+                .order('delivery_date', { ascending: true, nullsFirst: false })
+                .order('created_at', { ascending: false });
+
+            if (filters.status) {
+                legacyQuery = legacyQuery.eq('status', filters.status);
+            }
+            if (filters.startDate) {
+                legacyQuery = legacyQuery.gte('delivery_date', filters.startDate);
+            }
+            if (filters.endDate) {
+                legacyQuery = legacyQuery.lte('delivery_date', filters.endDate);
+            }
+            if (filters.folio) {
+                legacyQuery = legacyQuery.ilike('folio', `%${filters.folio}%`);
+            }
+
+            const legacyResult = await legacyQuery;
+            data = legacyResult.data as Array<Record<string, unknown>> | null;
+            error = legacyResult.error;
+        }
 
         if (error) {
             reportError(error, { action: 'listOrders', phase: 'db_query' });
@@ -61,15 +88,18 @@ export async function listOrders(filters: ListOrdersFilters = {}): Promise<ListO
         // Add explicit type casting for returned rows
         const mappedOrders: OrderSummary[] = (data || []).map((order: unknown) => {
             const o = order as Record<string, unknown>;
+            const normalizedStatus = String(o.order_status || o.status || 'draft');
             return {
                 id: String(o.id),
                 folio: String(o.folio),
-                status: String(o.status),
-                total_amount: Number(o.total_amount || 0),
+                status: normalizedStatus,
+                total_amount: Number(o.total_with_vat || o.total_amount || 0),
                 currency: String(o.currency || 'MXN'),
                 items: Array.isArray(o.items) ? (o.items as OrderSummary['items']) : [],
-                created_at: String(o.created_at),
-                delivery_date: o.delivery_date ? String(o.delivery_date) : null,
+                created_at: String(o.ordered_at || o.created_at),
+                delivery_date: o.scheduled_date
+                    ? String(o.scheduled_date)
+                    : (o.delivery_date ? String(o.delivery_date) : null),
             };
         });
 
