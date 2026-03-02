@@ -1,0 +1,78 @@
+@use "@/styles/primitives" as p;
+@use "@/styles/mixins" as *;
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--radius-full);
+
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+
+  &.owner {
+    color: #991b1b;
+    background-color: #fee2e2;
+  }
+
+  &.admin {
+    color: #92400e;
+    background-color: #fef3c7;
+  }
+
+  &.operator {
+    color: #166534;
+    background-color: #dcfce7;
+  }
+
+  &.guest {
+    color: #374151;
+    background-color: #f3f4f6;
+  }
+}
+
+.roleSelect {
+  cursor: pointer;
+
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+
+  font-size: var(--fs-xs);
+
+  background-color: var(--c-surface);
+
+  &:focus {
+    border-color: var(--c-primary);
+    outline: none;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-0-5);
+
+  .name {
+    font-weight: 600;
+    color: var(--c-text);
+  }
+
+  .email {
+    font-size: var(--fs-xs);
+    color: var(--c-muted-strong);
+  }
+}
+
+.timestamp {
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+}
