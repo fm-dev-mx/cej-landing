@@ -1,4 +1,3 @@
-import type { PricingRules } from '@/lib/schemas/pricing';
 import type {
     DbOrderStatus,
     DbPaymentStatus,
@@ -6,41 +5,11 @@ import type {
     DbPaymentDirection,
     DbPaymentKind,
     DbPaymentMethod,
-    DbLeadStatus
+    DbRecordOrigin
 } from '../database-enums';
-import type { Json, JsonObject } from './json';
+import type { JsonObject } from './json';
 import type { PaymentsSummaryJson, PricingSnapshotJson } from './snapshots';
-
-export interface TimestampFields {
-    created_at: string;
-    updated_at: string;
-    deleted_at: string | null;
-}
-
-export interface AttributionFields {
-    utm_source: string | null;
-    utm_medium: string | null;
-    utm_campaign: string | null;
-    utm_term: string | null;
-    utm_content: string | null;
-    fbclid: string | null;
-    gclid: string | null;
-}
-
-export interface BaseRow extends TimestampFields {
-    id: string;
-}
-
-export interface BaseOrderEntry extends BaseRow {
-    order_id: string;
-}
-
-export interface ImportFields {
-    import_source: string | null;
-    import_batch_id: string | null;
-    import_row_hash: string | null;
-    legacy_folio_raw: string | null;
-}
+import type { BaseRow, BaseOrderEntry, AttributionFields, ImportFields } from './base';
 
 export interface DatabaseRowOrders extends BaseRow, AttributionFields, ImportFields {
     folio: string;
@@ -53,6 +22,9 @@ export interface DatabaseRowOrders extends BaseRow, AttributionFields, ImportFie
     ordered_at: string;
     service_type: 'bombeado' | 'tirado' | null;
     product_id: string | null;
+    legacy_product_raw: string | null;
+    record_origin: DbRecordOrigin;
+    source_batch_id: string | null;
     quantity_m3: number | null;
     unit_price_before_vat: number | null;
     vat_rate: number | null;
@@ -75,66 +47,6 @@ export interface DatabaseRowOrders extends BaseRow, AttributionFields, ImportFie
     attribution_extra_json: JsonObject;
     external_ref: string | null;
     notes: string | null;
-}
-
-export interface DatabaseRowLeads extends AttributionFields, TimestampFields {
-    id: number;
-    name: string;
-    phone: string;
-    phone_norm: string | null;
-    status: DbLeadStatus;
-    quote_data: Json;
-    customer_id: string | null;
-    visitor_id: string | null;
-    fb_event_id: string | null;
-    delivery_date: string | null;
-    delivery_address: string | null;
-    notes: string | null;
-    lost_reason: string | null;
-    privacy_accepted: boolean;
-    privacy_accepted_at: string | null;
-}
-
-export interface DatabaseRowCustomers extends BaseRow {
-    display_name: string;
-    primary_phone_norm: string | null;
-    primary_email_norm: string | null;
-    identity_status: 'unverified' | 'verified' | 'merged';
-    merged_into_customer_id: string | null;
-}
-
-export interface DatabaseRowCustomerIdentity extends BaseRow {
-    customer_id: string;
-    type: 'phone' | 'email' | 'visitor_id';
-    value_norm: string;
-    is_primary: boolean;
-    verified_at: string | null;
-}
-
-export interface DatabaseRowCustomerMergeLog {
-    id: string;
-    survivor_customer_id: string;
-    merged_customer_id: string;
-    reason: string | null;
-    merged_by: string | null;
-    merged_at: string;
-}
-
-export interface DatabaseRowServiceSlots {
-    slot_code: string;
-    label: string;
-    start_time: string;
-    end_time: string;
-}
-
-export interface BasePriceConfig extends TimestampFields {
-    id: number;
-    version: number;
-    pricing_rules: PricingRules;
-}
-
-export interface DatabaseRowPriceConfig extends BasePriceConfig {
-    active: boolean;
 }
 
 export interface DatabaseRowOrderPayment extends BaseOrderEntry {

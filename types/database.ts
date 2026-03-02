@@ -6,7 +6,8 @@ import type {
     DbPaymentDirection,
     DbPaymentKind,
     DbPaymentMethod,
-    DbLeadStatus
+    DbLeadStatus,
+    DbRecordOrigin
 } from './database-enums';
 import type { Json, JsonObject } from './db/json';
 import type {
@@ -16,17 +17,29 @@ import type {
 } from './db/snapshots';
 import type {
     DatabaseRowOrders,
-    DatabaseRowLeads,
-    DatabaseRowCustomers,
-    DatabaseRowCustomerIdentity,
-    DatabaseRowCustomerMergeLog,
-    DatabaseRowServiceSlots,
-    DatabaseRowPriceConfig,
     DatabaseRowOrderPayment,
     DatabaseRowOrderStatusHistory,
     DatabaseRowOrderFiscalData,
     DatabaseRowOrderImportLog
 } from './db/rows';
+import type {
+    DatabaseRowLeads,
+    DatabaseRowCustomers,
+    DatabaseRowCustomerIdentity,
+    DatabaseRowCustomerMergeLog
+} from './db/crm';
+import type {
+    DatabaseRowServiceSlots,
+    DatabaseRowPriceConfig,
+    DatabaseRowProduct,
+    DatabaseRowVendor,
+    DatabaseRowAsset,
+    DatabaseRowEmployee
+} from './db/catalogs';
+import type {
+    DatabaseRowLegacyIngestBatch,
+    DatabaseRowLegacyRowRejection
+} from './db/ingestion';
 
 // Re-export core types to avoid breaking most imports
 export type { Json, JsonObject, QuoteSnapshot, PaymentsSummaryJson, PricingSnapshotJson };
@@ -39,7 +52,8 @@ export type {
     DbPaymentDirection,
     DbPaymentKind,
     DbPaymentMethod,
-    DbLeadStatus
+    DbLeadStatus,
+    DbRecordOrigin
 };
 
 // Main Database Type
@@ -135,6 +149,79 @@ export type Database = {
                 Update: Partial<DatabaseRowServiceSlots>;
                 Relationships: [];
             };
+            products: {
+                Row: DatabaseRowProduct;
+                Insert: Partial<DatabaseRowProduct> & { sku: string; name: string; category: string };
+                Update: Partial<DatabaseRowProduct>;
+                Relationships: [];
+            };
+            vendors: {
+                Row: DatabaseRowVendor;
+                Insert: Partial<DatabaseRowVendor> & { name: string };
+                Update: Partial<DatabaseRowVendor>;
+                Relationships: [];
+            };
+            assets: {
+                Row: DatabaseRowAsset;
+                Insert: Partial<DatabaseRowAsset> & { code: string };
+                Update: Partial<DatabaseRowAsset>;
+                Relationships: [];
+            };
+            employees: {
+                Row: DatabaseRowEmployee;
+                Insert: Partial<DatabaseRowEmployee> & { full_name: string };
+                Update: Partial<DatabaseRowEmployee>;
+                Relationships: [];
+            };
+            legacy_ingest_batches: {
+                Row: DatabaseRowLegacyIngestBatch;
+                Insert: Partial<DatabaseRowLegacyIngestBatch> & { source_name: string; source_file: string };
+                Update: Partial<DatabaseRowLegacyIngestBatch>;
+                Relationships: [];
+            };
+            legacy_row_rejections: {
+                Row: DatabaseRowLegacyRowRejection;
+                Insert: Partial<DatabaseRowLegacyRowRejection> & { source_name: string; row_number: number; reason_code: string; raw_payload_json: JsonObject };
+                Update: Partial<DatabaseRowLegacyRowRejection>;
+                Relationships: [];
+            };
+            payment_methods: {
+                Row: {
+                    code: string;
+                    label: string;
+                    active: boolean;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: Partial<Database['public']['Tables']['payment_methods']['Row']> & { code: string; label: string };
+                Update: Partial<Database['public']['Tables']['payment_methods']['Row']>;
+                Relationships: [];
+            };
+            expense_categories: {
+                Row: {
+                    code: string;
+                    label: string;
+                    active: boolean;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: Partial<Database['public']['Tables']['expense_categories']['Row']> & { code: string; label: string };
+                Update: Partial<Database['public']['Tables']['expense_categories']['Row']>;
+                Relationships: [];
+            };
+            service_status_legacy_map: {
+                Row: {
+                    legacy_status: string;
+                    mapped_order_status: DbOrderStatus;
+                    requires_attention: boolean;
+                    notes: string | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+                Insert: Partial<Database['public']['Tables']['service_status_legacy_map']['Row']> & { legacy_status: string; mapped_order_status: DbOrderStatus };
+                Update: Partial<Database['public']['Tables']['service_status_legacy_map']['Row']>;
+                Relationships: [];
+            };
             orders: {
                 Row: DatabaseRowOrders;
                 Insert: Partial<DatabaseRowOrders> & {
@@ -182,6 +269,18 @@ export type Database = {
                     columns: ['customer_id'];
                     isOneToOne: false;
                     referencedRelation: 'customers';
+                    referencedColumns: ['id'];
+                }, {
+                    foreignKeyName: 'orders_product_id_fkey';
+                    columns: ['product_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'products';
+                    referencedColumns: ['sku'];
+                }, {
+                    foreignKeyName: 'orders_source_batch_id_fkey';
+                    columns: ['source_batch_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'legacy_ingest_batches';
                     referencedColumns: ['id'];
                 }];
             };
@@ -278,6 +377,13 @@ export type Database = {
                     expense_date: string;
                     reference: string | null;
                     notes: string | null;
+                    vendor_id: string | null;
+                    asset_id: string | null;
+                    payment_method_code: string | null;
+                    is_reconciled: boolean;
+                    legacy_external_id: string | null;
+                    record_origin: DbRecordOrigin;
+                    source_batch_id: string | null;
                     created_at: string;
                     updated_at: string;
                 };
@@ -288,6 +394,30 @@ export type Database = {
                     columns: ['user_id'];
                     isOneToOne: false;
                     referencedRelation: 'profiles';
+                    referencedColumns: ['id'];
+                }, {
+                    foreignKeyName: 'expenses_vendor_id_fkey';
+                    columns: ['vendor_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'vendors';
+                    referencedColumns: ['id'];
+                }, {
+                    foreignKeyName: 'expenses_asset_id_fkey';
+                    columns: ['asset_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'assets';
+                    referencedColumns: ['id'];
+                }, {
+                    foreignKeyName: 'expenses_payment_method_code_fkey';
+                    columns: ['payment_method_code'];
+                    isOneToOne: false;
+                    referencedRelation: 'payment_methods';
+                    referencedColumns: ['code'];
+                }, {
+                    foreignKeyName: 'expenses_source_batch_id_fkey';
+                    columns: ['source_batch_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'legacy_ingest_batches';
                     referencedColumns: ['id'];
                 }];
             };
@@ -301,6 +431,17 @@ export type Database = {
                     amount: number;
                     currency: string;
                     notes: string | null;
+                    employee_id: string | null;
+                    base_salary: number | null;
+                    commission_amount: number | null;
+                    loan_discount: number | null;
+                    overtime_amount: number | null;
+                    trip_amount: number | null;
+                    volume_m3: number | null;
+                    days_worked: number | null;
+                    legacy_external_id: string | null;
+                    record_origin: DbRecordOrigin;
+                    source_batch_id: string | null;
                     created_at: string;
                     updated_at: string;
                 };
@@ -311,6 +452,18 @@ export type Database = {
                     columns: ['user_id'];
                     isOneToOne: false;
                     referencedRelation: 'profiles';
+                    referencedColumns: ['id'];
+                }, {
+                    foreignKeyName: 'payroll_employee_id_fkey';
+                    columns: ['employee_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'employees';
+                    referencedColumns: ['id'];
+                }, {
+                    foreignKeyName: 'payroll_source_batch_id_fkey';
+                    columns: ['source_batch_id'];
+                    isOneToOne: false;
+                    referencedRelation: 'legacy_ingest_batches';
                     referencedColumns: ['id'];
                 }];
             };
@@ -329,6 +482,7 @@ export type Database = {
             payment_kind_enum: DbPaymentKind;
             payment_method_enum: DbPaymentMethod;
             lead_status_enum: DbLeadStatus;
+            record_origin_enum: DbRecordOrigin;
         };
         CompositeTypes: {
             [key: string]: never;

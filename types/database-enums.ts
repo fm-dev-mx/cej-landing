@@ -5,3 +5,4 @@ export type DbPaymentDirection = 'in' | 'out';
 export type DbPaymentKind = 'anticipo' | 'abono' | 'liquidacion' | 'ajuste' | 'refund' | 'chargeback';
 export type DbPaymentMethod = 'efectivo' | 'transferencia' | 'credito' | 'deposito' | 'otro';
 export type DbLeadStatus = 'new' | 'contacted' | 'qualified' | 'converted' | 'lost' | 'archived';
+export type DbRecordOrigin = 'legacy_import' | 'system_captured';
