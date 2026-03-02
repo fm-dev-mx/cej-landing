@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { listLeads } from '@/app/actions/listLeads';
 import styles from '../admin-common.module.scss';
 
@@ -27,7 +28,10 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
 
     return (
         <main className={styles.main}>
-            <h1 className={styles.sectionTitle}>Inbox de leads</h1>
+            <div className={styles.flexBetween}>
+                <h1 className={styles.sectionTitle}>Inbox de leads</h1>
+                <Link href="/dashboard/leads/new" className={styles.button}>+ Nuevo Lead</Link>
+            </div>
 
             <aside className={styles.infoBanner}>
                 <p>
@@ -86,6 +90,7 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
                             <th className={styles.tableHeader}>Campaña</th>
                             <th className={styles.tableHeader}>Customer</th>
                             <th className={styles.tableHeader}>Creado</th>
+                            <th className={styles.tableHeader}>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -99,11 +104,16 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
                                 <td className={styles.tableCell}>{lead.utm_campaign || '-'}</td>
                                 <td className={styles.tableCell}>{lead.customer_id || 'Sin vincular'}</td>
                                 <td className={styles.tableCell}>{new Date(lead.created_at).toLocaleString('es-MX')}</td>
+                                <td className={styles.tableCell}>
+                                    <Link href={`/dashboard/leads/${lead.id}`} className={styles.backLink}>
+                                        Ver detalle
+                                    </Link>
+                                </td>
                             </tr>
                         ))}
                         {result.leads.length === 0 && (
                             <tr>
-                                <td colSpan={8} className={styles.emptyCell}>No hay leads para los filtros seleccionados.</td>
+                                <td colSpan={9} className={styles.emptyCell}>No hay leads para los filtros seleccionados.</td>
                             </tr>
                         )}
                     </tbody>
