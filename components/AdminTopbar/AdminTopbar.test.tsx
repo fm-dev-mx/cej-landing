@@ -24,7 +24,8 @@ describe('AdminTopbar', () => {
         return (
             <AdminTopbar
                 userName="Admin User"
-                userEmail="admin@cej.mx"
+                userEmail="admin@example.com"
+                userRole="admin"
                 onMenuToggle={() => undefined}
             />
         );

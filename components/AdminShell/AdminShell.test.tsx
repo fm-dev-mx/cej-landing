@@ -30,7 +30,7 @@ vi.mock('@/components/AdminTopbar', () => ({
 
 describe('AdminShell', () => {
     const setupAdminShell = () => render(
-        <AdminShell userName="Admin User" userEmail="admin@cej.mx">
+        <AdminShell userName="Admin User" userEmail="admin@cej.mx" userRole="admin">
             <div>contenido dashboard</div>
         </AdminShell>
     );
@@ -73,8 +73,11 @@ describe('AdminShell', () => {
 
         mockPathname = '/dashboard/settings';
         rerender(
-            <AdminShell userName="Admin User" userEmail="admin@cej.mx">
-                <div>contenido dashboard</div>
+            <AdminShell
+                userName="Admin User"
+                userEmail="admin@example.com"
+                userRole="admin"
+            >    <div>contenido dashboard</div>
             </AdminShell>
         );
 

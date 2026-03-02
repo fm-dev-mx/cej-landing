@@ -41,7 +41,7 @@ vi.mock('@/components/Auth', () => ({
 describe('AdminShell integration', () => {
     it('opens drawer, closes on nav click and tracks active item after route update', () => {
         const { rerender } = render(
-            <AdminShell userName="Admin User" userEmail="admin@cej.mx">
+            <AdminShell userName="Admin User" userEmail="admin@cej.mx" userRole="admin">
                 <div>vista actual</div>
             </AdminShell>
         );
@@ -54,7 +54,7 @@ describe('AdminShell integration', () => {
 
         mockPathname = '/dashboard/settings/pricing';
         rerender(
-            <AdminShell userName="Admin User" userEmail="admin@cej.mx">
+            <AdminShell userName="Admin User" userEmail="admin@cej.mx" userRole="admin">
                 <div>vista actual</div>
             </AdminShell>
         );
