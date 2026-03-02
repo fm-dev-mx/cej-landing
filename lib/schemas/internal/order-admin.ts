@@ -50,27 +50,10 @@ export const orderUpdatePayloadSchema = z.object({
     delivery_address_text: z.string().trim().min(5).max(300).nullable().optional(),
     scheduled_date: dateOnlySchema.nullable().optional(),
     scheduled_slot_code: z.string().trim().min(1).max(30).nullable().optional(),
-    scheduled_time_label: z.string().trim().max(50).nullable().optional(),
-    scheduled_window_start: z.string().datetime().nullable().optional(),
-    scheduled_window_end: z.string().datetime().nullable().optional(),
     notes: z.string().trim().max(1000).nullable().optional(),
     external_ref: z.string().trim().max(128).nullable().optional(),
     seller_id: z.string().uuid('Vendedor inválido').nullable().optional(),
 }).superRefine((data, ctx) => {
-    if ((data.scheduled_window_start && !data.scheduled_window_end) || (!data.scheduled_window_start && data.scheduled_window_end)) {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['scheduled_window_end'],
-            message: 'Debes capturar inicio y fin de ventana de entrega',
-        });
-    }
-    if (data.scheduled_window_start && data.scheduled_window_end && data.scheduled_window_end < data.scheduled_window_start) {
-        ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['scheduled_window_end'],
-            message: 'La ventana final debe ser mayor o igual a la inicial',
-        });
-    }
     if (data.scheduled_slot_code && !data.scheduled_date) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,

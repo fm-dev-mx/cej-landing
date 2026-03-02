@@ -129,9 +129,6 @@ export interface OrderUpdatePayload {
     delivery_address_text?: string | null;
     scheduled_date?: string | null;
     scheduled_slot_code?: string | null;
-    scheduled_time_label?: string | null;
-    scheduled_window_start?: string | null;
-    scheduled_window_end?: string | null;
     notes?: string | null;
     external_ref?: string | null;
     seller_id?: string | null;

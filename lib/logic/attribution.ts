@@ -79,3 +79,12 @@ export async function getAttributionData(payload?: Partial<AttributionData>): Pr
 
     return result.data;
 }
+
+export function toAttributionExtrasJson(attribution: Partial<AttributionData>) {
+    return {
+        utm_term: attribution.utm_term ?? null,
+        utm_content: attribution.utm_content ?? null,
+        fbclid: attribution.fbclid ?? null,
+        gclid: attribution.gclid ?? null,
+    };
+}

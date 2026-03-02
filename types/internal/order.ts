@@ -75,10 +75,7 @@ export interface AdminOrderPayload {
     sellerId?: string;
     orderedAt?: string;
     deliveryDate?: string;
-    scheduledWindowStart?: string;
-    scheduledWindowEnd?: string;
     scheduledSlotCode?: string;
-    scheduledTimeLabel?: string;
     externalRef?: string;
     legacyFolioRaw?: string;
     notes?: string;
