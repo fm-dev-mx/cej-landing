@@ -9,9 +9,10 @@ import styles from './UserProfileMenu.module.scss';
 interface UserProfileMenuProps {
     userName: string;
     userEmail: string;
+    userRole: string;
 }
 
-export function UserProfileMenu({ userName, userEmail }: UserProfileMenuProps) {
+export function UserProfileMenu({ userName, userEmail, userRole }: UserProfileMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
@@ -78,6 +79,11 @@ export function UserProfileMenu({ userName, userEmail }: UserProfileMenuProps) {
                     <div className={styles.userInfo}>
                         <span className={styles.userName}>{userName}</span>
                         <span className={styles.userEmail}>{userEmail}</span>
+                        <div className={styles.roleBadge}>
+                            <span className={`${styles.badge} ${styles[userRole]}`}>
+                                {userRole}
+                            </span>
+                        </div>
                     </div>
 
                     <div className={styles.divider} />
