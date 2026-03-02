@@ -9,6 +9,7 @@ const customerFields = {
     billing_regimen: z.string().optional().nullable(),
     cfdi_use: z.string().optional().nullable(),
     postal_code: z.string().optional().nullable(),
+    quality_tier: z.enum(['bronze', 'silver', 'gold', 'platinum']).optional().nullable(),
     legacy_notes: z.string().optional().nullable(),
 };
 

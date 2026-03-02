@@ -48,11 +48,23 @@ export const orderIdSchema = z.string().uuid('ID de pedido inválido');
 export const orderUpdatePayloadSchema = z.object({
     orderId: orderIdSchema,
     delivery_address_text: z.string().trim().min(5).max(300).nullable().optional(),
+    delivery_address_id: z.string().uuid('Dirección inválida').nullable().optional(),
     scheduled_date: dateOnlySchema.nullable().optional(),
     scheduled_slot_code: z.string().trim().min(1).max(30).nullable().optional(),
+    scheduled_time_label: z.string().trim().max(120).nullable().optional(),
+    scheduled_window_start: z.string().trim().max(120).nullable().optional(),
+    scheduled_window_end: z.string().trim().max(120).nullable().optional(),
     notes: z.string().trim().max(1000).nullable().optional(),
     external_ref: z.string().trim().max(128).nullable().optional(),
     seller_id: z.string().uuid('Vendedor inválido').nullable().optional(),
+    legacy_product_raw: z.string().trim().max(120).nullable().optional(),
+    import_source: z.string().trim().max(120).nullable().optional(),
+    import_batch_id: z.string().trim().max(120).nullable().optional(),
+    import_row_hash: z.string().trim().max(120).nullable().optional(),
+    legacy_folio_raw: z.string().trim().max(120).nullable().optional(),
+    utm_source: z.string().trim().max(120).nullable().optional(),
+    utm_medium: z.string().trim().max(120).nullable().optional(),
+    utm_campaign: z.string().trim().max(120).nullable().optional(),
 }).superRefine((data, ctx) => {
     if (data.scheduled_slot_code && !data.scheduled_date) {
         ctx.addIssue({
