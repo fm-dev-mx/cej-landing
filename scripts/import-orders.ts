@@ -25,6 +25,8 @@ const isDryRun = args.includes('--dry-run');
 const limitArg = args.find(a => a.startsWith('--limit='));
 const limit = limitArg ? parseInt(limitArg.split('=')[1], 10) : Infinity;
 const mode = args.includes('--mode=normal') ? 'B' : 'A'; // Mode B: Normalize payments, Mode A: Aggregate only
+const userIdArg = args.find(a => a.startsWith('--user-id='));
+const importUserId = userIdArg ? userIdArg.split('=')[1] : '9d571f48-f267-4665-8f5f-21841df194b9';
 const batchSize = 50;
 
 // Enums based on type
@@ -260,8 +262,8 @@ async function processAllRows() {
                 legacy_folio_raw: row['#']?.toString(),
 
                 // Use a genuine user ID for author to satisfy FK valid_user on orders
-                user_id: '9d571f48-f267-4665-8f5f-21841df194b9', // Developer ID
-                created_by: '9d571f48-f267-4665-8f5f-21841df194b9',
+                user_id: importUserId,
+                created_by: importUserId,
 
                 folio: `LEGACY-${row['#']}`,
                 order_status,
@@ -329,9 +331,9 @@ async function processAllRows() {
                         return;
                     }
 
-                    if (data) {
+                    if (data?.customer_id) {
                         customerId = data.customer_id;
-                        customerIdentityCache.set(identity.key, customerId);
+                        customerIdentityCache.set(identity.key, data.customer_id);
                     }
                 }
 

@@ -7,7 +7,8 @@ import { parse, isValid } from 'date-fns';
 dotenv.config({ path: ['.env.local', '.env'] });
 
 const CSV_FILE = 'csv/gastos.csv';
-const DEVELOPER_ID = '9d571f48-f267-4665-8f5f-21841df194b9';
+const userIdArg = process.argv.find(arg => arg.startsWith('--user-id='));
+const IMPORT_USER_ID = userIdArg ? userIdArg.split('=')[1] : '9d571f48-f267-4665-8f5f-21841df194b9';
 
 interface GastoRow {
     Listo: string;
@@ -91,7 +92,7 @@ async function run() {
                 }
 
                 const payload = {
-                    user_id: DEVELOPER_ID,
+                    user_id: IMPORT_USER_ID,
                     amount,
                     currency: 'MXN',
                     category: row['Categoría'] || 'Uncategorized',

@@ -7,7 +7,8 @@ import { parse, isValid, setYear } from 'date-fns';
 dotenv.config({ path: ['.env.local', '.env'] });
 
 const CSV_FILE = 'csv/nomina.csv';
-const DEVELOPER_ID = '9d571f48-f267-4665-8f5f-21841df194b9';
+const userIdArg = process.argv.find(arg => arg.startsWith('--user-id='));
+const IMPORT_USER_ID = userIdArg ? userIdArg.split('=')[1] : '9d571f48-f267-4665-8f5f-21841df194b9';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -95,7 +96,7 @@ async function run() {
                 }
 
                 const payload = {
-                    user_id: DEVELOPER_ID,
+                    user_id: IMPORT_USER_ID,
                     employee: row.Nombre.trim(),
                     period_start: start,
                     period_end: end,
