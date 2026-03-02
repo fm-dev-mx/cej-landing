@@ -2,9 +2,10 @@
 
 /**
  * Valid roles in the CEJ ecosystem.
- * - owner: Full access to everything including sensitive settings.
- * - admin: Management access to orders and general settings.
- * - operator: Daily operation access (viewing and creating orders).
+ * - owner: Full access to everything including sensitive settings and user management.
+ * - admin: Management access to orders, customers, and general settings.
+ * - operator: Daily operation access (viewing and creating orders/customers).
+ * - guest: Read-only or no access.
  */
 export type UserRole = 'admin' | 'operator' | 'owner' | 'guest';
 
@@ -16,19 +17,38 @@ export type Permission =
     | 'orders:create'
     | 'orders:edit'
     | 'orders:update'
+    | 'customers:view'
+    | 'customers:create'
+    | 'customers:edit'
     | 'settings:view'
+    | 'admin:users'      // Can manage user roles
     | 'financials:view'
     | 'financials:write'
     | 'admin:all';
 
 /**
  * Permission matrix defining what each role can do.
+ * This is the source of truth for the frontend and server guards.
  */
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
-    owner: ['orders:view', 'orders:create', 'orders:edit', 'orders:update', 'settings:view', 'financials:view', 'financials:write', 'admin:all'],
-    admin: ['orders:view', 'orders:create', 'orders:edit', 'orders:update', 'settings:view', 'financials:view', 'financials:write'],
-    operator: ['orders:view', 'orders:create', 'orders:update'],
-    guest: [],
+    owner: [
+        'orders:view', 'orders:create', 'orders:edit', 'orders:update',
+        'customers:view', 'customers:create', 'customers:edit',
+        'settings:view', 'admin:users',
+        'financials:view', 'financials:write',
+        'admin:all'
+    ],
+    admin: [
+        'orders:view', 'orders:create', 'orders:edit', 'orders:update',
+        'customers:view', 'customers:create', 'customers:edit',
+        'settings:view', 'admin:users',
+        'financials:view', 'financials:write'
+    ],
+    operator: [
+        'orders:view', 'orders:create', 'orders:update',
+        'customers:view', 'customers:create'
+    ],
+    guest: ['orders:view'], // Minimal view access
 };
 
 /**
@@ -37,20 +57,23 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 export function hasPermission(role: UserRole, permission: Permission): boolean {
     const permissions = ROLE_PERMISSIONS[role];
     if (!permissions) return false;
+
+    // Admin:all bypass
+    if ((permissions as string[]).includes('admin:all')) return true;
+
     return (permissions as string[]).includes(permission);
 }
 
 /**
- * Extracts the user role from Supabase user metadata.
- * Defaults to 'operator' for security (least privilege).
+ * Extracts the user role from Supabase user metadata or profile.
+ * Defaults to 'guest' for security.
  *
  * @param userMetadata - The user_metadata object from Supabase Auth user.
  */
 export function getUserRole(userMetadata: { role?: string } | null | undefined): UserRole {
     const role = userMetadata?.role;
-    if (role === 'owner' || role === 'admin' || role === 'operator') {
+    if (role === 'owner' || role === 'admin' || role === 'operator' || role === 'guest') {
         return role as UserRole;
     }
-    // Default to the most restrictive role to minimize access for unknown/undefined roles
     return 'guest';
 }

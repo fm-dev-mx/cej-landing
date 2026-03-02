@@ -69,6 +69,7 @@ CREATE TABLE public.profiles (
   email        text,
   full_name    text,
   phone        text,
+  role         text NOT NULL DEFAULT 'guest', -- guest, operator, admin, owner
   company_name text,
   rfc          text,
   address      jsonb,
@@ -76,9 +77,13 @@ CREATE TABLE public.profiles (
   updated_at   timestamptz NOT NULL DEFAULT now()
 );
 
--- RLS: Service Role Only (no public/anon policies)
+-- RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "profiles service_role all" ON public.profiles FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "profiles select_own" ON public.profiles FOR SELECT TO authenticated USING (auth.uid() = id);
+CREATE POLICY "profiles select_admin" ON public.profiles FOR SELECT TO authenticated USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'owner'))
+);
 
 CREATE TRIGGER set_profiles_updated_at
   BEFORE UPDATE ON public.profiles
@@ -92,15 +97,17 @@ SECURITY DEFINER
 SET search_path = pg_catalog, public
 AS $$
 BEGIN
-  INSERT INTO public.profiles (id, email, full_name)
+  INSERT INTO public.profiles (id, email, full_name, role)
   VALUES (
     NEW.id,
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1))
+    COALESCE(NEW.raw_user_meta_data->>'full_name', split_part(NEW.email, '@', 1)),
+    COALESCE(NEW.raw_user_meta_data->>'role', 'guest')
   )
   ON CONFLICT (id) DO UPDATE SET
     email = EXCLUDED.email,
     full_name = EXCLUDED.full_name,
+    role = COALESCE(EXCLUDED.role, profiles.role),
     updated_at = now();
   RETURN NEW;
 END;
@@ -173,6 +180,9 @@ CREATE TABLE public.customers (
 
 ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "customers service_role all" ON public.customers FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "customers select_authenticated" ON public.customers FOR SELECT TO authenticated USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('operator', 'admin', 'owner'))
+);
 
 CREATE TRIGGER set_customers_updated_at
   BEFORE UPDATE ON public.customers
@@ -320,9 +330,16 @@ CREATE TABLE public.orders (
   )
 );
 
--- RLS: Service Role Only
+-- RLS
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "orders service_role all" ON public.orders FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "orders select_own" ON public.orders FOR SELECT TO authenticated USING (auth.uid() = created_by OR auth.uid() = seller_id);
+CREATE POLICY "orders select_admin" ON public.orders FOR SELECT TO authenticated USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'owner'))
+);
+CREATE POLICY "orders insert_staff" ON public.orders FOR INSERT TO authenticated WITH CHECK (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('operator', 'admin', 'owner'))
+);
 
 CREATE TRIGGER set_orders_updated_at
   BEFORE UPDATE ON public.orders
