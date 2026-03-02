@@ -1,7 +1,7 @@
 'use server';
 
-import { createAdminClient, createClient } from '@/lib/supabase/server';
-import { getUserRole, hasPermission } from '@/lib/auth/rbac';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/auth/requirePermission';
 import { reportError } from '@/lib/monitoring';
 
 export interface PhoneCustomerMatch {
@@ -31,16 +31,8 @@ export async function findCustomerByPhone(phone: string): Promise<FindCustomerBy
     }
 
     try {
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            return { success: false, normalizedPhone, error: 'No autenticado' };
-        }
-
-        const role = getUserRole(user.user_metadata);
-        if (!hasPermission(role, 'orders:view') && !hasPermission(role, 'admin:all')) {
-            return { success: false, normalizedPhone, error: 'Sin permisos' };
-        }
+        const session = await requirePermission('orders:view');
+        if ('status' in session) return { success: false, normalizedPhone, error: session.message };
 
         const adminSupabase = await createAdminClient();
         const { data, error } = await adminSupabase

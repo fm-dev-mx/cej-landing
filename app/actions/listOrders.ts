@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { getUserRole, hasPermission } from '@/lib/auth/rbac';
+import { requirePermission } from '@/lib/auth/requirePermission';
 import { reportError } from '@/lib/monitoring';
 import type { OrderSummary } from '@/types/internal/order';
 import type { DbOrderStatus, DbPaymentStatus } from '@/types/database-enums';
@@ -27,17 +27,10 @@ export interface ListOrdersResult {
  */
 export async function listOrders(filters: ListOrdersFilters = {}): Promise<ListOrdersResult> {
     try {
+        const session = await requirePermission('orders:view');
+        if ('status' in session) return { success: false, orders: [], error: session.message };
+
         const supabase = await createClient();
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-        if (authError || !user) {
-            return { success: false, orders: [], error: 'Usuario no autenticado' };
-        }
-
-        const role = getUserRole(user.user_metadata);
-        if (!hasPermission(role, 'orders:view') && !hasPermission(role, 'admin:all')) {
-            return { success: false, orders: [], error: 'No tienes permiso para ver esta sección' };
-        }
 
         let query = supabase
             .from('orders')

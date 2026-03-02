@@ -1,10 +1,9 @@
 'use server';
 
-import { createClient, createAdminClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/auth/requirePermission';
 import { reportError } from '@/lib/monitoring';
 import { generateQuoteId } from '@/lib/utils';
-import { getUserRole, hasPermission } from '@/lib/auth/rbac';
 import { adminOrderPayloadSchema } from '@/lib/schemas/internal/order';
 import type { AdminOrderPayload } from '@/types/internal/order';
 import { getAttributionData, extractAttribution } from '@/lib/logic/attribution';
@@ -37,20 +36,12 @@ function normalizePhone(phone: string): string {
  */
 export async function createAdminOrder(payload: AdminOrderPayload): Promise<AdminOrderResult> {
     try {
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const session = await requirePermission('orders:create');
+        if ('status' in session) return session;
 
-        // 1. Auth Guard
-        if (!user) {
-            redirect('/login');
-        }
+        const { user } = session;
 
-        // 2. RBAC Guard
-        const role = getUserRole(user.user_metadata);
-        if (!hasPermission(role, 'orders:create') && !hasPermission(role, 'admin:all')) {
-            return { status: 'error', message: 'No tienes permiso para crear pedidos.' };
-        }
-
+        // 1. Validation
         const parsedPayload = adminOrderPayloadSchema.safeParse(payload);
         if (!parsedPayload.success) {
             return { status: 'error', message: 'Revisa los datos del formulario e intenta de nuevo.' };

@@ -1,8 +1,8 @@
 'use server';
 
-import { createAdminClient, createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/auth/requirePermission';
 import { reportError } from '@/lib/monitoring';
-import { getUserRole, hasPermission } from '@/lib/auth/rbac';
 import type { CustomerListQuery, CustomerListResult, CustomerSummary } from '@/types/internal/customer';
 import type { Database } from '@/types/database';
 
@@ -59,16 +59,8 @@ export async function listCustomers(input: CustomerListQuery = {}): Promise<Cust
     const to = from + pageSize - 1;
 
     try {
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            return { success: false, ...EMPTY_RESULT, error: 'Usuario no autenticado' };
-        }
-
-        const role = getUserRole(user.user_metadata);
-        if (!hasPermission(role, 'orders:view') && !hasPermission(role, 'admin:all')) {
-            return { success: false, ...EMPTY_RESULT, error: 'No tienes permiso para ver esta sección' };
-        }
+        const session = await requirePermission('orders:view');
+        if ('status' in session) return { success: false, ...EMPTY_RESULT, error: session.message };
 
         const adminSupabase = await createAdminClient();
 

@@ -1,7 +1,7 @@
 'use server';
 
-import { createAdminClient, createClient } from '@/lib/supabase/server';
-import { getUserRole, hasPermission } from '@/lib/auth/rbac';
+import { createAdminClient } from '@/lib/supabase/server';
+import { requirePermission } from '@/lib/auth/requirePermission';
 import { reportError } from '@/lib/monitoring';
 import type { ProfileOption } from '@/types/internal/order-admin';
 
@@ -13,14 +13,8 @@ export interface ListAssignableProfilesResult {
 
 export async function listAssignableProfiles(query?: string): Promise<ListAssignableProfilesResult> {
     try {
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return { success: false, profiles: [], error: 'No autenticado' };
-
-        const role = getUserRole(user.user_metadata);
-        if (!hasPermission(role, 'orders:view') && !hasPermission(role, 'admin:all')) {
-            return { success: false, profiles: [], error: 'Sin permisos' };
-        }
+        const session = await requirePermission('orders:view');
+        if ('status' in session) return { success: false, profiles: [], error: session.message };
 
         const adminSupabase = await createAdminClient();
         let req = adminSupabase
