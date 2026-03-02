@@ -16,27 +16,39 @@ import {
     stripPhone,
     CUTOFF_HOUR,
     LOOKUP_DEBOUNCE_MS,
-    type QuickDateOption
+    extractOrderPayload, TRACKING_FIELDS, type QuickDateOption
 } from './utils';
 
+interface AdminOrderFormProps {
+    initialName?: string;
+    initialPhone?: string;
+    initialLeadId?: string;
+    initialDeliveryAddress?: string;
+}
 
-export function AdminOrderForm() {
+export function AdminOrderForm({
+    initialName = '',
+    initialPhone = '',
+    initialLeadId,
+    initialDeliveryAddress = '',
+}: AdminOrderFormProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [lookupError, setLookupError] = useState<string | null>(null);
     const [lookupLoading, setLookupLoading] = useState(false);
-    const [phone, setPhone] = useState('');
+    const [phone, setPhone] = useState(initialPhone);
     const [isInternational, setIsInternational] = useState(false);
     const [matchedCustomer, setMatchedCustomer] = useState<PhoneCustomerMatch | null>(null);
     const [forceNewCustomer, setForceNewCustomer] = useState(false);
-    const [name, setName] = useState('');
+    const [name, setName] = useState(initialName);
     const [nameTouched, setNameTouched] = useState(false);
-    const [street, setStreet] = useState('');
+    const [street, setStreet] = useState(initialDeliveryAddress);
     const [colony, setColony] = useState('');
     const [serviceSlots, setServiceSlots] = useState<ServiceSlotOption[]>([]);
     const [selectedSlotCode, setSelectedSlotCode] = useState('');
+    const [showAdvanced, setShowAdvanced] = useState(false);
     const lookupRequestId = useRef(0);
 
     const initialQuickOption = useMemo<QuickDateOption>(() => {
@@ -112,19 +124,14 @@ export function AdminOrderForm() {
         const rawPhone = stripPhone(phone);
         const finalPhone = isInternational && rawPhone ? `1${rawPhone}` : rawPhone;
 
-        const payload = {
+        const payload = extractOrderPayload(formData, {
             name: name.trim(),
             phone: finalPhone,
             forceNewCustomer,
-            volume: parseFloat(formData.get('volume') as string) || 0,
-            concreteType: formData.get('concreteType') as 'direct' | 'pumped',
-            strength: formData.get('strength') as string,
             deliveryAddress: `${street.trim()}, Col. ${colony.trim()}`,
             deliveryDate: deliveryDate || undefined,
             scheduledSlotCode: selectedSlotCode || undefined,
-            externalRef: (formData.get('externalRef') as string) || undefined,
-            notes: (formData.get('notes') as string) || undefined,
-        };
+        });
 
         const parsed = adminOrderPayloadSchema.safeParse(payload);
         if (!parsed.success) {
@@ -152,13 +159,11 @@ export function AdminOrderForm() {
         }
 
         const result = await createAdminOrder(parsed.data);
-
         if (result.status === 'success') {
             router.push(`/dashboard/orders/${result.id}`);
             router.refresh();
             return;
         }
-
         setError(result.message);
         setLoading(false);
     };
@@ -238,38 +243,27 @@ export function AdminOrderForm() {
                     </div>
                 )}
 
-                <div className={styles.field}>
-                    <label htmlFor="street">Calle y número</label>
-                    <input
-                        type="text"
-                        id="street"
-                        name="street"
-                        value={street}
-                        onChange={(event) => {
-                            setStreet(event.target.value);
-                            setFormErrors(prev => ({ ...prev, deliveryAddress: '' }));
-                        }}
-                        placeholder="Ej. Av. Principal 123"
-                        className={formErrors.deliveryAddress ? styles.inputError : ''}
-                    />
-                </div>
-
-                <div className={styles.field}>
-                    <label htmlFor="colony">Colonia</label>
-                    <input
-                        type="text"
-                        id="colony"
-                        name="colony"
-                        value={colony}
-                        onChange={(event) => {
-                            setColony(event.target.value);
-                            setFormErrors(prev => ({ ...prev, deliveryAddress: '' }));
-                        }}
-                        placeholder="Ej. Campestre"
-                        className={formErrors.deliveryAddress ? styles.inputError : ''}
-                    />
-                    {formErrors.deliveryAddress && <span className={styles.fieldError}>{formErrors.deliveryAddress}</span>}
-                </div>
+                {[
+                    { id: 'street', label: 'Calle y número', value: street, setter: setStreet, ph: 'Ej. Av. Principal 123' },
+                    { id: 'colony', label: 'Colonia', value: colony, setter: setColony, ph: 'Ej. Campestre' },
+                ].map(({ id, label, value, setter, ph }) => (
+                    <div key={id} className={styles.field}>
+                        <label htmlFor={id}>{label}</label>
+                        <input
+                            type="text"
+                            id={id}
+                            name={id}
+                            value={value}
+                            onChange={(e) => {
+                                setter(e.target.value);
+                                setFormErrors((prev) => ({ ...prev, deliveryAddress: '' }));
+                            }}
+                            placeholder={ph}
+                            className={formErrors.deliveryAddress ? styles.inputError : ''}
+                        />
+                        {id === 'colony' && formErrors.deliveryAddress && <span className={styles.fieldError}>{formErrors.deliveryAddress}</span>}
+                    </div>
+                ))}
 
                 <div className={styles.field}>
                     <label htmlFor="volume">Volumen (m³)</label>
@@ -296,46 +290,29 @@ export function AdminOrderForm() {
                 <div className={styles.field}>
                     <label htmlFor="strength">Resistencia (f&apos;c)</label>
                     <select id="strength" name="strength" required defaultValue="200">
-                        <option value="100">f&apos;c 100</option>
-                        <option value="150">f&apos;c 150</option>
-                        <option value="200">f&apos;c 200 (predeterminado)</option>
-                        <option value="250">f&apos;c 250</option>
-                        <option value="300">f&apos;c 300</option>
+                        {['100', '150', '200', '250', '300'].map(v => <option key={v} value={v}>f&apos;c {v}{v === '200' ? ' (predeterminado)' : ''}</option>)}
                     </select>
                 </div>
 
                 <div className={styles.field}>
                     <label>Fecha solicitada</label>
                     <div className={styles.quickDates} role="group" aria-label="Fecha solicitada rápida">
-                        <button
-                            type="button"
-                            className={quickDateOption === 'today' ? styles.quickDateActive : styles.quickDateButton}
-                            onClick={() => setQuickDateOption('today')}
-                            disabled={todayDisabled}
-                        >
-                            Hoy
-                        </button>
-                        <button
-                            type="button"
-                            className={quickDateOption === 'tomorrow' ? styles.quickDateActive : styles.quickDateButton}
-                            onClick={() => setQuickDateOption('tomorrow')}
-                        >
-                            Mañana
-                        </button>
-                        <button
-                            type="button"
-                            className={quickDateOption === 'plus2' ? styles.quickDateActive : styles.quickDateButton}
-                            onClick={() => setQuickDateOption('plus2')}
-                        >
-                            +2 días
-                        </button>
-                        <button
-                            type="button"
-                            className={quickDateOption === 'custom' ? styles.quickDateActive : styles.quickDateButton}
-                            onClick={() => setQuickDateOption('custom')}
-                        >
-                            Personalizada
-                        </button>
+                        {[
+                            { id: 'today', title: 'Hoy', disabled: todayDisabled },
+                            { id: 'tomorrow', title: 'Mañana' },
+                            { id: 'plus2', title: '+2 días' },
+                            { id: 'custom', title: 'Personalizada' },
+                        ].map(({ id, title, disabled }) => (
+                            <button
+                                key={id}
+                                type="button"
+                                className={quickDateOption === id ? styles.quickDateActive : styles.quickDateButton}
+                                onClick={() => setQuickDateOption(id as QuickDateOption)}
+                                disabled={disabled}
+                            >
+                                {title}
+                            </button>
+                        ))}
                     </div>
                     {quickDateOption === 'custom' && (
                         <input
@@ -376,15 +353,35 @@ export function AdminOrderForm() {
                     <input id="notes" name="notes" maxLength={180} placeholder="Instrucción rápida para operación..." />
                 </div>
 
-                <details className={`${styles.field} ${styles.fullWidth}`}>
-                    <summary>Detalles avanzados</summary>
+                <div className={`${styles.field} ${styles.fullWidth}`}>
+                    <button
+                        type="button"
+                        className={styles.linkButton}
+                        onClick={() => setShowAdvanced((value) => !value)}
+                    >
+                        {showAdvanced ? 'Ocultar detalles avanzados' : 'Mostrar detalles avanzados'}
+                    </button>
+                    {showAdvanced && (
                     <div className={styles.grid}>
-                        <div className={styles.field}>
-                            <label htmlFor="externalRef">Referencia externa</label>
-                            <input id="externalRef" name="externalRef" placeholder="Código interno/ERP" />
-                        </div>
+                        {initialLeadId && (
+                            <div className={styles.field}>
+                                <label htmlFor="leadId">Lead origen (referencia)</label>
+                                <input id="leadId" name="leadId" defaultValue={initialLeadId} disabled />
+                            </div>
+                        )}
+                        {[
+                            { id: 'externalRef', label: 'Referencia externa', placeholder: 'Código interno/ERP' },
+                            { id: 'legacyFolioRaw', label: 'Folio legado', placeholder: 'Folio histórico' },
+                            ...TRACKING_FIELDS
+                        ].map((props: { id: string, label: string, placeholder?: string }) => (
+                            <div key={props.id} className={styles.field}>
+                                <label htmlFor={props.id}>{props.label}</label>
+                                <input id={props.id} name={props.id} placeholder={props.placeholder} />
+                            </div>
+                        ))}
                     </div>
-                </details>
+                    )}
+                </div>
             </div>
 
             {error && <div className={styles.error} role="alert">{error}</div>}

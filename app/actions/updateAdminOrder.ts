@@ -32,11 +32,23 @@ export async function updateAdminOrder(payload: OrderUpdatePayload): Promise<Upd
         const updatePayload: Database['public']['Tables']['orders']['Update'] = {};
 
         if (Object.prototype.hasOwnProperty.call(data, 'delivery_address_text')) updatePayload.delivery_address_text = data.delivery_address_text ?? null;
+        if (Object.prototype.hasOwnProperty.call(data, 'delivery_address_id')) updatePayload.delivery_address_id = data.delivery_address_id ?? null;
         if (Object.prototype.hasOwnProperty.call(data, 'scheduled_date')) updatePayload.scheduled_date = data.scheduled_date ?? null;
         if (Object.prototype.hasOwnProperty.call(data, 'scheduled_slot_code')) updatePayload.scheduled_slot_code = data.scheduled_slot_code ?? null;
+        if (Object.prototype.hasOwnProperty.call(data, 'scheduled_time_label')) updatePayload.scheduled_time_label = data.scheduled_time_label ?? null;
+        if (Object.prototype.hasOwnProperty.call(data, 'scheduled_window_start')) updatePayload.scheduled_window_start = data.scheduled_window_start ?? null;
+        if (Object.prototype.hasOwnProperty.call(data, 'scheduled_window_end')) updatePayload.scheduled_window_end = data.scheduled_window_end ?? null;
         if (Object.prototype.hasOwnProperty.call(data, 'notes')) updatePayload.notes = data.notes ?? null;
         if (Object.prototype.hasOwnProperty.call(data, 'external_ref')) updatePayload.external_ref = data.external_ref ?? null;
         if (Object.prototype.hasOwnProperty.call(data, 'seller_id')) updatePayload.seller_id = data.seller_id ?? null;
+        if (Object.prototype.hasOwnProperty.call(data, 'legacy_product_raw')) updatePayload.legacy_product_raw = data.legacy_product_raw ?? null;
+        if (Object.prototype.hasOwnProperty.call(data, 'import_source')) updatePayload.import_source = data.import_source ?? null;
+        if (Object.prototype.hasOwnProperty.call(data, 'import_batch_id')) updatePayload.import_batch_id = data.import_batch_id ?? null;
+        if (Object.prototype.hasOwnProperty.call(data, 'import_row_hash')) updatePayload.import_row_hash = data.import_row_hash ?? null;
+        if (Object.prototype.hasOwnProperty.call(data, 'legacy_folio_raw')) updatePayload.legacy_folio_raw = data.legacy_folio_raw ?? null;
+        if (Object.prototype.hasOwnProperty.call(data, 'utm_source')) updatePayload.utm_source = data.utm_source ?? null;
+        if (Object.prototype.hasOwnProperty.call(data, 'utm_medium')) updatePayload.utm_medium = data.utm_medium ?? null;
+        if (Object.prototype.hasOwnProperty.call(data, 'utm_campaign')) updatePayload.utm_campaign = data.utm_campaign ?? null;
 
         if (Object.keys(updatePayload).length === 0) {
             return { success: false, error: 'No hay cambios para guardar' };

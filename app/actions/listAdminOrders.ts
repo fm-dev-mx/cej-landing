@@ -48,7 +48,7 @@ export async function listAdminOrders(input: OrderListQuery = {}): Promise<Order
 
         let query = adminSupabase
             .from('orders')
-            .select('id, folio, order_status, payment_status, total_with_vat, balance_amount, quantity_m3, ordered_at, scheduled_date, seller_id, customer_id, utm_source', { count: 'exact' })
+            .select('id, folio, order_status, payment_status, total_with_vat, balance_amount, quantity_m3, ordered_at, scheduled_date, scheduled_slot_code, seller_id, customer_id, utm_source', { count: 'exact' })
             .range(from, to);
 
         const sortColumn = SORT_COLUMN_MAP[params.sortBy];
@@ -105,6 +105,7 @@ export async function listAdminOrders(input: OrderListQuery = {}): Promise<Order
             quantity_m3: number | null;
             ordered_at: string;
             scheduled_date: string | null;
+            scheduled_slot_code: string | null;
             seller_id: string | null;
         }>;
 
@@ -147,6 +148,7 @@ export async function listAdminOrders(input: OrderListQuery = {}): Promise<Order
                 quantity_m3: Number(order.quantity_m3 || 0),
                 ordered_at: order.ordered_at,
                 scheduled_date: order.scheduled_date,
+                scheduled_slot_code: order.scheduled_slot_code,
                 seller_id: order.seller_id,
             })),
             page: params.page,

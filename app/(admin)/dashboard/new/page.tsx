@@ -8,7 +8,17 @@ export const metadata: Metadata = {
     robots: 'noindex, nofollow',
 };
 
-export default function NewOrderPage() {
+interface NewOrderPageProps {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function NewOrderPage({ searchParams }: NewOrderPageProps) {
+    const params = await searchParams;
+    const initialName = typeof params.name === 'string' ? params.name : '';
+    const initialPhone = typeof params.phone === 'string' ? params.phone : '';
+    const initialLeadId = typeof params.leadId === 'string' ? params.leadId : undefined;
+    const initialDeliveryAddress = typeof params.deliveryAddress === 'string' ? params.deliveryAddress : '';
+
     return (
         <main className={styles.main}>
             <div className={styles.container}>
@@ -23,7 +33,12 @@ export default function NewOrderPage() {
                 </header>
 
                 <div className={styles.formCard}>
-                    <AdminOrderForm />
+                    <AdminOrderForm
+                        initialName={initialName}
+                        initialPhone={initialPhone}
+                        initialLeadId={initialLeadId}
+                        initialDeliveryAddress={initialDeliveryAddress}
+                    />
                 </div>
             </div>
         </main>

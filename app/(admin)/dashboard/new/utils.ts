@@ -1,4 +1,3 @@
-import type { PhoneCustomerMatch } from '@/app/actions/findCustomerByPhone';
 
 export type QuickDateOption = 'today' | 'tomorrow' | 'plus2' | 'custom';
 
@@ -45,4 +44,27 @@ export function getDateFromQuickOption(option: Exclude<QuickDateOption, 'custom'
     if (option === 'today') return toDateYmd(now);
     if (option === 'tomorrow') return toDateYmd(addDays(now, 1));
     return toDateYmd(addDays(now, 2));
+}
+
+export const TRACKING_FIELDS = [
+    { id: 'utm_source', label: 'UTM Source' },
+    { id: 'utm_medium', label: 'UTM Medium' },
+    { id: 'utm_campaign', label: 'UTM Campaign' },
+    { id: 'utm_term', label: 'UTM Term' },
+    { id: 'utm_content', label: 'UTM Content' },
+    { id: 'fbclid', label: 'FBCLID' },
+    { id: 'gclid', label: 'GCLID' },
+];
+
+export function extractOrderPayload(formData: FormData, baseInfo: Record<string, string | number | boolean | undefined>) {
+    return {
+        ...baseInfo,
+        volume: parseFloat(formData.get('volume') as string) || 0,
+        concreteType: formData.get('concreteType') as 'direct' | 'pumped',
+        strength: formData.get('strength') as string,
+        ...Object.fromEntries(
+            ['externalRef', 'legacyFolioRaw', 'notes', ...TRACKING_FIELDS.map(f => f.id)]
+                .map(k => [k, (formData.get(k) as string) || undefined])
+        )
+    };
 }

@@ -178,6 +178,8 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                                 );
                             })}
                             <th className={styles.tableHeader}>Cliente</th>
+                            <th className={styles.tableHeader}>Vendedor</th>
+                            <th className={styles.tableHeader}>Franja</th>
                             <th className={styles.tableHeader}>Fuente</th>
                             <th className={styles.tableHeader}>Acciones</th>
                         </tr>
@@ -196,6 +198,8 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                                 <td className={styles.tableCell}>{o.order_status}</td>
                                 <td className={styles.tableCell}>{o.payment_status}</td>
                                 <td className={styles.tableCell}>{o.customer_name || 'Sin vincular'}</td>
+                                <td className={styles.tableCell}>{o.seller_id || '-'}</td>
+                                <td className={styles.tableCell}>{o.scheduled_slot_code || '-'}</td>
                                 <td className={styles.tableCell}>{o.source || 'direct'}</td>
                                 <td className={styles.tableCell}>
                                     <Link href={`/dashboard/orders/${o.id}`} className={styles.backLink}>
@@ -205,7 +209,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
                             </tr>
                         ))}
                         {listResult.orders.length === 0 && (
-                            <tr><td colSpan={11} className={styles.emptyCell}>No hay pedidos encontrados</td></tr>
+                            <tr><td colSpan={13} className={styles.emptyCell}>No hay pedidos encontrados</td></tr>
                         )}
                     </tbody>
                 </table>
