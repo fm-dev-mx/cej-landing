@@ -24,7 +24,6 @@ export async function getLeadById(id: number): Promise<GetLeadResult> {
             .from('leads')
             .select('*')
             .eq('id', id)
-            .is('deleted_at', null)
             .single();
 
         if (error || !data) {

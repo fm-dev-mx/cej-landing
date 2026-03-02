@@ -70,7 +70,6 @@ export async function listCustomers(input: CustomerListQuery = {}): Promise<Cust
             .from('customers')
             .select('id, display_name, primary_phone_norm, primary_email_norm, identity_status, quality_tier, billing_enabled, merged_into_customer_id, created_at, updated_at', { count: 'exact' })
             .is('merged_into_customer_id', null)
-            .is('deleted_at', null)
             .order('updated_at', { ascending: false })
             .range(from, to);
 

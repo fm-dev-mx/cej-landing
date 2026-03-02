@@ -33,7 +33,6 @@ export async function getCustomerById(customerId: string): Promise<GetCustomerBy
             .from('customers')
             .select('*')
             .eq('id', customerId)
-            .is('deleted_at', null)
             .maybeSingle();
 
         if (customerError || !customer) {

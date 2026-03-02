@@ -30,9 +30,18 @@ export async function softDeleteEntity(table: SoftDeleteTarget, id: string | num
 
         const adminSupabase = await createAdminClient();
 
+        const payload: Record<string, string> = {};
+        if (table === 'leads') {
+            payload.status = 'archived';
+        } else if (table === 'customers') {
+            return { success: false, error: 'Los clientes automáticos no pueden ser eliminados, utilice la función de fusión.' };
+        } else {
+            payload.deleted_at = new Date().toISOString();
+        }
+
         const request = adminSupabase
             .from(table)
-            .update({ deleted_at: new Date().toISOString() });
+            .update(payload);
 
         const query = table === 'products'
             ? request.eq('sku', String(id))

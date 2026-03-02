@@ -69,7 +69,6 @@ export async function listLeads(input: LeadsListQuery = {}): Promise<LeadsListRe
         let query = adminSupabase
             .from('leads')
             .select('id, name, phone, status, customer_id, utm_source, utm_campaign, delivery_date, lost_reason, created_at', { count: 'exact' })
-            .is('deleted_at', null)
             .order('created_at', { ascending: false })
             .range(from, to);
 

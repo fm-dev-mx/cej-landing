@@ -7,7 +7,7 @@ import { env } from '@/config/env';
  */
 export const reportError = (error: unknown, context?: Record<string, unknown>) => {
     const timestamp = new Date().toISOString();
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error ? error.message : (typeof error === 'object' && error !== null ? JSON.stringify(error) : String(error));
     const stack = error instanceof Error ? error.stack : undefined;
 
     // 1. Log local obligatorio (visible en Vercel Logs)
