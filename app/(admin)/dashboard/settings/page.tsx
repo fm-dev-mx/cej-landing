@@ -29,6 +29,16 @@ export default function DashboardSettingsPage() {
                     </Link>
                 </article>
 
+                <article className={styles.card}>
+                    <h2 className={styles.cardTitle}>Catálogos operativos</h2>
+                    <p className={styles.cardText}>
+                        Administra productos, proveedores, activos y empleados para las operaciones.
+                    </p>
+                    <Link href="/dashboard/catalogs" className={styles.cardLink}>
+                        Abrir módulo
+                    </Link>
+                </article>
+
                 <article className={`${styles.card} ${styles.cardDisabled}`}>
                     <h2 className={styles.cardTitle}>Integraciones y alertas</h2>
                     <p className={styles.cardText}>
