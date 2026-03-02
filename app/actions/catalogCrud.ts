@@ -37,7 +37,7 @@ function normalizePage(total: number, pageSize: number): number {
     return total === 0 ? 0 : Math.ceil(total / pageSize);
 }
 
-export function buildListResult<T>(items: T[], total: number, page: number, pageSize: number): CatalogListResult<T> {
+export async function buildListResult<T>(items: T[], total: number, page: number, pageSize: number): Promise<CatalogListResult<T>> {
     return { success: true, items, page, pageSize, total, totalPages: normalizePage(total, pageSize) };
 }
 
@@ -85,7 +85,7 @@ async function fetchCatalogList<T>(
         const { data, count, error } = await request;
         if (error) throw error;
 
-        return buildListResult((data || []) as unknown as T[], count ?? (data?.length || 0), c.queryData.page, c.queryData.pageSize);
+        return await buildListResult((data || []) as unknown as T[], count ?? (data?.length || 0), c.queryData.page, c.queryData.pageSize);
     } catch (error) {
         return handleListError(error, actionName, errorMsg, c.queryData?.page ?? 1, c.queryData?.pageSize ?? 20);
     }
@@ -173,10 +173,10 @@ async function fetchById<T>(table: string, idField: string, idVal: string, errMs
     }
 }
 
-export const getProductById = (sku: string) => fetchById<ProductRow>('products', 'sku', sku, 'Producto no encontrado');
-export const getVendorById = (id: string) => fetchById<VendorRow>('vendors', 'id', id, 'Proveedor no encontrado');
-export const getAssetById = (id: string) => fetchById<AssetRow>('assets', 'id', id, 'Activo no encontrado');
-export const getEmployeeById = (id: string) => fetchById<EmployeeRow>('employees', 'id', id, 'Empleado no encontrado');
+export const getProductById = async (sku: string) => fetchById<ProductRow>('products', 'sku', sku, 'Producto no encontrado');
+export const getVendorById = async (id: string) => fetchById<VendorRow>('vendors', 'id', id, 'Proveedor no encontrado');
+export const getAssetById = async (id: string) => fetchById<AssetRow>('assets', 'id', id, 'Activo no encontrado');
+export const getEmployeeById = async (id: string) => fetchById<EmployeeRow>('employees', 'id', id, 'Empleado no encontrado');
 
 export async function createProduct(payload: ProductPayload): Promise<CatalogMutationResult> {
     const ctx = await getMutationContext(productPayloadSchema, payload, 'Datos inválidos de producto');
