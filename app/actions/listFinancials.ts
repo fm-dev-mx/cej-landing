@@ -29,7 +29,14 @@ export async function listExpenses(startDate?: string, endDate?: string) {
         return {
             success: true, data: (expensesData || []).map(d => ({
                 id: d.id, amount: d.amount, currency: d.currency, category: d.category,
-                expenseDate: d.expense_date, reference: d.reference, notes: d.notes
+                expenseDate: d.expense_date, reference: d.reference, notes: d.notes,
+                vendorId: d.vendor_id ?? undefined,
+                assetId: d.asset_id ?? undefined,
+                paymentMethodCode: d.payment_method_code ?? undefined,
+                isReconciled: d.is_reconciled ?? false,
+                recordOrigin: d.record_origin ?? 'system_captured',
+                sourceBatchId: d.source_batch_id ?? undefined,
+                isIncomplete: !d.vendor_id || !d.payment_method_code
             })) as InternalExpense[]
         };
     } catch (error) {
@@ -54,7 +61,18 @@ export async function listPayrollEntries(startDate?: string, endDate?: string) {
         return {
             success: true, data: (payrollData || []).map(d => ({
                 id: d.id, employee: d.employee, amount: d.amount, currency: d.currency,
-                periodStart: d.period_start, periodEnd: d.period_end, notes: d.notes
+                periodStart: d.period_start, periodEnd: d.period_end, notes: d.notes,
+                employeeId: d.employee_id ?? undefined,
+                baseSalary: d.base_salary ?? undefined,
+                commissionAmount: d.commission_amount ?? undefined,
+                loanDiscount: d.loan_discount ?? undefined,
+                overtimeAmount: d.overtime_amount ?? undefined,
+                tripAmount: d.trip_amount ?? undefined,
+                volumeM3: d.volume_m3 ?? undefined,
+                daysWorked: d.days_worked ?? undefined,
+                recordOrigin: d.record_origin ?? 'system_captured',
+                sourceBatchId: d.source_batch_id ?? undefined,
+                isIncomplete: !d.employee_id
             })) as InternalPayroll[]
         };
     } catch (error) {

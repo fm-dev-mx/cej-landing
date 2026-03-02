@@ -29,6 +29,10 @@ export async function createExpense(payload: ExpensePayload) {
             amount: data.amount,
             category: data.category,
             expense_date: new Date(data.expenseDate).toISOString(),
+            vendor_id: data.vendorId,
+            asset_id: data.assetId,
+            payment_method_code: data.paymentMethodCode,
+            is_reconciled: data.isReconciled ?? false,
             reference: data.reference,
             notes: data.notes
         });
@@ -56,6 +60,14 @@ export async function createPayrollEntry(payload: PayrollPayload) {
             amount: data.amount,
             period_start: new Date(data.periodStart).toISOString(),
             period_end: new Date(data.periodEnd).toISOString(),
+            employee_id: data.employeeId,
+            base_salary: data.baseSalary,
+            commission_amount: data.commissionAmount,
+            loan_discount: data.loanDiscount,
+            overtime_amount: data.overtimeAmount,
+            trip_amount: data.tripAmount,
+            volume_m3: data.volumeM3,
+            days_worked: data.daysWorked,
             notes: data.notes
         });
 
