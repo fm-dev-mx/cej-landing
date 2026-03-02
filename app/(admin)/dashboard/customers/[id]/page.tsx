@@ -30,15 +30,21 @@ export default async function CustomerDetailPage({ params }: CustomerDetailPageP
                     <h1>Cliente: {customer.display_name}</h1>
                     <Link href="/dashboard/customers" className={styles.backLink}>Volver al listado</Link>
                 </div>
-                <Link href={`/dashboard/customers/${customer.id}/edit`} className={styles.button}>Editar Cliente</Link>
+                <div className={styles.alignCenter}>
+                    <Link href={`/dashboard/new?customerId=${customer.id}&name=${encodeURIComponent(customer.display_name)}&phone=${encodeURIComponent(customer.primary_phone_norm || '')}`} className={styles.backLink}>Crear pedido</Link>
+                    <Link href={`/dashboard/customers/${customer.id}/edit`} className={styles.button}>Editar Cliente</Link>
+                </div>
             </header>
 
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>Resumen</h2>
                 <div className={styles.formGrid}>
                     <p><strong>Identidad:</strong> {customer.identity_status}</p>
+                    <p><strong>Tier:</strong> {customer.quality_tier || '-'}</p>
                     <p><strong>Teléfono:</strong> {customer.primary_phone_norm || '-'}</p>
                     <p><strong>Email:</strong> {customer.primary_email_norm || '-'}</p>
+                    <p><strong>Facturación:</strong> {customer.billing_enabled ? 'Habilitada' : 'No habilitada'}</p>
+                    <p><strong>Fusionado en:</strong> {customer.merged_into_customer_id || '-'}</p>
                     <p><strong>Creado:</strong> {new Date(customer.created_at).toLocaleString('es-MX')}</p>
                 </div>
             </section>

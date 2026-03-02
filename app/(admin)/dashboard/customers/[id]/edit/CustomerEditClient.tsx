@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateAdminCustomer } from '@/app/actions/updateAdminCustomer';
+import { softDeleteEntity } from '@/app/actions/softDeleteEntity';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import type { CustomerDetail } from '@/types/internal/customer';
 import styles from '../../../admin-common.module.scss';
 
@@ -15,6 +17,7 @@ export default function CustomerEditClient({ initialData }: CustomerEditClientPr
     const [isPending, startTransition] = useTransition();
     const [message, setMessage] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [showDelete, setShowDelete] = useState(false);
 
     const [displayName, setDisplayName] = useState(initialData.display_name);
     const [phone, setPhone] = useState(initialData.primary_phone_norm || '');
@@ -26,6 +29,7 @@ export default function CustomerEditClient({ initialData }: CustomerEditClientPr
     const [billingRegimen, setBillingRegimen] = useState(initialData.billing_regimen || '');
     const [cfdiUse, setCfdiUse] = useState(initialData.cfdi_use || '');
     const [postalCode, setPostalCode] = useState(initialData.postal_code || '');
+    const [qualityTier, setQualityTier] = useState(initialData.quality_tier || '');
 
     function withFeedback(successMessage: string) {
         setError(null);
@@ -50,6 +54,7 @@ export default function CustomerEditClient({ initialData }: CustomerEditClientPr
             billing_regimen: billingRegimen || null,
             cfdi_use: cfdiUse || null,
             postal_code: postalCode || null,
+            quality_tier: (qualityTier || null) as 'bronze' | 'silver' | 'gold' | 'platinum' | null,
         });
 
         if (result.status !== 'success') {
@@ -58,6 +63,18 @@ export default function CustomerEditClient({ initialData }: CustomerEditClientPr
         }
 
         withFeedback('Datos del cliente actualizados correctamente.');
+    }
+
+    async function handleDeleteCustomer() {
+        setError(null);
+        setMessage(null);
+        const result = await softDeleteEntity('customers', initialData.id);
+        if (!result.success) {
+            setError(result.error || 'No se pudo eliminar el cliente');
+            return;
+        }
+        router.push('/dashboard/customers');
+        router.refresh();
     }
 
     return (
@@ -119,14 +136,36 @@ export default function CustomerEditClient({ initialData }: CustomerEditClientPr
                         C.P. Fiscal
                         <input value={postalCode} onChange={(e) => setPostalCode(e.target.value)} />
                     </label>
+                    <label>
+                        Tier de calidad
+                        <select value={qualityTier} onChange={(e) => setQualityTier(e.target.value)}>
+                            <option value="">Sin definir</option>
+                            <option value="bronze">Bronce</option>
+                            <option value="silver">Plata</option>
+                            <option value="gold">Oro</option>
+                            <option value="platinum">Platino</option>
+                        </select>
+                    </label>
                 </div>
             </section>
 
             <div className={styles.formActions}>
+                <button type="button" className={styles.backLink} onClick={() => setShowDelete(true)}>
+                    Eliminar cliente
+                </button>
                 <button type="button" className={styles.button} onClick={handleSave} disabled={isPending}>
                     {isPending ? 'Guardando...' : 'Guardar cambios'}
                 </button>
             </div>
+
+            <ConfirmDialog
+                open={showDelete}
+                title="Eliminar cliente"
+                description="Esta acción aplicará borrado lógico del cliente y lo ocultará de la operación diaria."
+                confirmLabel="Sí, eliminar"
+                onCancel={() => setShowDelete(false)}
+                onConfirm={handleDeleteCustomer}
+            />
         </div>
     );
 }

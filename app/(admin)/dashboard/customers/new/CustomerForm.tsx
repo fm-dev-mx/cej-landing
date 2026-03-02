@@ -5,7 +5,12 @@ import { useRouter } from 'next/navigation';
 import { createAdminCustomer } from '@/app/actions/createAdminCustomer';
 import styles from '../../admin-common.module.scss';
 
-export default function CustomerForm() {
+interface CustomerFormProps {
+    initialName?: string;
+    initialPhone?: string;
+}
+
+export default function CustomerForm({ initialName = '', initialPhone = '' }: CustomerFormProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -26,6 +31,7 @@ export default function CustomerForm() {
             billing_regimen: (formData.get('billing_regimen') as string) || undefined,
             cfdi_use: (formData.get('cfdi_use') as string) || undefined,
             postal_code: (formData.get('postal_code') as string) || undefined,
+            quality_tier: ((formData.get('quality_tier') as string) || undefined) as 'bronze' | 'silver' | 'gold' | 'platinum' | undefined,
             legacy_notes: (formData.get('legacy_notes') as string) || undefined,
         };
 
@@ -47,12 +53,12 @@ export default function CustomerForm() {
             <div className={styles.grid}>
                 <div className={styles.formGroup}>
                     <label htmlFor="display_name" className={styles.label}>Nombre completo o Razón Social *</label>
-                    <input id="display_name" name="display_name" required className={styles.input} placeholder="Ej. Juan Pérez" />
+                    <input id="display_name" name="display_name" required className={styles.input} defaultValue={initialName} placeholder="Ej. Juan Pérez" />
                 </div>
 
                 <div className={styles.formGroup}>
                     <label htmlFor="phone" className={styles.label}>Teléfono principal *</label>
-                    <input id="phone" name="phone" type="tel" required className={styles.input} placeholder="10 dígitos" />
+                    <input id="phone" name="phone" type="tel" required className={styles.input} defaultValue={initialPhone} placeholder="10 dígitos" />
                 </div>
 
                 <div className={styles.formGroup}>
@@ -99,6 +105,16 @@ export default function CustomerForm() {
                     <div className={styles.formGroup}>
                         <label htmlFor="postal_code" className={styles.label}>C.P. Fiscal</label>
                         <input id="postal_code" name="postal_code" className={styles.input} placeholder="32000" />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="quality_tier" className={styles.label}>Tier de calidad</label>
+                        <select id="quality_tier" name="quality_tier" className={styles.input} defaultValue="">
+                            <option value="">Sin definir</option>
+                            <option value="bronze">Bronce</option>
+                            <option value="silver">Plata</option>
+                            <option value="gold">Oro</option>
+                            <option value="platinum">Platino</option>
+                        </select>
                     </div>
                 </div>
             </fieldset>

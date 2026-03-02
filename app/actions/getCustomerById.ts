@@ -33,6 +33,7 @@ export async function getCustomerById(customerId: string): Promise<GetCustomerBy
             .from('customers')
             .select('*')
             .eq('id', customerId)
+            .is('deleted_at', null)
             .maybeSingle();
 
         if (customerError || !customer) {
@@ -97,6 +98,7 @@ export async function getCustomerById(customerId: string): Promise<GetCustomerBy
             primary_phone_norm: customer.primary_phone_norm,
             primary_email_norm: customer.primary_email_norm,
             identity_status: customer.identity_status,
+            quality_tier: customer.quality_tier,
             created_at: customer.created_at,
             updated_at: customer.updated_at,
             orders_total: validOrders.length,
@@ -111,6 +113,7 @@ export async function getCustomerById(customerId: string): Promise<GetCustomerBy
             billing_regimen: customer.billing_regimen || null,
             cfdi_use: customer.cfdi_use || null,
             postal_code: customer.postal_code || null,
+            merged_into_customer_id: customer.merged_into_customer_id || null,
             last_order_date: normalizeDateBounds(validOrders[0]?.ordered_at || null),
             attribution: {
                 top_source: topSource,

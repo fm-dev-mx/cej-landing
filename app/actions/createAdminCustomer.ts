@@ -50,6 +50,7 @@ export async function createAdminCustomer(payload: AdminCustomerPayload): Promis
                 billing_regimen: data.billing_regimen || null,
                 cfdi_use: data.cfdi_use || null,
                 postal_code: data.postal_code || null,
+                quality_tier: data.quality_tier || null,
                 legacy_notes: data.legacy_notes || null,
             })
             .select('id')

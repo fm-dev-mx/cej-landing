@@ -101,6 +101,8 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
                             <th className={styles.tableHeader}>Abiertos</th>
                             <th className={styles.tableHeader}>Último pedido</th>
                             <th className={styles.tableHeader}>Identidad</th>
+                            <th className={styles.tableHeader}>Tier</th>
+                            <th className={styles.tableHeader}>Facturación</th>
                             <th className={styles.tableHeader}>Acciones</th>
                         </tr>
                     </thead>
@@ -117,6 +119,8 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
                                     {customer.last_order_date ? new Date(customer.last_order_date).toLocaleDateString('es-MX') : 'Sin pedidos'}
                                 </td>
                                 <td className={styles.tableCell}>{customer.identity_status}</td>
+                                <td className={styles.tableCell}>{customer.quality_tier || '-'}</td>
+                                <td className={styles.tableCell}>{customer.billing_enabled ? 'Sí' : 'No'}</td>
                                 <td className={styles.tableCell}>
                                     <Link href={`/dashboard/customers/${customer.id}`} className={styles.backLink}>
                                         Ver detalle
@@ -126,7 +130,7 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
                         ))}
                         {result.customers.length === 0 && (
                             <tr>
-                                <td colSpan={9} className={styles.emptyCell}>No hay clientes para los filtros seleccionados.</td>
+                                <td colSpan={11} className={styles.emptyCell}>No hay clientes para los filtros seleccionados.</td>
                             </tr>
                         )}
                     </tbody>

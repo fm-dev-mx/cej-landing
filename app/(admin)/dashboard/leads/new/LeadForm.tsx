@@ -24,6 +24,15 @@ export default function LeadForm() {
             delivery_date: (formData.get('delivery_date') as string) || undefined,
             delivery_address: (formData.get('delivery_address') as string) || undefined,
             notes: (formData.get('notes') as string) || undefined,
+            visitor_id: (formData.get('visitor_id') as string) || undefined,
+            fb_event_id: (formData.get('fb_event_id') as string) || undefined,
+            utm_source: (formData.get('utm_source') as string) || undefined,
+            utm_medium: (formData.get('utm_medium') as string) || undefined,
+            utm_campaign: (formData.get('utm_campaign') as string) || undefined,
+            utm_term: (formData.get('utm_term') as string) || undefined,
+            utm_content: (formData.get('utm_content') as string) || undefined,
+            fbclid: (formData.get('fbclid') as string) || undefined,
+            gclid: (formData.get('gclid') as string) || undefined,
             status: (formData.get('status') as DbLeadStatus) || 'new',
         };
 
@@ -83,6 +92,48 @@ export default function LeadForm() {
                     {loading ? 'Guardando...' : 'Crear Lead'}
                 </button>
             </div>
+
+            <details>
+                <summary>Campos avanzados</summary>
+                <div className={styles.formGrid}>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="visitor_id" className={styles.label}>Visitor ID</label>
+                        <input id="visitor_id" name="visitor_id" className={styles.input} />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="fb_event_id" className={styles.label}>FB Event ID</label>
+                        <input id="fb_event_id" name="fb_event_id" className={styles.input} />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="utm_source" className={styles.label}>UTM Source</label>
+                        <input id="utm_source" name="utm_source" className={styles.input} />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="utm_medium" className={styles.label}>UTM Medium</label>
+                        <input id="utm_medium" name="utm_medium" className={styles.input} />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="utm_campaign" className={styles.label}>UTM Campaign</label>
+                        <input id="utm_campaign" name="utm_campaign" className={styles.input} />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="utm_term" className={styles.label}>UTM Term</label>
+                        <input id="utm_term" name="utm_term" className={styles.input} />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="utm_content" className={styles.label}>UTM Content</label>
+                        <input id="utm_content" name="utm_content" className={styles.input} />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="fbclid" className={styles.label}>FBCLID</label>
+                        <input id="fbclid" name="fbclid" className={styles.input} />
+                    </div>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="gclid" className={styles.label}>GCLID</label>
+                        <input id="gclid" name="gclid" className={styles.input} />
+                    </div>
+                </div>
+            </details>
         </form>
     );
 }

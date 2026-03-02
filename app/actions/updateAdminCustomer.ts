@@ -55,6 +55,7 @@ export async function updateAdminCustomer(payload: UpdateAdminCustomerPayload): 
     if (updates.billing_regimen !== undefined) payloadToUpdate.billing_regimen = updates.billing_regimen;
     if (updates.cfdi_use !== undefined) payloadToUpdate.cfdi_use = updates.cfdi_use;
     if (updates.postal_code !== undefined) payloadToUpdate.postal_code = updates.postal_code;
+    if (updates.quality_tier !== undefined) payloadToUpdate.quality_tier = updates.quality_tier;
     if (updates.legacy_notes !== undefined) payloadToUpdate.legacy_notes = updates.legacy_notes;
 
     try {

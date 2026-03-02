@@ -82,10 +82,10 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
                 <table className={styles.table}>
                     <thead>
                         <tr className={styles.tableHeaderRow}>
-                            <th className={styles.tableHeader}>ID</th>
                             <th className={styles.tableHeader}>Nombre</th>
                             <th className={styles.tableHeader}>Teléfono</th>
                             <th className={styles.tableHeader}>Estado</th>
+                            <th className={styles.tableHeader}>Entrega proyectada</th>
                             <th className={styles.tableHeader}>Fuente</th>
                             <th className={styles.tableHeader}>Campaña</th>
                             <th className={styles.tableHeader}>Customer</th>
@@ -96,10 +96,13 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
                     <tbody>
                         {(result.leads || []).map((lead) => (
                             <tr key={lead.id}>
-                                <td className={styles.tableCell}>{lead.id}</td>
                                 <td className={styles.tableCell}>{lead.name}</td>
                                 <td className={styles.tableCell}>{lead.phone}</td>
-                                <td className={styles.tableCell}>{lead.status}</td>
+                                <td className={styles.tableCell}>
+                                    {lead.status}
+                                    {lead.status === 'lost' && lead.lost_reason ? ` (${lead.lost_reason})` : ''}
+                                </td>
+                                <td className={styles.tableCell}>{lead.delivery_date || '-'}</td>
                                 <td className={styles.tableCell}>{lead.utm_source || 'direct'}</td>
                                 <td className={styles.tableCell}>{lead.utm_campaign || '-'}</td>
                                 <td className={styles.tableCell}>{lead.customer_id || 'Sin vincular'}</td>

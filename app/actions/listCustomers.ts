@@ -45,6 +45,8 @@ function toCustomerSummary(
         primary_phone_norm: customer.primary_phone_norm,
         primary_email_norm: customer.primary_email_norm,
         identity_status: customer.identity_status,
+        quality_tier: customer.quality_tier,
+        billing_enabled: customer.billing_enabled,
         orders_total: validOrders.length,
         ltv_mxn: ltv,
         active_open_orders: validOrders.filter((order) => openOrderStates.includes(order.order_status)).length,
@@ -66,8 +68,9 @@ export async function listCustomers(input: CustomerListQuery = {}): Promise<Cust
 
         let query = adminSupabase
             .from('customers')
-            .select('id, display_name, primary_phone_norm, primary_email_norm, identity_status, merged_into_customer_id, created_at, updated_at', { count: 'exact' })
+            .select('id, display_name, primary_phone_norm, primary_email_norm, identity_status, quality_tier, billing_enabled, merged_into_customer_id, created_at, updated_at', { count: 'exact' })
             .is('merged_into_customer_id', null)
+            .is('deleted_at', null)
             .order('updated_at', { ascending: false })
             .range(from, to);
 

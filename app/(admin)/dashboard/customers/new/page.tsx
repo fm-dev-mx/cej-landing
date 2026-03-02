@@ -8,7 +8,15 @@ export const metadata: Metadata = {
     robots: 'noindex',
 };
 
-export default function NewCustomerPage() {
+interface NewCustomerPageProps {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function NewCustomerPage({ searchParams }: NewCustomerPageProps) {
+    const params = await searchParams;
+    const name = typeof params.name === 'string' ? params.name : '';
+    const phone = typeof params.phone === 'string' ? params.phone : '';
+
     return (
         <main className={styles.main}>
             <header className={styles.header}>
@@ -19,7 +27,7 @@ export default function NewCustomerPage() {
             </header>
 
             <section className={styles.section}>
-                <CustomerForm />
+                <CustomerForm initialName={name} initialPhone={phone} />
             </section>
         </main>
     );

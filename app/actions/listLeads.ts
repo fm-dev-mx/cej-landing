@@ -21,6 +21,8 @@ export interface LeadListItem {
     customer_id: string | null;
     utm_source: string | null;
     utm_campaign: string | null;
+    delivery_date: string | null;
+    lost_reason: string | null;
     created_at: string;
 }
 
@@ -66,7 +68,8 @@ export async function listLeads(input: LeadsListQuery = {}): Promise<LeadsListRe
         const adminSupabase = await createAdminClient();
         let query = adminSupabase
             .from('leads')
-            .select('id, name, phone, status, customer_id, utm_source, utm_campaign, created_at', { count: 'exact' })
+            .select('id, name, phone, status, customer_id, utm_source, utm_campaign, delivery_date, lost_reason, created_at', { count: 'exact' })
+            .is('deleted_at', null)
             .order('created_at', { ascending: false })
             .range(from, to);
 
@@ -98,6 +101,8 @@ export async function listLeads(input: LeadsListQuery = {}): Promise<LeadsListRe
                 customer_id: lead.customer_id,
                 utm_source: lead.utm_source,
                 utm_campaign: lead.utm_campaign,
+                delivery_date: lead.delivery_date,
+                lost_reason: lead.lost_reason,
                 created_at: lead.created_at,
             })),
             page,

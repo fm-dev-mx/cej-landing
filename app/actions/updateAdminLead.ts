@@ -48,6 +48,15 @@ export async function updateAdminLead(payload: UpdateAdminLeadPayload): Promise<
     if (updates.delivery_date !== undefined) payloadToUpdate.delivery_date = updates.delivery_date;
     if (updates.notes !== undefined) payloadToUpdate.notes = updates.notes;
     if (updates.lost_reason !== undefined) payloadToUpdate.lost_reason = updates.lost_reason;
+    if (updates.visitor_id !== undefined) payloadToUpdate.visitor_id = updates.visitor_id;
+    if (updates.fb_event_id !== undefined) payloadToUpdate.fb_event_id = updates.fb_event_id;
+    if (updates.utm_source !== undefined) payloadToUpdate.utm_source = updates.utm_source;
+    if (updates.utm_medium !== undefined) payloadToUpdate.utm_medium = updates.utm_medium;
+    if (updates.utm_campaign !== undefined) payloadToUpdate.utm_campaign = updates.utm_campaign;
+    if (updates.utm_term !== undefined) payloadToUpdate.utm_term = updates.utm_term;
+    if (updates.utm_content !== undefined) payloadToUpdate.utm_content = updates.utm_content;
+    if (updates.fbclid !== undefined) payloadToUpdate.fbclid = updates.fbclid;
+    if (updates.gclid !== undefined) payloadToUpdate.gclid = updates.gclid;
 
     try {
         const { error } = await supabase

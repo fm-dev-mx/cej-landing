@@ -4,7 +4,15 @@ import { createAdminClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/auth/requirePermission';
 import { reportError } from '@/lib/monitoring';
 
-export type SoftDeleteTarget = 'orders' | 'leads' | 'customers' | 'profiles';
+export type SoftDeleteTarget =
+    | 'orders'
+    | 'leads'
+    | 'customers'
+    | 'profiles'
+    | 'products'
+    | 'vendors'
+    | 'assets'
+    | 'employees';
 
 export interface SoftDeleteResult {
     success: boolean;
@@ -22,10 +30,15 @@ export async function softDeleteEntity(table: SoftDeleteTarget, id: string | num
 
         const adminSupabase = await createAdminClient();
 
-        const { error } = await adminSupabase
+        const request = adminSupabase
             .from(table)
-            .update({ deleted_at: new Date().toISOString() })
-            .eq('id', id);
+            .update({ deleted_at: new Date().toISOString() });
+
+        const query = table === 'products'
+            ? request.eq('sku', String(id))
+            : request.eq('id', id);
+
+        const { error } = await query;
 
         if (error) {
             reportError(new Error(error.message), { action: 'softDeleteEntity', table, id });
