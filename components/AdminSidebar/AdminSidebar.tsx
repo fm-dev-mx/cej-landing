@@ -52,6 +52,7 @@ const NAV_GROUPS: NavGroup[] = [
         title: 'Configuración',
         items: [
             { href: '/dashboard/settings', label: 'Configuración general', available: true },
+            { href: '/dashboard/catalogs', label: 'Catálogos', available: true },
             { href: '/dashboard/settings/pricing', label: 'Editor de precios', available: true },
             { href: '/dashboard/settings/users', label: 'Usuarios y permisos', available: false, comingSoonLabel: 'Próximamente' },
         ],
