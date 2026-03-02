@@ -3,6 +3,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { listAssignableProfiles } from './listAssignableProfiles';
 import { createAdminClient, createClient } from '@/lib/supabase/server';
 
+import { requirePermission } from '@/lib/auth/requirePermission';
+
+vi.mock('@/lib/auth/requirePermission', () => ({
+    requirePermission: vi.fn(),
+}));
+
 vi.mock('@/lib/supabase/server', () => ({
     createClient: vi.fn(),
     createAdminClient: vi.fn(),
@@ -24,8 +30,8 @@ describe('listAssignableProfiles', () => {
         queryBuilder.then = (cb: (value: unknown) => unknown) =>
             Promise.resolve({ data: [{ id: '1', full_name: 'John Doe', email: 'x@x.com' }], error: null }).then(cb);
 
-        vi.mocked(createClient).mockResolvedValue({
-            auth: { getUser: () => Promise.resolve({ data: { user: { id: 'admin-id', user_metadata: { role: 'admin' } } } }) },
+        vi.mocked(requirePermission).mockResolvedValue({
+            user: { id: 'admin-id', role: 'admin' },
         } as any);
 
         vi.mocked(createAdminClient).mockResolvedValue({
@@ -49,13 +55,14 @@ describe('listAssignableProfiles', () => {
     });
 
     it('returns error if user lacks view permissions', async () => {
-        vi.mocked(createClient).mockResolvedValue({
-            auth: { getUser: () => Promise.resolve({ data: { user: { id: 'user-id', user_metadata: { role: 'user' } } } }) },
+        vi.mocked(requirePermission).mockResolvedValue({
+            status: 'error',
+            message: 'No tienes permisos suficientes para realizar esta acción.',
         } as any);
 
         const result = await listAssignableProfiles();
         expect(result.success).toBe(false);
-        expect(result.error).toBe('Sin permisos');
+        expect(result.error).toBe('No tienes permisos suficientes para realizar esta acción.');
     });
 
     it('returns error if query fails', async () => {

@@ -3,6 +3,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { listServiceSlots } from './listServiceSlots';
 import { createAdminClient, createClient } from '@/lib/supabase/server';
 
+import { hasPermission } from '@/lib/auth/rbac';
+
+vi.mock('@/lib/auth/rbac', async (importOriginal) => {
+    const mod = await importOriginal<any>();
+    return {
+        ...mod,
+        hasPermission: vi.fn(),
+    };
+});
+
 vi.mock('@/lib/supabase/server', () => ({
     createClient: vi.fn(),
     createAdminClient: vi.fn(),
@@ -17,6 +27,7 @@ describe('listServiceSlots', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.mocked(hasPermission).mockReturnValue(true);
 
         queryBuilder.order = vi.fn(() => queryBuilder);
         queryBuilder.then = (cb: (value: unknown) => unknown) =>
@@ -42,9 +53,7 @@ describe('listServiceSlots', () => {
     });
 
     it('returns error if user lacks view permissions', async () => {
-        vi.mocked(createClient).mockResolvedValue({
-            auth: { getUser: () => Promise.resolve({ data: { user: { id: 'user-id', user_metadata: { role: 'user' } } } }) },
-        } as any);
+        vi.mocked(hasPermission).mockReturnValue(false);
 
         const result = await listServiceSlots();
         expect(result.success).toBe(false);

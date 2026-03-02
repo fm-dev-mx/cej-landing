@@ -12,6 +12,12 @@ const mockLte = vi.fn();
 const mockIlike = vi.fn();
 const mockFrom = vi.fn();
 
+import { requirePermission } from '@/lib/auth/requirePermission';
+
+vi.mock('@/lib/auth/requirePermission', () => ({
+    requirePermission: vi.fn(),
+}));
+
 vi.mock('@/lib/supabase/server', () => ({
     createClient: vi.fn(),
 }));
@@ -37,6 +43,10 @@ describe('listOrders', () => {
         mockLte.mockReturnValue({ ilike: mockIlike, then: (cb: any) => Promise.resolve({ data: [], error: null }).then(cb) });
         mockIlike.mockReturnValue({ then: (cb: any) => Promise.resolve({ data: [], error: null }).then(cb) });
 
+        vi.mocked(requirePermission).mockResolvedValue({
+            user: { id: 'admin-id', role: 'admin' },
+        } as any);
+
         vi.mocked(createClient).mockResolvedValue({
             auth: {
                 getUser: () => Promise.resolve({ data: { user: { id: 'admin-1', user_metadata: { role: 'admin' } } }, error: null }),
@@ -61,11 +71,10 @@ describe('listOrders', () => {
     });
 
     it('returns error if not authenticated', async () => {
-        vi.mocked(createClient).mockResolvedValueOnce({
-            auth: {
-                getUser: () => Promise.resolve({ data: { user: null }, error: null }),
-            }
-        } as unknown as any);
+        vi.mocked(requirePermission).mockResolvedValue({
+            status: 'error',
+            message: 'Usuario no autenticado'
+        } as any);
 
         const result = await listOrders();
         expect(result.success).toBe(false);

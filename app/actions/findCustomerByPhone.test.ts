@@ -3,6 +3,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createAdminClient, createClient } from '@/lib/supabase/server';
 import { findCustomerByPhone } from './findCustomerByPhone';
 
+import { requirePermission } from '@/lib/auth/requirePermission';
+
+vi.mock('@/lib/auth/requirePermission', () => ({
+    requirePermission: vi.fn(),
+}));
+
 vi.mock('@/lib/supabase/server', () => ({
     createClient: vi.fn(),
     createAdminClient: vi.fn(),
@@ -25,8 +31,8 @@ describe('findCustomerByPhone', () => {
             error: null,
         }));
 
-        vi.mocked(createClient).mockResolvedValue({
-            auth: { getUser: () => Promise.resolve({ data: { user: { id: 'admin-id', user_metadata: { role: 'admin' } } } }) },
+        vi.mocked(requirePermission).mockResolvedValue({
+            user: { id: 'admin-id', role: 'admin' },
         } as any);
 
         vi.mocked(createAdminClient).mockResolvedValue({
@@ -52,12 +58,13 @@ describe('findCustomerByPhone', () => {
     });
 
     it('returns permission error for unauthorized users', async () => {
-        vi.mocked(createClient).mockResolvedValue({
-            auth: { getUser: () => Promise.resolve({ data: { user: { id: 'user-id', user_metadata: { role: 'user' } } } }) },
+        vi.mocked(requirePermission).mockResolvedValue({
+            status: 'error',
+            message: 'No tienes permisos suficientes para realizar esta acción.',
         } as any);
 
         const result = await findCustomerByPhone('6561234567');
         expect(result.success).toBe(false);
-        expect(result.error).toBe('Sin permisos');
+        expect(result.error).toBe('No tienes permisos suficientes para realizar esta acción.');
     });
 });
