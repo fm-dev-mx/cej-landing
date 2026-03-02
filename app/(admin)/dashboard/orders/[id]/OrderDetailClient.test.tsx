@@ -65,6 +65,7 @@ const mockInitialData: OrderDetail = {
         legacy_folio_raw: null,
         external_ref: null,
         notes: null,
+        deleted_at: null,
         utm_source: null,
         utm_medium: null,
         utm_campaign: null,
