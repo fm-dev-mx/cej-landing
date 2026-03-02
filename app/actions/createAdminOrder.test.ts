@@ -74,7 +74,8 @@ describe('createAdminOrder', () => {
         const result = await createAdminOrder(validPayload);
 
         expect(result.status).toBe('success');
-        expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({
+        const orderInsertCall = mockInsert.mock.calls.find((call) => call[0]?.folio === 'ADMIN-123');
+        expect(orderInsertCall?.[0]).toEqual(expect.objectContaining({
             user_id: 'admin-id',
             folio: 'ADMIN-123',
             order_status: 'draft',
@@ -88,7 +89,7 @@ describe('createAdminOrder', () => {
         }));
 
         // Negative check: should NOT contain legacy fields
-        const capturedPayload = mockInsert.mock.calls[0][0];
+        const capturedPayload = orderInsertCall?.[0];
         expect(capturedPayload.status).toBeUndefined();
         expect(capturedPayload.items).toBeUndefined();
         expect(capturedPayload.total_amount).toBeUndefined();
@@ -121,5 +122,65 @@ describe('createAdminOrder', () => {
         } as unknown as any);
 
         await expect(createAdminOrder(validPayload)).rejects.toThrow('NEXT_REDIRECT');
+    });
+
+    it('creates a new customer when forceNewCustomer is true', async () => {
+        const customersEq = vi.fn();
+        const customersIs = vi.fn();
+        const maybeSingle = vi.fn(async () => ({ data: { id: 'existing-customer' }, error: null }));
+
+        const customersInsert = vi.fn(() => ({
+            select: () => ({
+                single: async () => ({ data: { id: 'new-customer' }, error: null }),
+            }),
+        }));
+
+        const customerIdentityInsert = vi.fn(async () => ({ data: null, error: null }));
+
+        const ordersInsert = vi.fn(() => ({
+            select: () => ({
+                single: async () => ({ data: { id: '999' }, error: null }),
+            }),
+        }));
+
+        vi.mocked(createAdminClient).mockResolvedValueOnce({
+            from: (table: string) => {
+                if (table === 'customers') {
+                    return {
+                        select: () => ({
+                            eq: (...args: unknown[]) => {
+                                customersEq(...args);
+                                return {
+                                    is: (...isArgs: unknown[]) => {
+                                        customersIs(...isArgs);
+                                        return { maybeSingle };
+                                    },
+                                };
+                            },
+                        }),
+                        insert: customersInsert,
+                    };
+                }
+                if (table === 'customer_identities') {
+                    return {
+                        insert: customerIdentityInsert,
+                    };
+                }
+                return {
+                    insert: ordersInsert,
+                };
+            },
+        } as unknown as any);
+
+        const result = await createAdminOrder({
+            ...validPayload,
+            forceNewCustomer: true,
+        });
+
+        expect(result.status).toBe('success');
+        expect(customersEq).not.toHaveBeenCalled();
+        expect(maybeSingle).not.toHaveBeenCalled();
+        expect(customersInsert).toHaveBeenCalledOnce();
+        expect(ordersInsert).toHaveBeenCalledOnce();
     });
 });

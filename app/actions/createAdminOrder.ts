@@ -104,18 +104,22 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
 
         if (phoneNorm) {
             try {
-                const { data: existingCustomer, error: customerLookupError } = await adminSupabase
-                    .from('customers')
-                    .select('id')
-                    .eq('primary_phone_norm', phoneNorm)
-                    .is('merged_into_customer_id', null)
-                    .maybeSingle();
+                if (!normalizedPayload.forceNewCustomer) {
+                    const { data: existingCustomer, error: customerLookupError } = await adminSupabase
+                        .from('customers')
+                        .select('id')
+                        .eq('primary_phone_norm', phoneNorm)
+                        .is('merged_into_customer_id', null)
+                        .maybeSingle();
 
-                if (customerLookupError) {
-                    reportError(customerLookupError, { source: 'createAdminOrder', phase: 'customer_lookup' });
-                } else if (existingCustomer?.id) {
-                    customerId = existingCustomer.id;
-                } else {
+                    if (customerLookupError) {
+                        reportError(customerLookupError, { source: 'createAdminOrder', phase: 'customer_lookup' });
+                    } else if (existingCustomer?.id) {
+                        customerId = existingCustomer.id;
+                    }
+                }
+
+                if (!customerId) {
                     const { data: newCustomer, error: customerCreateError } = await adminSupabase
                         .from('customers')
                         .insert({
