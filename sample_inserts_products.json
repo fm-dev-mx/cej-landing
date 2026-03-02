@@ -1,0 +1,38 @@
+[
+  {
+    "id": "legacy_prod_1",
+    "name": "Bombeado 100 kg/cm² 3/4\"",
+    "description": "Importado de CSV - SKU: 100B_34_BP_01R. Prov: ACONSA",
+    "product_type": "concrete",
+    "base_price_m3": "1710.00",
+    "is_active": false,
+    "import_source": "productos.csv",
+    "import_batch_id": "5c054d7c-dbe9-442b-a677-6b19b3ba88c7",
+    "import_row_hash": "c51bd36a9226747636757a6aca937d2317f947dc912e77f1ccf7e5e435b2f981",
+    "legacy_sku_raw": "100B_34_BP_01R"
+  },
+  {
+    "id": "legacy_prod_2",
+    "name": "Bombeado 100 kg/cm² 3/4\" Bomba rentada",
+    "description": "Importado de CSV - SKU: 100B_34_BR_01R. Prov: ACONSA",
+    "product_type": "concrete",
+    "base_price_m3": "2060.00",
+    "is_active": false,
+    "import_source": "productos.csv",
+    "import_batch_id": "5c054d7c-dbe9-442b-a677-6b19b3ba88c7",
+    "import_row_hash": "b32fd6d61c83bea424d4d1bedc56b3e442480ed8120f44d7c1b402f351ca2004",
+    "legacy_sku_raw": "100B_34_BR_01R"
+  },
+  {
+    "id": "legacy_prod_3",
+    "name": "Tiro Directo 100 kg/cm² 3/4\"",
+    "description": "Importado de CSV - SKU: 100T_34_01R. Prov: ACONSA",
+    "product_type": "concrete",
+    "base_price_m3": "1710.00",
+    "is_active": false,
+    "import_source": "productos.csv",
+    "import_batch_id": "5c054d7c-dbe9-442b-a677-6b19b3ba88c7",
+    "import_row_hash": "dc7604ea7c2de4f696e2cc6df52fbae14d5865c3e6ead6885c0a250c97eb6085",
+    "legacy_sku_raw": "100T_34_01R"
+  }
+]

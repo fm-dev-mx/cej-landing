@@ -1,0 +1,21 @@
+{
+  "totalRows": 849,
+  "invalidDates": 0,
+  "invalidPhones": 1,
+  "unmappedTimes": 10,
+  "errors": 0,
+  "warnings": 11,
+  "enumDistributions": {
+    "status": {
+      "completed": 754,
+      "confirmed": 12,
+      "draft": 19,
+      "cancelled": 64
+    },
+    "serviceType": {
+      "bombeado": 498,
+      "tirado": 351
+    },
+    "payment": {}
+  }
+}

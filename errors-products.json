@@ -1,0 +1,1066 @@
+[
+  {
+    "row": 2,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "1",
+      "SKU": "100B_34_BP_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Bombeado 100 kg/cm² 3/4\"",
+      "Categoría": "Bombeado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$1,710.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 3,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "2",
+      "SKU": "100B_34_BR_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Bombeado 100 kg/cm² 3/4\" Bomba rentada",
+      "Categoría": "Bombeado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "Bomba Rentada",
+      "Precio sin IVA (m³)": "$2,060.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 4,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "3",
+      "SKU": "100T_34_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 100 kg/cm² 3/4\"",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$1,710.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 5,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "4",
+      "SKU": "100T2_34_01R",
+      "Fecha de Registro": "7-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 100 kg/cm² 3/4\" - Flete 2 mtros",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$1,860.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 6,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "5",
+      "SKU": "100T2.5_34_01R",
+      "Fecha de Registro": "7-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 100 kg/cm² 3/4\" - Flete 2.5 mtros",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$1,770.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 7,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "6",
+      "SKU": "150B_34_BP_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Bombeado 150 kg/cm² 3/4\"",
+      "Categoría": "Bombeado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$1,910.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 8,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "7",
+      "SKU": "150B_34_BR_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Bombeado 150 kg/cm² 3/4\" Bomba rentada",
+      "Categoría": "Bombeado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "Bomba Rentada",
+      "Precio sin IVA (m³)": "$2,260.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 9,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "8",
+      "SKU": "150T_34_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 150 kg/cm² 3/4\"",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$1,910.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 10,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "9",
+      "SKU": "150T2_34_01R",
+      "Fecha de Registro": "7-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 150 kg/cm² 3/4\" - Flete 2 metros",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,060.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 11,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "10",
+      "SKU": "150T2.5_34_01R",
+      "Fecha de Registro": "7-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 150 kg/cm² 3/4\" - Flete 2.5 metros",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$1,970.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 12,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "11",
+      "SKU": "200B_34_BP_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Bombeado 200 kg/cm² 3/4\"",
+      "Categoría": "Bombeado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$2,180.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 13,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "12",
+      "SKU": "200B2_34_BP_01R",
+      "Fecha de Registro": "25-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Bombeado 200 kg/cm² 3/4\" + flete 2 metros+bacha",
+      "Categoría": "Bombeado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$2,875.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 14,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "13",
+      "SKU": "200B_34_BR_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Bombeado 200 kg/cm² 3/4\" Bomba rentada",
+      "Categoría": "Bombeado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "Bomba Rentada",
+      "Precio sin IVA (m³)": "$2,530.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 15,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "14",
+      "SKU": "200T_34_01R",
+      "Fecha de Registro": "10-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 200 kg/cm² 3/4\" ",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,180.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 16,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "15",
+      "SKU": "200T_1_34_01R",
+      "Fecha de Registro": "10-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 200 kg/cm² 3/4\" + flete 1 metro",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,780.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 17,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "16",
+      "SKU": "200T1.5_34_01R",
+      "Fecha de Registro": "15-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 200 kg/cm² 3/4\" - Flete 1.5 metros",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,480.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 18,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "17",
+      "SKU": "200T2_34_01R",
+      "Fecha de Registro": "10-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 200 kg/cm² 3/4\" - Flete 2 metros",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,330.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "$2,979.00 ",
+      "Utilidad": "$462.60 "
+    }
+  },
+  {
+    "row": 19,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "18",
+      "SKU": "200T2.5_34_01R",
+      "Fecha de Registro": "10-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 200 kg/cm² 3/4\" - Flete 2.5 metros",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,240.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 20,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "19",
+      "SKU": "200B_PAY_BP_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Bombeado Payball 200 kg/cm²",
+      "Categoría": "Bombeado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$2,470.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 21,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "20",
+      "SKU": "200B_PAY_BR_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Bombeado Payball 200 kg/cm² Bomba rentada",
+      "Categoría": "Bombeado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "Bomba Rentada",
+      "Precio sin IVA (m³)": "$2,820.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 22,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "21",
+      "SKU": "200B_AC_BR_01R",
+      "Fecha de Registro": "5-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Bombeado 200 kg/cm² + Acelerante Bomba rentada",
+      "Categoría": "Bombeado",
+      "Proveedor": "AMD",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "Bomba Rentada",
+      "Precio sin IVA (m³)": "$2,500.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 23,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "22",
+      "SKU": "200T_38_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 200 kg/cm² 3/8\"",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,470.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 24,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "23",
+      "SKU": "200T_PAY_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo Payball 200 kg/cm²",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,470.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 25,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "24",
+      "SKU": "210T_34_01R",
+      "Fecha de Registro": "5-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,470.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 26,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "25",
+      "SKU": "200TF_34_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 200 kg/cm² 3/4\" + Fibra",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,300.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 27,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "26",
+      "SKU": "250B_34_BP_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Bombeado 250 kg/cm² 3/4\"",
+      "Categoría": "Bombeado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$2,500.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 28,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "27",
+      "SKU": "250B_34_BR_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Bombeado 250 kg/cm² 3/4\" Bomba rentada",
+      "Categoría": "Bombeado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "Bomba Rentada",
+      "Precio sin IVA (m³)": "$2,850.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 29,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "28",
+      "SKU": "250BF_34_01R",
+      "Fecha de Registro": "10-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Bombeado 250 kg/cm² 3/4\" + Fibra",
+      "Categoría": "Bombeado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$2,620.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 30,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "29",
+      "SKU": "250T_34_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 250 kg/cm² 3/4\"",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,500.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 31,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "30",
+      "SKU": "250TF_34_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 250 kg/cm² 3/4\" + Fibra",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,620.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 32,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "31",
+      "SKU": "250TF1.5_34_01R",
+      "Fecha de Registro": "15-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 250 kg/cm² 3/4\" + Fibra + Flete 1.5 mts",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,920.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 33,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "32",
+      "SKU": "250TF1_34_01R",
+      "Fecha de Registro": "15-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 250 kg/cm² 3/4\" + Fibra + Flete 1 mt",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$3,220.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 34,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "33",
+      "SKU": "300T_34_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo 300 kg/cm² 3/4\"",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,780.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 35,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "34",
+      "SKU": "BMB_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Servicio bombeo x m³",
+      "Categoría": "Extra",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$350.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 36,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "35",
+      "SKU": "FIB_01",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Fibra",
+      "Categoría": "Extra",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "",
+      "Modalidad Bomba": "",
+      "Precio sin IVA (m³)": "$120.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 37,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "36",
+      "SKU": "FLT_01",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Flete x m³",
+      "Categoría": "Extra",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "",
+      "Modalidad Bomba": "",
+      "Precio sin IVA (m³)": "$300.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 38,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "37",
+      "SKU": "Bach_200_01",
+      "Fecha de Registro": "28-Nov-25",
+      "Estatus": "Inactivo",
+      "Producto": "Bacha Aconsa 200 kg/cm²",
+      "Categoría": "Extra",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "",
+      "Modalidad Bomba": "",
+      "Precio sin IVA (m³)": "$1,090.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 39,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "38",
+      "SKU": "MLV_01R",
+      "Fecha de Registro": "24-Oct-25",
+      "Estatus": "Inactivo",
+      "Producto": "Tiro Directo Mortero Larga Vida 48 Hrs",
+      "Categoría": "Tirado",
+      "Proveedor": "ACONSA",
+      "Modalidad de Revolvedora": "Camión Rentado",
+      "Modalidad Bomba": "N/A",
+      "Precio sin IVA (m³)": "$2,510.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 40,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "39",
+      "SKU": "100T_34_GCC",
+      "Fecha de Registro": "16-Dec-25",
+      "Estatus": "Activo",
+      "Producto": "Tiro Directo 100 kg/cm² 3/4\"",
+      "Categoría": "Tirado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "Camión Propio",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$1,655.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 41,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "40",
+      "SKU": "150T_34_GCC",
+      "Fecha de Registro": "16-Dec-25",
+      "Estatus": "Activo",
+      "Producto": "Tiro Directo 150 kg/cm² 3/4\"",
+      "Categoría": "Tirado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "Camión Propio",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$1,790.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 42,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "41",
+      "SKU": "200T_34_GCC",
+      "Fecha de Registro": "16-Dec-25",
+      "Estatus": "Activo",
+      "Producto": "Tiro Directo 200 kg/cm² 3/4\"",
+      "Categoría": "Tirado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "Camión Propio",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$1,925.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 43,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "42",
+      "SKU": "250T_34_GCC",
+      "Fecha de Registro": "16-Dec-25",
+      "Estatus": "Activo",
+      "Producto": "Tiro Directo 250 kg/cm² 3/4\"",
+      "Categoría": "Tirado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "Camión Propio",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$2,139.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 44,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "43",
+      "SKU": "100B_34_GCC",
+      "Fecha de Registro": "16-Dec-25",
+      "Estatus": "Activo",
+      "Producto": "Bombeado 100 kg/cm² 3/4\"",
+      "Categoría": "Bombeado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "Camión Propio",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 45,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "44",
+      "SKU": "150B_34_GCC",
+      "Fecha de Registro": "16-Dec-25",
+      "Estatus": "Activo",
+      "Producto": "Bombeado 150 kg/cm² 3/4\"",
+      "Categoría": "Bombeado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "Camión Propio",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$1,790.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 46,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "45",
+      "SKU": "200B_34_GCC",
+      "Fecha de Registro": "16-Dec-25",
+      "Estatus": "Activo",
+      "Producto": "Bombeado 200 kg/cm² 3/4\"",
+      "Categoría": "Bombeado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "Camión Propio",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$1,925.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 47,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "46",
+      "SKU": "210B_34_GCC",
+      "Fecha de Registro": "12-Jan-26",
+      "Estatus": "Activo",
+      "Producto": "Bombeado 210 kg/cm² 3/4\"",
+      "Categoría": "Bombeado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "Camión Propio",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$1,968.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 48,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "47",
+      "SKU": "210T_34_GCC",
+      "Fecha de Registro": "18-Feb-26",
+      "Estatus": "Activo",
+      "Producto": "Tiro Directo 210 kg/cm² 3/4\"",
+      "Categoría": "Tirado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "Camión Propio",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$1,968.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 49,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "48",
+      "SKU": "250B_34_GCC",
+      "Fecha de Registro": "16-Dec-25",
+      "Estatus": "Activo",
+      "Producto": "Bombeado 250 kg/cm² 3/4\"",
+      "Categoría": "Bombeado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "Camión Propio",
+      "Modalidad Bomba": "Bomba Propia",
+      "Precio sin IVA (m³)": "$2,139.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 50,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "49",
+      "SKU": "FIB_02",
+      "Fecha de Registro": "16-Dec-25",
+      "Estatus": "Activo",
+      "Producto": "Fibra GCC",
+      "Categoría": "Extra",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "",
+      "Modalidad Bomba": "",
+      "Precio sin IVA (m³)": "$107.00 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 51,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "50",
+      "SKU": "Mortero_GCC",
+      "Fecha de Registro": "6-Feb-26",
+      "Estatus": "Activo",
+      "Producto": "Mortero Tiro Directo",
+      "Categoría": "Tirado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "",
+      "Modalidad Bomba": "",
+      "Precio sin IVA (m³)": "$2,817.11 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 52,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "51",
+      "SKU": "Mortero_90_GCC",
+      "Fecha de Registro": "6-Feb-26",
+      "Estatus": "Activo",
+      "Producto": "Mortero 90 Tiro Directo",
+      "Categoría": "Tirado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "",
+      "Modalidad Bomba": "",
+      "Precio sin IVA (m³)": "$3,061.94 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 53,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "52",
+      "SKU": "250T_7d_GCC",
+      "Fecha de Registro": "6-Feb-26",
+      "Estatus": "Activo",
+      "Producto": "Tiro Directo 250 kg/cm²  con aceletante a 7 dias",
+      "Categoría": "Tirado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "",
+      "Modalidad Bomba": "",
+      "Precio sin IVA (m³)": "$2,601.18 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 54,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "53",
+      "SKU": "150T_38_GCC",
+      "Fecha de Registro": "6-Feb-26",
+      "Estatus": "Activo",
+      "Producto": "Tiro Directo 150 kg/cm²  3/8\" calisa",
+      "Categoría": "Tirado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "",
+      "Modalidad Bomba": "",
+      "Precio sin IVA (m³)": "$2,124.92 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 55,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "54",
+      "SKU": "200T_38_GCC",
+      "Fecha de Registro": "6-Feb-26",
+      "Estatus": "Activo",
+      "Producto": "Tiro Directo 200 kg/cm² 3/8\" calisa",
+      "Categoría": "Tirado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "",
+      "Modalidad Bomba": "",
+      "Precio sin IVA (m³)": "$2,320.45 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 56,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "55",
+      "SKU": "MR42.5_34_GCC_ALE",
+      "Fecha de Registro": "16-Feb-26",
+      "Estatus": "Activo",
+      "Producto": "MR 42.5 3/4\" Tiro Directo Alex",
+      "Categoría": "Tirado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "Camión GCC",
+      "Modalidad Bomba": "",
+      "Precio sin IVA (m³)": "$2,530.55 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  },
+  {
+    "row": 57,
+    "error": "Could not find the table 'public.products' in the schema cache",
+    "dump": {
+      "﻿ID": "56",
+      "SKU": "MR42.5_34_AT_GRAL",
+      "Fecha de Registro": "27-Feb-26",
+      "Estatus": "Activo",
+      "Producto": "MR 42.5 3/4\" Tiro Directo pub gral",
+      "Categoría": "Tirado",
+      "Proveedor": "GCC",
+      "Modalidad de Revolvedora": "Camión Propio",
+      "Modalidad Bomba": "",
+      "Precio sin IVA (m³)": "$2,406.78 ",
+      "Observaciones": "",
+      "Precio Clientes": "",
+      "Utilidad": ""
+    }
+  }
+]

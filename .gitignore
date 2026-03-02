@@ -83,3 +83,8 @@ temp/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# ------------------------
+# CSV Files
+# ------------------------
+/csv/
