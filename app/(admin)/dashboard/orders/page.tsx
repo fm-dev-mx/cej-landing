@@ -79,7 +79,10 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
 
     return (
         <main className={styles.main}>
-            <h2 className={styles.sectionTitle}>Filtros de pedidos</h2>
+            <div className={styles.flexBetween}>
+                <h2 className={styles.sectionTitle}>Filtros de pedidos</h2>
+                <Link href="/dashboard/new" className={styles.button}>+ Nuevo Pedido</Link>
+            </div>
             <form className={styles.form}>
                 <div className={styles.formGrid}>
                     <div className={styles.formGroup}>
