@@ -38,6 +38,12 @@ export interface CustomerDetail extends CustomerSummary {
     average_order_value_mxn: number;
     paid_mxn: number;
     pending_mxn: number;
+    legacy_notes: string | null;
+    rfc: string | null;
+    billing_enabled: boolean | null;
+    billing_regimen: string | null;
+    cfdi_use: string | null;
+    postal_code: string | null;
     attribution: {
         top_source: string | null;
         top_campaign: string | null;

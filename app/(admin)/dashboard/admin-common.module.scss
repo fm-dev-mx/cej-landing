@@ -236,3 +236,16 @@
     color: var(--c-primary);
   }
 }
+
+.fieldset {
+  margin-top: var(--sp-8);
+  padding: var(--sp-5);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+}
+
+.legend {
+  padding: 0 var(--sp-2);
+  font-weight: 600;
+  color: var(--c-text);
+}
