@@ -6,10 +6,10 @@ import { reportError } from '@/lib/monitoring';
 import { generateQuoteId } from '@/lib/utils';
 import { adminOrderPayloadSchema } from '@/lib/schemas/internal/order';
 import type { AdminOrderPayload } from '@/types/internal/order';
-import { getAttributionData, extractAttribution } from '@/lib/logic/attribution';
+import { getAttributionData, extractAttribution, toAttributionExtrasJson } from '@/lib/logic/attribution';
 import { getPriceConfig } from './getPriceConfig';
 import { calcQuote } from '@/lib/pricing';
-import { type Database, type PricingSnapshotJson } from '@/types/database';
+import { type Database, type JsonObject, type PricingSnapshotJson } from '@/types/database';
 
 export type { AdminOrderPayload };
 
@@ -55,12 +55,6 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
         const scheduledDate = normalizedPayload.deliveryDate
             ? new Date(normalizedPayload.deliveryDate).toISOString().split('T')[0]
             : null;
-        const scheduledWindowStart = normalizedPayload.scheduledWindowStart
-            ? new Date(normalizedPayload.scheduledWindowStart).toISOString()
-            : null;
-        const scheduledWindowEnd = normalizedPayload.scheduledWindowEnd
-            ? new Date(normalizedPayload.scheduledWindowEnd).toISOString()
-            : null;
 
         // 3. Pricing Calculation
         const pricingRules = await getPriceConfig();
@@ -76,6 +70,7 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
         if (attribution.utm_source === 'direct') {
             attribution.utm_source = 'admin_dashboard';
         }
+        const attributionExtraJson: JsonObject = toAttributionExtrasJson(attribution);
 
         const pricingSnapshotJson: PricingSnapshotJson = {
             version: pricingRules.version,
@@ -168,22 +163,17 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
             delivery_address_text: normalizedPayload.deliveryAddress,
             scheduled_date: scheduledDate,
             scheduled_slot_code: normalizedPayload.scheduledSlotCode ?? null,
-            scheduled_time_label: normalizedPayload.scheduledTimeLabel ?? null,
-            scheduled_window_start: scheduledWindowStart,
-            scheduled_window_end: scheduledWindowEnd,
             customer_id: customerId,
 
             utm_source: attribution.utm_source,
             utm_medium: attribution.utm_medium,
             utm_campaign: attribution.utm_campaign,
-            utm_term: attribution.utm_term,
-            utm_content: attribution.utm_content,
-            fbclid: attribution.fbclid,
-            gclid: attribution.gclid,
+            attribution_extra_json: attributionExtraJson,
 
             notes: normalizedPayload.notes ?? null,
             external_ref: normalizedPayload.externalRef ?? null,
             legacy_folio_raw: normalizedPayload.legacyFolioRaw ?? null,
+            import_source: normalizedPayload.legacyFolioRaw ? 'manual_legacy_capture' : null,
         };
 
         const canonicalInsert: Database['public']['Tables']['orders']['Insert'] = canonicalPayload;
@@ -204,6 +194,18 @@ export async function createAdminOrder(payload: AdminOrderPayload): Promise<Admi
 
         if (!data?.id) {
             return { status: 'error', message: 'No se obtuvo el identificador del pedido.' };
+        }
+
+        if (normalizedPayload.legacyFolioRaw) {
+            await adminSupabase
+                .from('order_import_log')
+                .upsert({
+                    order_id: String(data.id),
+                    import_source: 'manual_legacy_capture',
+                    import_batch_id: new Date().toISOString().slice(0, 10),
+                    import_row_hash: null,
+                    legacy_folio_raw: normalizedPayload.legacyFolioRaw,
+                });
         }
 
         return { status: 'success', id: String(data.id) };

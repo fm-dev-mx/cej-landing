@@ -61,6 +61,19 @@ export async function getAdminOrderById(orderId: string): Promise<GetAdminOrderB
                 .maybeSingle(),
         ]);
 
+        const { data: importLog } = await adminSupabase
+            .from('order_import_log')
+            .select('*')
+            .eq('order_id', typedOrder.id)
+            .maybeSingle();
+
+        if (importLog) {
+            typedOrder.import_source = importLog.import_source;
+            typedOrder.import_batch_id = importLog.import_batch_id;
+            typedOrder.import_row_hash = importLog.import_row_hash;
+            typedOrder.legacy_folio_raw = importLog.legacy_folio_raw;
+        }
+
         const profileIds = Array.from(
             new Set([typedOrder.user_id, typedOrder.seller_id, typedOrder.created_by, ...((paymentsRes.data || []) as Array<{ created_by: string | null }>).map((p) => p.created_by), ...((historyRes.data || []) as Array<{ changed_by: string | null }>).map((h) => h.changed_by)].filter(Boolean))
         ) as string[];

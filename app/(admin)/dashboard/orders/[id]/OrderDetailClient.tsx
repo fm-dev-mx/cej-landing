@@ -32,7 +32,6 @@ export default function OrderDetailClient({ initialData }: OrderDetailClientProp
     const [address, setAddress] = useState(initialData.order.delivery_address_text ?? '');
     const [scheduledDate, setScheduledDate] = useState(initialData.order.scheduled_date ?? '');
     const [slotCode, setSlotCode] = useState(initialData.order.scheduled_slot_code ?? '');
-    const [timeLabel, setTimeLabel] = useState(initialData.order.scheduled_time_label ?? '');
     const [notes, setNotes] = useState(initialData.order.notes ?? '');
     const [externalRef, setExternalRef] = useState(initialData.order.external_ref ?? '');
     const [status, setStatus] = useState<DbOrderStatus>(initialData.order.order_status);
@@ -67,7 +66,6 @@ export default function OrderDetailClient({ initialData }: OrderDetailClientProp
             delivery_address_text: address || null,
             scheduled_date: scheduledDate || null,
             scheduled_slot_code: slotCode || null,
-            scheduled_time_label: timeLabel || null,
             notes: notes || null,
             external_ref: externalRef || null,
         });
@@ -139,6 +137,13 @@ export default function OrderDetailClient({ initialData }: OrderDetailClientProp
         withFeedback('Pedido cancelado con éxito.');
     }
 
+    const attributionExtras = initialData.order.attribution_extra_json as {
+        utm_term?: string | null;
+        utm_content?: string | null;
+        fbclid?: string | null;
+        gclid?: string | null;
+    };
+
     return (
         <div className={styles.wrapper}>
             {(message || error) && (
@@ -177,8 +182,10 @@ export default function OrderDetailClient({ initialData }: OrderDetailClientProp
                     <p><strong>UTM Source:</strong> {initialData.order.utm_source || 'direct'}</p>
                     <p><strong>UTM Medium:</strong> {initialData.order.utm_medium || '-'}</p>
                     <p><strong>UTM Campaign:</strong> {initialData.order.utm_campaign || '-'}</p>
-                    <p><strong>FBCLID:</strong> {initialData.order.fbclid || '-'}</p>
-                    <p><strong>GCLID:</strong> {initialData.order.gclid || '-'}</p>
+                    <p><strong>UTM Term:</strong> {attributionExtras.utm_term || '-'}</p>
+                    <p><strong>UTM Content:</strong> {attributionExtras.utm_content || '-'}</p>
+                    <p><strong>FBCLID:</strong> {attributionExtras.fbclid || '-'}</p>
+                    <p><strong>GCLID:</strong> {attributionExtras.gclid || '-'}</p>
                 </div>
             </section>
 
@@ -197,10 +204,7 @@ export default function OrderDetailClient({ initialData }: OrderDetailClientProp
                         Código de franja
                         <input value={slotCode} onChange={(event) => setSlotCode(event.target.value)} placeholder="Ej. AM-01" />
                     </label>
-                    <label>
-                        Etiqueta de horario
-                        <input value={timeLabel} onChange={(event) => setTimeLabel(event.target.value)} placeholder="08:00 - 10:00" />
-                    </label>
+                    <p><strong>Franja actual:</strong> {initialData.serviceSlot?.label || 'Sin franja asignada'}</p>
                     <label>
                         Referencia externa
                         <input value={externalRef} onChange={(event) => setExternalRef(event.target.value)} />

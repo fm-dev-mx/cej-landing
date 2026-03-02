@@ -59,6 +59,7 @@ const mockInitialData: OrderDetail = {
         customer_id: null,
         visitor_id: null,
         fb_event_id: null,
+        attribution_extra_json: {},
         import_source: null,
         import_batch_id: null,
         import_row_hash: null,

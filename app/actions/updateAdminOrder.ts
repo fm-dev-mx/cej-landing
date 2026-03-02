@@ -34,9 +34,6 @@ export async function updateAdminOrder(payload: OrderUpdatePayload): Promise<Upd
         if (Object.prototype.hasOwnProperty.call(data, 'delivery_address_text')) updatePayload.delivery_address_text = data.delivery_address_text ?? null;
         if (Object.prototype.hasOwnProperty.call(data, 'scheduled_date')) updatePayload.scheduled_date = data.scheduled_date ?? null;
         if (Object.prototype.hasOwnProperty.call(data, 'scheduled_slot_code')) updatePayload.scheduled_slot_code = data.scheduled_slot_code ?? null;
-        if (Object.prototype.hasOwnProperty.call(data, 'scheduled_time_label')) updatePayload.scheduled_time_label = data.scheduled_time_label ?? null;
-        if (Object.prototype.hasOwnProperty.call(data, 'scheduled_window_start')) updatePayload.scheduled_window_start = data.scheduled_window_start ?? null;
-        if (Object.prototype.hasOwnProperty.call(data, 'scheduled_window_end')) updatePayload.scheduled_window_end = data.scheduled_window_end ?? null;
         if (Object.prototype.hasOwnProperty.call(data, 'notes')) updatePayload.notes = data.notes ?? null;
         if (Object.prototype.hasOwnProperty.call(data, 'external_ref')) updatePayload.external_ref = data.external_ref ?? null;
         if (Object.prototype.hasOwnProperty.call(data, 'seller_id')) updatePayload.seller_id = data.seller_id ?? null;
@@ -62,4 +59,3 @@ export async function updateAdminOrder(payload: OrderUpdatePayload): Promise<Upd
         return { success: false, error: 'Error inesperado al actualizar el pedido' };
     }
 }
-

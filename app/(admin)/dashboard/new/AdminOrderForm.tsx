@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createAdminOrder, type AdminOrderPayload } from '@/app/actions/createAdminOrder';
+import { createAdminOrder } from '@/app/actions/createAdminOrder';
 import { adminOrderPayloadSchema } from '@/lib/schemas/internal/order';
 import { findCustomerByPhone, type PhoneCustomerMatch } from '@/app/actions/findCustomerByPhone';
 import { listServiceSlots } from '@/app/actions/listServiceSlots';
@@ -35,7 +35,8 @@ export function AdminOrderForm() {
     const [nameTouched, setNameTouched] = useState(false);
     const [street, setStreet] = useState('');
     const [colony, setColony] = useState('');
-    const [timeWindow, setTimeWindow] = useState('');
+    const [serviceSlots, setServiceSlots] = useState<ServiceSlotOption[]>([]);
+    const [selectedSlotCode, setSelectedSlotCode] = useState('');
     const lookupRequestId = useRef(0);
 
     const initialQuickOption = useMemo<QuickDateOption>(() => {
@@ -87,6 +88,20 @@ export function AdminOrderForm() {
         return () => clearTimeout(timer);
     }, [phone, runPhoneLookup]);
 
+    useEffect(() => {
+        let mounted = true;
+        void listServiceSlots().then((result) => {
+            if (!mounted || !result.success) return;
+            setServiceSlots(result.slots);
+            if (result.slots.length > 0) {
+                setSelectedSlotCode(result.slots[0].slot_code);
+            }
+        });
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
@@ -106,7 +121,7 @@ export function AdminOrderForm() {
             strength: formData.get('strength') as string,
             deliveryAddress: `${street.trim()}, Col. ${colony.trim()}`,
             deliveryDate: deliveryDate || undefined,
-            scheduledTimeLabel: timeWindow || undefined,
+            scheduledSlotCode: selectedSlotCode || undefined,
             externalRef: (formData.get('externalRef') as string) || undefined,
             notes: (formData.get('notes') as string) || undefined,
         };
@@ -339,30 +354,21 @@ export function AdminOrderForm() {
                 </div>
 
                 <div className={styles.field}>
-                    <label>Ventana de Entrega (Preferida)</label>
-                    <div className={styles.quickDates} role="group" aria-label="Ventana de entrega">
-                        {[
-                            { label: '7:00 AM - 10:00 AM', value: '7:00 AM - 10:00 AM' },
-                            { label: '10:00 AM - 12:00 PM', value: '10:00 AM - 12:00 PM' },
-                            { label: '12:00 PM - 2:00 PM', value: '12:00 PM - 2:00 PM' },
-                            { label: '2:00 PM - 5:00 PM', value: '2:00 PM - 5:00 PM' }
-                        ].map((w) => (
-                            <button
-                                key={w.value}
-                                type="button"
-                                className={timeWindow === w.value ? styles.quickDateActive : styles.quickDateButton}
-                                onClick={() => {
-                                    setTimeWindow(w.value);
-                                    setFormErrors(prev => ({ ...prev, scheduledTimeLabel: '' }));
-                                }}
-                            >
-                                {w.label}
-                            </button>
+                    <label htmlFor="scheduledSlotCode">Franja de entrega</label>
+                    <select
+                        id="scheduledSlotCode"
+                        name="scheduledSlotCode"
+                        value={selectedSlotCode}
+                        onChange={(event) => setSelectedSlotCode(event.target.value)}
+                    >
+                        <option value="">Sin franja asignada</option>
+                        {serviceSlots.map((slot) => (
+                            <option key={slot.slot_code} value={slot.slot_code}>
+                                {slot.label}
+                            </option>
                         ))}
-                    </div>
-                    <input type="hidden" name="scheduledTimeLabel" value={timeWindow} />
-                    {formErrors.scheduledTimeLabel && <span className={styles.fieldError}>{formErrors.scheduledTimeLabel}</span>}
-                    <small className={styles.helper}>La hora exacta de entrega se confirmará 24 horas antes con el cliente.</small>
+                    </select>
+                    <small className={styles.helper}>La hora exacta de entrega se confirma con la franja seleccionada.</small>
                 </div>
 
                 <div className={styles.field}>
