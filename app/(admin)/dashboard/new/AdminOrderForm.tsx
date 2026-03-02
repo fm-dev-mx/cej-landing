@@ -150,7 +150,6 @@ export function AdminOrderForm() {
             scheduledWindowEnd: toIsoOrUndefined(formData.get('scheduledWindowEnd')),
             scheduledSlotCode: (formData.get('scheduledSlotCode') as string) || undefined,
             externalRef: (formData.get('externalRef') as string) || undefined,
-            legacyFolioRaw: (formData.get('legacyFolioRaw') as string) || undefined,
             notes: (formData.get('notes') as string) || undefined,
         };
 
@@ -347,10 +346,6 @@ export function AdminOrderForm() {
                         <div className={styles.field}>
                             <label htmlFor="externalRef">Referencia externa</label>
                             <input id="externalRef" name="externalRef" placeholder="Código interno/ERP" />
-                        </div>
-                        <div className={styles.field}>
-                            <label htmlFor="legacyFolioRaw">Folio legado</label>
-                            <input id="legacyFolioRaw" name="legacyFolioRaw" placeholder="Folio previo" />
                         </div>
                         <div className={styles.field}>
                             <label htmlFor="scheduledWindowStart">Ventana solicitada inicio</label>

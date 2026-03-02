@@ -57,6 +57,7 @@ describe('AdminOrderForm', () => {
         expect(screen.getByLabelText("Resistencia (f'c)")).toBeInTheDocument();
         expect(screen.getByLabelText('Calle y número')).toBeInTheDocument();
         expect(screen.getByLabelText('Colonia')).toBeInTheDocument();
+        expect(screen.queryByLabelText('Folio legado')).not.toBeInTheDocument();
         expect(screen.queryByLabelText('UTM Source')).not.toBeInTheDocument();
         expect(screen.queryByLabelText('FBCLID')).not.toBeInTheDocument();
     });
@@ -124,6 +125,9 @@ describe('AdminOrderForm', () => {
                 scheduledSlotCode: 'morning',
             }));
         });
+        expect(createAdminOrder).not.toHaveBeenCalledWith(expect.objectContaining({
+            legacyFolioRaw: expect.anything(),
+        }));
         expect(pushMock).toHaveBeenCalledWith('/dashboard/orders/order-1');
     });
 });
