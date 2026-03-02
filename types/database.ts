@@ -59,6 +59,7 @@ export type QuoteSnapshot = {
 export interface TimestampFields {
     created_at: string;
     updated_at: string;
+    deleted_at: string | null;
 }
 
 export interface AttributionFields {
@@ -163,6 +164,7 @@ export interface DatabaseRowLeads extends AttributionFields {
     privacy_accepted_at: string | null;
     created_at: string;
     updated_at: string;
+    deleted_at: string | null;
 }
 
 export interface DatabaseRowCustomers extends TimestampFields {
@@ -256,6 +258,7 @@ export type Database = {
                     address: Json;
                     created_at: string;
                     updated_at: string;
+                    deleted_at: string | null;
                 };
                 Insert: Partial<Database['public']['Tables']['profiles']['Row']> & { id: string };
                 Update: Partial<Database['public']['Tables']['profiles']['Row']>;
