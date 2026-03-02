@@ -134,9 +134,10 @@ Operational sales and collections are now modeled with additive tables to preser
 
 Additional additive fields on `orders` include:
 
-- Capture and scheduling: `ordered_at`, `delivery_address_text`, `scheduled_window_start`, `scheduled_window_end`, `scheduled_slot_code`, `scheduled_time_label`.
+- Capture and scheduling: `ordered_at`, `delivery_address_text`, `scheduled_date`, `scheduled_slot_code`.
 - Financial summary: `payments_summary_json`, `balance_amount`, `payment_status`.
-- Import idempotency: `import_source`, `import_batch_id`, `import_row_hash`.
+- Attribution extras JSON: `attribution_extra_json` for `utm_term`, `utm_content`, `fbclid`, `gclid`.
+- Import metadata is tracked in `order_import_log` (`import_source`, `import_batch_id`, `import_row_hash`, `legacy_folio_raw`).
 
 ## 3. Security & RLS Policies
 
@@ -155,6 +156,7 @@ When a Server Action uses the service-role key, RLS is bypassed by PostgreSQL/Su
 | `order_payments` | Yes | `order_payments service_role all` |
 | `order_status_history` | Yes | `order_status_history service_role all` |
 | `order_fiscal_data` | Yes | `order_fiscal_data service_role all` |
+| `order_import_log` | Yes | `order_import_log service_role all` |
 | `price_config` | Yes | `price_config public read`, `price_config service_role all` |
 | `expenses` | Yes | `expenses service_role all` |
 | `payroll` | Yes | `payroll service_role all` |

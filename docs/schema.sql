@@ -13,6 +13,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 DROP TABLE IF EXISTS public.order_fiscal_data CASCADE;
 DROP TABLE IF EXISTS public.order_status_history CASCADE;
 DROP TABLE IF EXISTS public.order_payments CASCADE;
+DROP TABLE IF EXISTS public.order_import_log CASCADE;
 DROP TABLE IF EXISTS public.customer_merge_log CASCADE;
 DROP TABLE IF EXISTS public.customer_identities CASCADE;
 DROP TABLE IF EXISTS public.orders CASCADE;
@@ -296,6 +297,7 @@ CREATE TABLE public.orders (
   utm_content      text,
   fbclid           text,
   gclid            text,
+  attribution_extra_json jsonb NOT NULL DEFAULT '{}'::jsonb,
 
   -- Import and sync
   import_source    text,
@@ -327,6 +329,9 @@ CREATE TABLE public.orders (
       delivery_address_text IS NOT NULL AND
       length(trim(delivery_address_text)) > 0
     )
+  ),
+  CONSTRAINT ck_orders_attribution_extra_is_object CHECK (
+    jsonb_typeof(attribution_extra_json) = 'object'
   )
 );
 
@@ -343,6 +348,47 @@ CREATE POLICY "orders insert_staff" ON public.orders FOR INSERT TO authenticated
 
 CREATE TRIGGER set_orders_updated_at
   BEFORE UPDATE ON public.orders
+  FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
+
+CREATE OR REPLACE FUNCTION public.prevent_order_pricing_edits_non_draft()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF OLD.order_status <> 'draft' THEN
+    IF (NEW.service_type, NEW.product_id, NEW.quantity_m3, NEW.unit_price_before_vat, NEW.vat_rate, NEW.total_before_vat, NEW.total_with_vat)
+       IS DISTINCT FROM
+       (OLD.service_type, OLD.product_id, OLD.quantity_m3, OLD.unit_price_before_vat, OLD.vat_rate, OLD.total_before_vat, OLD.total_with_vat) THEN
+      RAISE EXCEPTION 'Pricing fields cannot be edited when order is not draft';
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER prevent_order_pricing_edits_non_draft_trigger
+  BEFORE UPDATE ON public.orders
+  FOR EACH ROW EXECUTE PROCEDURE public.prevent_order_pricing_edits_non_draft();
+
+-- ============================================================
+-- 7.5 TABLE: ORDER_IMPORT_LOG
+-- ============================================================
+
+CREATE TABLE public.order_import_log (
+  order_id       uuid PRIMARY KEY REFERENCES public.orders(id) ON DELETE CASCADE,
+  import_source  text,
+  import_batch_id text,
+  import_row_hash text,
+  legacy_folio_raw text,
+  created_at     timestamptz NOT NULL DEFAULT now(),
+  updated_at     timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.order_import_log ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "order_import_log service_role all" ON public.order_import_log FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+CREATE TRIGGER set_order_import_log_updated_at
+  BEFORE UPDATE ON public.order_import_log
   FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
 
 -- ============================================================
@@ -621,7 +667,6 @@ CREATE INDEX IF NOT EXISTS idx_orders_order_status_scheduled_date ON public.orde
 CREATE INDEX IF NOT EXISTS idx_orders_scheduled_date ON public.orders(scheduled_date);
 CREATE INDEX IF NOT EXISTS idx_orders_lead_id ON public.orders(lead_id);
 CREATE INDEX IF NOT EXISTS idx_orders_customer_id_ordered_at ON public.orders(customer_id, ordered_at DESC);
-CREATE INDEX IF NOT EXISTS idx_orders_import_source_row_hash ON public.orders(import_source, import_row_hash);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON public.orders(created_at);
 CREATE INDEX IF NOT EXISTS idx_orders_ordered_at ON public.orders(ordered_at);
 CREATE INDEX IF NOT EXISTS idx_orders_seller_id ON public.orders(seller_id);
@@ -629,6 +674,12 @@ CREATE INDEX IF NOT EXISTS idx_orders_payment_status ON public.orders(payment_st
 CREATE INDEX IF NOT EXISTS idx_orders_fiscal_status ON public.orders(fiscal_status);
 CREATE INDEX IF NOT EXISTS idx_orders_order_status_payment_status_ordered_at ON public.orders(order_status, payment_status, ordered_at DESC);
 CREATE INDEX IF NOT EXISTS idx_orders_visitor_id ON public.orders(visitor_id);
+
+-- Order import log
+CREATE UNIQUE INDEX IF NOT EXISTS ux_order_import_log_idempotency
+  ON public.order_import_log(import_source, import_row_hash)
+  WHERE import_source IS NOT NULL AND import_row_hash IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_order_import_log_batch ON public.order_import_log(import_batch_id);
 
 -- Payments
 CREATE INDEX IF NOT EXISTS idx_order_payments_order_paid_at ON public.order_payments(order_id, paid_at DESC);
