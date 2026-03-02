@@ -202,6 +202,7 @@
     );
 }
 
+
 .submitButton {
     @include p.btn;
 
@@ -210,5 +211,35 @@
     @include respond-to('sm') {
         width: auto;
         min-width: 200px;
+    }
+}
+
+.fieldError {
+    margin-top: calc(var(--sp-1) * -1);
+    font-size: var(--fs-xs);
+    font-weight: 500;
+    color: var(--c-error-text);
+}
+
+.inputError {
+    border-color: var(--c-error-border) !important;
+    background-color: var(--c-error-soft) !important;
+}
+
+.checkboxLabel {
+    display: flex;
+    gap: var(--sp-2);
+    align-items: center;
+
+    font-size: var(--fs-sm) !important;
+    font-weight: 400 !important;
+    color: var(--c-text) !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+
+    input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        margin: 0;
     }
 }

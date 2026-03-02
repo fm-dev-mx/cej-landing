@@ -3,56 +3,39 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createAdminOrder, type AdminOrderPayload } from '@/app/actions/createAdminOrder';
+import { adminOrderPayloadSchema } from '@/lib/schemas/internal/order';
 import { findCustomerByPhone, type PhoneCustomerMatch } from '@/app/actions/findCustomerByPhone';
 import { listServiceSlots } from '@/app/actions/listServiceSlots';
 import type { ServiceSlotOption } from '@/types/internal/order-admin';
 import styles from './page.module.scss';
 
-type QuickDateOption = 'today' | 'tomorrow' | 'plus2' | 'custom';
+import {
+    formatPhone,
+    getDateFromQuickOption,
+    normalizePhone,
+    stripPhone,
+    CUTOFF_HOUR,
+    LOOKUP_DEBOUNCE_MS,
+    type QuickDateOption
+} from './utils';
 
-const LOOKUP_DEBOUNCE_MS = 350;
-const CUTOFF_HOUR = 17;
-
-function normalizePhone(phone: string): string {
-    const digits = phone.replace(/\D/g, '');
-    if (digits.length === 12 && digits.startsWith('52')) return digits;
-    if (digits.length === 10) return `52${digits}`;
-    return digits;
-}
-
-function toDateYmd(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-function addDays(baseDate: Date, days: number): Date {
-    const nextDate = new Date(baseDate);
-    nextDate.setDate(baseDate.getDate() + days);
-    return nextDate;
-}
-
-function getDateFromQuickOption(option: Exclude<QuickDateOption, 'custom'>, now: Date): string {
-    if (option === 'today') return toDateYmd(now);
-    if (option === 'tomorrow') return toDateYmd(addDays(now, 1));
-    return toDateYmd(addDays(now, 2));
-}
 
 export function AdminOrderForm() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [lookupError, setLookupError] = useState<string | null>(null);
     const [lookupLoading, setLookupLoading] = useState(false);
-    const [slots, setSlots] = useState<ServiceSlotOption[]>([]);
     const [phone, setPhone] = useState('');
+    const [isInternational, setIsInternational] = useState(false);
     const [matchedCustomer, setMatchedCustomer] = useState<PhoneCustomerMatch | null>(null);
     const [forceNewCustomer, setForceNewCustomer] = useState(false);
     const [name, setName] = useState('');
     const [nameTouched, setNameTouched] = useState(false);
     const [street, setStreet] = useState('');
     const [colony, setColony] = useState('');
+    const [timeWindow, setTimeWindow] = useState('');
     const lookupRequestId = useRef(0);
 
     const initialQuickOption = useMemo<QuickDateOption>(() => {
@@ -68,24 +51,6 @@ export function AdminOrderForm() {
         }
         return getDateFromQuickOption(quickDateOption, new Date());
     }, [customDate, quickDateOption]);
-
-    useEffect(() => {
-        let mounted = true;
-        listServiceSlots()
-            .then((slotsRes) => {
-                if (!mounted) return;
-                if (slotsRes.success) setSlots(slotsRes.slots);
-            })
-            .catch(() => {
-                if (mounted) {
-                    setSlots([]);
-                }
-            });
-
-        return () => {
-            mounted = false;
-        };
-    }, []);
 
     const runPhoneLookup = useCallback(async (value: string) => {
         const normalized = normalizePhone(value);
@@ -126,34 +91,52 @@ export function AdminOrderForm() {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        setFormErrors({});
 
         const formData = new FormData(e.currentTarget);
-        const toIsoOrUndefined = (value: FormDataEntryValue | null): string | undefined => {
-            if (!value) return undefined;
-            const raw = String(value).trim();
-            if (!raw) return undefined;
-            const parsed = new Date(raw);
-            if (Number.isNaN(parsed.getTime())) return undefined;
-            return parsed.toISOString();
-        };
+        const rawPhone = stripPhone(phone);
+        const finalPhone = isInternational && rawPhone ? `1${rawPhone}` : rawPhone;
 
-        const payload: AdminOrderPayload = {
+        const payload = {
             name: name.trim(),
-            phone: phone.trim(),
+            phone: finalPhone,
             forceNewCustomer,
-            volume: parseFloat(formData.get('volume') as string),
+            volume: parseFloat(formData.get('volume') as string) || 0,
             concreteType: formData.get('concreteType') as 'direct' | 'pumped',
             strength: formData.get('strength') as string,
             deliveryAddress: `${street.trim()}, Col. ${colony.trim()}`,
             deliveryDate: deliveryDate || undefined,
-            scheduledWindowStart: toIsoOrUndefined(formData.get('scheduledWindowStart')),
-            scheduledWindowEnd: toIsoOrUndefined(formData.get('scheduledWindowEnd')),
-            scheduledSlotCode: (formData.get('scheduledSlotCode') as string) || undefined,
+            scheduledTimeLabel: timeWindow || undefined,
             externalRef: (formData.get('externalRef') as string) || undefined,
             notes: (formData.get('notes') as string) || undefined,
         };
 
-        const result = await createAdminOrder(payload);
+        const parsed = adminOrderPayloadSchema.safeParse(payload);
+        if (!parsed.success) {
+            const errors: Record<string, string> = {};
+            parsed.error.errors.forEach((err) => {
+                const path = err.path[0];
+                if (path) errors[path.toString()] = err.message;
+            });
+            setFormErrors(errors);
+            setLoading(false);
+
+            // Auto-scroll to first error
+            const firstErrorField = parsed.error.errors[0]?.path[0]?.toString();
+            if (firstErrorField) {
+                setTimeout(() => {
+                    const mappedName = ['deliveryAddress'].includes(firstErrorField) ? 'street' : firstErrorField;
+                    const el = document.querySelector(`[name="${mappedName}"]`) as HTMLElement;
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        el.focus();
+                    }
+                }, 50);
+            }
+            return;
+        }
+
+        const result = await createAdminOrder(parsed.data);
 
         if (result.status === 'success') {
             router.push(`/dashboard/orders/${result.id}`);
@@ -166,7 +149,7 @@ export function AdminOrderForm() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit} className={styles.form} noValidate>
             <div className={styles.grid}>
                 <div className={styles.field}>
                     <label htmlFor="phone">Teléfono</label>
@@ -174,13 +157,25 @@ export function AdminOrderForm() {
                         type="tel"
                         id="phone"
                         name="phone"
-                        required
                         autoFocus
                         value={phone}
-                        onChange={(event) => setPhone(event.target.value)}
+                        onChange={(event) => setPhone(formatPhone(event.target.value, isInternational))}
                         onBlur={(event) => void runPhoneLookup(event.target.value)}
-                        placeholder="656 000 0000"
+                        placeholder={isInternational ? "+1 (915) 000-0000" : "(656) 000-0000"}
+                        className={formErrors.phone ? styles.inputError : ''}
                     />
+                    <label className={styles.checkboxLabel}>
+                        <input
+                            type="checkbox"
+                            checked={isInternational}
+                            onChange={(e) => {
+                                setIsInternational(e.target.checked);
+                                setPhone(formatPhone(phone, e.target.checked));
+                            }}
+                        />
+                        Habilitar número internacional (+1)
+                    </label>
+                    {formErrors.phone && <span className={styles.fieldError}>{formErrors.phone}</span>}
                     {lookupLoading && <small className={styles.helper}>Buscando cliente...</small>}
                     {lookupError && <small className={styles.lookupError}>{lookupError}</small>}
                 </div>
@@ -191,14 +186,16 @@ export function AdminOrderForm() {
                         type="text"
                         id="name"
                         name="name"
-                        required
                         value={name}
                         onChange={(event) => {
                             setName(event.target.value);
                             setNameTouched(true);
+                            setFormErrors(prev => ({ ...prev, name: '' }));
                         }}
                         placeholder="Ej. Juan Pérez"
+                        className={formErrors.name ? styles.inputError : ''}
                     />
+                    {formErrors.name && <span className={styles.fieldError}>{formErrors.name}</span>}
                 </div>
 
                 {matchedCustomer && (
@@ -231,10 +228,14 @@ export function AdminOrderForm() {
                     <input
                         type="text"
                         id="street"
-                        required
+                        name="street"
                         value={street}
-                        onChange={(event) => setStreet(event.target.value)}
+                        onChange={(event) => {
+                            setStreet(event.target.value);
+                            setFormErrors(prev => ({ ...prev, deliveryAddress: '' }));
+                        }}
                         placeholder="Ej. Av. Principal 123"
+                        className={formErrors.deliveryAddress ? styles.inputError : ''}
                     />
                 </div>
 
@@ -243,21 +244,35 @@ export function AdminOrderForm() {
                     <input
                         type="text"
                         id="colony"
-                        required
+                        name="colony"
                         value={colony}
-                        onChange={(event) => setColony(event.target.value)}
+                        onChange={(event) => {
+                            setColony(event.target.value);
+                            setFormErrors(prev => ({ ...prev, deliveryAddress: '' }));
+                        }}
                         placeholder="Ej. Campestre"
+                        className={formErrors.deliveryAddress ? styles.inputError : ''}
                     />
+                    {formErrors.deliveryAddress && <span className={styles.fieldError}>{formErrors.deliveryAddress}</span>}
                 </div>
 
                 <div className={styles.field}>
                     <label htmlFor="volume">Volumen (m³)</label>
-                    <input type="number" id="volume" name="volume" step="0.5" min="1" required placeholder="Ej. 5.5" />
+                    <input
+                        type="number"
+                        id="volume"
+                        name="volume"
+                        step="0.5"
+                        min="1"
+                        placeholder="Ej. 5.5"
+                        className={formErrors.volume ? styles.inputError : ''}
+                    />
+                    {formErrors.volume && <span className={styles.fieldError}>{formErrors.volume}</span>}
                 </div>
 
                 <div className={styles.field}>
                     <label htmlFor="concreteType">Tipo de Servicio</label>
-                    <select id="concreteType" name="concreteType" required>
+                    <select id="concreteType" name="concreteType" defaultValue="direct">
                         <option value="direct">Tiro Directo</option>
                         <option value="pumped">Bomba</option>
                     </select>
@@ -320,19 +335,34 @@ export function AdminOrderForm() {
                     {quickDateOption !== 'custom' && (
                         <input type="hidden" name="deliveryDate" value={deliveryDate} />
                     )}
-                    <small className={styles.helper}>Horario solicitado por el cliente (no confirmado).</small>
+                    <small className={styles.helper}>La fecha exacta de entrega se confirmará 24 horas antes.</small>
                 </div>
 
                 <div className={styles.field}>
-                    <label htmlFor="scheduledSlotCode">Franja solicitada</label>
-                    <select id="scheduledSlotCode" name="scheduledSlotCode" defaultValue="" required>
-                        <option value="" disabled>Selecciona una franja</option>
-                        {slots.map((slot) => (
-                            <option key={slot.slot_code} value={slot.slot_code}>
-                                {slot.label} ({slot.start_time} - {slot.end_time})
-                            </option>
+                    <label>Ventana de Entrega (Preferida)</label>
+                    <div className={styles.quickDates} role="group" aria-label="Ventana de entrega">
+                        {[
+                            { label: '7:00 AM - 10:00 AM', value: '7:00 AM - 10:00 AM' },
+                            { label: '10:00 AM - 12:00 PM', value: '10:00 AM - 12:00 PM' },
+                            { label: '12:00 PM - 2:00 PM', value: '12:00 PM - 2:00 PM' },
+                            { label: '2:00 PM - 5:00 PM', value: '2:00 PM - 5:00 PM' }
+                        ].map((w) => (
+                            <button
+                                key={w.value}
+                                type="button"
+                                className={timeWindow === w.value ? styles.quickDateActive : styles.quickDateButton}
+                                onClick={() => {
+                                    setTimeWindow(w.value);
+                                    setFormErrors(prev => ({ ...prev, scheduledTimeLabel: '' }));
+                                }}
+                            >
+                                {w.label}
+                            </button>
                         ))}
-                    </select>
+                    </div>
+                    <input type="hidden" name="scheduledTimeLabel" value={timeWindow} />
+                    {formErrors.scheduledTimeLabel && <span className={styles.fieldError}>{formErrors.scheduledTimeLabel}</span>}
+                    <small className={styles.helper}>La hora exacta de entrega se confirmará 24 horas antes con el cliente.</small>
                 </div>
 
                 <div className={styles.field}>
@@ -346,14 +376,6 @@ export function AdminOrderForm() {
                         <div className={styles.field}>
                             <label htmlFor="externalRef">Referencia externa</label>
                             <input id="externalRef" name="externalRef" placeholder="Código interno/ERP" />
-                        </div>
-                        <div className={styles.field}>
-                            <label htmlFor="scheduledWindowStart">Ventana solicitada inicio</label>
-                            <input type="datetime-local" id="scheduledWindowStart" name="scheduledWindowStart" />
-                        </div>
-                        <div className={styles.field}>
-                            <label htmlFor="scheduledWindowEnd">Ventana solicitada fin</label>
-                            <input type="datetime-local" id="scheduledWindowEnd" name="scheduledWindowEnd" />
                         </div>
                     </div>
                 </details>

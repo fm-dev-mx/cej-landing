@@ -20,7 +20,11 @@ export type AdminOrderResult =
 
 function normalizePhone(phone: string): string {
     const digits = phone.replace(/\D/g, '');
+    // Support US (+1) numbers naturally (e.g. 1 915 123 4567)
+    if (digits.length === 11 && digits.startsWith('1')) return digits;
+    // Support MX (+52) numbers (e.g. 52 656 123 4567)
     if (digits.length === 12 && digits.startsWith('52')) return digits;
+    // Default to adding 52 for 10-digit local numbers
     if (digits.length === 10) return `52${digits}`;
     return digits;
 }

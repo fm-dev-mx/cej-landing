@@ -114,7 +114,7 @@ describe('AdminOrderForm', () => {
         fireEvent.change(screen.getByLabelText('Volumen (m³)'), { target: { value: '5' } });
         fireEvent.change(screen.getByLabelText('Tipo de Servicio'), { target: { value: 'direct' } });
         fireEvent.change(screen.getByLabelText("Resistencia (f'c)"), { target: { value: '200' } });
-        fireEvent.change(screen.getByLabelText('Franja solicitada'), { target: { value: 'morning' } });
+        fireEvent.click(screen.getByRole('button', { name: '10:00 AM - 12:00 PM' }));
 
         fireEvent.click(screen.getByRole('button', { name: 'Registrar Pedido' }));
 
@@ -122,7 +122,7 @@ describe('AdminOrderForm', () => {
             expect(createAdminOrder).toHaveBeenCalledWith(expect.objectContaining({
                 forceNewCustomer: true,
                 deliveryAddress: 'Av. Tecnologico 123, Col. Partido Senecu',
-                scheduledSlotCode: 'morning',
+                scheduledTimeLabel: '10:00 AM - 12:00 PM',
             }));
         });
         expect(createAdminOrder).not.toHaveBeenCalledWith(expect.objectContaining({
