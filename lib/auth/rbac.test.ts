@@ -11,6 +11,14 @@ describe('RBAC utility', () => {
             expect(hasPermission('owner', 'admin:all')).toBe(true);
         });
 
+        it('allows developer to do everything', () => {
+            expect(hasPermission('developer', 'orders:view')).toBe(true);
+            expect(hasPermission('developer', 'orders:create')).toBe(true);
+            expect(hasPermission('developer', 'orders:edit')).toBe(true);
+            expect(hasPermission('developer', 'settings:view')).toBe(true);
+            expect(hasPermission('developer', 'admin:all')).toBe(true);
+        });
+
         it('restricts operator from editing or admin:all', () => {
             expect(hasPermission('operator', 'orders:view')).toBe(true);
             expect(hasPermission('operator', 'orders:create')).toBe(true);
@@ -29,6 +37,10 @@ describe('RBAC utility', () => {
     describe('getUserRole', () => {
         it('identifies owner role', () => {
             expect(getUserRole({ role: 'owner' })).toBe('owner');
+        });
+
+        it('identifies developer role', () => {
+            expect(getUserRole({ role: 'developer' })).toBe('developer');
         });
 
         it('identifies admin role', () => {
