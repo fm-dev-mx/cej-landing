@@ -90,12 +90,22 @@ CREATE TABLE public.profiles (
   updated_at   timestamptz NOT NULL DEFAULT now()
 );
 
+-- Security definer function to read role without triggering RLS recursively
+CREATE OR REPLACE FUNCTION public.get_auth_role()
+RETURNS text
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT role FROM public.profiles WHERE id = auth.uid();
+$$;
+
 -- RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "profiles service_role all" ON public.profiles FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "profiles select_own" ON public.profiles FOR SELECT TO authenticated USING (auth.uid() = id);
 CREATE POLICY "profiles select_admin" ON public.profiles FOR SELECT TO authenticated USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'owner'))
+  public.get_auth_role() IN ('admin', 'owner')
 );
 
 CREATE TRIGGER set_profiles_updated_at
@@ -194,7 +204,7 @@ CREATE TABLE public.customers (
 ALTER TABLE public.customers ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "customers service_role all" ON public.customers FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "customers select_authenticated" ON public.customers FOR SELECT TO authenticated USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('operator', 'admin', 'owner'))
+  public.get_auth_role() IN ('operator', 'admin', 'owner')
 );
 
 CREATE TRIGGER set_customers_updated_at
@@ -352,10 +362,10 @@ ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "orders service_role all" ON public.orders FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "orders select_own" ON public.orders FOR SELECT TO authenticated USING (auth.uid() = created_by OR auth.uid() = seller_id);
 CREATE POLICY "orders select_admin" ON public.orders FOR SELECT TO authenticated USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'owner'))
+  public.get_auth_role() IN ('admin', 'owner')
 );
 CREATE POLICY "orders insert_staff" ON public.orders FOR INSERT TO authenticated WITH CHECK (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('operator', 'admin', 'owner'))
+  public.get_auth_role() IN ('operator', 'admin', 'owner')
 );
 
 CREATE TRIGGER set_orders_updated_at
