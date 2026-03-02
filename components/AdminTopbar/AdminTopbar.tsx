@@ -8,6 +8,7 @@ import { UserProfileMenu } from '@/components/Auth';
 interface AdminTopbarProps {
     userName: string;
     userEmail: string;
+    userRole: string;
     onMenuToggle: () => void;
 }
 
@@ -58,6 +59,7 @@ function getSectionTitle(pathname: string): string {
 export default function AdminTopbar({
     userName,
     userEmail,
+    userRole,
     onMenuToggle,
 }: AdminTopbarProps) {
     const pathname = usePathname();
@@ -99,7 +101,11 @@ export default function AdminTopbar({
                 </div>
             </div>
 
-            <UserProfileMenu userName={userName} userEmail={userEmail} />
+            <UserProfileMenu
+                userName={userName}
+                userEmail={userEmail}
+                userRole={userRole}
+            />
         </header>
     );
 }

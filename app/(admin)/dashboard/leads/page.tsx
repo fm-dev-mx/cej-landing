@@ -29,6 +29,14 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
         <main className={styles.main}>
             <h1 className={styles.sectionTitle}>Inbox de leads</h1>
 
+            <aside className={styles.infoBanner}>
+                <p>
+                    <strong>¿Qué es un Lead?</strong> Un lead es un contacto o cotización de un cliente potencial
+                    que aún no ha sido verificado o no ha realizado un pedido en firme.
+                    Una vez que un lead se convierte, pasa a ser un <strong>Cliente</strong>.
+                </p>
+            </aside>
+
             <form className={styles.form}>
                 <div className={styles.formGrid}>
                     <div className={styles.formGroup}>

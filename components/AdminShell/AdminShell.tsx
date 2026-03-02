@@ -10,12 +10,14 @@ interface AdminShellProps {
     children: React.ReactNode;
     userName: string;
     userEmail: string;
+    userRole: string;
 }
 
 export default function AdminShell({
     children,
     userName,
     userEmail,
+    userRole,
 }: AdminShellProps) {
     const [openedOnPath, setOpenedOnPath] = useState<string | null>(null);
     const pathname = usePathname();
@@ -56,6 +58,7 @@ export default function AdminShell({
                 <AdminTopbar
                     userName={userName}
                     userEmail={userEmail}
+                    userRole={userRole}
                     onMenuToggle={() =>
                         setOpenedOnPath((value) => (value === pathname ? null : pathname))
                     }

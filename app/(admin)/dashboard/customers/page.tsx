@@ -44,6 +44,14 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
         <main className={styles.main}>
             <h1 className={styles.sectionTitle}>Clientes</h1>
 
+            <aside className={styles.infoBanner}>
+                <p>
+                    <strong>¿Qué es un Cliente?</strong> Un cliente es una entidad registrada con historial
+                    de pedidos o identidad verificada. Los prospectos nuevos deben gestionarse primero
+                    en la sección de <strong>Leads</strong>.
+                </p>
+            </aside>
+
             <form className={styles.form}>
                 <div className={styles.formGrid}>
                     <div className={styles.formGroup}>

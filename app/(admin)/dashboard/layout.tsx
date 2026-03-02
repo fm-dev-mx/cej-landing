@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import AdminShell from '@/components/AdminShell';
+import { getUserRole } from '@/lib/auth/rbac';
 
 /**
  * Dashboard layout with authentication boundary.
@@ -22,9 +23,10 @@ export default async function DashboardLayout({
 
     const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario';
     const userEmail = user.email || 'sin-email@cej.mx';
+    const userRole = getUserRole(user.user_metadata);
 
     return (
-        <AdminShell userName={userName} userEmail={userEmail}>
+        <AdminShell userName={userName} userEmail={userEmail} userRole={userRole}>
             {children}
         </AdminShell>
     );
