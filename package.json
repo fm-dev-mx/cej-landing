@@ -16,6 +16,7 @@
     "test:e2e:ui": "playwright test --ui",
     "db:seed": "tsx scripts/seed-leads.ts",
     "db:seed-pricing": "tsx scripts/seed-pricing.ts",
+    "db:seed-crm": "tsx scripts/seed-crm-data.ts",
     "governance:check-db-contracts": "tsx scripts/check-db-drift.ts --format text",
     "governance:check-db-contracts:fail": "tsx scripts/check-db-drift.ts --fail --format text",
     "governance:check-inline-types": "tsx scripts/check-exported-inline-signatures.ts --format text",
