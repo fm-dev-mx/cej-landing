@@ -34,12 +34,6 @@ const eslintConfig = defineConfig([
     },
   },
   {
-    files: ["scripts/**/*.ts"],
-    rules: {
-      "no-console": "off",
-    },
-  },
-  {
     plugins: {
       react: reactPlugin,
       import: importPlugin
@@ -49,6 +43,13 @@ const eslintConfig = defineConfig([
       "no-console": ["error", { allow: ["warn", "error"] }],
       "react/forbid-dom-props": ["error", { forbid: ["style"] }],
       "import/no-cycle": ["error", { maxDepth: Infinity }]
+    },
+  },
+  {
+    files: ["scripts/**/*.ts"],
+    rules: {
+      "no-console": "off",
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 ]);
