@@ -83,34 +83,31 @@ async function run() {
         const payload = {
             user_id: process.env.BACKFILL_DEFAULT_USER_ID || '',
             folio,
-            status: 'draft',
             order_status: 'draft',
             payment_status: 'pending',
             fiscal_status: 'not_requested',
-            total_amount: row.totalWithVat,
             total_with_vat: row.totalWithVat,
             total_before_vat: row.totalBeforeVat ?? row.totalWithVat,
             vat_rate: row.vatRate ?? 0.16,
-            currency: 'MXN',
-            items: [],
             ordered_at: row.orderedAt ?? new Date().toISOString(),
-            delivery_address: row.deliveryAddressText,
             delivery_address_text: row.deliveryAddressText,
             service_type: row.serviceType ?? null,
             quantity_m3: row.quantityM3 ?? null,
             unit_price_before_vat: row.unitPriceBeforeVat ?? null,
             balance_amount: row.totalWithVat,
             payments_summary_json: {
-                paid_amount: 0,
-                balance_amount: row.totalWithVat,
+                total: row.totalWithVat,
+                net_paid: 0,
+                paid_in: 0,
+                paid_out: 0,
+                balance: row.totalWithVat,
                 last_paid_at: null,
+                recomputed_at: new Date().toISOString(),
             },
-            internal_notes: row.notes ?? null,
-            legacy_folio_raw: row.legacyFolioRaw ?? null,
+            pricing_snapshot_json: {},
+            attribution_extra_json: {},
+            notes: row.notes ?? null,
             external_ref: row.externalRef ?? null,
-            import_source: 'excel_pedidos',
-            import_batch_id: batchId,
-            import_row_hash: importRowHash,
         };
 
         if (!payload.user_id) {
@@ -119,9 +116,32 @@ async function run() {
             continue;
         }
 
-        const { error } = await supabase
+        const { data: upsertedOrder, error } = await supabase
             .from('orders')
-            .upsert(payload, { onConflict: 'import_source,import_row_hash', ignoreDuplicates: false });
+            .upsert(payload, { onConflict: 'folio', ignoreDuplicates: false })
+            .select('id')
+            .single();
+
+        if (!error && upsertedOrder?.id) {
+            const { error: importLogError } = await supabase
+                .from('order_import_log')
+                .upsert({
+                    order_id: upsertedOrder.id,
+                    import_source: 'excel_pedidos',
+                    import_batch_id: batchId,
+                    import_row_hash: importRowHash,
+                    legacy_folio_raw: row.legacyFolioRaw ?? null,
+                }, { onConflict: 'order_id', ignoreDuplicates: false });
+
+            if (!importLogError) {
+                inserted += 1;
+                continue;
+            }
+
+            console.error(`Failed import log ${folio}: ${importLogError.message}`);
+            failed += 1;
+            continue;
+        }
 
         if (!error) {
             inserted += 1;
