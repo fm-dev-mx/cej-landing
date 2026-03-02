@@ -105,6 +105,12 @@ export async function getCustomerById(customerId: string): Promise<GetCustomerBy
             average_order_value_mxn: validOrders.length ? ltv / validOrders.length : 0,
             paid_mxn: paid,
             pending_mxn: pending,
+            legacy_notes: customer.legacy_notes || null,
+            rfc: customer.rfc || null,
+            billing_enabled: customer.billing_enabled || false,
+            billing_regimen: customer.billing_regimen || null,
+            cfdi_use: customer.cfdi_use || null,
+            postal_code: customer.postal_code || null,
             last_order_date: normalizeDateBounds(validOrders[0]?.ordered_at || null),
             attribution: {
                 top_source: topSource,

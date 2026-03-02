@@ -42,7 +42,10 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
 
     return (
         <main className={styles.main}>
-            <h1 className={styles.sectionTitle}>Clientes</h1>
+            <div className={styles.flexBetween}>
+                <h1 className={styles.sectionTitle}>Clientes</h1>
+                <Link href="/dashboard/customers/new" className={styles.button}>+ Nuevo Cliente</Link>
+            </div>
 
             <aside className={styles.infoBanner}>
                 <p>

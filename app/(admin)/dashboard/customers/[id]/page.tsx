@@ -26,8 +26,11 @@ export default async function CustomerDetailPage({ params }: CustomerDetailPageP
     return (
         <main className={styles.main}>
             <header className={styles.header}>
-                <h1>Cliente {customer.display_name}</h1>
-                <Link href="/dashboard/customers" className={styles.backLink}>Volver al listado</Link>
+                <div className={styles.formGroup}>
+                    <h1>Cliente: {customer.display_name}</h1>
+                    <Link href="/dashboard/customers" className={styles.backLink}>Volver al listado</Link>
+                </div>
+                <Link href={`/dashboard/customers/${customer.id}/edit`} className={styles.button}>Editar Cliente</Link>
             </header>
 
             <section className={styles.section}>
