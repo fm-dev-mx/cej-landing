@@ -249,3 +249,26 @@
   font-weight: 600;
   color: var(--c-text);
 }
+
+.flexBetween {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.alignCenter {
+  display: flex;
+  align-items: center;
+}
+
+.gap2 {
+  gap: var(--sp-2);
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.gridFullWidth {
+  grid-column: 1 / -1;
+}
