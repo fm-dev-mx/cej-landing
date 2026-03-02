@@ -47,6 +47,7 @@ export interface OrderListItem {
     quantity_m3: number;
     ordered_at: string;
     scheduled_date: string | null;
+    scheduled_slot_code: string | null;
     seller_id: string | null;
 }
 
@@ -127,11 +128,23 @@ export interface OrderDetail {
 export interface OrderUpdatePayload {
     orderId: string;
     delivery_address_text?: string | null;
+    delivery_address_id?: string | null;
     scheduled_date?: string | null;
     scheduled_slot_code?: string | null;
+    scheduled_time_label?: string | null;
+    scheduled_window_start?: string | null;
+    scheduled_window_end?: string | null;
+    legacy_product_raw?: string | null;
+    import_source?: string | null;
+    import_batch_id?: string | null;
+    import_row_hash?: string | null;
+    legacy_folio_raw?: string | null;
     notes?: string | null;
     external_ref?: string | null;
     seller_id?: string | null;
+    utm_source?: string | null;
+    utm_medium?: string | null;
+    utm_campaign?: string | null;
 }
 
 export interface CancelOrderPayload {

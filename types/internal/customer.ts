@@ -9,6 +9,8 @@ export interface CustomerSummary {
     primary_phone_norm: string | null;
     primary_email_norm: string | null;
     identity_status: CustomerIdentityStatus;
+    quality_tier: string | null;
+    billing_enabled: boolean | null;
     orders_total: number;
     ltv_mxn: number;
     active_open_orders: number;
@@ -44,6 +46,7 @@ export interface CustomerDetail extends CustomerSummary {
     billing_regimen: string | null;
     cfdi_use: string | null;
     postal_code: string | null;
+    merged_into_customer_id: string | null;
     attribution: {
         top_source: string | null;
         top_campaign: string | null;
