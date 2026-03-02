@@ -67,6 +67,7 @@ export interface InternalOrderItem {
 export interface AdminOrderPayload {
     name: string;
     phone: string;
+    forceNewCustomer?: boolean;
     volume: number;
     concreteType: InternalConcreteType;
     strength: string;
