@@ -31,9 +31,10 @@ describe('Pricing Logic', () => {
     describe('normalizeVolume', () => {
         it('should enforce minimum volume for direct service', () => {
             const type = 'direct';
+            const str = '200';
             const min = MIN_M3_BY_TYPE[type];
 
-            const result = normalizeVolume(1.0, type);
+            const result = normalizeVolume(1.0, type, str);
 
             expect(result.requestedM3).toBe(1.0);
             expect(result.roundedM3).toBe(1.0);
@@ -43,18 +44,37 @@ describe('Pricing Logic', () => {
 
         it('should enforce minimum volume for pumped service', () => {
             const type = 'pumped';
+            const str = '200';
             const min = MIN_M3_BY_TYPE[type];
 
-            const result = normalizeVolume(2.5, type);
+            const result = normalizeVolume(2.5, type, str);
 
             expect(result.billedM3).toBe(min);
             expect(result.isBelowMinimum).toBe(true);
         });
 
+        it('should enforce overridden minimum volume for mortero 90', () => {
+            const type = 'direct';
+            const str = 'mortero 90';
+            const min = 1; // Overridden
+
+            const result = normalizeVolume(0.5, type, str);
+
+            expect(result.requestedM3).toBe(0.5);
+            expect(result.roundedM3).toBe(0.5);
+            expect(result.billedM3).toBe(min);
+            expect(result.isBelowMinimum).toBe(true);
+
+            const result2 = normalizeVolume(1.5, type, str);
+            expect(result2.billedM3).toBe(1.5);
+            expect(result2.isBelowMinimum).toBe(false);
+        });
+
         it('should use rounded volume if above minimum', () => {
             const type = 'direct';
+            const str = '200';
 
-            const result = normalizeVolume(3.1, type);
+            const result = normalizeVolume(3.1, type, str);
 
             expect(result.roundedM3).toBe(3.5);
             expect(result.billedM3).toBe(3.5);
@@ -168,6 +188,7 @@ describe('Pricing Logic', () => {
             expect(quote.volume.requestedM3).toBe(1);
             expect(quote.volume.billedM3).toBe(3);
             expect(quote.subtotal).toBe(quote.volume.billedM3 * quote.unitPricePerM3);
+            expect(quote.total).toBeCloseTo(quote.subtotal + quote.vat);
         });
     });
 });

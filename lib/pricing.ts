@@ -3,6 +3,7 @@
 import {
     M3_STEP,
     MIN_M3_BY_TYPE,
+    MIN_M3_OVERRIDES,
     PRICE_TABLE,
     VAT_RATE,
     COFFERED_SPECS,
@@ -42,28 +43,30 @@ export function roundUpToStep(value: number, step: number): number {
 export function normalizeVolume(
     requestedM3: number,
     type: ConcreteType,
+    strength: Strength,
 ): NormalizedVolume {
     const safeRequested = Number.isFinite(requestedM3)
         ? Math.max(requestedM3, 0)
         : 0;
 
-    const minM3ForType = MIN_M3_BY_TYPE[type];
+    const minM3 = MIN_M3_OVERRIDES[strength] ?? MIN_M3_BY_TYPE[type];
     const roundedM3 = roundUpToStep(safeRequested, M3_STEP);
 
     const billedM3 = roundedM3 > 0
-        ? Math.max(roundedM3, minM3ForType)
+        ? Math.max(roundedM3, minM3)
         : 0;
 
-    const isBelowMinimum = safeRequested > 0 && safeRequested < minM3ForType;
+    const isBelowMinimum = safeRequested > 0 && safeRequested < minM3;
 
     return {
         requestedM3: safeRequested,
         roundedM3,
-        minM3ForType,
+        minM3ForType: minM3,
         billedM3,
         isBelowMinimum,
     };
 }
+
 
 // ---------- Volume calculators ----------
 
@@ -159,7 +162,7 @@ export function calcQuote(
     type: ConcreteType,
     table: PriceTable = PRICE_TABLE,
 ): QuoteBreakdown {
-    const volume = normalizeVolume(requestedM3, type);
+    const volume = normalizeVolume(requestedM3, type, strength);
 
     if (volume.billedM3 <= 0) {
         return {

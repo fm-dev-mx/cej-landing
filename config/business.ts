@@ -54,6 +54,10 @@ export const MIN_M3_BY_TYPE: Record<ConcreteType, number> = {
     pumped: 3,
 };
 
+export const MIN_M3_OVERRIDES: Partial<Record<Strength, number>> = {
+    'mortero 90': 1,
+};
+
 // --- Slab Specifications ---
 
 type SlabSpec = {
@@ -86,7 +90,10 @@ export const CASETON_FACTORS = {
 
 // --- Catalogs and options ---
 
-export const STRENGTHS: Strength[] = ['100', '150', '200', '250', '300'];
+export const STRENGTHS: Strength[] = [
+    '100', '150', '200', '210', '250', '300',
+    'mortero 90'
+];
 
 export const CONCRETE_TYPES: { value: ConcreteType; label: string }[] = [
     { value: 'direct', label: 'Tiro directo' },
@@ -143,17 +150,23 @@ const tier = (
 export const PRICE_TABLE: PriceTable = {
     base: {
         direct: {
-            '100': [tier(3, 2170.36)],
-            '150': [tier(3, 2356.46)],
-            '200': [tier(3, 2569.46)],
-            '250': [tier(3, 2856.46)],
-            '300': [tier(3, 3124.96)],
+            '100': [tier(3, 2296)],
+            '150': [tier(3, 2390)],
+            '200': [tier(3, 2655)],
+            '210': [tier(3, 2869)],
+            '250': [tier(3, 2960)],
+            '300': [tier(3, 3123)],
+            'mortero 90': [tier(1, 4074)],
         },
         pumped: {
-            '150': [tier(3, 3079.56, 3.5), tier(4, 2847.16, 4.5), tier(5, 2754.56)],
-            '200': [tier(3, 3328.66, 3.5), tier(4, 3096.26, 4.5), tier(5, 3046.26)],
-            '250': [tier(3, 3579.56, 3.5), tier(4, 3347.16, 4.5), tier(5, 3254.56)],
-            '300': [tier(3, 3792.56, 3.5), tier(4, 3560.16, 4.5), tier(5, 3467.56)],
+            '150': [tier(3, 3105, 3.5), tier(4, 2967, 4.5), tier(5, 2827)],
+            '200': [tier(3, 3324, 3.5), tier(4, 3186, 4.5), tier(5, 3046)],
+            '210': [tier(3, 3439, 3.5), tier(4, 3301, 4.5), tier(5, 3161)],
+            '250': [tier(3, 3532, 3.5), tier(4, 3394, 4.5), tier(5, 3254)],
+            '300': [tier(3, 3745, 3.5), tier(4, 3606, 4.5), tier(5, 3466)],
         },
     },
+    extras: {
+        fibra_poly: pesos(116),
+    }
 };

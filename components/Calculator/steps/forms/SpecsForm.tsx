@@ -17,8 +17,8 @@ export function SpecsForm() {
             const nextStrength = e.target.value as Strength;
             setStrength(nextStrength);
 
-            // AUTO-ADJUST: If 100 is selected and current type is pumped, switch to direct
-            if (nextStrength === '100' && type === 'pumped') {
+            // AUTO-ADJUST: If 100 or mortero 90 is selected and current type is pumped, switch to direct
+            if ((nextStrength === '100' || nextStrength === 'mortero 90') && type === 'pumped') {
                 setType('direct');
             }
         },
@@ -47,7 +47,7 @@ export function SpecsForm() {
                 <label>Tipo de servicio</label>
                 <div className={styles.selectionGrid}>
                     {CONCRETE_TYPES.map((t) => {
-                        const isDisabled = t.value === 'pumped' && strength === '100';
+                        const isDisabled = t.value === 'pumped' && (strength === '100' || strength === 'mortero 90');
                         return (
                             <SelectionCard
                                 key={t.value}

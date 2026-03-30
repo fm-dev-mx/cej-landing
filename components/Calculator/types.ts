@@ -1,6 +1,6 @@
 // components/Calculator/types.ts
 
-export type Strength = '100' | '150' | '200' | '250' | '300';
+export type Strength = '100' | '150' | '200' | '210' | '250' | '300' | 'mortero 90';
 export type ConcreteType = 'direct' | 'pumped';
 
 export type CalculatorMode = 'knownM3' | 'assistM3';
@@ -64,6 +64,7 @@ export type BasePriceTable = Record<
 
 export type PriceTable = {
     base: BasePriceTable;
+    extras?: Record<string, number>;
 };
 
 export type QuoteBreakdown = {
