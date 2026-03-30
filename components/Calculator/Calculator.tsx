@@ -75,7 +75,6 @@ function CalculatorContent() {
           </h2>
           <p className={styles.headerSubtitle}>
             Obtén un presupuesto estimado en segundos.<br className="hidden md:block" />
-            La volumetría final se confirma en obra.
           </p>
         </div>
       </header>

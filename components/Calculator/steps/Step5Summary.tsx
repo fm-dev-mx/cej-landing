@@ -53,19 +53,18 @@ export function Step5Summary({ estimateLegend }: Props) {
     const unitPriceLabel = fmtMXN(quote.unitPricePerM3);
 
     const [showLeadModal, setShowLeadModal] = useState(false);
-    const [folio, setFolio] = useState<string>('');
+    const [folio] = useState(() => generateQuoteId());
     const [showMath, setShowMath] = useState(false);
 
-    // Generate Folio once on mount to simulate a persistent transaction ID
-    useEffect(() => {
-        setFolio(generateQuoteId());
-    }, []);
-
-    const today = new Date().toLocaleDateString('es-MX', {
+    // Generate stable dates once on mount to simulate a persistent transaction ID and satisfy purity
+    const [creationDate] = useState(() => new Date().toISOString());
+    const [expiryDate] = useState(() => new Date(Date.now() + QUOTE_VALIDITY_DAYS * 24 * 60 * 60 * 1000).toISOString());
+    const [today] = useState(() => new Date().toLocaleDateString('es-MX', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
-    });
+    }));
+
 
     const waNumber = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
     const phone = env.NEXT_PUBLIC_PHONE;
@@ -100,11 +99,11 @@ export function Step5Summary({ estimateLegend }: Props) {
                 price: quote.total.toFixed(2),
                 priceCurrency: 'MXN',
                 availability: 'https://schema.org/InStock',
-                validFrom: new Date().toISOString(),
-                priceValidUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // +7 días
+                validFrom: creationDate,
+                priceValidUntil: expiryDate
             }
         };
-    }, [productLabel, serviceTypeLabel, strength, workTypeLabel, quote.total]);
+    }, [productLabel, serviceTypeLabel, strength, workTypeLabel, quote.total, creationDate, expiryDate]);
 
     const enrichedQuoteData = useMemo<LeadQuoteDetails>(() => {
         const specs =
@@ -338,7 +337,6 @@ export function Step5Summary({ estimateLegend }: Props) {
                 {/* Disclaimer / Warnings */}
                 <p className={styles.disclaimer}>
                     <strong>Nota importante:</strong> {estimateLegend}
-                    {type === 'pumped' && ' Incluye servicio de bomba pluma en el precio unitario.'}
                 </p>
 
                 {/* Actions */}

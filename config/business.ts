@@ -45,7 +45,7 @@ export const BUSINESS_INFO = {
 };
 
 export const ESTIMATE_LEGEND =
-    'Precios sujetos a cambio sin previo aviso. La volumetría final se valida con visita técnica gratuita.';
+    'Los precios pueden variar según condiciones de obra, distancia y volumen final.';
 
 // --- Volume rules ---
 
