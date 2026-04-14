@@ -28,11 +28,11 @@
 .ticketWatermark {
   position: absolute;
   inset: 0;
-  background-image: url("/logo.svg");
+  background-image: url("/logo-square-gray.png");
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 50%;
-  opacity: 0.03;
+  background-size: 60%;
+  opacity: 0.08;
   pointer-events: none;
   z-index: 0;
 }

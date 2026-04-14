@@ -16,10 +16,10 @@ export default function Footer() {
         <div className={styles.brandCol}>
           <Link href="/" className={styles.logoLink} aria-label="Ir al inicio">
             <Image
-              src="/logo.svg"
+              src="/logo-isotype-white.png"
               alt={env.NEXT_PUBLIC_BRAND_NAME}
-              width={140}
-              height={40}
+              width={160}
+              height={50}
               className={styles.logo}
             />
           </Link>

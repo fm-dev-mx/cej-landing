@@ -24,9 +24,9 @@ export default function Header() {
           <div className={styles.brand}>
             <Link href="/" className={styles.logoLink} aria-label="Inicio">
               <Image
-                src="/logo.svg"
+                src="/logo-horizontal.png"
                 alt={env.NEXT_PUBLIC_BRAND_NAME}
-                width={44}
+                width={150}
                 height={44}
                 className={styles.logo}
                 priority
