@@ -64,7 +64,7 @@ export const SEO_CONTENT = {
         "colado de losas juarez",
         "concreto f'c 200"
     ],
-    ogImage: "/og-image.jpg",
+    ogImage: "/og-image.webp",
 };
 
 export const LANDING_CONTENT = {
