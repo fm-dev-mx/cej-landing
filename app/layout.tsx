@@ -7,40 +7,62 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 
 export const viewport: Viewport = {
-    width: "device-width",
-    initialScale: 1,
-    themeColor: "#0e2240",
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0e2240",
 };
 
 const GA_MEASUREMENT_ID = env.NEXT_PUBLIC_GA_ID;
 
 export const metadata: Metadata = {
-    metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
-    title: {
-        default: SEO_CONTENT.title,
-        template: `%s | ${env.NEXT_PUBLIC_BRAND_NAME}`,
-    },
+  metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
+  title: {
+    default: SEO_CONTENT.title,
+    template: `%s | ${env.NEXT_PUBLIC_BRAND_NAME}`,
+  },
+  description: SEO_CONTENT.description,
+  openGraph: {
+    title: SEO_CONTENT.title,
     description: SEO_CONTENT.description,
+    url: env.NEXT_PUBLIC_SITE_URL,
+    siteName: SEO_CONTENT.siteName,
+    locale: "es_MX",
+    type: "website",
+    images: [
+      {
+        url: `${env.NEXT_PUBLIC_SITE_URL}/opengraph-image.webp`,
+        width: 1200,
+        height: 630,
+        alt: "Concreto premezclado en Ciudad Juárez",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SEO_CONTENT.title,
+    description: SEO_CONTENT.description,
+    images: [`${env.NEXT_PUBLIC_SITE_URL}/opengraph-image.webp`],
+  },
 };
 
 export default function RootLayout({
-    children,
+  children,
 }: Readonly<{ children: React.ReactNode }>) {
-    const pixelId = env.NEXT_PUBLIC_PIXEL_ID;
-    const isProduction = process.env.NODE_ENV === "production";
+  const pixelId = env.NEXT_PUBLIC_PIXEL_ID;
+  const isProduction = process.env.NODE_ENV === "production";
 
-    return (
-        <html lang="es-MX">
-            <body className="app-root">
-                {/* Scripts Section (GA & Pixel) */}
-                {isProduction && GA_MEASUREMENT_ID && (
-                    <>
-                        <Script
-                            src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-                            strategy="afterInteractive"
-                        />
-                        <Script id="google-analytics" strategy="afterInteractive">
-                            {`
+  return (
+    <html lang="es-MX">
+      <body className="app-root">
+        {/* Scripts Section (GA & Pixel) */}
+        {isProduction && GA_MEASUREMENT_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
@@ -48,13 +70,13 @@ export default function RootLayout({
                   page_path: window.location.pathname,
                 });
               `}
-                        </Script>
-                    </>
-                )}
+            </Script>
+          </>
+        )}
 
-                {isProduction && pixelId && (
-                    <Script id="fb-pixel" strategy="afterInteractive">
-                        {`
+        {isProduction && pixelId && (
+          <Script id="fb-pixel" strategy="afterInteractive">
+            {`
              !function(f,b,e,v,n,t,s)
              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -66,14 +88,14 @@ export default function RootLayout({
              fbq('init', '${pixelId}');
              fbq('track', 'PageView');
            `}
-                    </Script>
-                )}
+          </Script>
+        )}
 
-                {children}
+        {children}
 
-                <SpeedInsights />
-                <Analytics />
-            </body>
-        </html>
-    );
+        <SpeedInsights />
+        <Analytics />
+      </body>
+    </html>
+  );
 }
