@@ -21,19 +21,37 @@ export const metadata: Metadata = {
     template: `%s | ${env.NEXT_PUBLIC_BRAND_NAME}`,
   },
   description: SEO_CONTENT.description,
+  keywords: SEO_CONTENT.keywords,
+  authors: [{ name: env.NEXT_PUBLIC_BRAND_NAME }],
+  creator: env.NEXT_PUBLIC_BRAND_NAME,
+  publisher: env.NEXT_PUBLIC_BRAND_NAME,
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
     title: SEO_CONTENT.title,
     description: SEO_CONTENT.description,
-    url: env.NEXT_PUBLIC_SITE_URL,
+    url: "/",
     siteName: SEO_CONTENT.siteName,
     locale: "es_MX",
     type: "website",
     images: [
       {
-        url: `${env.NEXT_PUBLIC_SITE_URL}/opengraph-image.webp`,
+        url: "/opengraph-image.webp",
         width: 1200,
         height: 630,
-        alt: "Concreto premezclado en Ciudad Juárez",
+        alt: SEO_CONTENT.title,
       },
     ],
   },
@@ -41,7 +59,9 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: SEO_CONTENT.title,
     description: SEO_CONTENT.description,
-    images: [`${env.NEXT_PUBLIC_SITE_URL}/opengraph-image.webp`],
+    site: SEO_CONTENT.twitterHandle,
+    creator: SEO_CONTENT.twitterHandle,
+    images: ["/opengraph-image.webp"],
   },
 };
 

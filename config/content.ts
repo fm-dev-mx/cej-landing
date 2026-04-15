@@ -54,7 +54,7 @@ export interface StatItem {
 // --- SEO Configuration ---
 export const SEO_CONTENT = {
     title: "Concreto en Ciudad Juárez | Venta y Suministro Inmediato",
-    description: "Cotiza concreto premezclado en Ciudad Juárez al mejor precio. Suministro puntual, renta de bombas y cálculo de material gratis. Resistencias f'c 150 a 300.",
+    description: "Calcula y cotiza tu concreto en segundos",
     siteName: "Concreto y Equipos de Juárez",
     keywords: [
         "concreto juarez",
@@ -62,9 +62,15 @@ export const SEO_CONTENT = {
         "renta de bomba de concreto",
         "cementera ciudad juarez",
         "colado de losas juarez",
-        "concreto f'c 200"
+        "concreto f'c 200",
+        "concreto premezclado cd juarez",
+        "bombeo de concreto juarez",
+        "venta de concreto en juarez",
+        "materiales para construccion juarez"
     ],
-    ogImage: "/og-image.webp",
+    ogImage: "/opengraph-image.webp", // Using the convention-based filename
+    twitterHandle: "@concretodejuarez", // Placeholder
+    facebookAppId: "", // Optional
 };
 
 export const LANDING_CONTENT = {
