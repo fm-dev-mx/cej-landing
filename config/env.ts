@@ -25,7 +25,7 @@ const envSchema = z.object({
         .string()
         .url()
         .optional()
-        .default('https://concretodejuarez.com')
+        .default('https://www.concretodejuarez.com')
         .transform((url) => (url?.endsWith('/') ? url.slice(0, -1) : url)),
     NEXT_PUBLIC_BRAND_NAME: z.string().optional().default('Concreto y Equipos de Juárez'),
     NEXT_PUBLIC_CURRENCY: z.string().optional().default('MXN'),
@@ -66,7 +66,7 @@ export const env = parsed.success
 if (process.env.NODE_ENV === 'production' && !env.NEXT_PUBLIC_PIXEL_ID) {
     // Do not throw, but make it very visible in logs.
     // Meta Pixel will simply not be initialized.
-    // eslint-disable-next-line no-console
+     
     console.warn(
         '⚠️ NEXT_PUBLIC_PIXEL_ID is empty. Meta Pixel will not be initialized in production.'
     );

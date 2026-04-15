@@ -48,10 +48,12 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/opengraph-image.webp",
+        url: "/opengraph-image.webp?v=1",
+        secureUrl: "/opengraph-image.webp?v=1",
         width: 1200,
         height: 630,
         alt: SEO_CONTENT.title,
+        type: "image/webp",
       },
     ],
   },
@@ -61,7 +63,7 @@ export const metadata: Metadata = {
     description: SEO_CONTENT.description,
     site: SEO_CONTENT.twitterHandle,
     creator: SEO_CONTENT.twitterHandle,
-    images: ["/opengraph-image.webp"],
+    images: ["/opengraph-image.webp?v=1"],
   },
 };
 
