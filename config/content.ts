@@ -53,7 +53,7 @@ export interface StatItem {
 
 // --- SEO Configuration ---
 export const SEO_CONTENT = {
-    title: "Concreto en Ciudad Juárez | Venta y Suministro Inmediato",
+    title: "Concreto Premezclado en Ciudad Juárez | Servicio Puntual",
     description: "Calcula y cotiza tu concreto en segundos",
     siteName: "Concreto y Equipos de Juárez",
     keywords: [
