@@ -1,7 +1,7 @@
 // store/useCejStore.ts
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { v4 as uuidv4 } from 'uuid';
+
 import {
     type CalculatorState,
     type QuoteBreakdown,
@@ -71,7 +71,7 @@ export const useCejStore = create<CejState>()(
             cart: [],
             history: [],
             user: {
-                visitorId: uuidv4(), // Generate generic ID on init
+                visitorId: crypto.randomUUID(), // Generate generic ID on init
                 hasConsentedPersistence: true, // Default to true for UX, user can opt-out
             },
 
@@ -112,7 +112,7 @@ export const useCejStore = create<CejState>()(
                 const label = `${workTypeLabel} f'c ${state.currentDraft.strength}`;
 
                 const newItem: QuoteItem = {
-                    id: uuidv4(),
+                    id: crypto.randomUUID(),
                     timestamp: Date.now(),
                     inputs: { ...state.currentDraft },
                     results,

@@ -1,6 +1,6 @@
 // lib/tracking/identity.ts
-import { v4 as uuidv4 } from 'uuid';
-import Cookies from 'js-cookie';
+
+import { getCookie, setCookie } from '@/lib/cookies';
 
 const VISITOR_COOKIE_KEY = 'cej_visitor_id';
 const SESSION_STORAGE_KEY = 'cej_session_id';
@@ -15,10 +15,12 @@ export type IdentityData = {
  * Expires in 365 days.
  */
 export const getOrInitVisitorId = (): string => {
-    let vid = Cookies.get(VISITOR_COOKIE_KEY);
+    if (typeof window === 'undefined') return '';
+
+    let vid = getCookie(VISITOR_COOKIE_KEY);
     if (!vid) {
-        vid = uuidv4();
-        Cookies.set(VISITOR_COOKIE_KEY, vid, { expires: 365, sameSite: 'Lax' });
+        vid = crypto.randomUUID();
+        setCookie(VISITOR_COOKIE_KEY, vid, { expires: 365, sameSite: 'Lax' });
     }
     return vid;
 };
@@ -30,12 +32,16 @@ export const getOrInitVisitorId = (): string => {
 export const getOrInitSessionId = (): string => {
     if (typeof window === 'undefined') return '';
 
-    let sid = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
-    if (!sid) {
-        sid = uuidv4();
-        window.sessionStorage.setItem(SESSION_STORAGE_KEY, sid);
+    try {
+        let sid = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+        if (!sid) {
+            sid = crypto.randomUUID();
+            window.sessionStorage.setItem(SESSION_STORAGE_KEY, sid);
+        }
+        return sid;
+    } catch {
+        return crypto.randomUUID();
     }
-    return sid;
 };
 
 export const getIdentityParams = (): IdentityData => ({
