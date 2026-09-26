@@ -1,7 +1,7 @@
-@use "../../styles/tokens" as t;
 @use "../../styles/mixins" as *;
 
 .bar {
+  box-sizing: border-box;
   position: fixed;
   bottom: 0;
   left: 0;
@@ -13,7 +13,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 50;
+  z-index: var(--z-mobile-menu);
   /* Above regular content, below modal */
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
   animation: slideUp 0.3s ease-out;
