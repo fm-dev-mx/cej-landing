@@ -1,4 +1,5 @@
 import { defineConfig, globalIgnores } from "eslint/config";
+import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import { createRequire } from "module";
@@ -8,8 +9,8 @@ const reactPlugin = require("eslint-plugin-react");
 const importPlugin = require("eslint-plugin-import");
 
 const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
+  ...fixupConfigRules(nextVitals),
+  ...fixupConfigRules(nextTs),
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
@@ -28,14 +29,14 @@ const eslintConfig = defineConfig([
   },
   {
     plugins: {
-      react: reactPlugin,
-      import: importPlugin
+      react: fixupPluginRules(reactPlugin),
+      import: fixupPluginRules(importPlugin)
     },
     rules: {
       "@typescript-eslint/no-explicit-any": "error",
       "no-console": ["error", { allow: ["warn", "error"] }],
       "react/forbid-dom-props": ["error", { forbid: ["style"] }],
-      "import/no-cycle": ["error", { maxDepth: '∞' }]
+      "import/no-cycle": "error"
     },
   },
 ]);

@@ -1,9 +1,14 @@
 import { defineConfig } from 'vitest/config';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
-    plugins: [tsconfigPaths(), react()],
+    plugins: [react()],
+    resolve: {
+        alias: {
+            '@': path.resolve(process.cwd(), './'),
+        },
+    },
     test: {
         environment: 'jsdom',
         globals: true,
@@ -12,15 +17,6 @@ export default defineConfig({
         coverage: {
             provider: 'v8',
             reporter: ['text', 'json', 'html'],
-        },
-    },
-    css: {
-        preprocessorOptions: {
-            scss: {
-                // Forces Vite to use the modern Sass compiler API
-                // @ts-ignore - 'api' is valid in Vite 5.4+ but Vitest types might lag behind
-                api: 'modern-compiler',
-            },
         },
     },
 });
