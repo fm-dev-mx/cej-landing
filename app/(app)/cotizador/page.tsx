@@ -15,6 +15,10 @@ export default function CotizadorPage() {
     const [isHydrated, setIsHydrated] = useState(false);
     const viewMode = useCejStore(s => s.viewMode);
     const cart = useCejStore(s => s.cart);
+    const history = useCejStore(s => s.history);
+    const isDrawerOpen = useCejStore(s => s.isDrawerOpen);
+    const setActiveTab = useCejStore(s => s.setActiveTab);
+    const setDrawerOpen = useCejStore(s => s.setDrawerOpen);
 
     useEffect(() => {
         // Timeout prevents synchronous setState cascading render warning
@@ -31,11 +35,18 @@ export default function CotizadorPage() {
                     <p className={styles.modeText}>
                         Modo: <strong>{viewMode === 'wizard' ? 'Guiado' : 'Experto'}</strong>
                     </p>
-                    {/* Debug visual ya no es necesario con SmartBar, pero lo mantenemos sutil */}
-                    {cart.length > 0 && (
-                        <span className={styles.cartBadge}>
-                            {cart.length} en pedido
-                        </span>
+                    {(cart.length > 0 || history.length > 0) && (
+                        <button
+                            type="button"
+                            className={styles.cartButton}
+                            aria-expanded={isDrawerOpen}
+                            onClick={() => {
+                                setActiveTab(cart.length > 0 ? 'order' : 'history');
+                                setDrawerOpen(true);
+                            }}
+                        >
+                            {cart.length > 0 ? `Ver pedido (${cart.length})` : 'Mis obras'}
+                        </button>
                     )}
                 </div>
 
