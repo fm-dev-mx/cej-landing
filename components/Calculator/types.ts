@@ -1,6 +1,13 @@
 // components/Calculator/types.ts
 
-export type Strength = '100' | '150' | '200' | '210' | '250' | '300' | 'mortero 90';
+export type Strength = '100' | '150' | '200' | '210' | '250' | '300';
+export type ConcreteOption =
+    | Strength
+    | '150 3/8'
+    | '200 3/8'
+    | '250 3/8'
+    | 'mortero 90'
+    | 'MR 42.5';
 export type ConcreteType = 'direct' | 'pumped';
 
 export type CalculatorMode = 'knownM3' | 'assistM3';
@@ -30,8 +37,9 @@ export type CalculatorState = {
     step: Step;
     mode: CalculatorMode | null;
     volumeMode: AssistVolumeMode;
-    strength: Strength;
+    strength: ConcreteOption;
     type: ConcreteType;
+    hasFiber: boolean;
     m3: string;
     workType: WorkTypeId | null;
     length: string;
@@ -54,24 +62,26 @@ export type NormalizedVolume = {
 export type VolumeTier = {
     minM3: number;
     maxM3?: number;
-    pricePerM3Cents: number;
+    pricePerM3Cents: number; // Configured rate from the price list, including VAT
 };
 
 export type BasePriceTable = Record<
     ConcreteType,
-    Partial<Record<Strength, VolumeTier[]>>
+    Partial<Record<ConcreteOption, VolumeTier[]>>
 >;
 
 export type PriceTable = {
     base: BasePriceTable;
-    extras?: Record<string, number>;
+    extras?: Record<string, number>; // Listed prices, including VAT
 };
 
 export type QuoteBreakdown = {
     volume: NormalizedVolume;
-    strength: Strength;
+    strength: ConcreteOption;
     concreteType: ConcreteType;
-    unitPricePerM3: number; // MXN without VAT
+    hasFiber: boolean;
+    unitPricePerM3: number; // MXN per m³ for concrete, excluding VAT and fiber
+    fiberSubtotal: number;  // MXN for fiber, excluding VAT
     subtotal: number;       // MXN without VAT
     vat: number;            // MXN (IVA)
     total: number;          // MXN with VAT
@@ -90,6 +100,7 @@ export const DEFAULT_CALCULATOR_STATE: CalculatorState = {
     volumeMode: 'dimensions',
     strength: '200',
     type: 'direct',
+    hasFiber: false,
     m3: '',
     workType: null,
     length: '',

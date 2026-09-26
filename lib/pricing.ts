@@ -11,10 +11,10 @@ import {
 } from "@/config/business";
 import type {
     ConcreteType,
+    ConcreteOption,
     NormalizedVolume,
     PriceTable,
     QuoteBreakdown,
-    Strength,
     CofferedSize
 } from "@/components/Calculator/types";
 
@@ -28,7 +28,9 @@ export const EMPTY_QUOTE: QuoteBreakdown = {
     },
     strength: '200',
     concreteType: 'direct',
+    hasFiber: false,
     unitPricePerM3: 0,
+    fiberSubtotal: 0,
     subtotal: 0,
     vat: 0,
     total: 0,
@@ -43,13 +45,15 @@ export function roundUpToStep(value: number, step: number): number {
 export function normalizeVolume(
     requestedM3: number,
     type: ConcreteType,
-    strength: Strength,
+    strength: ConcreteOption,
 ): NormalizedVolume {
     const safeRequested = Number.isFinite(requestedM3)
         ? Math.max(requestedM3, 0)
         : 0;
 
-    const minM3 = MIN_M3_OVERRIDES[strength] ?? MIN_M3_BY_TYPE[type];
+    const minM3 = type === 'direct'
+        ? MIN_M3_OVERRIDES[strength] ?? MIN_M3_BY_TYPE[type]
+        : MIN_M3_BY_TYPE[type];
     const roundedM3 = roundUpToStep(safeRequested, M3_STEP);
 
     const billedM3 = roundedM3 > 0
@@ -94,19 +98,17 @@ export type SlabAreaInput = SlabInputBase & {
 export function calcVolumeFromArea(input: SlabAreaInput): number {
     const { areaM2, hasCofferedSlab, cofferedSize, manualThicknessCm } = input;
 
-    if (areaM2 <= 0) return 0;
+    if (!Number.isFinite(areaM2) || areaM2 <= 0) return 0;
 
     // Lógica 1: Losa Aligerada (Usa coeficientes)
-    if (hasCofferedSlab && cofferedSize) {
-        const spec = COFFERED_SPECS[cofferedSize];
-        if (spec) {
-            return areaM2 * spec.coefficient;
-        }
+    if (hasCofferedSlab) {
+        const spec = cofferedSize ? COFFERED_SPECS[cofferedSize] : undefined;
+        return spec ? areaM2 * spec.coefficient : 0;
     }
 
     // Lógica 2: Losa Sólida (Usa grosor manual)
     const thicknessCm = manualThicknessCm ?? 0;
-    if (thicknessCm <= 0) return 0;
+    if (!Number.isFinite(thicknessCm) || thicknessCm <= 0) return 0;
 
     const thicknessM = thicknessCm / 100;
     // Apply solid slab factor (e.g. 0.98 for minor adjustments/waste logic, or 1.0)
@@ -119,6 +121,9 @@ export function calcVolumeFromArea(input: SlabAreaInput): number {
  */
 export function calcVolumeFromDimensions(input: SlabDimensionsInput): number {
     const { lengthM, widthM, ...rest } = input;
+    if (!Number.isFinite(lengthM) || !Number.isFinite(widthM) || lengthM <= 0 || widthM <= 0) {
+        return 0;
+    }
     const areaM2 = lengthM * widthM;
     return calcVolumeFromArea({ areaM2, ...rest });
 }
@@ -127,7 +132,7 @@ export function calcVolumeFromDimensions(input: SlabDimensionsInput): number {
 
 function resolveUnitPricePerM3Cents(
     billedM3: number,
-    strength: Strength,
+    strength: ConcreteOption,
     type: ConcreteType,
     table: PriceTable = PRICE_TABLE,
 ): number {
@@ -158,10 +163,12 @@ function toPesos(cents: number): number {
 
 export function calcQuote(
     requestedM3: number,
-    strength: Strength,
+    strength: ConcreteOption,
     type: ConcreteType,
     table: PriceTable = PRICE_TABLE,
+    options: { hasFiber?: boolean } = {},
 ): QuoteBreakdown {
+    const { hasFiber = false } = options;
     const volume = normalizeVolume(requestedM3, type, strength);
 
     if (volume.billedM3 <= 0) {
@@ -170,25 +177,46 @@ export function calcQuote(
             volume,
             strength,
             concreteType: type,
+            hasFiber: false,
         };
     }
 
-    const unitCents = resolveUnitPricePerM3Cents(
+    const baseUnitCents = resolveUnitPricePerM3Cents(
         volume.billedM3,
         strength,
         type,
         table,
     );
 
-    const subtotalCents = Math.round(volume.billedM3 * unitCents);
-    const vatCents = Math.round(subtotalCents * VAT_RATE);
-    const totalCents = subtotalCents + vatCents;
+    const fiberUnitCents = hasFiber
+        ? table.extras?.fibra_poly ?? 0
+        : 0;
+
+    if (baseUnitCents <= 0 || (hasFiber && fiberUnitCents <= 0)) {
+        return {
+            ...EMPTY_QUOTE,
+            volume,
+            strength,
+            concreteType: type,
+        };
+    }
+
+    // PriceTable stores gross rates; expose a net unit price and split the gross total for display.
+    const fiberTotalCents = Math.round(volume.billedM3 * fiberUnitCents);
+    const totalCents = Math.round(volume.billedM3 * (baseUnitCents + fiberUnitCents));
+    const subtotalCents = Math.round(totalCents / (1 + VAT_RATE));
+    const vatCents = totalCents - subtotalCents;
+    const fiberSubtotalCents = hasFiber
+        ? Math.round(fiberTotalCents / (1 + VAT_RATE))
+        : 0;
 
     return {
         volume,
         strength,
         concreteType: type,
-        unitPricePerM3: toPesos(unitCents),
+        hasFiber,
+        unitPricePerM3: toPesos(Math.round(baseUnitCents / (1 + VAT_RATE))),
+        fiberSubtotal: toPesos(fiberSubtotalCents),
         subtotal: toPesos(subtotalCents),
         vat: toPesos(vatCents),
         total: toPesos(totalCents),
