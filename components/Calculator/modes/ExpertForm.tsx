@@ -46,9 +46,10 @@ export default function ExpertForm() {
             <div className={styles.grid}>
                 {/* Dimensions Group */}
                 <div className={styles.group}>
-                    <label className={styles.label}>Medidas (m)</label>
+                    <span className={styles.label}>Medidas</span>
                     <div className={styles.row3}>
                         <Input
+                            label="Largo (m)"
                             placeholder="Largo"
                             type="number"
                             value={length}
@@ -56,6 +57,7 @@ export default function ExpertForm() {
                             variant="light"
                         />
                         <Input
+                            label="Ancho (m)"
                             placeholder="Ancho"
                             type="number"
                             value={width}
@@ -63,6 +65,7 @@ export default function ExpertForm() {
                             variant="light"
                         />
                         <Input
+                            label="Grosor (cm)"
                             placeholder="Grosor (cm)"
                             type="number"
                             value={thicknessByDims}
@@ -74,7 +77,7 @@ export default function ExpertForm() {
 
                 {/* Specs Group */}
                 <div className={styles.group}>
-                    <label className={styles.label}>Especificaciones</label>
+                    <span className={styles.label}>Especificaciones</span>
                     <div className={styles.row2}>
                         <Select
                             value={strength}

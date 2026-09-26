@@ -49,9 +49,9 @@ describe('ExpertForm product and service selection', () => {
 
     // A valid known volume from the wizard must not make an empty expert form valid.
     expect(addButton).toBeDisabled();
-    fireEvent.change(screen.getByPlaceholderText('Largo'), { target: { value: '10' } });
-    fireEvent.change(screen.getByPlaceholderText('Ancho'), { target: { value: '3' } });
-    fireEvent.change(screen.getByPlaceholderText('Grosor (cm)'), { target: { value: '10' } });
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Largo (m)' }), { target: { value: '10' } });
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Ancho (m)' }), { target: { value: '3' } });
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'Grosor (cm)' }), { target: { value: '10' } });
     fireEvent.click(screen.getByRole('checkbox', { name: /Agregar Fibra/i }));
 
     expect(screen.getByText('3.0 m³')).toBeInTheDocument();
