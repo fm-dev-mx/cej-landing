@@ -1,6 +1,6 @@
 // components/Calculator/hooks/useCalculatorQuote.ts
 
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import {
     calcQuote,
     calcVolumeFromArea,
@@ -13,7 +13,6 @@ import {
     CASETON_FACTORS
 } from '@/config/business';
 import { fmtMXN } from '@/lib/utils';
-import { trackViewContent } from '@/lib/pixel';
 import {
     createKnownVolumeSchema,
     DimensionsSchema,
@@ -23,9 +22,9 @@ import {
     type AssistVolumeMode,
     type CalculatorMode,
     type CofferedSize,
+    type ConcreteOption,
     type ConcreteType,
     type QuoteBreakdown,
-    type Strength,
     type QuoteWarning,
 } from '../types';
 
@@ -40,8 +39,9 @@ type QuoteInput = {
     thicknessByArea: string;
     hasCoffered: 'yes' | 'no';
     cofferedSize: CofferedSize | null;
-    strength: Strength;
+    strength: ConcreteOption;
     type: ConcreteType;
+    hasFiber: boolean;
 };
 
 
@@ -71,6 +71,7 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
         cofferedSize,
         strength,
         type,
+        hasFiber,
     } = input;
 
     const core = useMemo(() => {
@@ -112,14 +113,14 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
                 coefficient = COFFERED_SPECS[cofferedSize].coefficient;
             }
 
-            // 2. Definir valor de respaldo (Dummy) para Zod
+            // 2. Grosor nominal de referencia para validación de losa aligerada
             // Usamos el grosor de la losa de 7cm (12cm total) como base segura
-            const defaultDummyThickness = String(COFFERED_SPECS['7'].totalThicknessCm);
+            const defaultCofferedThickness = String(COFFERED_SPECS['7'].totalThicknessCm);
 
             if (volumeMode === 'dimensions') {
-                // Inyectar valor dummy si es aligerada
+                // Usar grosor de referencia si es aligerada
                 const inputThickness = hasCofferedSlab
-                    ? (effectiveThicknessCm > 0 ? String(effectiveThicknessCm) : defaultDummyThickness)
+                    ? (effectiveThicknessCm > 0 ? String(effectiveThicknessCm) : defaultCofferedThickness)
                     : thicknessByDims;
 
                 const result = DimensionsSchema.safeParse({
@@ -158,7 +159,7 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
                         // Losa sólida
                         const tM = t / 100;
                         calculationMetadata = {
-                            formula: `${areaM2.toFixed(2)} m² × ${tM.toFixed(2)} m`,
+                            formula: `${areaM2.toFixed(2)} m² × ${tM} m × ${CASETON_FACTORS.solidSlab}`,
                             factorUsed: CASETON_FACTORS.solidSlab,
                             effectiveThickness: t
                         };
@@ -167,7 +168,7 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
             } else {
                 // Modo Área
                 const inputThickness = hasCofferedSlab
-                    ? (effectiveThicknessCm > 0 ? String(effectiveThicknessCm) : defaultDummyThickness)
+                    ? (effectiveThicknessCm > 0 ? String(effectiveThicknessCm) : defaultCofferedThickness)
                     : thicknessByArea;
 
                 const result = AreaSchema.safeParse({
@@ -200,7 +201,7 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
                     } else {
                         const tM = t / 100;
                         calculationMetadata = {
-                            formula: `${a.toFixed(2)} m² × ${tM.toFixed(2)} m`,
+                            formula: `${a.toFixed(2)} m² × ${tM} m × ${CASETON_FACTORS.solidSlab}`,
                             factorUsed: CASETON_FACTORS.solidSlab,
                             effectiveThickness: t
                         };
@@ -218,7 +219,7 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
         }
 
         // 2. Calculate Quote (Business Logic)
-        const q = calcQuote(rawRequested, strength, type);
+        const q = calcQuote(rawRequested, strength, type, undefined, { hasFiber: Boolean(hasFiber) });
         q.calculationDetails = calculationMetadata;
 
         const {
@@ -273,14 +274,8 @@ export function useCalculatorQuote(input: QuoteInput): QuoteState {
         cofferedSize,
         strength,
         type,
+        hasFiber,
     ]);
-
-    // Track view content whenever quote total changes
-    useEffect(() => {
-        if (core.quote.total > 0) {
-            trackViewContent(core.quote.total);
-        }
-    }, [core.quote.total]);
 
     const canProceedToSummary = !core.volumeError && core.billedM3 > 0 && core.quote.total > 0;
     const unitPriceLabel = fmtMXN(core.quote.unitPricePerM3);

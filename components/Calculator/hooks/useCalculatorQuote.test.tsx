@@ -22,6 +22,7 @@ describe('useCalculatorQuote Hook', () => {
     cofferedSize: null,
     strength: '200' as const,
     type: 'direct' as const,
+    hasFiber: false,
   };
 
   it('should return empty state initially', () => {
@@ -46,6 +47,43 @@ describe('useCalculatorQuote Hook', () => {
     expect(result.current.quote.total).toBeGreaterThan(0);
     expect(result.current.volumeError).toBeNull();
     expect(result.current.canProceedToSummary).toBe(true);
+  });
+
+  it('breaks fiber out of the concrete unit price and splits VAT in the quote', () => {
+    const input = {
+      ...baseInput,
+      mode: 'knownM3' as const,
+      m3: '2',
+      hasFiber: true,
+    };
+
+    const { result } = renderHook(() => useCalculatorQuote(input));
+
+    expect(result.current.quote.hasFiber).toBe(true);
+    expect(result.current.quote.unitPricePerM3).toBe(3129.63);
+    expect(result.current.quote.fiberSubtotal).toBe(240.74);
+    expect(result.current.quote.subtotal).toBe(6500);
+    expect(result.current.quote.vat).toBe(520);
+    expect(result.current.quote.total).toBe(7020);
+  });
+
+  it('includes fiber in pumped quotes and splits VAT in the quote', () => {
+    const input = {
+      ...baseInput,
+      mode: 'knownM3' as const,
+      m3: '3',
+      type: 'pumped' as const,
+      hasFiber: true,
+    };
+
+    const { result } = renderHook(() => useCalculatorQuote(input));
+
+    expect(result.current.quote.hasFiber).toBe(true);
+    expect(result.current.quote.unitPricePerM3).toBe(3382.41);
+    expect(result.current.quote.fiberSubtotal).toBe(361.11);
+    expect(result.current.quote.subtotal).toBe(10508.33);
+    expect(result.current.quote.total).toBe(11349);
+    expect(result.current.quote.subtotal + result.current.quote.vat).toBe(11349);
   });
 
   it('should handle minimum volume warning', () => {
@@ -113,7 +151,7 @@ describe('useCalculatorQuote Hook', () => {
   });
 
   it('should apply coffered slab reduction factor', () => {
-    const size = '10'; // 10cm casetón
+    const size = '10' as const; // 10cm casetón
     const input = {
       ...baseInput,
       mode: 'assistM3' as const,
@@ -125,7 +163,7 @@ describe('useCalculatorQuote Hook', () => {
       // The hook handles the bypass, so any string here is fine if not 'yes'.
       thicknessByDims: '0',
       hasCoffered: 'yes' as const,
-      cofferedSize: size as any,
+      cofferedSize: size,
     };
 
     // Logic: 10 * 10 = 100 m2

@@ -2,15 +2,15 @@
 
 import { createContext, useContext, useMemo, useState, useCallback, type ReactNode } from 'react';
 import { useCalculatorState } from '../hooks/useCalculatorState';
-import { useQuoteCalculator } from '../../../hooks/useQuoteCalculator'; // Use the new Phase 1 hook
+import { useQuoteCalculator } from '@/hooks/useQuoteCalculator';
 import { CONCRETE_TYPES } from '@/config/business';
 import type { QuoteWarning } from '../types';
 
 // Helper types to infer return values
 type StateHook = ReturnType<typeof useCalculatorState>;
-type QuoteData = ReturnType<typeof useQuoteCalculator>;
+type QuoteCalculationResult = ReturnType<typeof useQuoteCalculator>;
 
-export type CalculatorContextType = StateHook & QuoteData & {
+export type CalculatorContextType = StateHook & QuoteCalculationResult & {
   isCalculating: boolean;
   simulateCalculation: (onComplete: () => void) => void;
   billedM3: number;
@@ -25,8 +25,8 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
   // 1. Get State (Now synced with Zustand)
   const state = useCalculatorState();
 
-  // 2. Get Calculation (Using the pure hook created in Phase 1)
-  const quoteData = useQuoteCalculator();
+  // 2. Get Calculation (Using the pure hook)
+  const quoteCalculation = useQuoteCalculator();
 
   const [isCalculating, setIsCalculating] = useState(false);
 
@@ -48,7 +48,7 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
       minM3ForType,
       roundedM3,
       isBelowMinimum,
-    } = quoteData.quote.volume;
+    } = quoteCalculation.quote.volume;
 
     // Determine Warnings
     let warning: QuoteWarning = null;
@@ -76,15 +76,17 @@ export function CalculatorProvider({ children }: { children: ReactNode }) {
 
     return {
       ...state,
-      ...quoteData,
+      ...quoteCalculation,
       billedM3: normalizedBilled,
       requestedM3: normalizedRequested,
-      volumeError: quoteData.isValid ? null : 'Revisa los datos', // Simplified error mapping
+      volumeError: state.mode
+        ? (quoteCalculation.volumeError || (quoteCalculation.isValid ? null : 'Revisa los datos'))
+        : null,
       volumeWarning: warning,
       isCalculating,
       simulateCalculation,
     };
-  }, [state, quoteData, isCalculating, simulateCalculation]);
+  }, [state, quoteCalculation, isCalculating, simulateCalculation]);
 
   return (
     <CalculatorContext.Provider value={value}>

@@ -9,7 +9,7 @@ import {
     type CofferedSize,
     type ConcreteType,
     type Step,
-    type Strength,
+    type ConcreteOption,
     type WorkTypeId,
 } from '../types';
 import { WORK_TYPES } from '@/config/business';
@@ -48,8 +48,9 @@ export function useCalculatorState() {
     }, [update]);
 
     const setVolumeMode = useCallback((volumeMode: AssistVolumeMode) => update({ volumeMode }), [update]);
-    const setStrength = useCallback((strength: Strength) => update({ strength }), [update]);
+    const setStrength = useCallback((strength: ConcreteOption) => update({ strength }), [update]);
     const setType = useCallback((type: ConcreteType) => update({ type }), [update]);
+    const setHasFiber = useCallback((hasFiber: boolean) => update({ hasFiber }), [update]);
     const setM3 = useCallback((m3: string) => update({ m3 }), [update]);
 
     const setWorkType = useCallback((workType: WorkTypeId | null) => {
@@ -89,6 +90,7 @@ export function useCalculatorState() {
         setVolumeMode,
         setStrength,
         setType,
+        setHasFiber,
         setM3,
         setWorkType,
         setLength,
