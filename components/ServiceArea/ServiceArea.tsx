@@ -3,6 +3,7 @@
 
 import { useState, useMemo } from "react";
 import { env } from "@/config/env";
+import { BUSINESS_INFO } from "@/config/business";
 import { getPhoneUrl, getWhatsAppUrl } from "@/lib/utils";
 import { WhatsAppIcon } from "@/components/ui/Icon/WhatsAppIcon";
 import styles from "./ServiceArea.module.scss";
@@ -15,7 +16,7 @@ export default function ServiceArea() {
 
   const phone = env.NEXT_PUBLIC_PHONE;
   const whatsapp = env.NEXT_PUBLIC_WHATSAPP_NUMBER;
-  const email = "contacto@concretodejuarez.com";
+  const email = BUSINESS_INFO.email;
 
   const links = useMemo(() => ({
     phone: getPhoneUrl(phone),
@@ -44,14 +45,24 @@ export default function ServiceArea() {
             <ul className={styles.contactList}>
               {/* 1. OFFICES */}
               <li className={styles.contactItem}>
-                <div className={styles.iconBox} aria-hidden="true">🏢</div>
+                <div className={styles.iconBox} aria-hidden="true">🏭</div>
                 <div className={styles.itemText}>
-                  <strong>Oficinas Centrales</strong>
+                  <strong>Nuestra Planta</strong>
                   <address className={styles.address}>
 
                     Turbosina 9410, entrada por calle Aeronáutica, <br />
-                    Ciudad Juárez, Chihuahua, 32695
+                    Col. {BUSINESS_INFO.address.colony}, C.P. {BUSINESS_INFO.address.postalCode} <br />
+                    {BUSINESS_INFO.address.city}, Chihuahua
                   </address>
+                  <a
+                    href={BUSINESS_INFO.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.textLink}
+                    aria-label="Abrir ubicación de la planta en Google Maps"
+                  >
+                    Ver en Google Maps ↗
+                  </a>
                 </div>
               </li>
 
