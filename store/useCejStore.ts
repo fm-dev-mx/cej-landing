@@ -7,7 +7,7 @@ import {
     type QuoteBreakdown,
     DEFAULT_CALCULATOR_STATE
 } from '@/components/Calculator/types';
-import { WORK_TYPES } from '@/config/business';
+import { getQuoteProductLabel, WORK_TYPES } from '@/config/business';
 
 export type QuoteItem = {
     id: string;
@@ -52,7 +52,7 @@ interface CejState {
     loadHistoryItemAsDraft: (item: QuoteItem) => void;
 
     // Cart Actions
-    addToCart: (quote: QuoteBreakdown) => void;
+    addToCart: (quote: QuoteBreakdown, inputs?: CalculatorState) => void;
     removeFromCart: (id: string) => void;
     clearCart: () => void;
 
@@ -93,28 +93,35 @@ export const useCejStore = create<CejState>()(
 
             loadHistoryItemAsDraft: (item) => {
                 set({
-                    currentDraft: { ...item.inputs, step: 3 }, // Jump to inputs step to verify volumes
+                    currentDraft: {
+                        ...DEFAULT_CALCULATOR_STATE,
+                        ...item.inputs,
+                        hasFiber: item.inputs.hasFiber ?? false,
+                        step: 3,
+                    }, // Jump to inputs step to verify volumes
                     isDrawerOpen: false, // Close drawer to show calculator
                     viewMode: item.config.mode // Switch to the mode used in that quote
                 });
             },
 
-            addToCart: (results) => {
+            addToCart: (results, calculatedInputs) => {
                 const state = get();
+                const inputs = calculatedInputs ?? state.currentDraft;
 
                 // Smart Naming: Resolve label from config or fallback
                 let workTypeLabel = 'Concreto';
-                if (state.currentDraft.workType) {
-                    const match = WORK_TYPES.find(w => w.id === state.currentDraft.workType);
+                if (inputs.workType) {
+                    const match = WORK_TYPES.find(w => w.id === inputs.workType);
                     if (match) workTypeLabel = match.label;
                 }
 
-                const label = `${workTypeLabel} f'c ${state.currentDraft.strength}`;
+                const productLabel = getQuoteProductLabel(inputs.strength);
+                const label = `${inputs.workType ? `${workTypeLabel} · ` : ''}${productLabel}${results.hasFiber ? ' + Fibra' : ''}`;
 
                 const newItem: QuoteItem = {
                     id: crypto.randomUUID(),
                     timestamp: Date.now(),
-                    inputs: { ...state.currentDraft },
+                    inputs: { ...inputs },
                     results,
                     config: {
                         mode: state.viewMode,

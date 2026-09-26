@@ -72,11 +72,11 @@ export function generateCartMessage(cart: QuoteItem[], name: string, folio: stri
 
     cart.forEach((item, index) => {
         const { results, config } = item;
-        const specs = results.strength ? `f'c ${results.strength}` : '';
-        message += `*Ítem ${index + 1}:* ${config.label || 'Concreto'} ${specs}\n`;
+        const label = config.label || String(results.strength);
+        message += `*Ítem ${index + 1}:* ${label}\n`;
         message += `   • Volumen: ${results.volume.billedM3.toFixed(2)} m³\n`;
         message += `   • Servicio: ${results.concreteType === 'pumped' ? 'Bomba' : 'Tiro Directo'}\n`;
-        message += `   • Subtotal: ${fmtMXN(results.total)}\n\n`;
+        message += `   • Total (IVA incluido): ${fmtMXN(results.total)}\n\n`;
     });
 
     const grandTotal = cart.reduce((acc, item) => acc + item.results.total, 0);
