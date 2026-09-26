@@ -1,5 +1,5 @@
 // components/Calculator/Calculator.test.tsx
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Calculator from './Calculator';
 import { useCejStore } from '@/store/useCejStore';
@@ -81,7 +81,7 @@ describe('Calculator UI Integration', () => {
     // 3. Step 4: Specs
     expect(screen.getByText(/Especificaciones del Concreto/i)).toBeInTheDocument();
 
-    const strengthSelect = screen.getByLabelText(/Resistencia/i);
+    const strengthSelect = screen.getByLabelText(/Producto y especificación/i);
     fireEvent.change(strengthSelect, { target: { value: '250' } });
 
     // Simulate Calculation (Async simulation)
@@ -95,6 +95,11 @@ describe('Calculator UI Integration', () => {
 
     expect(screen.getByText('5.00 m³')).toBeInTheDocument();
     expect(screen.getByText(/f’c 250/i)).toBeInTheDocument();
+    expect(screen.getByText('Precio Unitario')).toBeInTheDocument();
+    expect(screen.getByText('$3,025.00')).toBeInTheDocument();
+    expect(screen.getByText('$15,125.00')).toBeInTheDocument();
+    expect(screen.getByText('$1,210.00')).toBeInTheDocument();
+    expect(screen.getByText('$16,335.00')).toBeInTheDocument();
 
     const waBtn = screen.getByRole('button', { name: /Agendar por WhatsApp/i });
     expect(waBtn).toBeEnabled();
@@ -124,6 +129,78 @@ describe('Calculator UI Integration', () => {
     fireEvent.click(nextBtn);
 
     expect(screen.getByText(/Especificaciones del Concreto/i)).toBeInTheDocument();
+  });
+
+  it.each([
+    {
+      service: 'Tiro directo', volume: '2', concreteUnit: '$3,129.63',
+      amounts: ['$6,259.26', '$240.74', '$6,500.00', '$520.00', '$7,020.00'],
+    },
+    {
+      service: 'Servicio de Bomba', volume: '3', concreteUnit: '$3,382.41',
+      amounts: ['$10,147.22', '$361.11', '$10,508.33', '$840.67', '$11,349.00'],
+    },
+  ])('breaks fiber out with net prices and one IVA charge for $service', async ({ service, volume, concreteUnit, amounts }) => {
+    render(<Calculator />);
+
+    fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
+    fireEvent.change(screen.getByLabelText(/Volumen \(m³\)/i), { target: { value: volume } });
+    fireEvent.click(screen.getByRole('button', { name: /Siguiente/i }));
+    fireEvent.click(screen.getByRole('radio', { name: service }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /Agregar Fibra/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Ver Cotización Final/i }));
+
+    const ticket = within(await screen.findByRole('article', { name: 'Desglose de cotización' }, { timeout: 3000 }));
+    expect(ticket.getByText(`${Number(volume).toFixed(2)} m³ · ${concreteUnit}/m³ · sin IVA`)).toBeInTheDocument();
+    expect(ticket.getByText(`${Number(volume).toFixed(2)} m³ · $120.37/m³ · sin IVA`)).toBeInTheDocument();
+    for (const amount of amounts) {
+      expect(ticket.getByText(amount)).toBeInTheDocument();
+    }
+    expect(ticket.getByText('IVA (8%)')).toBeInTheDocument();
+  });
+
+  it('quotes MR 42.5 as a direct product at its one cubic meter minimum', async () => {
+    render(<Calculator />);
+
+    fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
+    fireEvent.change(screen.getByLabelText(/Volumen \(m³\)/i), { target: { value: '1' } });
+    fireEvent.click(screen.getByRole('button', { name: /Siguiente/i }));
+
+    fireEvent.change(screen.getByLabelText(/Producto y especificación/i), {
+      target: { value: 'MR 42.5' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Ver Cotización Final/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Cotización Lista/i)).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('1.00 m³')).toBeInTheDocument();
+    expect(screen.getByText(/MR 42\.5/i)).toBeInTheDocument();
+    expect(screen.getAllByText('$3,145.37')).toHaveLength(2);
+    expect(screen.getByText('$3,397.00')).toBeInTheDocument();
+  });
+
+  it('keeps fiber available with pumped service and switches direct-only products to direct', () => {
+    render(<Calculator />);
+
+    fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
+    fireEvent.change(screen.getByLabelText(/Volumen \(m³\)/i), { target: { value: '3' } });
+    fireEvent.click(screen.getByRole('button', { name: /Siguiente/i }));
+
+    const productSelect = screen.getByLabelText(/Producto y especificación/i);
+    const pumpedRadio = screen.getByRole('radio', { name: /Servicio de Bomba/i });
+    const fiberCheckbox = screen.getByRole('checkbox', { name: /Agregar Fibra/i });
+
+    fireEvent.click(fiberCheckbox);
+    fireEvent.click(pumpedRadio);
+    expect(pumpedRadio).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /Agregar Fibra/i })).toBeChecked();
+
+    fireEvent.change(productSelect, { target: { value: '150 3/8' } });
+    expect(screen.getByRole('radio', { name: /Tiro directo/i })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /Agregar Fibra/i })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /Servicio de Bomba/i })).toBeDisabled();
   });
 
   it('completes the flow using Assist Mode (Area)', () => {
@@ -159,11 +236,10 @@ describe('Calculator UI Integration', () => {
     const nextBtn = screen.getByRole('button', { name: /Siguiente/i });
     expect(nextBtn).toBeDisabled();
 
-    // UPDATED: The new context logic maps !isValid to this generic message
-    expect(screen.getByText(/Revisa los datos/i)).toBeInTheDocument();
+    expect(screen.getByText('El volumen debe ser mayor a 0.')).toBeInTheDocument();
   });
 
-  it('persists state to localStorage and rehydrates on reload', () => {
+  it('retains the draft when the calculator remounts in the same session', () => {
     const { unmount } = render(<Calculator />);
 
     fireEvent.click(screen.getByRole('radio', { name: /^S[íi]/i }));
@@ -172,7 +248,7 @@ describe('Calculator UI Integration', () => {
 
     unmount();
 
-    // Re-render: Zustand + LocalStorage should persist this
+    // The in-memory draft survives remounting; it is intentionally not persisted.
     render(<Calculator />);
 
     const volInputRestored = screen.getByLabelText(/Volumen \(m³\)/i);

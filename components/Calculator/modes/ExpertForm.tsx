@@ -2,13 +2,13 @@
 'use client';
 
 import { useCalculatorState } from '../hooks/useCalculatorState';
-import { useQuoteCalculator } from '../../../hooks/useQuoteCalculator';
+import { useQuoteCalculator } from '@/hooks/useQuoteCalculator';
 import { useCejStore } from '@/store/useCejStore';
 import { Input } from '@/components/ui/Input/Input';
 import { Select } from '@/components/ui/Select/Select';
 import { Button } from '@/components/ui/Button/Button';
-import { STRENGTHS, CONCRETE_TYPES } from '@/config/business';
-import { type Strength, type ConcreteType } from '../types';
+import { CONCRETE_OPTIONS, CONCRETE_TYPES, FIBER_PRICE_PER_M3, isConcreteOptionAvailable } from '@/config/business';
+import { type ConcreteOption, type ConcreteType } from '../types';
 import { fmtMXN } from '@/lib/utils';
 import styles from './ExpertForm.module.scss';
 
@@ -19,17 +19,18 @@ export default function ExpertForm() {
         width, setWidth,
         thicknessByDims, setThicknessByDims,
         strength, setStrength,
+        hasFiber, setHasFiber,
         type, setType,
         resetCalculator
     } = useCalculatorState();
 
-    const { quote, isValid } = useQuoteCalculator();
+    const { quote, isValid, inputs } = useQuoteCalculator('expert');
     const addToCart = useCejStore(s => s.addToCart);
 
     // 2. Handlers
     const handleAdd = () => {
         if (isValid) {
-            addToCart(quote);
+            addToCart(quote, inputs);
         }
     };
 
@@ -77,23 +78,52 @@ export default function ExpertForm() {
                     <div className={styles.row2}>
                         <Select
                             value={strength}
-                            onChange={(e) => setStrength(e.target.value as Strength)}
+                            aria-label="Producto y especificación"
+                            onChange={(e) => {
+                                const nextOption = e.target.value as ConcreteOption;
+                                setStrength(nextOption);
+                                if (type === 'pumped' && !isConcreteOptionAvailable(nextOption, 'pumped')) {
+                                    setType('direct');
+                                }
+                            }}
                             variant="light"
                         >
-                            {STRENGTHS.map(s => (
-                                <option key={s} value={s}>f'c {s}</option>
+                            {CONCRETE_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
                             ))}
                         </Select>
                         <Select
                             value={type}
-                            onChange={(e) => setType(e.target.value as ConcreteType)}
+                            aria-label="Tipo de servicio"
+                            onChange={(e) => {
+                                const nextType = e.target.value as ConcreteType;
+                                setType(nextType);
+                            }}
                             variant="light"
                         >
                             {CONCRETE_TYPES.map(t => (
-                                <option key={t.value} value={t.value}>{t.label}</option>
+                                <option
+                                    key={t.value}
+                                    value={t.value}
+                                    disabled={!isConcreteOptionAvailable(strength, t.value)}
+                                >
+                                    {t.label}
+                                </option>
                             ))}
                         </Select>
                     </div>
+                    <label className={styles.fiberOption} htmlFor="expert-has-fiber">
+                        <input
+                            id="expert-has-fiber"
+                            type="checkbox"
+                            checked={hasFiber}
+                            onChange={(event) => setHasFiber(event.target.checked)}
+                        />
+                        <span className={styles.fiberCopy}>
+                            Agregar Fibra
+                            <small className={styles.fiberPrice}>${FIBER_PRICE_PER_M3.toLocaleString('es-MX')}/m³ (IVA incluido)</small>
+                        </span>
+                    </label>
                 </div>
             </div>
 

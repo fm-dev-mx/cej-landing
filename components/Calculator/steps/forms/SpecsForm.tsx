@@ -3,22 +3,21 @@
 
 import { useCallback, type ChangeEvent } from 'react';
 import { useCalculatorContext } from '../../context/CalculatorContext';
-import { type Strength } from '../../types';
-import { STRENGTHS, CONCRETE_TYPES } from '@/config/business';
+import { type ConcreteOption } from '../../types';
+import { CONCRETE_OPTIONS, CONCRETE_TYPES, FIBER_PRICE_PER_M3, isConcreteOptionAvailable } from '@/config/business';
 import { Select } from '@/components/ui/Select/Select';
 import { SelectionCard } from '@/components/ui/SelectionCard/SelectionCard';
 import styles from '../../CalculatorSteps.module.scss';
 
 export function SpecsForm() {
-    const { strength, type, mode, setStrength, setType } = useCalculatorContext();
+    const { strength, type, hasFiber, mode, setStrength, setType, setHasFiber } = useCalculatorContext();
 
     const handleStrengthChange = useCallback(
         (e: ChangeEvent<HTMLSelectElement>) => {
-            const nextStrength = e.target.value as Strength;
-            setStrength(nextStrength);
+            const nextOption = e.target.value as ConcreteOption;
+            setStrength(nextOption);
 
-            // AUTO-ADJUST: If 100 or mortero 90 is selected and current type is pumped, switch to direct
-            if ((nextStrength === '100' || nextStrength === 'mortero 90') && type === 'pumped') {
+            if (type === 'pumped' && !isConcreteOptionAvailable(nextOption, 'pumped')) {
                 setType('direct');
             }
         },
@@ -28,11 +27,11 @@ export function SpecsForm() {
     return (
         <>
             <div className={styles.field}>
-                <label htmlFor="fck">Resistencia (f’c)</label>
-                <Select id="fck" value={strength} onChange={handleStrengthChange}>
-                    {STRENGTHS.map((s) => (
-                        <option key={s} value={s}>
-                            {s} kg/cm²
+                <label htmlFor="concrete-option">Producto y especificación</label>
+                <Select id="concrete-option" value={strength} onChange={handleStrengthChange}>
+                    {CONCRETE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                            {option.label}
                         </option>
                     ))}
                 </Select>
@@ -47,7 +46,7 @@ export function SpecsForm() {
                 <label>Tipo de servicio</label>
                 <div className={styles.selectionGrid}>
                     {CONCRETE_TYPES.map((t) => {
-                        const isDisabled = t.value === 'pumped' && (strength === '100' || strength === 'mortero 90');
+                        const isDisabled = !isConcreteOptionAvailable(strength, t.value);
                         return (
                             <SelectionCard
                                 key={t.value}
@@ -56,13 +55,31 @@ export function SpecsForm() {
                                 value={t.value}
                                 label={t.label}
                                 isSelected={type === t.value}
-                                onChange={() => setType(t.value)}
+                                onChange={() => {
+                                    setType(t.value);
+                                }}
                                 disabled={isDisabled}
                                 className={isDisabled ? styles.disabled : ''}
                             />
                         );
                     })}
                 </div>
+            </div>
+
+            <div className={styles.field}>
+                <label htmlFor="has-fiber">Adicional</label>
+                <label className={styles.radio} htmlFor="has-fiber">
+                    <input
+                        id="has-fiber"
+                        type="checkbox"
+                        checked={hasFiber}
+                        onChange={(event) => setHasFiber(event.target.checked)}
+                    />
+                    <span className={styles.fiberCopy}>
+                        Agregar Fibra
+                        <small className={styles.fiberPrice}>${FIBER_PRICE_PER_M3.toLocaleString('es-MX')}/m³ (IVA incluido)</small>
+                    </span>
+                </label>
             </div>
         </>
     );

@@ -1,7 +1,7 @@
 // components/Calculator/steps/Step5Summary.tsx
 'use client';
 
-import { useCallback, useState, useMemo, useEffect, type MouseEvent } from 'react';
+import { useCallback, useState, useMemo, type MouseEvent } from 'react';
 import { usePathname } from 'next/navigation';
 import { useCalculatorContext } from '../context/CalculatorContext';
 import { fmtMXN, getWhatsAppUrl, getPhoneUrl, generateQuoteId } from '@/lib/utils';
@@ -13,7 +13,9 @@ import {
     SUPPORT_PHONE_LABEL,
     WEBSITE_URL_LABEL,
     WORK_TYPES,
-    CONCRETE_TYPES
+    CONCRETE_TYPES,
+    FIBER_PRICE_PER_M3,
+    getQuoteProductLabel
 } from '@/config/business';
 import { Button } from '@/components/ui/Button/Button';
 import { LeadFormModal, type LeadQuoteDetails } from '../modals/LeadFormModal';
@@ -40,6 +42,7 @@ export function Step5Summary({ estimateLegend }: Props) {
         setStep,
         resetCalculator,
         strength,
+        hasFiber,
         type,
         workType,
         volumeMode,
@@ -51,6 +54,7 @@ export function Step5Summary({ estimateLegend }: Props) {
     } = useCalculatorContext();
 
     const unitPriceLabel = fmtMXN(quote.unitPricePerM3);
+    const fiberUnitPriceLabel = fmtMXN(billedM3 > 0 ? quote.fiberSubtotal / billedM3 : 0);
 
     const [showLeadModal, setShowLeadModal] = useState(false);
     const [folio] = useState(() => generateQuoteId());
@@ -70,9 +74,10 @@ export function Step5Summary({ estimateLegend }: Props) {
     const phone = env.NEXT_PUBLIC_PHONE;
     const phoneHref = getPhoneUrl(phone);
 
-    // UX: More descriptive product labels
+    // Keep the concrete and its optional additive distinct in the ticket details.
     const serviceTypeLabel = CONCRETE_TYPES.find(t => t.value === type)?.label ?? type;
-    const productLabel = `Concreto f’c ${strength} kg/cm²`;
+    const concreteLabel = getQuoteProductLabel(strength);
+    const productLabel = `${concreteLabel}${hasFiber ? ' con Fibra' : ''}`;
 
     const workTypeLabel = mode === 'knownM3'
         ? 'Por definir'
@@ -89,7 +94,7 @@ export function Step5Summary({ estimateLegend }: Props) {
             '@context': 'https://schema.org',
             '@type': 'Product',
             name: `${productLabel} - ${serviceTypeLabel}`,
-            description: `Suministro de concreto premezclado resistencia ${strength}, tipo ${serviceTypeLabel}. Ideal para ${workTypeLabel}.`,
+            description: `Suministro de ${productLabel}, tipo ${serviceTypeLabel}. Ideal para ${workTypeLabel}.`,
             brand: {
                 '@type': 'Brand',
                 name: env.NEXT_PUBLIC_BRAND_NAME
@@ -103,7 +108,7 @@ export function Step5Summary({ estimateLegend }: Props) {
                 priceValidUntil: expiryDate
             }
         };
-    }, [productLabel, serviceTypeLabel, strength, workTypeLabel, quote.total, creationDate, expiryDate]);
+    }, [productLabel, serviceTypeLabel, workTypeLabel, quote.total, creationDate, expiryDate]);
 
     const enrichedQuoteData = useMemo<LeadQuoteDetails>(() => {
         const specs =
@@ -239,7 +244,7 @@ export function Step5Summary({ estimateLegend }: Props) {
                             <div className={styles.specGrid}>
                                 <div className={styles.specItem}>
                                     <span className={styles.specLabel}>Producto</span>
-                                    <span className={styles.specValue}>{productLabel}</span>
+                                    <span className={styles.specValue}>{concreteLabel}</span>
                                 </div>
                                 <div className={styles.specItem}>
                                     <span className={styles.specLabel}>Tipo de Servicio</span>
@@ -249,6 +254,12 @@ export function Step5Summary({ estimateLegend }: Props) {
                                     <span className={styles.specLabel}>Aplicación</span>
                                     <span className={styles.specValue}>{workTypeLabel}</span>
                                 </div>
+                                {hasFiber && (
+                                    <div className={styles.specItem}>
+                                        <span className={styles.specLabel}>Adicional</span>
+                                        <span className={styles.specValue}>Fibra · ${FIBER_PRICE_PER_M3.toLocaleString('es-MX')}/m³ (IVA incluido)</span>
+                                    </div>
+                                )}
 
                                 {/* Volume Logic Display */}
                                 <div className={styles.specItem}>
@@ -294,12 +305,37 @@ export function Step5Summary({ estimateLegend }: Props) {
 
                         {/* Financials */}
                         <div className={styles.ticketRows}>
+                            {quote.hasFiber ? (
+                                <>
+                                    <div className={styles.row}>
+                                        <span className={`${styles.rowLabel} ${styles.lineItemLabel}`}>
+                                            Concreto
+                                            <small className={styles.lineItemDetail}>
+                                                {billedM3.toFixed(2)} m³ · {unitPriceLabel}/m³ · sin IVA
+                                            </small>
+                                        </span>
+                                        <span className={styles.rowValue}>
+                                            {fmtMXN(quote.subtotal - quote.fiberSubtotal)}
+                                        </span>
+                                    </div>
+                                    <div className={styles.row}>
+                                        <span className={`${styles.rowLabel} ${styles.lineItemLabel}`}>
+                                            Fibra
+                                            <small className={styles.lineItemDetail}>
+                                                {billedM3.toFixed(2)} m³ · {fiberUnitPriceLabel}/m³ · sin IVA
+                                            </small>
+                                        </span>
+                                        <span className={styles.rowValue}>{fmtMXN(quote.fiberSubtotal)}</span>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className={styles.row}>
+                                    <span className={styles.rowLabel}>Precio Unitario</span>
+                                    <span className={styles.rowValue}>{unitPriceLabel}</span>
+                                </div>
+                            )}
                             <div className={styles.row}>
-                                <span className={styles.rowLabel}>Precio Unitario</span>
-                                <span className={styles.rowValue}>{unitPriceLabel}</span>
-                            </div>
-                            <div className={styles.row}>
-                                <span className={styles.rowLabel}>Subtotal</span>
+                                <span className={styles.rowLabel}>Subtotal (sin IVA)</span>
                                 <span className={styles.rowValue}>
                                     {fmtMXN(quote.subtotal)}
                                 </span>
