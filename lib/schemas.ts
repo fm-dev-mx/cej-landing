@@ -1,5 +1,3 @@
-// lib/schemas.ts
-
 import { z } from 'zod';
 
 /**
@@ -80,7 +78,7 @@ export const LeadSchema = z.object({
     fb_event_id: z.string().optional(),
 
     privacy_accepted: z.literal(true, {
-        errorMap: () => ({ message: "Debes aceptar el aviso de privacidad" })
+        error: "Debes aceptar el aviso de privacidad"
     }),
 });
 
