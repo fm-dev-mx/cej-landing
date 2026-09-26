@@ -10,6 +10,7 @@ export function generateLocalBusinessSchema() {
         '@id': `${env.NEXT_PUBLIC_SITE_URL}/#org`,
         name: env.NEXT_PUBLIC_BRAND_NAME,
         url: env.NEXT_PUBLIC_SITE_URL,
+        hasMap: BUSINESS_INFO.mapsUrl,
         logo: `${env.NEXT_PUBLIC_SITE_URL}/logo-horizontal.png`,
         image: `${env.NEXT_PUBLIC_SITE_URL}/opengraph-image.webp`,
         description: 'Suministro de concreto premezclado, servicio de bombeo y asesoría técnica en Ciudad Juárez. Calidad certificada y entregas puntuales.',

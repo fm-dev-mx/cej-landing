@@ -28,17 +28,18 @@ export const BUSINESS_INFO = {
     name: env.NEXT_PUBLIC_BRAND_NAME,
     email: 'contacto@concretodejuarez.com',
     address: {
-        street: 'Av. Ejército Nacional 6225, Local 27',
-        colony: 'Centro Comercial San José',
+        street: 'Turbosina 9410, entrada por calle Aeronáutica',
+        colony: 'Jardines del Aeropuerto',
         city: 'Ciudad Juárez',
         region: 'CHIH',
-        postalCode: '32528',
+        postalCode: '32695',
         country: 'MX'
     },
     geo: {
-        lat: 31.7138,
-        lng: -106.4447
+        lat: 31.6230524,
+        lng: -106.4391408
     },
+    mapsUrl: 'https://maps.app.goo.gl/hUPx87qXPaBWTCt19',
     openingHours: [
         { dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], opens: '08:00', closes: '17:00' },
         { dayOfWeek: ['Saturday'], opens: '08:00', closes: '13:00' }
