@@ -1,2 +1,7 @@
 #!/bin/sh
+# fnm is not loaded in hook shells: put the default Node on PATH when missing.
+if ! command -v node >/dev/null 2>&1 && [ -d "$APPDATA/fnm/aliases/default" ]; then
+  PATH="$APPDATA/fnm/aliases/default:$PATH"
+  export PATH
+fi
 pnpm exec commitlint --edit "$1"
