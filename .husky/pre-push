@@ -1,3 +1,8 @@
 #!/bin/sh
+# fnm is not loaded in hook shells: put the default Node on PATH when missing.
+if ! command -v node >/dev/null 2>&1 && [ -d "$APPDATA/fnm/aliases/default" ]; then
+  PATH="$APPDATA/fnm/aliases/default:$PATH"
+  export PATH
+fi
 # Fast local confidence check. Full test suite remains enforced in CI.
 pnpm exec tsc --noEmit --incremental false

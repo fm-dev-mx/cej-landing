@@ -46,7 +46,7 @@ Use this workflow when the user asks to "prepare commits", "run gatekeeper", or 
 5. **Execution & Remediation (pwsh Friendly):**
    - Propose the exact `git commit` commands using multiple `-m` flags for the title and body to ensure PowerShell compatibility.
      _Example:_ `git commit -m "feat(ui): add button" -m "- components/Button.tsx: add component" -m "- styles/btn.css: add styles"`
-   - If the user authorizes AutoRun, execute them sequentially.
+   - Local commits on a branch need no confirmation: run them sequentially without asking. Never commit to `main`. Merging, deploying and pushing to `main` still need the owner (merges to `main` deploy to production).
    - **Auto-Fix Loop:** If the Husky `pre-commit` hook fails, pivot to the `/AUTO_FIX` workflow. **CRITICAL:** If `/AUTO_FIX` remediates an issue and modifies files, you MUST run `git add <files>` to restage them _before_ retrying the exact commit command.
 
 ## Success Criteria
@@ -60,4 +60,4 @@ Use this workflow when the user asks to "prepare commits", "run gatekeeper", or 
 
 - If commitlint fails, regenerate the message and retry.
 - If pre-commit fails, run `/AUTO_FIX`. Then `git add <fixed-files>`. Then retry.
-- If split boundaries are ambiguous or files are highly coupled, STOP and ask the user for direction.
+- If split boundaries are ambiguous or files are highly coupled, STOP and ask the user for direction. This is the only case that asks before a local commit.
