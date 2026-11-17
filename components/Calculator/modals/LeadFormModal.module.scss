@@ -147,3 +147,14 @@
     opacity: 1;
   }
 }
+
+.phoneGroup {
+  display: flex;
+  flex-direction: column;
+}
+.phoneHint {
+  font-size: 0.75rem;
+  color: var(--c-muted);
+  margin-top: 0.25rem;
+  text-align: right;
+}

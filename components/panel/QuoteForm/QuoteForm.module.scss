@@ -1,0 +1,30 @@
+.form {
+  display: grid;
+  gap: var(--sp-6);
+  fieldset {
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--sp-4);
+    display: grid;
+    gap: var(--sp-4);
+  }
+  legend {
+    font-size: var(--fs-lg);
+    font-weight: 700;
+  }
+  label {
+    display: grid;
+    gap: var(--sp-2);
+    font-weight: 600;
+  }
+  small {
+    font-weight: 400;
+  }
+  details {
+    padding: var(--sp-3);
+    background: var(--c-surface-light);
+  }
+  summary {
+    cursor: pointer;
+  }
+}

@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
 import { env } from "@/config/env";
 import { SEO_CONTENT } from "@/config/content";
 import "../styles/globals.scss";
@@ -11,8 +10,6 @@ export const viewport: Viewport = {
   initialScale: 1,
   themeColor: "#0e2240",
 };
-
-const GA_MEASUREMENT_ID = env.NEXT_PUBLIC_GA_ID;
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_SITE_URL),
@@ -70,49 +67,9 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const pixelId = env.NEXT_PUBLIC_PIXEL_ID;
-  const isProduction = process.env.NODE_ENV === "production";
-
   return (
     <html lang="es-MX">
       <body className="app-root">
-        {/* Scripts Section (GA & Pixel) */}
-        {isProduction && GA_MEASUREMENT_ID && (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script id="google-analytics" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${GA_MEASUREMENT_ID}', {
-                  page_path: window.location.pathname,
-                });
-              `}
-            </Script>
-          </>
-        )}
-
-        {isProduction && pixelId && (
-          <Script id="fb-pixel" strategy="afterInteractive">
-            {`
-             !function(f,b,e,v,n,t,s)
-             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-             n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-             if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-             n.queue=[];t=b.createElement(e);t.async=!0;
-             t.src=v;s=b.getElementsByTagName(e)[0];
-             s.parentNode.insertBefore(t,s)}(window, document,'script',
-             'https://connect.facebook.net/en_US/fbevents.js');
-             fbq('init', '${pixelId}');
-             fbq('track', 'PageView');
-           `}
-          </Script>
-        )}
-
         {children}
 
         <SpeedInsights />
