@@ -20,24 +20,34 @@ export async function panelSession() {
 }
 /**
  * Missing business facts for the session's company. The Meta destination is
- * readable by owners and admins only; for other roles, or on a read error, it
- * counts as not registered, which is the safe reading. Source-workbook control
- * totals have no storage yet, so they stay pending.
+ * readable by owners and admins only (RLS), so other roles get no claim about
+ * it rather than a false «no registrado». Source-workbook control totals have
+ * no storage yet, so they stay pending.
  */
 export async function loadPendingData(s: {
   db: Awaited<ReturnType<typeof requirePermission>>["db"];
   company: Awaited<ReturnType<typeof requirePermission>>["company"];
+  role: string;
 }) {
-  const { data } = await s.db
-    .from("marketing_destinations")
-    .select("dataset_id,api_version,verified,enabled")
-    .eq("company_id", s.company.id)
-    .maybeSingle();
-  return pendingData({
+  const canReadDestination = ["owner", "admin"].includes(s.role);
+  let destination = null;
+  if (canReadDestination) {
+    const { data, error } = await s.db
+      .from("marketing_destinations")
+      .select("dataset_id,api_version,verified,enabled")
+      .eq("company_id", s.company.id)
+      .maybeSingle();
+    if (error) throw new Error("read_failed");
+    destination = data;
+  }
+  const items = pendingData({
     company: s.company,
-    destination: data ?? null,
+    destination,
     sourceTotals: null,
   });
+  return canReadDestination
+    ? items
+    : items.filter((i) => i.key !== "meta_destination");
 }
 export async function loadTeam() {
   const s = await requirePermission("read");
