@@ -27,6 +27,8 @@ export type ImportMapping = {
   extraValues?: string[];
   /** Lines sharing a reference and customer form one order: total = sum, volume = non-extra sum. */
   groupByReference?: boolean;
+  /** Reviewed VAT rate (0–1) already included in the total column; the subtotal is derived from it, never priced. */
+  vatIncludedRate?: number;
 };
 export interface StagedRow {
   sheet: string;
@@ -215,6 +217,7 @@ export async function inspectWorkbook(
           address: cellText(read(mapping.address, "address")) || null,
           ...(mapping.status ? { source_status: cancelled ? "cancelled" : statusText || null, counts_in_totals: !cancelled } : {}),
           ...(mapping.lineKind ? { line_kind: extra ? "extra" : "principal" } : {}),
+          ...(mapping.total && mapping.vatIncludedRate !== undefined ? { vat_included_rate: mapping.vatIncludedRate } : {}),
           ...(Object.keys(provenance).length ? { provenance } : {}),
         };
         if (Number(mapped.volume) === 0 && mapped.volume !== null)

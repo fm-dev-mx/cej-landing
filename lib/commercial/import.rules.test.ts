@@ -42,6 +42,15 @@ describe("reviewed import rules", () => {
     expect(localMidnightIso("2026-07-15", "America/Ciudad_Juarez")).toBe("2026-07-15T00:00:00-06:00");
   });
 
+  it("carries the reviewed included VAT rate only when it is configured, without changing the total", async () => {
+    const rows = [[102, "Cliente Dos", "", 5, 10800, day("2026-03-02"), "Finalizado", "Bombeado"]];
+    const withVat = await inspectWorkbook(await book(rows), { ...mapping, vatIncludedRate: 0.08 });
+    expect(withVat.rows[0].mapped).toMatchObject({ total: 10800, vat_included_rate: 0.08 });
+    const without = await inspectWorkbook(await book(rows), mapping);
+    expect(without.rows[0].mapped).not.toHaveProperty("vat_included_rate");
+    expect(without.rows[0].row_hash).toBe(withVat.rows[0].row_hash);
+  });
+
   it("stages only listed sheets and accepts flagged cached formulas", async () => {
     const r = await inspectWorkbook(
       await book([[101, f("Cliente Uno"), "6560000001", 7, f(21000, "D2*2"), day("2026-03-02"), "Finalizado", "Bombeado"]]),
