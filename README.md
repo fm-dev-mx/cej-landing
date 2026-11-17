@@ -13,6 +13,38 @@ It’s designed as a **fast, scalable, and trackable MVP**, deployable to Vercel
 
 ---
 
+## Worktree layout
+
+The primary checkout is `D:/code/cej-landing`. Keep isolated worktrees under
+`D:/code/cej-landing-worktrees/<work-name>`, following the same sibling-folder
+convention as Celebra-me. Worktrees share this repository's Git history; they are
+not separate projects or deployment destinations.
+
+The first increment is on branch `feat/cej-first-increment` at
+`D:/code/cej-landing-worktrees/first-increment`. Run its commands from that folder.
+See [the execution record](docs/first-increment.md) for local setup, verification
+and remaining blockers, and [the cutover review](docs/cutover-review.md) for the
+production boundary. No production cutover has been executed.
+
+To add another isolated worktree, choose an unused work name and branch:
+
+```powershell
+git -C D:/code/cej-landing worktree add -b feat/<work-name> D:/code/cej-landing-worktrees/<work-name> main
+```
+
+Use `git worktree move` to relocate existing worktrees after stopping their local
+processes; preserve all uncommitted and untracked files.
+
+## Shared board
+
+Pending first-increment work is tracked in the `cej-landing` project of the
+[active local board](http://127.0.0.1:4320/), using
+`D:/code/celebra-me/tablero.config.json`. Objective T1419 cej-primer-incremento
+has six child tasks. See [the task index](docs/board-tracking-active.md) for fixed
+task numbers, dependencies, matching prompts and exact CLI commands. Preparation
+copies in the other configuration were cancelled with replacement references.
+Tasks remain unassigned; this integration does not dispatch agents or authorize Production.
+
 ## 🧩 Features
 
 ### 🧱 Concrete Calculator

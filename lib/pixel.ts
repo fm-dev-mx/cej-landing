@@ -1,54 +1,59 @@
 // path: lib/pixel.ts
-import { env } from '@/config/env';
+import { env } from "@/config/env";
 
 // Extend Window to support the Facebook Pixel function
 declare global {
-    interface Window {
-        fbq?: Fbq;
-    }
+  interface Window {
+    fbq?: Fbq;
+  }
 }
 
 type Fbq = {
-    (action: 'init', id: string): void;
-    (action: 'track', event: string, params?: Record<string, unknown>): void;
+  (action: "init", id: string): void;
+  (
+    action: "track",
+    event: string,
+    params?: Record<string, unknown>,
+    options?: { eventID: string },
+  ): void;
 };
 
 export const FB_PIXEL_ID = env.NEXT_PUBLIC_PIXEL_ID;
 
 const hasFbq = (): boolean =>
-    typeof window !== 'undefined' && typeof window.fbq === 'function';
+  typeof window !== "undefined" && typeof window.fbq === "function";
 
 /**
  * PageView – use it on route changes.
  */
 export const trackPageView = (): void => {
-    if (!hasFbq()) return;
-    window.fbq?.('track', 'PageView');
+  if (!hasFbq()) return;
+  window.fbq?.("track", "PageView");
 };
 
 /**
  * ViewContent – for example when the user sees the calculator result.
  */
 export const trackViewContent = (
-    value: number,
-    currency: string = 'MXN',
-    contentName?: string,
+  value: number,
+  currency: string = "MXN",
+  contentName?: string,
 ): void => {
-    if (!hasFbq()) return;
+  if (!hasFbq()) return;
 
-    window.fbq?.('track', 'ViewContent', {
-        value,
-        currency,
-        content_name: contentName,
-    });
+  window.fbq?.("track", "ViewContent", {
+    value,
+    currency,
+    content_name: contentName,
+  });
 };
 
 type LeadData = {
-    value: number;
-    currency: string;
-    content_name: string;
-    content_category?: string;
-    event_id?: string;
+  value: number;
+  currency: string;
+  content_name: string;
+  content_category?: string;
+  event_id?: string;
 };
 
 /**
@@ -58,47 +63,43 @@ type LeadData = {
  * matched later with Conversion API (CAPI) events on the server.
  */
 export const trackLead = ({
+  value,
+  currency,
+  content_name,
+  content_category = "Quote",
+  event_id,
+}: LeadData): void => {
+  if (!hasFbq()) return;
+
+  const payload: Record<string, unknown> = {
     value,
     currency,
     content_name,
-    content_category = 'Quote',
-    event_id,
-}: LeadData): void => {
-    if (!hasFbq()) return;
+    content_category,
+  };
 
-    const payload: Record<string, unknown> = {
-        value,
-        currency,
-        content_name,
-        content_category,
-    };
-
-    if (event_id) {
-        payload.event_id = event_id;
-    }
-
-    window.fbq?.('track', 'Lead', payload);
+  window.fbq?.(
+    "track",
+    "Lead",
+    payload,
+    event_id ? { eventID: event_id } : undefined,
+  );
 };
 
 export type ContactMethod =
-    | 'WhatsApp'
-    | 'Phone'
-    | 'Email'
-    | 'whatsapp'
-    | 'phone'
-    | 'email';
+  "WhatsApp" | "Phone" | "Email" | "whatsapp" | "phone" | "email";
 
 /**
  * Contact – mid/low value contact intent event.
  * It is sent with a normalized `method` parameter (lowercase).
  */
 export const trackContact = (method: ContactMethod): void => {
-    if (!hasFbq()) return;
+  if (!hasFbq()) return;
 
-    const normalized = method.toLowerCase() as 'whatsapp' | 'phone' | 'email';
+  const normalized = method.toLowerCase() as "whatsapp" | "phone" | "email";
 
-    window.fbq?.('track', 'Contact', {
-        content_name: normalized,
-        method: normalized,
-    });
+  window.fbq?.("track", "Contact", {
+    content_name: normalized,
+    method: normalized,
+  });
 };

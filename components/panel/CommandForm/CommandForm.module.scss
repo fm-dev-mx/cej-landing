@@ -1,0 +1,14 @@
+.form {
+  display: grid;
+  gap: var(--sp-4);
+  margin-block: var(--sp-4);
+}
+.field {
+  display: grid;
+  gap: var(--sp-2);
+  font-weight: 600;
+  small {
+    font-weight: 400;
+    color: var(--c-muted-strong);
+  }
+}

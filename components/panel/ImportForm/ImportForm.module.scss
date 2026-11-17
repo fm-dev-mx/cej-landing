@@ -1,0 +1,8 @@
+.form {
+  display: grid;
+  gap: var(--sp-4);
+  label {
+    display: grid;
+    gap: var(--sp-2);
+  }
+}
