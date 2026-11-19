@@ -24,7 +24,8 @@ import { dispatchTestOutbox } from "@/lib/commercial/outbox";
 import { quotePdf, quotePng } from "@/lib/commercial/exports";
 import { submitLead } from "@/app/actions/submitLead";
 import { env } from "@/config/env";
-import { loadChoices, loadTeam } from "@/lib/commercial/queries";
+import { listOrders, loadChoices, loadTeam } from "@/lib/commercial/queries";
+import Customers from "@/app/panel/clientes/page";
 
 const A = "ce000000-0000-4000-8000-000000000001",
   B = "ce000000-0000-4000-8000-000000000002";
@@ -630,6 +631,102 @@ describe.skipIf(!run)("isolated local Postgres commercial workflow", () => {
     const team = await loadTeam();
     expect(team.some((m) => m.label === "owner-a@cej.invalid")).toBe(true);
     expect(team.some((m) => m.label === "owner-b@cej.invalid")).toBe(false);
+  });
+  it("keeps current and legacy folios separate from phone and name matches", async () => {
+    await login();
+    const token = crypto.randomUUID();
+    const digits = String(Math.floor(Math.random() * 9000000) + 1000000);
+    const legacy = `8${digits}`;
+    const phone = `656${digits}`;
+    const person = await executeCommand({
+      kind: "customer",
+      name: `Search ${token} ${legacy}`,
+      phone,
+    });
+    const target = await executeCommand({
+      kind: "order",
+      customer_id: customer,
+      input,
+      address: "Synthetic search target",
+    });
+    const distractor = await executeCommand({
+      kind: "order",
+      customer_id: person.id,
+      input,
+      address: "Synthetic phone match",
+    });
+    const folio = `P-${digits}A`;
+    const update = await admin
+      .from("orders")
+      .update({
+        folio,
+        legacy_folio_raw: legacy,
+      })
+      .eq("id", target.id);
+    expect(update.error).toBeNull();
+
+    for (const q of [folio.toLowerCase(), digits, legacy]) {
+      const found = await listOrders({ q });
+      expect(found.orders.some((o) => o.id === target.id)).toBe(true);
+      expect(found.orders.some((o) => o.id === distractor.id)).toBe(false);
+    }
+    for (const q of [phone, `+52 (656) ${digits}`, `Search ${token}`]) {
+      const found = await listOrders({ q });
+      expect(found.orders.some((o) => o.id === distractor.id)).toBe(true);
+    }
+    const short = await listOrders({ q: phone.slice(0, 6) });
+    expect(short.orders.some((o) => o.id === distractor.id)).toBe(false);
+    const missing = await listOrders({ q: `P-${phone}` });
+    expect(missing.total).toBe(0);
+    expect((await listOrders({ q: folio, status: "completed" })).total).toBe(0);
+    await login("owner-b");
+    expect((await listOrders({ q: folio })).total).toBe(0);
+    await login();
+  });
+  it("does not let PostgREST punctuation alter customer or project filter structure", async () => {
+    await login();
+    const token = crypto.randomUUID();
+    const person = await executeCommand({
+      kind: "customer",
+      name: `Filter ${token}`,
+      phone: "",
+    });
+    const project = await executeCommand({
+      kind: "project",
+      customer_id: person.id,
+      name: `Filter ${token}`,
+      address: "Synthetic filter fixture",
+      responsible_id: owner,
+    });
+    const choices = await loadChoices({
+      customerTerm: `Filter, (${token}).`,
+      projectTerm: `Filter, (${token}).`,
+      customerId: person.id,
+    });
+    expect(choices.customerCount).toBe(1);
+    expect(choices.customers.map((c) => c.id)).toEqual([person.id]);
+    expect(choices.projectCount).toBe(1);
+    expect(choices.projects.map((p) => p.id)).toEqual([project.id]);
+    const attack = `${token}),id.not.is.null,or(display_name.ilike.*`;
+    const injected = await loadChoices({
+      customerTerm: attack,
+      projectTerm: attack,
+    });
+    expect(injected.customerCount).toBe(0);
+    expect(injected.projectCount).toBe(0);
+    // Run the page's real PostgREST query too; its returned count must stay scoped.
+    const page = await Customers({
+      searchParams: Promise.resolve({ q: attack }),
+    });
+    const countElement = page.props.children.find(
+      (child: { type?: string }) => child?.type === "p",
+    );
+    expect(countElement.props.children[0]).toBe(0);
+    await expect(
+      Customers({
+        searchParams: Promise.resolve({ q: `Filter, (${token}).` }),
+      }),
+    ).resolves.toBeTruthy();
   });
   it("leases test deliveries, retries API failure and never resends accepted facts", async () => {
     const { data: fact } = await admin
