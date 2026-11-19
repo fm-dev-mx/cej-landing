@@ -48,10 +48,10 @@ export default async function Settings() {
         <h2>Datos y condiciones para emisión formal</h2>
         <p>
           Referencia actual de la web: {BUSINESS_INFO.name};{" "}
-          {BUSINESS_INFO.address.street}, {BUSINESS_INFO.address.colony},{" "}
-          {BUSINESS_INFO.address.postalCode}. Vigencia declarada en código:{" "}
-          {QUOTE_VALIDITY_DAYS} días. Develop contiene otro domicilio; revisa el
-          dato real antes de autorizar.
+          {BUSINESS_INFO.address.street}, {BUSINESS_INFO.address.city}. Las
+          oficinas reciben clientes; la planta no recibe clientes. Vigencia
+          declarada en código: {QUOTE_VALIDITY_DAYS} días. Revisa los datos
+          capturados antes de validarlos.
         </p>
         {s.role === "owner" ? (
           <CommandForm

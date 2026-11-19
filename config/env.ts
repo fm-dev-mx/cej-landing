@@ -16,8 +16,8 @@ const envSchema = z.object({
 
     // Contact Information
     // We expect numbers in string format (e.g., "521656...")
-    NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().optional().default(''),
-    NEXT_PUBLIC_PHONE: z.string().optional().default(''),
+    NEXT_PUBLIC_WHATSAPP_NUMBER: z.string().optional().default('526562024139'),
+    NEXT_PUBLIC_PHONE: z.string().optional().default('656 202 4139'),
 
     // Site Metadata
     // Transform URL to remove trailing '/' if user accidentally adds it

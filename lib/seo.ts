@@ -2,7 +2,7 @@ import { env } from '@/config/env';
 import { BUSINESS_INFO } from '@/config/business';
 
 export function generateLocalBusinessSchema() {
-    const { address, geo, openingHours, email } = BUSINESS_INFO;
+    const { address, openingHours, email } = BUSINESS_INFO;
 
     return {
         '@context': 'https://schema.org',
@@ -21,13 +21,7 @@ export function generateLocalBusinessSchema() {
             streetAddress: address.street,
             addressLocality: address.city,
             addressRegion: address.region,
-            postalCode: address.postalCode,
             addressCountry: address.country,
-        },
-        geo: {
-            '@type': 'GeoCoordinates',
-            latitude: geo.lat,
-            longitude: geo.lng,
         },
         openingHoursSpecification: openingHours.map((schedule) => ({
             '@type': 'OpeningHoursSpecification',
