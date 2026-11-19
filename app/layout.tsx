@@ -2,8 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { env } from "@/config/env";
 import { SEO_CONTENT } from "@/config/content";
 import "../styles/globals.scss";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Analytics } from "@vercel/analytics/next";
+import Telemetry from "@/components/Telemetry";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -72,8 +71,7 @@ export default function RootLayout({
       <body className="app-root">
         {children}
 
-        <SpeedInsights />
-        <Analytics />
+        <Telemetry />
       </body>
     </html>
   );
