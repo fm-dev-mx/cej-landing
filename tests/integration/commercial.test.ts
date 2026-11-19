@@ -683,6 +683,30 @@ describe.skipIf(!run)("isolated local Postgres commercial workflow", () => {
     expect((await listOrders({ q: folio })).total).toBe(0);
     await login();
   });
+  it("finds imported and legacy alphanumeric folios", async () => {
+    await login();
+    const tag = `Z9${crypto.randomUUID().replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+    const order = await executeCommand({
+      kind: "order",
+      customer_id: customer,
+      input,
+      address: "Synthetic imported folio",
+    });
+    const folio = `H-${tag}`;
+    const legacy = `2024-${tag}`;
+    const update = await admin
+      .from("orders")
+      .update({ folio, legacy_folio_raw: legacy })
+      .eq("id", order.id);
+    expect(update.error).toBeNull();
+    for (const q of [folio, folio.toLowerCase(), legacy, tag.slice(0, 6)]) {
+      const found = await listOrders({ q });
+      expect(found.orders.some((o) => o.id === order.id)).toBe(true);
+    }
+    await login("owner-b");
+    expect((await listOrders({ q: folio })).total).toBe(0);
+    await login();
+  });
   it("does not let PostgREST punctuation alter customer or project filter structure", async () => {
     await login();
     const token = crypto.randomUUID();
