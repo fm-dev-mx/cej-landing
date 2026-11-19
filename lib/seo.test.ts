@@ -3,28 +3,23 @@ import { generateLocalBusinessSchema } from './seo';
 import { BUSINESS_INFO } from '@/config/business';
 
 describe('generateLocalBusinessSchema', () => {
-    it('generates schema with updated address, geo coordinates, and hasMap link', () => {
+    it('uses the customer office without borrowing the plant coordinates', () => {
         const schema = generateLocalBusinessSchema();
 
         expect(schema['@context']).toBe('https://schema.org');
         expect(schema['@type']).toBe('HomeAndConstructionBusiness');
         expect(schema.hasMap).toBe(BUSINESS_INFO.mapsUrl);
-        expect(schema.hasMap).toBe('https://maps.app.goo.gl/hUPx87qXPaBWTCt19');
+        expect(schema.hasMap).toBe('https://maps.app.goo.gl/u2BujWzBWw62vsibA');
 
         expect(schema.address).toEqual({
             '@type': 'PostalAddress',
-            streetAddress: 'Turbosina 9410, entrada por calle Aeronáutica',
+            streetAddress: 'Plaza Micaela, Gómez Morín 9321, local 6',
             addressLocality: 'Ciudad Juárez',
             addressRegion: 'CHIH',
-            postalCode: '32695',
             addressCountry: 'MX',
         });
 
-        expect(schema.geo).toEqual({
-            '@type': 'GeoCoordinates',
-            latitude: 31.6230524,
-            longitude: -106.4391408,
-        });
+        expect(schema).not.toHaveProperty('geo');
 
         expect(schema.areaServed).toEqual({
             '@type': 'City',

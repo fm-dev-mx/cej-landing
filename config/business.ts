@@ -28,18 +28,17 @@ export const BUSINESS_INFO = {
     name: env.NEXT_PUBLIC_BRAND_NAME,
     email: 'contacto@concretodejuarez.com',
     address: {
-        street: 'Turbosina 9410, entrada por calle Aeronáutica',
-        colony: 'Jardines del Aeropuerto',
+        street: 'Plaza Micaela, Gómez Morín 9321, local 6',
         city: 'Ciudad Juárez',
         region: 'CHIH',
-        postalCode: '32695',
         country: 'MX'
     },
-    geo: {
-        lat: 31.6230524,
-        lng: -106.4391408
+    mapsUrl: 'https://maps.app.goo.gl/u2BujWzBWw62vsibA',
+    plant: {
+        street: 'Turbosina 9410, entrada por calle Aeronáutica',
+        mapsUrl: 'https://maps.app.goo.gl/hUPx87qXPaBWTCt19',
+        receivesCustomers: false,
     },
-    mapsUrl: 'https://maps.app.goo.gl/hUPx87qXPaBWTCt19',
     openingHours: [
         { dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'], opens: '08:00', closes: '17:00' },
         { dayOfWeek: ['Saturday'], opens: '08:00', closes: '13:00' }

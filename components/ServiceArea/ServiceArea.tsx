@@ -47,11 +47,10 @@ export default function ServiceArea() {
               <li className={styles.contactItem}>
                 <div className={styles.iconBox} aria-hidden="true">🏭</div>
                 <div className={styles.itemText}>
-                  <strong>Nuestra Planta</strong>
+                  <strong>Oficinas · atención a clientes</strong>
                   <address className={styles.address}>
 
-                    Turbosina 9410, entrada por calle Aeronáutica, <br />
-                    Col. {BUSINESS_INFO.address.colony}, C.P. {BUSINESS_INFO.address.postalCode} <br />
+                    {BUSINESS_INFO.address.street}, <br />
                     {BUSINESS_INFO.address.city}, Chihuahua
                   </address>
                   <a
@@ -59,9 +58,26 @@ export default function ServiceArea() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.textLink}
-                    aria-label="Abrir ubicación de la planta en Google Maps"
+                    aria-label="Abrir ubicación de las oficinas en Google Maps"
                   >
                     Ver en Google Maps ↗
+                  </a>
+                </div>
+              </li>
+
+              <li className={styles.contactItem}>
+                <div className={styles.iconBox} aria-hidden="true">🏭</div>
+                <div className={styles.itemText}>
+                  <strong>Planta · no recibe clientes</strong>
+                  <p>{BUSINESS_INFO.plant.street}</p>
+                  <a
+                    href={BUSINESS_INFO.plant.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.textLink}
+                    aria-label="Abrir ubicación de la planta en Google Maps"
+                  >
+                    Ver planta en Google Maps ↗
                   </a>
                 </div>
               </li>
