@@ -4,8 +4,72 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { executeCommand } from "@/lib/commercial/service";
+import { executeCommand, previewQuote as previewQuoteService } from "@/lib/commercial/service";
 import { loadChoices } from "@/lib/commercial/queries";
+
+export interface QuotePreviewResult {
+  ok: boolean;
+  subtotal?: number;
+  vat?: number;
+  total?: number;
+  pending_tax?: boolean;
+  needs_approval?: boolean;
+  missing?: string;
+  message?: string;
+  pending?: { key: string; label: string; reason: string; effect: string }[];
+}
+
+export async function previewQuote(raw: unknown): Promise<QuotePreviewResult> {
+  try {
+    const p = raw as Record<string, unknown> | null;
+    if (!p || typeof p !== "object") {
+      return { ok: false, message: "Datos de cotización inválidos." };
+    }
+    const volume = Number(p.volume);
+    if (!volume || volume <= 0 || isNaN(volume)) {
+      return { ok: false, missing: "el volumen solicitado" };
+    }
+    const zone = p.zone === "samalayuca" ? "samalayuca" : "local";
+    if (zone === "samalayuca") {
+      const cap = Number(p.capacity);
+      if (!cap || cap <= 0 || isNaN(cap)) {
+        return { ok: false, missing: "la capacidad de transporte" };
+      }
+    }
+    const prepared = {
+      ...p,
+      volume,
+      zone,
+      capacity: zone === "samalayuca" ? Number(p.capacity) || 7 : 7,
+      freightRate: zone === "samalayuca" ? Number(p.freightRate) || 1500 : 1500,
+      truckReason:
+        typeof p.truckReason === "string" && p.truckReason.trim()
+          ? p.truckReason
+          : "Vista previa",
+      reason:
+        typeof p.reason === "string" && p.reason.trim()
+          ? p.reason
+          : "Vista previa",
+    };
+    const result = await previewQuoteService(prepared);
+    return { ok: true, ...result };
+  } catch (error) {
+    if (error instanceof Error && error.message === "price_unavailable") {
+      return {
+        ok: false,
+        message:
+          "No hay una tarifa para esa combinación de concreto y entrega.",
+      };
+    }
+    return {
+      ok: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "No se pudo calcular la vista previa.",
+    };
+  }
+}
 
 export async function lookupQuoteChoices(raw: unknown) {
   const input = z
@@ -83,6 +147,42 @@ export async function submitCommand(payload: unknown): Promise<ActionResult> {
         ),
       };
     const key = error instanceof Error ? error.message : "";
+    if (key === "offer_not_authorized") {
+      const p = payload as {
+        kind?: string;
+        input?: Record<string, unknown>;
+      } | null;
+      const input = p?.input;
+      const fields: Record<string, string> = {};
+      let specificMessage =
+        "La oferta necesita resolver sus pendientes y autorizaciones antes de crear el pedido.";
+      if (input) {
+        if (Number(input.discount) > 0) {
+          const msg =
+            "Este descuento necesita autorización de un administrador.";
+          fields["input.discount"] = msg;
+          specificMessage = msg;
+        } else if (
+          input.zone === "samalayuca" &&
+          Number(input.freightRate) !== 1500
+        ) {
+          const msg =
+            "Esta tarifa de flete fuera de catálogo necesita autorización de un administrador.";
+          fields["input.freightRate"] = msg;
+          specificMessage = msg;
+        } else if (input.zone === "samalayuca") {
+          const msg =
+            "El flete a Samalayuca tiene tratamiento de IVA pendiente de validación.";
+          fields["input.zone"] = msg;
+          specificMessage = msg;
+        }
+      }
+      return {
+        ok: false,
+        message: specificMessage,
+        fields: Object.keys(fields).length ? fields : undefined,
+      };
+    }
     return {
       ok: false,
       message:

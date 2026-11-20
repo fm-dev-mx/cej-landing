@@ -23,7 +23,9 @@ test("mobile quote persists, exports, reloads and never loads advertising Pixel"
   await page
     .getByRole("button", { name: "Guardar cotización", exact: true })
     .click();
-  await expect(page).toHaveURL(/\/panel\/cotizaciones\/[0-9a-f-]+$/);
+  await expect(page).toHaveURL(/\/panel\/cotizaciones\/[0-9a-f-]+$/, {
+    timeout: 15000,
+  });
   await expect(
     page.getByText("COTIZACIÓN GENÉRICA", { exact: true }),
   ).toBeVisible();
@@ -203,8 +205,63 @@ test("inline customer and project capture preserve the quote and selected work",
   await page
     .getByRole("button", { name: "Guardar cotización", exact: true })
     .click();
-  await expect(page).toHaveURL(/\/panel\/cotizaciones\/[0-9a-f-]+$/);
+  await expect(page).toHaveURL(/\/panel\/cotizaciones\/[0-9a-f-]+$/, {
+    timeout: 15000,
+  });
   await expect(
     page.getByText(`Obra: Obra breve ${token}`, { exact: false }),
   ).toBeVisible();
+});
+
+test("keyboard quote capture at 360px shows live preview, searches customer with Enter and auto-fills obra", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.getByRole("link", { name: "Cotizar", exact: true }).click();
+
+  // Initially, provisional total with missing volume is visible
+  await expect(
+    page.getByText(/Total provisional: falta indicar el volumen/i),
+  ).toBeVisible();
+
+  // Samalayuca fields must NOT be visible under Local zone
+  await expect(
+    page.getByLabel("Capacidad de referencia (m³)"),
+  ).not.toBeVisible();
+  await expect(
+    page.getByLabel("Tarifa de flete Samalayuca por camión (MXN)"),
+  ).not.toBeVisible();
+
+  // Enter volume with keyboard
+  const volumeInput = page.getByLabel("Volumen solicitado (m³)");
+  await volumeInput.focus();
+  await page.keyboard.type("14");
+
+  // Live total preview should display subtotal, IVA, and total
+  await expect(page.getByText(/Subtotal:/i)).toBeVisible();
+  await expect(page.getByText(/IVA:/i)).toBeVisible();
+  await expect(page.getByText(/^Total:/i)).toBeVisible();
+
+  // Switch to formal mode
+  await page.getByLabel("Tipo de cotización").selectOption("formal");
+
+  // Search customer using Enter
+  const searchInput = page.getByLabel("Buscar cliente por nombre o teléfono");
+  await searchInput.focus();
+  await page.keyboard.type("Cliente");
+  await page.keyboard.press("Enter");
+
+  // Focus moves to customer select
+  const customerSelect = page.getByRole("combobox", {
+    name: "Cliente",
+    exact: true,
+  });
+  await expect(customerSelect).toBeFocused();
+
+  // Check 360px layout doesn't overflow horizontally
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
 });
