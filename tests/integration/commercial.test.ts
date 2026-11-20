@@ -18,7 +18,7 @@ vi.mock("next/headers", () => ({
     set: (name: string, value: string) => jar.set(name, value),
   }),
 }));
-import { executeCommand } from "@/lib/commercial/service";
+import { executeCommand, previewQuote } from "@/lib/commercial/service";
 import { requirePermission } from "@/lib/auth/requirePermission";
 import { dispatchTestOutbox } from "@/lib/commercial/outbox";
 import { quotePdf, quotePng } from "@/lib/commercial/exports";
@@ -261,6 +261,21 @@ describe.skipIf(!run)("isolated local Postgres commercial workflow", () => {
       .eq("id", q.revision_id!)
       .single();
     const snapshot = rev!.snapshot as unknown as QuoteSnapshot;
+    const preview = await previewQuote({
+      ...input,
+      mode: "formal",
+      zone: "samalayuca",
+      capacity: 5,
+      trucks: 5,
+      truckReason: "Acceso validado",
+      discount: 100,
+      reason: "Excepción sintética",
+    });
+    expect(preview.subtotal).toBe(snapshot.subtotal);
+    expect(preview.vat).toBe(snapshot.vat);
+    expect(preview.total).toBe(snapshot.total);
+    expect(preview.pending_tax).toBe(snapshot.pending_tax);
+    expect(preview.needs_approval).toBe(snapshot.needs_approval);
     expect(snapshot.freight).toMatchObject({
       effective: 5,
       suggested: 4,

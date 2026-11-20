@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   CONCRETE_OPTIONS,
@@ -10,12 +10,16 @@ import { calcVolumeFromArea } from "@/lib/pricing";
 import {
   submitCommand,
   lookupQuoteChoices,
+  previewQuote,
   type ActionResult,
+  type QuotePreviewResult,
 } from "@/app/panel/actions";
+import { money } from "@/lib/commercial/quote";
 import type { QuoteInput } from "@/lib/commercial/schemas";
 import type { CofferedSize } from "@/components/Calculator/types";
 import CommandForm from "@/components/panel/CommandForm";
 import styles from "./QuoteForm.module.scss";
+
 interface Props {
   customers: {
     id: string;
@@ -37,6 +41,7 @@ interface Props {
   customerCount?: number;
   projectCount?: number;
 }
+
 export default function QuoteForm({
   customers,
   projects,
@@ -57,105 +62,243 @@ export default function QuoteForm({
     initial?.type ?? "direct",
   );
   const [customer, setCustomer] = useState(customerId ?? "");
+  const [selectedProject, setSelectedProject] = useState(projectId ?? "");
+  const [volume, setVolume] = useState(
+    initial?.volume !== undefined ? String(initial.volume) : "",
+  );
+  const [strength, setStrength] = useState(initial?.strength ?? "200");
+  const [hasFiber, setHasFiber] = useState(Boolean(initial?.hasFiber));
+  const [zone, setZone] = useState<"local" | "samalayuca">(
+    initial?.zone ?? "local",
+  );
+  const [capacity, setCapacity] = useState(
+    initial?.capacity !== undefined ? String(initial.capacity) : "7",
+  );
+  const [trucks, setTrucks] = useState(
+    initial?.trucks !== undefined ? String(initial.trucks) : "",
+  );
+  const [truckReason, setTruckReason] = useState(initial?.truckReason ?? "");
+  const [freightRate, setFreightRate] = useState(
+    initial?.freightRate !== undefined ? String(initial.freightRate) : "1500",
+  );
+  const [discount, setDiscount] = useState(
+    initial?.discount !== undefined ? String(initial.discount) : "0",
+  );
+  const [reason, setReason] = useState(initial?.reason ?? "");
+  const [lead, setLead] = useState(leadId !== undefined ? String(leadId) : "");
+  const [address, setAddress] = useState("");
+
   const [result, setResult] = useState<ActionResult | null>(null);
   const [pending, setPending] = useState(false);
   const locked = useRef(false);
   const router = useRouter();
+
   const [addedCustomers, setAddedCustomers] = useState<Props["customers"]>([]);
-  const [choices, setChoices] = useState({
+  const [searchChoices, setSearchChoices] = useState<{
+    customers: Props["customers"];
+    projects: Props["projects"];
+    customerCount: number;
+    projectCount: number;
+  } | null>(null);
+
+  const choices = searchChoices ?? {
     customers,
     projects,
     customerCount,
     projectCount,
-  });
+  };
   const [customerTerm, setCustomerTerm] = useState("");
   const [projectTerm, setProjectTerm] = useState("");
   const [lookupPending, setLookupPending] = useState(false);
   const [lookupError, setLookupError] = useState("");
   const lookupVersion = useRef(0);
+  const customerSelectRef = useRef<HTMLSelectElement>(null);
   const [addedProjects, setAddedProjects] = useState<Props["projects"]>([]);
-  const [selectedProject, setSelectedProject] = useState(projectId ?? "");
-  async function lookup(selectedCustomer = customer) {
-    const version = ++lookupVersion.current;
+
+  // Live total preview
+  const [preview, setPreview] = useState<QuotePreviewResult | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const previewSeq = useRef(0);
+
+  const volNum = Number(volume);
+  const capNum = Number(capacity);
+  const previewMissing =
+    !volume || isNaN(volNum) || volNum <= 0
+      ? "falta indicar el volumen solicitado"
+      : zone === "samalayuca" && (!capacity || isNaN(capNum) || capNum <= 0)
+        ? "falta indicar la capacidad de transporte"
+        : "";
+
+  useEffect(() => {
+    if (previewMissing) {
+      return;
+    }
+    const seq = ++previewSeq.current;
+
+    const timer = setTimeout(async () => {
+      setPreviewLoading(true);
+      try {
+        const res = await previewQuote({
+          volume: volNum,
+          strength,
+          type,
+          hasFiber,
+          zone,
+          capacity: zone === "samalayuca" ? Number(capacity) || 7 : 7,
+          trucks: zone === "samalayuca" && trucks ? Number(trucks) : undefined,
+          truckReason: zone === "samalayuca" ? truckReason : "",
+          freightRate:
+            zone === "samalayuca" ? Number(freightRate) || 1500 : 1500,
+          discount: Number(discount) || 0,
+          reason,
+          mode,
+        });
+        if (seq === previewSeq.current) {
+          if (res.ok) {
+            setPreview(res);
+          } else {
+            setPreview(null);
+          }
+        }
+      } catch {
+        if (seq === previewSeq.current) {
+          setPreview(null);
+        }
+      } finally {
+        if (seq === previewSeq.current) {
+          setPreviewLoading(false);
+        }
+      }
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [
+    previewMissing,
+    volNum,
+    strength,
+    type,
+    hasFiber,
+    zone,
+    capacity,
+    trucks,
+    truckReason,
+    freightRate,
+    discount,
+    reason,
+    mode,
+  ]);
+
+  async function lookup(selectedCustomer = customer, term = customerTerm) {
+    const v = ++lookupVersion.current;
     setLookupPending(true);
     setLookupError("");
     try {
-      const result = await lookupQuoteChoices({
-        customerTerm,
+      const res = await lookupQuoteChoices({
+        customerTerm: term,
         projectTerm,
         customerId: selectedCustomer || undefined,
       });
-      if (version === lookupVersion.current) setChoices(result);
+      if (v === lookupVersion.current) {
+        setSearchChoices(res);
+        if (selectedCustomer) {
+          const custProjects = [
+            ...res.projects,
+            ...addedProjects.filter((p) => p.customer_id === selectedCustomer),
+          ].filter((p) => p.customer_id === selectedCustomer);
+          if (custProjects.length > 0 && !selectedProject) {
+            setSelectedProject(custProjects[0].id);
+          }
+        }
+      }
+      return res;
     } catch {
-      if (version === lookupVersion.current)
+      if (v === lookupVersion.current)
         setLookupError(
           "No se pudo buscar. Conservamos tu captura; vuelve a intentar.",
         );
     } finally {
-      if (version === lookupVersion.current) setLookupPending(false);
+      if (v === lookupVersion.current) setLookupPending(false);
     }
   }
+
+  function handleCustomerSelect(
+    newCustomerId: string,
+    currentChoices = choices,
+  ) {
+    setCustomer(newCustomerId);
+    if (!newCustomerId) {
+      setSelectedProject("");
+      return;
+    }
+    const matchingProjects = [
+      ...currentChoices.projects,
+      ...addedProjects.filter((p) => p.customer_id === newCustomerId),
+    ].filter((p) => p.customer_id === newCustomerId);
+    if (matchingProjects.length > 0) {
+      setSelectedProject(matchingProjects[0].id);
+    } else {
+      setSelectedProject("");
+    }
+    void lookup(newCustomerId);
+  }
+
   const formRef = useRef<HTMLFormElement>(null);
   const [assisted, setAssisted] = useState("");
+
   function assist() {
     const f = new FormData(formRef.current!);
     const size = String(f.get("coffered")) as CofferedSize;
-    const volume = calcVolumeFromArea({
+    const calculatedVolume = calcVolumeFromArea({
       areaM2: Number(f.get("area")),
       hasCofferedSlab: true,
       cofferedSize: size,
     });
-    const input = formRef.current!.elements.namedItem(
-      "volume",
-    ) as HTMLInputElement;
-    if (volume > 0) {
-      input.value = String(volume);
+    if (calculatedVolume > 0) {
+      setVolume(String(calculatedVolume));
       setAssisted(
-        `Volumen geométrico: ${volume.toFixed(3)} m³. ${COFFERED_SPECS[size].label} es dimensión del casetón; no es espesor de concreto ni un producto agregado a la venta.`,
+        `Volumen geométrico: ${calculatedVolume.toFixed(3)} m³. ${COFFERED_SPECS[size].label} es dimensión del casetón; no es espesor de concreto ni un producto agregado a la venta.`,
       );
     }
   }
+
   async function save(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (locked.current) return;
     locked.current = true;
     setPending(true);
     setResult(null);
-    const f = new FormData(event.currentTarget);
-    const text = (key: string) => String(f.get(key) ?? "");
+
     const input = {
-      volume: Number(f.get("volume")),
-      strength: text("strength"),
+      volume: Number(volume),
+      strength,
       type,
-      hasFiber: f.has("hasFiber"),
-      zone: text("zone"),
-      capacity: Number(f.get("capacity")),
-      trucks: text("trucks") ? Number(f.get("trucks")) : undefined,
-      truckReason: text("truckReason"),
-      freightRate: Number(f.get("freightRate")),
-      discount: Number(f.get("discount")),
-      reason: text("reason"),
+      hasFiber,
+      zone,
+      capacity: zone === "samalayuca" ? Number(capacity) || 7 : 7,
+      trucks: zone === "samalayuca" && trucks ? Number(trucks) : undefined,
+      truckReason: zone === "samalayuca" ? truckReason : "",
+      freightRate: zone === "samalayuca" ? Number(freightRate) || 1500 : 1500,
+      discount: Number(discount) || 0,
+      reason,
       mode,
     };
     const identity =
       mode === "formal" || direct
         ? {
             customer_id: customer || undefined,
-            project_id: text("project") || undefined,
+            project_id: selectedProject || undefined,
           }
         : {};
     try {
       const response = await submitCommand(
         direct
-          ? { kind: "order", input, ...identity, address: text("address") }
+          ? { kind: "order", input, ...identity, address }
           : {
               kind: "quote",
               input,
               ...identity,
               ...(quoteId ? { id: quoteId, expected_version: version } : {}),
-              ...(mode === "formal" && text("lead")
-                ? { lead_id: Number(text("lead")) }
-                : {}),
+              ...(mode === "formal" && lead ? { lead_id: Number(lead) } : {}),
             },
       );
       setResult(response);
@@ -176,77 +319,85 @@ export default function QuoteForm({
       setPending(false);
     }
   }
+
   const error = (key: string) =>
     result?.fields?.[`input.${key}`] && (
       <small role="alert">{result.fields[`input.${key}`]}</small>
     );
+
   return (
     <>
       {(mode === "formal" || direct) && (
-        <details>
-          <summary>Alta breve de cliente sin perder la captura</summary>
-          <CommandForm
-            kind="customer"
-            fields={[
-              {
-                name: "name",
-                label: "Nombre del nuevo cliente",
-                required: true,
-              },
-              { name: "phone", label: "Teléfono del nuevo cliente (opcional)" },
-            ]}
-            label="Crear y seleccionar cliente"
-            onSaved={(r, data) => {
-              if (r.id) {
-                setAddedCustomers((prev) => [
-                  ...prev,
-                  {
+        <div className={styles.altasBreves}>
+          <details>
+            <summary>Alta breve de cliente sin perder la captura</summary>
+            <CommandForm
+              kind="customer"
+              fields={[
+                {
+                  name: "name",
+                  label: "Nombre del nuevo cliente",
+                  required: true,
+                },
+                {
+                  name: "phone",
+                  label: "Teléfono del nuevo cliente (opcional)",
+                },
+              ]}
+              label="Crear y seleccionar cliente"
+              onSaved={(r, data) => {
+                if (r.id) {
+                  const newCust = {
                     id: r.id!,
                     display_name: String(data.name),
                     primary_phone_norm: String(data.phone) || null,
-                  },
-                ]);
-                setCustomer(r.id);
-              }
-            }}
-          />
-        </details>
-      )}
-      {(mode === "formal" || direct) && customer && (
-        <details>
-          <summary>Alta breve de obra para el cliente seleccionado</summary>
-          <CommandForm
-            kind="project"
-            payload={{ customer_id: customer }}
-            fields={[
-              {
-                name: "name",
-                label: "Nombre de la nueva obra",
-                required: true,
-              },
-              {
-                name: "address",
-                label: "Dirección de la nueva obra",
-                required: true,
-              },
-            ]}
-            label="Crear y seleccionar obra"
-            onSaved={(r, data) => {
-              if (r.id) {
-                setAddedProjects((prev) => [
-                  ...prev,
+                  };
+                  setAddedCustomers((prev) => [...prev, newCust]);
+                  handleCustomerSelect(r.id!, {
+                    ...choices,
+                    customers: [newCust, ...choices.customers],
+                  });
+                }
+              }}
+            />
+          </details>
+          {customer && (
+            <details>
+              <summary>Alta breve de obra para el cliente seleccionado</summary>
+              <CommandForm
+                kind="project"
+                payload={{ customer_id: customer }}
+                fields={[
                   {
-                    id: r.id!,
-                    customer_id: customer,
-                    name: String(data.name),
-                    address: String(data.address),
+                    name: "name",
+                    label: "Nombre de la nueva obra",
+                    required: true,
                   },
-                ]);
-                setSelectedProject(r.id);
-              }
-            }}
-          />
-        </details>
+                  {
+                    name: "address",
+                    label: "Dirección de la nueva obra",
+                    required: true,
+                  },
+                ]}
+                label="Crear y seleccionar obra"
+                onSaved={(r, data) => {
+                  if (r.id) {
+                    setAddedProjects((prev) => [
+                      ...prev,
+                      {
+                        id: r.id!,
+                        customer_id: customer,
+                        name: String(data.name),
+                        address: String(data.address),
+                      },
+                    ]);
+                    setSelectedProject(r.id);
+                  }
+                }}
+              />
+            </details>
+          )}
+        </div>
       )}
       <form ref={formRef} onSubmit={save} className={styles.form}>
         {!quoteId && (
@@ -282,7 +433,8 @@ export default function QuoteForm({
                   min="1"
                   step="1"
                   name="lead"
-                  defaultValue={leadId}
+                  value={lead}
+                  onChange={(e) => setLead(e.target.value)}
                 />
                 <small>
                   Vincula solo una solicitud existente de este cliente. No es
@@ -295,6 +447,19 @@ export default function QuoteForm({
               <input
                 value={customerTerm}
                 onChange={(e) => setCustomerTerm(e.target.value)}
+                onKeyDown={async (e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    const res = await lookup(customer, customerTerm);
+                    customerSelectRef.current?.focus();
+                    if (res?.customers?.length === 1 && !customer) {
+                      handleCustomerSelect(res.customers[0].id, res);
+                    }
+                  } else if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    customerSelectRef.current?.focus();
+                  }
+                }}
               />
             </label>
             <button
@@ -306,18 +471,18 @@ export default function QuoteForm({
             </button>
             <p>
               Clientes: {choices.customers.length} de {choices.customerCount}.
-              Refina la búsqueda si faltan resultados.
+              {choices.customerCount > choices.customers.length &&
+                " Refina la búsqueda si faltan resultados."}
             </p>
             {lookupError && <p role="alert">{lookupError}</p>}
             <label>
               Cliente
               <select
+                ref={customerSelectRef}
                 required
                 value={customer}
                 onChange={(e) => {
-                  setCustomer(e.target.value);
-                  setSelectedProject("");
-                  void lookup(e.target.value);
+                  handleCustomerSelect(e.target.value);
                 }}
               >
                 <option value="">Selecciona un cliente</option>
@@ -341,11 +506,18 @@ export default function QuoteForm({
               <input
                 value={projectTerm}
                 onChange={(e) => setProjectTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void lookup(customer);
+                  }
+                }}
               />
             </label>
             <p>
-              Obras: {choices.projects.length} de {choices.projectCount}. Usa la
-              búsqueda para encontrar otras.
+              Obras: {choices.projects.length} de {choices.projectCount}.
+              {choices.projectCount > choices.projects.length &&
+                " Usa la búsqueda para encontrar otras."}
             </p>
             <label>
               Obra
@@ -379,7 +551,13 @@ export default function QuoteForm({
             {direct && (
               <label>
                 Dirección de entrega
-                <input name="address" required minLength={5} />
+                <input
+                  name="address"
+                  required
+                  minLength={5}
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
               </label>
             )}
           </fieldset>
@@ -394,7 +572,9 @@ export default function QuoteForm({
               min="0.001"
               step="any"
               required
-              defaultValue={initial?.volume}
+              value={volume}
+              onChange={(e) => setVolume(e.target.value)}
+              aria-invalid={Boolean(result?.fields?.["input.volume"])}
             />
             {error("volume")}
           </label>
@@ -431,7 +611,10 @@ export default function QuoteForm({
             <select
               key={type}
               name="strength"
-              defaultValue={initial?.strength ?? "200"}
+              value={strength}
+              onChange={(e) =>
+                setStrength(e.target.value as QuoteInput["strength"])
+              }
             >
               {CONCRETE_OPTIONS.filter((o) =>
                 isConcreteOptionAvailable(o.value, type),
@@ -446,52 +629,74 @@ export default function QuoteForm({
             <input
               type="checkbox"
               name="hasFiber"
-              defaultChecked={initial?.hasFiber}
+              checked={hasFiber}
+              onChange={(e) => setHasFiber(e.target.checked)}
             />{" "}
             Fibra de polipropileno · tarifa de catálogo por m³
           </label>
           <label>
             Zona
-            <select name="zone" defaultValue={initial?.zone ?? "local"}>
+            <select
+              name="zone"
+              value={zone}
+              onChange={(e) =>
+                setZone(e.target.value as "local" | "samalayuca")
+              }
+              aria-invalid={Boolean(result?.fields?.["input.zone"])}
+            >
               <option value="local">
                 Local · sin regla adicional de Samalayuca
               </option>
               <option value="samalayuca">Samalayuca</option>
             </select>
+            {error("zone")}
           </label>
-          <p>
-            Para Samalayuca: ceil(volumen / capacidad) + 1 camión si es
-            bombeado. El tratamiento de IVA pendiente deja la oferta en
-            borrador.
-          </p>
-          <label>
-            Capacidad de referencia (m³)
-            <input
-              type="number"
-              name="capacity"
-              min="0.001"
-              step="any"
-              required
-              defaultValue={initial?.capacity ?? 7}
-            />
-            {error("capacity")}
-          </label>
-          <label>
-            Camiones efectivos (opcional)
-            <input
-              type="number"
-              name="trucks"
-              min="1"
-              step="1"
-              defaultValue={initial?.trucks}
-            />
-            {error("trucks")}
-          </label>
-          <label>
-            Motivo del ajuste operativo
-            <input name="truckReason" defaultValue={initial?.truckReason} />
-            {error("truckReason")}
-          </label>
+          {zone === "samalayuca" && (
+            <>
+              <p>
+                Para Samalayuca: camiones necesarios según volumen y capacidad,
+                más uno si el servicio es bombeado. El tratamiento de IVA
+                pendiente deja la oferta en borrador.
+              </p>
+              <label>
+                Capacidad de referencia (m³)
+                <input
+                  type="number"
+                  name="capacity"
+                  min="0.001"
+                  step="any"
+                  required
+                  value={capacity}
+                  onChange={(e) => setCapacity(e.target.value)}
+                  aria-invalid={Boolean(result?.fields?.["input.capacity"])}
+                />
+                {error("capacity")}
+              </label>
+              <label>
+                Camiones efectivos (opcional)
+                <input
+                  type="number"
+                  name="trucks"
+                  min="1"
+                  step="1"
+                  value={trucks}
+                  onChange={(e) => setTrucks(e.target.value)}
+                  aria-invalid={Boolean(result?.fields?.["input.trucks"])}
+                />
+                {error("trucks")}
+              </label>
+              <label>
+                Motivo del ajuste operativo
+                <input
+                  name="truckReason"
+                  value={truckReason}
+                  onChange={(e) => setTruckReason(e.target.value)}
+                  aria-invalid={Boolean(result?.fields?.["input.truckReason"])}
+                />
+                {error("truckReason")}
+              </label>
+            </>
+          )}
         </fieldset>
         <fieldset>
           <legend>Precio y condiciones</legend>
@@ -499,18 +704,22 @@ export default function QuoteForm({
             Se calculan en servidor con el catálogo compartido de la web. Los
             cambios económicos requieren autorización de esta revisión.
           </p>
-          <label>
-            Tarifa de flete Samalayuca por camión (MXN)
-            <input
-              type="number"
-              name="freightRate"
-              min="0.01"
-              step="0.01"
-              required
-              defaultValue={initial?.freightRate ?? 1500}
-            />
-            {error("freightRate")}
-          </label>
+          {zone === "samalayuca" && (
+            <label>
+              Tarifa de flete Samalayuca por camión (MXN)
+              <input
+                type="number"
+                name="freightRate"
+                min="0.01"
+                step="0.01"
+                required
+                value={freightRate}
+                onChange={(e) => setFreightRate(e.target.value)}
+                aria-invalid={Boolean(result?.fields?.["input.freightRate"])}
+              />
+              {error("freightRate")}
+            </label>
+          )}
           <label>
             Descuento en concreto y fibra (MXN)
             <input
@@ -519,16 +728,60 @@ export default function QuoteForm({
               min="0"
               step="0.01"
               required
-              defaultValue={initial?.discount ?? 0}
+              value={discount}
+              onChange={(e) => setDiscount(e.target.value)}
+              aria-invalid={Boolean(result?.fields?.["input.discount"])}
             />
             {error("discount")}
           </label>
           <label>
             Motivo de excepción económica
-            <textarea name="reason" defaultValue={initial?.reason} />
+            <textarea
+              name="reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              aria-invalid={Boolean(result?.fields?.["input.reason"])}
+            />
             {error("reason")}
           </label>
         </fieldset>
+        <div className={styles.livePreview} aria-live="polite">
+          <h3 className={styles.previewHeading}>
+            {preview?.pending_tax
+              ? "Total provisional"
+              : "Vista previa del importe"}
+          </h3>
+          {previewMissing ? (
+            <p className={styles.previewProvisional}>
+              Total provisional: {previewMissing}
+            </p>
+          ) : preview?.ok ? (
+            <div className={styles.previewAmounts}>
+              <p>Subtotal: {money(preview.subtotal ?? 0)}</p>
+              <p>
+                IVA{preview.pending_tax ? " conocido (flete pendiente)" : ""}:{" "}
+                {money(preview.vat ?? 0)}
+              </p>
+              <p className={styles.previewTotal}>
+                Total{preview.pending_tax ? " provisional" : ""}:{" "}
+                {money(preview.total ?? 0)} MXN
+              </p>
+              {preview.pending_tax && (
+                <p className={styles.previewWarning}>
+                  El flete a Samalayuca tiene IVA pendiente de confirmación.
+                </p>
+              )}
+              {preview.needs_approval && (
+                <p className={styles.previewWarning}>
+                  Esta cotización requiere autorización de un administrador
+                  (descuento o tarifa fuera de catálogo).
+                </p>
+              )}
+            </div>
+          ) : previewLoading ? (
+            <p>Calculando total…</p>
+          ) : null}
+        </div>
         <button disabled={pending}>
           {pending
             ? "Guardando…"

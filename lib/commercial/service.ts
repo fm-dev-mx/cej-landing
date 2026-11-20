@@ -1,9 +1,30 @@
 import "server-only";
 import { requirePermission } from "@/lib/auth/requirePermission";
 import { createAdminClient } from "@/lib/supabase/server";
-import { commandSchema, customerInputSchema } from "./schemas";
+import { commandSchema, customerInputSchema, quoteInputSchema } from "./schemas";
 import { createSnapshot } from "./quote";
+import { snapshotPending } from "./pending";
 import type { Json } from "@/types/database";
+
+export async function previewQuote(raw: unknown) {
+  const session = await requirePermission("read");
+  const input = quoteInputSchema.parse(raw);
+  const snapshot = createSnapshot(input, session.company);
+  const pending = snapshotPending(snapshot);
+  return {
+    subtotal: snapshot.subtotal,
+    vat: snapshot.vat,
+    total: snapshot.total,
+    pending_tax: snapshot.pending_tax,
+    needs_approval: snapshot.needs_approval,
+    pending: pending.map((p) => ({
+      key: p.key,
+      label: p.label,
+      reason: p.reason,
+      effect: p.effect,
+    })),
+  };
+}
 
 export async function executeCommand(raw: unknown) {
   const input = commandSchema.parse(raw);
