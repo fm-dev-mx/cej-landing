@@ -1171,6 +1171,7 @@ export type Database = {
           ordered_at: string;
           payment_status: Database["public"]["Enums"]["payment_status_enum"];
           payments_summary_json: NonNullable<Json>;
+          pending_issues: Json;
           pricing_snapshot_json: NonNullable<Json>;
           product_id: string | null;
           project_id: string | null;
@@ -1228,6 +1229,7 @@ export type Database = {
           ordered_at?: string;
           payment_status?: Database["public"]["Enums"]["payment_status_enum"];
           payments_summary_json?: NonNullable<Json>;
+          pending_issues?: Json;
           pricing_snapshot_json?: NonNullable<Json>;
           product_id?: string | null;
           project_id?: string | null;
@@ -1284,6 +1286,7 @@ export type Database = {
           ordered_at?: string;
           payment_status?: Database["public"]["Enums"]["payment_status_enum"];
           payments_summary_json?: NonNullable<Json>;
+          pending_issues?: Json;
           pricing_snapshot_json?: NonNullable<Json>;
           product_id?: string | null;
           project_id?: string | null;

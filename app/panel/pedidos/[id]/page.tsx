@@ -48,6 +48,9 @@ export default async function OrderDetail({
     ? search.return
     : "/panel/pedidos";
   const payload = { id, expected_version: o.version };
+  const pendingIssues = Array.isArray(o.pending_issues)
+    ? (o.pending_issues as Array<{ code?: string; message?: string } | string>)
+    : [];
   return (
     <>
       <Link href={back}>Volver a los pedidos y filtros</Link>
@@ -58,6 +61,20 @@ export default async function OrderDetail({
           {o.projects?.name ?? "Sin obra"}
         </p>
         <p>Dirección: {o.delivery_address_text}</p>
+        {pendingIssues.length > 0 && (
+          <div role="status">
+            <p>
+              <strong>Datos pendientes del pedido (importación):</strong>
+            </p>
+            <ul>
+              {pendingIssues.map((iss, idx) => (
+                <li key={idx}>
+                  {typeof iss === "string" ? iss : iss.message || iss.code}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
         {orderAmountLines(o).map((line) => (
           <p key={line}>{line}</p>
         ))}

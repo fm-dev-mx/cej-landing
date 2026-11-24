@@ -122,4 +122,59 @@ describe("reviewed import rules", () => {
     expect(r.rows[2].issues.join()).toMatch(/sin pedido principal/);
     expect(r.rows.every((x) => x.issues.length > 0)).toBe(true);
   });
+
+  it("classifies pending issues (phone, empty formula, invalid volume, out of range, missing group total) and saves them in mapped.pending_issues", async () => {
+    const rows = [
+      [501, "Cliente Valido", "12345", 5, 10000, day("2026-03-02"), "Finalizado", "Bombeado"],
+      [502, "Cliente Formula", "6560000002", 4, f(undefined, "E2*1"), day("2026-03-02"), "Finalizado", "Bombeado"],
+      [503, "Cliente Volumen", "6560000003", 0, 10000, day("2026-03-02"), "Finalizado", "Bombeado"],
+      [504, "Cliente Rango", "6560000004", 5, 10000, day("2020-01-01"), "Finalizado", "Bombeado"],
+    ];
+    const r = await inspectWorkbook(await book(rows), mapping);
+    expect(r.rows).toHaveLength(4);
+
+    // 501: phone invalid
+    expect(r.rows[0].mapped?.pending_issues).toEqual([
+      { code: "phone_invalid", message: "Teléfono no normalizable; revisar código de país." },
+    ]);
+
+    // 502: formula empty
+    expect(r.rows[1].mapped?.pending_issues).toEqual([
+      { code: "formula_empty", message: "La columna E es fórmula sin valor guardado en origen; no se recalcula." },
+    ]);
+
+    // 503: volume invalid (0)
+    expect(r.rows[2].mapped?.pending_issues).toEqual([
+      { code: "amount_invalid", message: "El volumen debe ser positivo o desconocido." },
+    ]);
+
+    // 504: date out of range
+    expect(r.rows[3].mapped?.pending_issues).toEqual([
+      { code: "date_out_of_range", message: "Fecha del pedido fuera del periodo de la fuente; posible error de captura." },
+    ]);
+  });
+
+  it("classifies blocking issues (missing ref, missing customer, aggregate row, missing tz) without treating them as pending", async () => {
+    const rows = [
+      ["", "Cliente Sin Ref", "6560000001", 5, 10000, day("2026-03-02"), "Finalizado", "Bombeado"],
+      [602, "", "6560000002", 5, 10000, day("2026-03-02"), "Finalizado", "Bombeado"],
+      [603, "Cliente Agregado", "6560000003", 5, f(50000, "SUM(E1:E10)"), day("2026-03-02"), "Finalizado", "Bombeado"],
+      [604, "Cliente Sin Fecha", "6560000004", 5, 10000, null, "Finalizado", "Bombeado"],
+    ];
+    const r = await inspectWorkbook(await book(rows), mapping);
+    expect(r.rows).toHaveLength(4);
+
+    // Each of these rows has blocking issues, so mapped should not classify them as pending
+    expect(r.rows[0].issues.join()).toMatch(/referencia estable/);
+    expect(r.rows[0].mapped?.pending_issues).toBeUndefined();
+
+    expect(r.rows[1].issues.join()).toMatch(/nombre de cliente/);
+    expect(r.rows[1].mapped?.pending_issues).toBeUndefined();
+
+    expect(r.rows[2].issues.join()).toMatch(/suma otras filas/);
+    expect(r.rows[2].mapped?.pending_issues).toBeUndefined();
+
+    expect(r.rows[3].issues.join()).toMatch(/sin zona horaria/);
+    expect(r.rows[3].mapped?.pending_issues).toBeUndefined();
+  });
 });

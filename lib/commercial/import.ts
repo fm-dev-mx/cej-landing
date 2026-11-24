@@ -30,6 +30,88 @@ export type ImportMapping = {
   /** Reviewed VAT rate (0–1) already included in the total column; the subtotal is derived from it, never priced. */
   vatIncludedRate?: number;
 };
+export type PendingIssueCode =
+  | "phone_invalid"
+  | "amount_invalid"
+  | "formula_empty"
+  | "date_out_of_range"
+  | "grouped_line_without_total";
+
+export type BlockingIssueCode =
+  | "missing_reference"
+  | "aggregate_row"
+  | "missing_customer"
+  | "date_unparseable"
+  | "mapping_pending"
+  | "extra_without_principal"
+  | "conflicting_lines"
+  | "duplicate_row"
+  | "merged_into_another";
+
+export type IssueCode = PendingIssueCode | BlockingIssueCode;
+
+export interface IssueItem {
+  code: IssueCode;
+  message: string;
+}
+
+export function isPendingIssue(issue: string | IssueItem): boolean {
+  const text = typeof issue === "string" ? issue : issue.message;
+  return (
+    text.includes("Teléfono no normalizable") ||
+    text.includes("no contiene un número histórico válido") ||
+    text.includes("El volumen debe ser positivo") ||
+    text.includes("es fórmula sin valor guardado") ||
+    text.includes("fuera del periodo de la fuente") ||
+    text.includes("no tiene total; no se suma ni se estima")
+  );
+}
+
+export function classifyIssue(message: string): IssueItem {
+  if (message.includes("Falta referencia estable"))
+    return { code: "missing_reference", message };
+  if (message.includes("suma otras filas"))
+    return { code: "aggregate_row", message };
+  if (message.includes("Falta nombre de cliente"))
+    return { code: "missing_customer", message };
+  if (
+    message.includes("sin zona horaria confirmada") ||
+    message.includes("La fecha trae hora")
+  )
+    return { code: "date_unparseable", message };
+  if (message.includes("Mapeo pendiente"))
+    return { code: "mapping_pending", message };
+  if (
+    message.includes("sin pedido principal") ||
+    message.includes("solo tiene líneas «Extra»")
+  )
+    return { code: "extra_without_principal", message };
+  if (
+    message.includes("clientes distintos") ||
+    message.includes("tiene incidencias; resolverlas antes de promover")
+  )
+    return { code: "conflicting_lines", message };
+  if (message.includes("Contenido idéntico"))
+    return { code: "duplicate_row", message };
+  if (message.includes("se promueve con su línea principal"))
+    return { code: "merged_into_another", message };
+  if (message.includes("Teléfono no normalizable"))
+    return { code: "phone_invalid", message };
+  if (
+    message.includes("no contiene un número histórico válido") ||
+    message.includes("El volumen debe ser positivo")
+  )
+    return { code: "amount_invalid", message };
+  if (message.includes("es fórmula sin valor guardado"))
+    return { code: "formula_empty", message };
+  if (message.includes("fuera del periodo de la fuente"))
+    return { code: "date_out_of_range", message };
+  if (message.includes("no tiene total; no se suma ni se estima"))
+    return { code: "grouped_line_without_total", message };
+
+  return { code: "missing_reference", message };
+}
+
 export interface StagedRow {
   sheet: string;
   sheet_state: string;
@@ -222,6 +304,10 @@ export async function inspectWorkbook(
         };
         if (Number(mapped.volume) === 0 && mapped.volume !== null)
           issues.push("El volumen debe ser positivo o desconocido.");
+        const pendingIssues = issues.filter(isPendingIssue).map(classifyIssue);
+        if (pendingIssues.length > 0) {
+          mapped.pending_issues = pendingIssues;
+        }
       } else issues.push("Mapeo pendiente de revisión.");
       rows.push({
         sheet: sheet.name,
@@ -246,7 +332,21 @@ export async function inspectWorkbook(
         row.issues.push(
           `Contenido idéntico en ${group.length} filas de esta hoja; conciliar multiplicidad antes de promover.`,
         );
-  if (mapping?.groupByReference) groupLines(rows, mapping);
+  if (mapping?.groupByReference) {
+    groupLines(rows, mapping);
+    for (const row of rows) {
+      if (row.mapped) {
+        const pending = row.issues.filter(isPendingIssue).map(classifyIssue);
+        if (pending.length > 0) {
+          row.mapped = { ...row.mapped, pending_issues: pending };
+        } else if ("pending_issues" in row.mapped) {
+          const rest = { ...row.mapped };
+          delete rest.pending_issues;
+          row.mapped = rest;
+        }
+      }
+    }
+  }
   return {
     file_hash: hash(Buffer.from(bytes).toString("base64")),
     sheets,
