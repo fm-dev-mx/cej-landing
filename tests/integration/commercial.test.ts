@@ -627,11 +627,38 @@ describe.skipIf(!run)("isolated local Postgres commercial workflow", () => {
       row_id: newer.data!.id,
       expected_hash: changed.row_hash,
     });
-    // Promotion of updated row updates existing order without creating a new order
+    // A later file completes the empty total of the same order without creating another one
     expect(conflict.error).toBeNull();
     const updatedHistorical = await row((first.data as { id: string }).id);
     expect(updatedHistorical.total_with_vat).toBe(1);
+    expect(updatedHistorical.version).toBe(historical.version + 1);
     expect((conflict.data as { id: string }).id).toBe((first.data as { id: string }).id);
+    // The same reference with another total or another customer is a conflict, never an overwrite
+    for (const mapped of [
+      { ...staged.mapped, total: 2 },
+      { ...staged.mapped, total: 1, customer: "Otro Cliente Sintetico" },
+    ]) {
+      const other = { ...staged, row_hash: crypto.randomUUID(), mapped };
+      await admin.rpc("cej_command", {
+        c: A,
+        actor: owner,
+        kind: "stage",
+        p: JSON.parse(JSON.stringify({ ...(p as object), rows: [other] })) as Json,
+      });
+      const otherRow = await admin
+        .from("import_rows")
+        .select("id")
+        .eq("row_hash", other.row_hash)
+        .single();
+      const clash = await admin.rpc("cej_promote_import", {
+        c: A,
+        actor: owner,
+        row_id: otherRow.data!.id,
+        expected_hash: other.row_hash,
+      });
+      expect(clash.error?.message).toBe("import_conflict");
+    }
+    expect((await row((first.data as { id: string }).id)).total_with_vat).toBe(1);
   });
 
   it("handles tolerant promotion idempotency, completing pending fields and protecting manual captures", async () => {
@@ -654,6 +681,7 @@ describe.skipIf(!run)("isolated local Postgres commercial workflow", () => {
         volume: 6,
         total: null,
         address: "Calle Tolerancia 123",
+        issue_codes: ["formula_empty"],
         pending_issues: [
           { code: "formula_empty", message: "La columna E es fórmula sin valor guardado en origen; no se recalcula." },
         ],
@@ -710,6 +738,7 @@ describe.skipIf(!run)("isolated local Postgres commercial workflow", () => {
       mapped: {
         ...staged1.mapped,
         total: 18000,
+        issue_codes: [],
         pending_issues: [],
       },
       issues: [],
@@ -738,6 +767,9 @@ describe.skipIf(!run)("isolated local Postgres commercial workflow", () => {
     savedOrder = await row(orderId);
     expect(savedOrder.total_with_vat).toBe(18000);
     expect(savedOrder.pending_issues).toEqual([]);
+    // Both source rows stay traceable in the import log
+    const log = await admin.from("order_import_log").select("import_row_hash").eq("order_id", orderId);
+    expect(log.data?.map((l) => l.import_row_hash).sort()).toEqual([hash1, hash2].sort());
 
     // 3. Does not overwrite a value manually captured or edited by an operator
     // Simulate manual edit on order quantity
@@ -751,6 +783,7 @@ describe.skipIf(!run)("isolated local Postgres commercial workflow", () => {
         ...staged1.mapped,
         volume: 99, // file says 99, but manual capture is 15
         total: 18000,
+        issue_codes: [],
       },
       issues: [],
     };

@@ -39,11 +39,13 @@ export default async function PanelHome({
     c: s.company.id,
   });
   if (error || summaryError) throw new Error("read_failed");
-  const { count: ordersWithoutTotal } = await s.db
+  const { count: ordersWithoutTotal, error: withoutTotalError } = await s.db
     .from("orders")
     .select("*", { count: "exact", head: true })
     .eq("company_id", s.company.id)
+    .neq("order_status", "cancelled")
     .is("total_with_vat", null);
+  if (withoutTotalError) throw new Error("read_failed");
   const totals = summary as {
     requests: number;
     sales: number;

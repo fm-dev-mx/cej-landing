@@ -2,7 +2,7 @@ import { requirePermission } from "@/lib/auth/requirePermission";
 import ImportForm from "@/components/panel/ImportForm";
 import PendingData from "@/components/panel/PendingData";
 import { loadPendingData } from "@/lib/commercial/queries";
-import { isPendingIssue } from "@/lib/commercial/import";
+import { hasBlockingIssue } from "@/lib/commercial/import";
 import styles from "../../panel.module.scss";
 export default async function ImportsPage({
   searchParams,
@@ -25,13 +25,12 @@ export default async function ImportsPage({
   );
   const { data: stagedRows } = await s.db
     .from("import_rows")
-    .select("issues")
+    .select("issues,mapped")
     .eq("company_id", s.company.id)
     .eq("status", "staged");
   let stagedWithPending = 0;
   for (const r of stagedRows ?? []) {
-    const issues = (r.issues as string[]) || [];
-    if (issues.length > 0 && issues.every(isPendingIssue)) {
+    if (Array.isArray(r.issues) && r.issues.length > 0 && !hasBlockingIssue(r)) {
       stagedWithPending++;
     }
   }
@@ -53,10 +52,7 @@ export default async function ImportsPage({
       <PendingData items={pending} title="Conciliación pendiente" />
       <ul className={styles.list}>
         {data?.map((row) => {
-          const rowIssues = (row.issues as string[]) || [];
-          const hasBlocking =
-            !row.mapped ||
-            rowIssues.some((iss) => !isPendingIssue(iss));
+          const hasBlocking = hasBlockingIssue(row);
           return (
             <li key={row.id}>
               <h3>
