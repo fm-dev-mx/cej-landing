@@ -106,7 +106,8 @@ export interface ScheduleConflict {
 // Presentation only: same overlap rule as cej_command (half-open ranges), read-only.
 async function findScheduleConflicts(
   payload: unknown,
-): Promise<ScheduleConflict[]> {
+): Promise<ScheduleConflict[] | null> {
+  // null means the read failed, which is not the same as "no conflicts".
   const p = payload as {
     id?: unknown;
     start?: unknown;
@@ -120,7 +121,7 @@ async function findScheduleConflicts(
     return [];
   try {
     const s = await panelSession();
-    const { data } = await s.db
+    const { data, error } = await s.db
       .from("orders")
       .select("id,folio,scheduled_window_start,scheduled_window_end")
       .eq("company_id", s.company.id)
@@ -129,6 +130,7 @@ async function findScheduleConflicts(
       .lt("scheduled_window_start", p.end)
       .gt("scheduled_window_end", p.start)
       .order("scheduled_window_start");
+    if (error) return null;
     return (data ?? []).flatMap((o) =>
       o.scheduled_window_start && o.scheduled_window_end
         ? [
@@ -142,7 +144,7 @@ async function findScheduleConflicts(
         : [],
     );
   } catch {
-    return [];
+    return null;
   }
 }
 const errors: Record<string, string> = {
@@ -239,13 +241,19 @@ export async function submitCommand(payload: unknown): Promise<ActionResult> {
     }
     if (key === "schedule_overlap") {
       const conflicts = await findScheduleConflicts(payload);
+      // Without a list there is nothing to acknowledge: ask to retry instead of dead-ending.
+      if (!conflicts?.length)
+        return {
+          ok: false,
+          code: "schedule_overlap_unverified",
+          message:
+            "La ventana coincide con otro pedido, pero no pudimos cargar cuál. Vuelve a guardar para reintentar.",
+        };
       return {
         ok: false,
         code: key,
         conflicts,
-        message: conflicts.length
-          ? "La ventana coincide con otro pedido. Revisa el pedido que choca y confirma el cruce si corresponde."
-          : errors[key],
+        message: errors[key],
       };
     }
     if (key === "reschedule_reason_required")

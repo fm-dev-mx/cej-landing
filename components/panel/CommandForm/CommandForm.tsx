@@ -108,7 +108,8 @@ export default function CommandForm({
       const response = await submitCommand(data);
       setResult(response);
       if (response.conflicts?.length) setConflicts(response.conflicts);
-      else if (response.ok) setConflicts([]);
+      else if (response.ok || response.code === "schedule_overlap_unverified")
+        setConflicts([]);
       if (response.ok) {
         onSaved?.(response, data);
         if (destination)
@@ -127,7 +128,21 @@ export default function CommandForm({
     }
   }
   return (
-    <form className={styles.form} onSubmit={send} ref={formRef}>
+    <form
+      className={styles.form}
+      onSubmit={send}
+      ref={formRef}
+      onChange={(event) => {
+        // A new window invalidates the listed conflicts; the confirm box unmounts with them,
+        // so a ticked box can never acknowledge a different overlap.
+        const name = (event.target as unknown as HTMLInputElement).name;
+        if (
+          conflicts.length &&
+          fields.some((f) => f.name === name && f.type === "datetime-local")
+        )
+          setConflicts([]);
+      }}
+    >
       {fields
         .filter((field) => !field.showOnConflict || conflicts.length > 0)
         .map((field) => (
