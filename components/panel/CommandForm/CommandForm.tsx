@@ -1,7 +1,12 @@
 "use client";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { submitCommand, type ActionResult } from "@/app/panel/actions";
+import {
+  submitCommand,
+  type ActionResult,
+  type ScheduleConflict,
+} from "@/app/panel/actions";
 import styles from "./CommandForm.module.scss";
 
 export interface Field {
@@ -15,7 +20,19 @@ export interface Field {
   min?: number;
   options?: { value: string; label: string }[];
   hint?: string;
+  /** datetime-local prefill from an ISO instant, shown in the device's own time. */
+  isoValue?: string | null;
+  /** Rendered only after the server reports overlapping orders. */
+  showOnConflict?: boolean;
 }
+const pad = (n: number) => String(n).padStart(2, "0");
+function toLocalInput(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+const juarez = (iso: string) =>
+  new Date(iso).toLocaleString("es-MX", { timeZone: "America/Ciudad_Juarez" });
 interface Props {
   kind: string;
   payload?: Record<string, unknown>;
@@ -37,6 +54,20 @@ export default function CommandForm({
   const locked = useRef(false);
   const router = useRouter();
   const formId = useId();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [conflicts, setConflicts] = useState<ScheduleConflict[]>([]);
+  // Prefill once after mount: the server cannot know the device's time zone, and a later
+  // refresh (e.g. after a concurrent edit) must not overwrite what the person typed.
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form) return;
+    for (const field of fields) {
+      const input = form.elements.namedItem(field.name);
+      if (field.isoValue && input instanceof HTMLInputElement && !input.value)
+        input.value = toLocalInput(field.isoValue);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   async function send(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (locked.current) return;
@@ -76,6 +107,9 @@ export default function CommandForm({
     try {
       const response = await submitCommand(data);
       setResult(response);
+      if (response.conflicts?.length) setConflicts(response.conflicts);
+      else if (response.ok || response.code === "schedule_overlap_unverified")
+        setConflicts([]);
       if (response.ok) {
         onSaved?.(response, data);
         if (destination)
@@ -94,8 +128,24 @@ export default function CommandForm({
     }
   }
   return (
-    <form className={styles.form} onSubmit={send}>
-      {fields.map((field) => (
+    <form
+      className={styles.form}
+      onSubmit={send}
+      ref={formRef}
+      onChange={(event) => {
+        // A new window invalidates the listed conflicts; the confirm box unmounts with them,
+        // so a ticked box can never acknowledge a different overlap.
+        const name = (event.target as unknown as HTMLInputElement).name;
+        if (
+          conflicts.length &&
+          fields.some((f) => f.name === name && f.type === "datetime-local")
+        )
+          setConflicts([]);
+      }}
+    >
+      {fields
+        .filter((field) => !field.showOnConflict || conflicts.length > 0)
+        .map((field) => (
         <label className={styles.field} key={field.name}>
           <span id={`${formId}-${field.name}-label`}>{field.label}</span>
           {field.type === "select" ? (
@@ -158,10 +208,28 @@ export default function CommandForm({
           )}
         </label>
       ))}
+      {conflicts.length > 0 && (
+        <div role="group" aria-label="Pedidos que chocan con la ventana">
+          <p>Pedidos que chocan con esta ventana:</p>
+          <ul>
+            {conflicts.map((c) => (
+              <li key={c.id}>
+                <Link href={`/panel/pedidos/${c.id}`}>{c.folio}</Link>:{" "}
+                {juarez(c.start)} a {juarez(c.end)} · hora de Ciudad Juárez
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <button disabled={pending} type="submit">
         {pending ? "Guardando…" : label}
       </button>
       {result && <p role={result.ok ? "status" : "alert"}>{result.message}</p>}
+      {result?.code === "version_conflict" && (
+        <button type="button" onClick={() => router.refresh()}>
+          Actualizar
+        </button>
+      )}
     </form>
   );
 }

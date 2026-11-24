@@ -1083,10 +1083,14 @@ export type Database = {
           changed_by: string | null;
           company_id: string | null;
           from_status: Database["public"]["Enums"]["order_status_enum"] | null;
+          from_window_end: string | null;
+          from_window_start: string | null;
           id: string;
           order_id: string;
           reason: string | null;
           to_status: Database["public"]["Enums"]["order_status_enum"];
+          to_window_end: string | null;
+          to_window_start: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -1094,20 +1098,28 @@ export type Database = {
           changed_by?: string | null;
           company_id?: string | null;
           from_status?: Database["public"]["Enums"]["order_status_enum"] | null;
+          from_window_end?: string | null;
+          from_window_start?: string | null;
           id?: string;
           order_id: string;
           reason?: string | null;
           to_status: Database["public"]["Enums"]["order_status_enum"];
+          to_window_end?: string | null;
+          to_window_start?: string | null;
         };
         Update: {
           changed_at?: string;
           changed_by?: string | null;
           company_id?: string | null;
           from_status?: Database["public"]["Enums"]["order_status_enum"] | null;
+          from_window_end?: string | null;
+          from_window_start?: string | null;
           id?: string;
           order_id?: string;
           reason?: string | null;
           to_status?: Database["public"]["Enums"]["order_status_enum"];
+          to_window_end?: string | null;
+          to_window_start?: string | null;
         };
         Relationships: [
           {

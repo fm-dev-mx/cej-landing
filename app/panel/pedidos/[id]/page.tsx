@@ -5,6 +5,27 @@ import { panelSession } from "@/lib/commercial/queries";
 import { money, orderAmountLines } from "@/lib/commercial/quote";
 import CommandForm from "@/components/panel/CommandForm";
 import styles from "../../panel.module.scss";
+const when = (iso: string) =>
+  new Date(iso).toLocaleString("es-MX", { timeZone: "America/Ciudad_Juarez" });
+const windowText = (start: string, end: string) =>
+  `${when(start)} a ${when(end)}`;
+/** "de <ventana anterior> a <ventana nueva>" when a history row changed the window. */
+function windowChange(h: {
+  from_window_start: string | null;
+  from_window_end: string | null;
+  to_window_start: string | null;
+  to_window_end: string | null;
+}) {
+  if (!h.to_window_start || !h.to_window_end) return "";
+  const changed =
+    h.from_window_start !== h.to_window_start ||
+    h.from_window_end !== h.to_window_end;
+  if (!changed) return "";
+  const next = windowText(h.to_window_start, h.to_window_end);
+  return h.from_window_start && h.from_window_end
+    ? ` · ventana anterior: de ${windowText(h.from_window_start, h.from_window_end)} · ventana nueva: de ${next}`
+    : ` · ventana: de ${next}`;
+}
 export default async function OrderDetail({
   params,
   searchParams,
@@ -161,23 +182,28 @@ export default async function OrderDetail({
                     label: "Inicio (hora de tu dispositivo)",
                     type: "datetime-local",
                     required: true,
+                    isoValue: o.scheduled_window_start,
                   },
                   {
                     name: "end",
                     label: "Fin (hora de tu dispositivo)",
                     type: "datetime-local",
                     required: true,
+                    isoValue: o.scheduled_window_end,
                   },
                   {
                     name: "reason",
-                    label: "Motivo de programación",
-                    required: true,
+                    label: o.scheduled_window_start
+                      ? "Motivo del cambio de ventana"
+                      : "Motivo de programación (opcional)",
+                    required: Boolean(o.scheduled_window_start),
                   },
                   {
                     name: "acknowledge_conflicts",
                     label:
                       "Revisé los pedidos coincidentes y confirmo el cruce",
                     type: "checkbox",
+                    showOnConflict: true,
                   },
                 ]}
                 label="Guardar programación"
@@ -247,7 +273,7 @@ export default async function OrderDetail({
                     type: "select",
                     required: true,
                     options: [
-                      ...(o.order_status !== "draft"
+                      ...(o.order_status === "scheduled"
                         ? [{ value: "in_progress", label: "En entrega" }]
                         : []),
                       ...(["scheduled", "in_progress"].includes(o.order_status)
@@ -273,9 +299,10 @@ export default async function OrderDetail({
         <ul>
           {history.data?.map((h) => (
             <li key={h.id}>
-              {new Date(h.changed_at).toLocaleString("es-MX")} ·{" "}
+              {when(h.changed_at)} ·{" "}
               {h.from_status ? orderStatusLabels[h.from_status] : "Inicio"} →{" "}
-              {orderStatusLabels[h.to_status]} · {h.reason}
+              {orderStatusLabels[h.to_status]}
+              {windowChange(h)} · {h.reason}
             </li>
           ))}
         </ul>

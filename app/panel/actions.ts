@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { executeCommand, previewQuote as previewQuoteService } from "@/lib/commercial/service";
-import { loadChoices } from "@/lib/commercial/queries";
+import { loadChoices, panelSession } from "@/lib/commercial/queries";
 
 export interface QuotePreviewResult {
   ok: boolean;
@@ -92,13 +92,69 @@ export interface ActionResult {
   id?: string;
   folio?: string;
   revision_id?: string;
+  /** Stable error key so the form can offer the right recovery. */
+  code?: string;
+  /** Scheduled orders whose window overlaps the requested one. */
+  conflicts?: ScheduleConflict[];
+}
+export interface ScheduleConflict {
+  id: string;
+  folio: string;
+  start: string;
+  end: string;
+}
+// Presentation only: same overlap rule as cej_command (half-open ranges), read-only.
+async function findScheduleConflicts(
+  payload: unknown,
+): Promise<ScheduleConflict[] | null> {
+  // null means the read failed, which is not the same as "no conflicts".
+  const p = payload as {
+    id?: unknown;
+    start?: unknown;
+    end?: unknown;
+  } | null;
+  if (
+    typeof p?.id !== "string" ||
+    typeof p.start !== "string" ||
+    typeof p.end !== "string"
+  )
+    return [];
+  try {
+    const s = await panelSession();
+    const { data, error } = await s.db
+      .from("orders")
+      .select("id,folio,scheduled_window_start,scheduled_window_end")
+      .eq("company_id", s.company.id)
+      .eq("order_status", "scheduled")
+      .neq("id", p.id)
+      .lt("scheduled_window_start", p.end)
+      .gt("scheduled_window_end", p.start)
+      .order("scheduled_window_start");
+    if (error) return null;
+    return (data ?? []).flatMap((o) =>
+      o.scheduled_window_start && o.scheduled_window_end
+        ? [
+            {
+              id: o.id,
+              folio: o.folio,
+              start: o.scheduled_window_start,
+              end: o.scheduled_window_end,
+            },
+          ]
+        : [],
+    );
+  } catch {
+    return null;
+  }
 }
 const errors: Record<string, string> = {
   permission_denied: "Tu rol no permite esta acción.",
   version_conflict:
-    "Otra persona modificó este registro. Actualiza la ficha antes de continuar.",
+    "Otra persona modificó este registro. Actualiza la ficha; lo que escribiste se conserva.",
   schedule_overlap:
-    "La ventana coincide con otro pedido. Revisa la agenda y confirma el cruce si corresponde.",
+    "La ventana coincide con otro pedido. Revisa el pedido que choca y confirma el cruce si corresponde.",
+  reschedule_reason_required:
+    "Indica el motivo para cambiar la ventana de entrega.",
   truck_reason_required:
     "Indica por qué cambiaste la cantidad sugerida de camiones.",
   offer_not_authorized:
@@ -183,8 +239,33 @@ export async function submitCommand(payload: unknown): Promise<ActionResult> {
         fields: Object.keys(fields).length ? fields : undefined,
       };
     }
+    if (key === "schedule_overlap") {
+      const conflicts = await findScheduleConflicts(payload);
+      // Without a list there is nothing to acknowledge: ask to retry instead of dead-ending.
+      if (!conflicts?.length)
+        return {
+          ok: false,
+          code: "schedule_overlap_unverified",
+          message:
+            "La ventana coincide con otro pedido, pero no pudimos cargar cuál. Vuelve a guardar para reintentar.",
+        };
+      return {
+        ok: false,
+        code: key,
+        conflicts,
+        message: errors[key],
+      };
+    }
+    if (key === "reschedule_reason_required")
+      return {
+        ok: false,
+        code: key,
+        message: errors[key],
+        fields: { reason: errors[key] },
+      };
     return {
       ok: false,
+      code: key === "version_conflict" ? key : undefined,
       message:
         errors[key] ??
         (key.includes("duplicate key")
