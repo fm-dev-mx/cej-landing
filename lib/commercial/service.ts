@@ -98,6 +98,20 @@ export async function executeCommand(raw: unknown) {
     new Date(input.occurred_at).getTime() > Date.now()
   )
     throw new Error("future_request");
+  if (input.kind === "schedule") {
+    const { data: current, error: currentError } = await session.db
+      .from("orders")
+      .select("scheduled_window_start")
+      .eq("company_id", session.company.id)
+      .eq("id", input.id)
+      .maybeSingle();
+    if (currentError || !current) throw new Error("not_found");
+    if (current.scheduled_window_start) {
+      if (input.reason.length < 3) throw new Error("reschedule_reason_required");
+    } else if (!input.reason) {
+      payload.reason = "Programación inicial";
+    }
+  }
   if (input.kind === "payment") payload.kind = input.kind_payment;
   const { data, error } = await createAdminClient().rpc("cej_command", {
     c: session.company.id,

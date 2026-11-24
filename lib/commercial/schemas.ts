@@ -122,7 +122,8 @@ export const commandSchema = z.discriminatedUnion("kind", [
     expected_version: z.number().int().positive(),
     start: z.string().datetime({ offset: true }),
     end: z.string().datetime({ offset: true }),
-    reason: z.string().trim().min(3),
+    // Required only when an existing window changes; the service enforces that.
+    reason: z.string().trim(),
     acknowledge_conflicts: z.boolean(),
   }),
   z.object({
