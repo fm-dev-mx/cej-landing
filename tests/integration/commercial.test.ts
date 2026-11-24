@@ -627,7 +627,188 @@ describe.skipIf(!run)("isolated local Postgres commercial workflow", () => {
       row_id: newer.data!.id,
       expected_hash: changed.row_hash,
     });
-    expect(conflict.error?.message).toBe("import_conflict");
+    // A later file completes the empty total of the same order without creating another one
+    expect(conflict.error).toBeNull();
+    const updatedHistorical = await row((first.data as { id: string }).id);
+    expect(updatedHistorical.total_with_vat).toBe(1);
+    expect(updatedHistorical.version).toBe(historical.version + 1);
+    expect((conflict.data as { id: string }).id).toBe((first.data as { id: string }).id);
+    // The same reference with another total or another customer is a conflict, never an overwrite
+    for (const mapped of [
+      { ...staged.mapped, total: 2 },
+      { ...staged.mapped, total: 1, customer: "Otro Cliente Sintetico" },
+    ]) {
+      const other = { ...staged, row_hash: crypto.randomUUID(), mapped };
+      await admin.rpc("cej_command", {
+        c: A,
+        actor: owner,
+        kind: "stage",
+        p: JSON.parse(JSON.stringify({ ...(p as object), rows: [other] })) as Json,
+      });
+      const otherRow = await admin
+        .from("import_rows")
+        .select("id")
+        .eq("row_hash", other.row_hash)
+        .single();
+      const clash = await admin.rpc("cej_promote_import", {
+        c: A,
+        actor: owner,
+        row_id: otherRow.data!.id,
+        expected_hash: other.row_hash,
+      });
+      expect(clash.error?.message).toBe("import_conflict");
+    }
+    expect((await row((first.data as { id: string }).id)).total_with_vat).toBe(1);
+  });
+
+  it("handles tolerant promotion idempotency, completing pending fields and protecting manual captures", async () => {
+    await login();
+    const ref = `TOL-${crypto.randomUUID()}`;
+    const hash1 = crypto.randomUUID();
+    // 1. Initial stage with missing total and pending issue
+    const staged1 = {
+      sheet: "Hoja oculta",
+      sheet_state: "hidden",
+      row_number: 10,
+      hidden: true,
+      row_hash: hash1,
+      raw: { A: ref },
+      mapped: {
+        reference: ref,
+        customer: "Cliente Tolerante Sintetico",
+        phone: null,
+        ordered_at: "2024-03-01T10:00:00-07:00",
+        volume: 6,
+        total: null,
+        address: "Calle Tolerancia 123",
+        issue_codes: ["formula_empty"],
+        pending_issues: [
+          { code: "formula_empty", message: "La columna E es fórmula sin valor guardado en origen; no se recalcula." },
+        ],
+      },
+      issues: ["La columna E es fórmula sin valor guardado en origen; no se recalcula."],
+    };
+    const p1 = JSON.parse(
+      JSON.stringify({
+        source_name: "synthetic.xlsx",
+        file_hash: hash1,
+        rows: [staged1],
+      }),
+    ) as Json;
+
+    // Repeat staging twice (idempotent stage)
+    await admin.rpc("cej_command", { c: A, actor: owner, kind: "stage", p: p1 });
+    await admin.rpc("cej_command", { c: A, actor: owner, kind: "stage", p: p1 });
+
+    const row1 = (
+      await admin.from("import_rows").select("*").eq("row_hash", hash1).single()
+    ).data!;
+
+    // First promotion promotes despite pending issue
+    const promote1 = await admin.rpc("cej_promote_import", {
+      c: A,
+      actor: owner,
+      row_id: row1.id,
+      expected_hash: hash1,
+    });
+    expect(promote1.error).toBeNull();
+    const orderId = (promote1.data as { id: string }).id;
+
+    // Repeating promotion returns same order without creating new ones
+    const promoteAgain = await admin.rpc("cej_promote_import", {
+      c: A,
+      actor: owner,
+      row_id: row1.id,
+      expected_hash: hash1,
+    });
+    expect(promoteAgain.data).toEqual(promote1.data);
+
+    let savedOrder = await row(orderId);
+    expect(savedOrder.total_with_vat).toBeNull();
+    expect(savedOrder.quantity_m3).toBe(6);
+    expect(savedOrder.pending_issues).toEqual([
+      { code: "formula_empty", message: "La columna E es fórmula sin valor guardado en origen; no se recalcula." },
+    ]);
+
+    // 2. Loading later a corrected Excel completes pending fields without duplicating
+    const hash2 = crypto.randomUUID();
+    const stagedCorrected = {
+      ...staged1,
+      row_hash: hash2,
+      mapped: {
+        ...staged1.mapped,
+        total: 18000,
+        issue_codes: [],
+        pending_issues: [],
+      },
+      issues: [],
+    };
+    const p2 = JSON.parse(
+      JSON.stringify({
+        source_name: "synthetic.xlsx",
+        file_hash: hash2,
+        rows: [stagedCorrected],
+      }),
+    ) as Json;
+    await admin.rpc("cej_command", { c: A, actor: owner, kind: "stage", p: p2 });
+    const row2 = (
+      await admin.from("import_rows").select("*").eq("row_hash", hash2).single()
+    ).data!;
+
+    const promoteCorrected = await admin.rpc("cej_promote_import", {
+      c: A,
+      actor: owner,
+      row_id: row2.id,
+      expected_hash: hash2,
+    });
+    expect(promoteCorrected.error).toBeNull();
+    expect((promoteCorrected.data as { id: string }).id).toBe(orderId);
+
+    savedOrder = await row(orderId);
+    expect(savedOrder.total_with_vat).toBe(18000);
+    expect(savedOrder.pending_issues).toEqual([]);
+    // Both source rows stay traceable in the import log
+    const log = await admin.from("order_import_log").select("import_row_hash").eq("order_id", orderId);
+    expect(log.data?.map((l) => l.import_row_hash).sort()).toEqual([hash1, hash2].sort());
+
+    // 3. Does not overwrite a value manually captured or edited by an operator
+    // Simulate manual edit on order quantity
+    await admin.from("orders").update({ quantity_m3: 15 }).eq("id", orderId);
+
+    const hash3 = crypto.randomUUID();
+    const staged3 = {
+      ...staged1,
+      row_hash: hash3,
+      mapped: {
+        ...staged1.mapped,
+        volume: 99, // file says 99, but manual capture is 15
+        total: 18000,
+        issue_codes: [],
+      },
+      issues: [],
+    };
+    const p3 = JSON.parse(
+      JSON.stringify({
+        source_name: "synthetic.xlsx",
+        file_hash: hash3,
+        rows: [staged3],
+      }),
+    ) as Json;
+    await admin.rpc("cej_command", { c: A, actor: owner, kind: "stage", p: p3 });
+    const row3 = (
+      await admin.from("import_rows").select("*").eq("row_hash", hash3).single()
+    ).data!;
+
+    const promote3 = await admin.rpc("cej_promote_import", {
+      c: A,
+      actor: owner,
+      row_id: row3.id,
+      expected_hash: hash3,
+    });
+    expect(promote3.error).toBeNull();
+    savedOrder = await row(orderId);
+    // Preserves manual 15 m3 instead of overwriting with 99
+    expect(savedOrder.quantity_m3).toBe(15);
   });
   it("searches customers beyond the initial choice limit and exposes only company colleagues", async () => {
     await login();

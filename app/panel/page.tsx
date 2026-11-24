@@ -39,6 +39,13 @@ export default async function PanelHome({
     c: s.company.id,
   });
   if (error || summaryError) throw new Error("read_failed");
+  const { count: ordersWithoutTotal, error: withoutTotalError } = await s.db
+    .from("orders")
+    .select("*", { count: "exact", head: true })
+    .eq("company_id", s.company.id)
+    .neq("order_status", "cancelled")
+    .is("total_with_vat", null);
+  if (withoutTotalError) throw new Error("read_failed");
   const totals = summary as {
     requests: number;
     sales: number;
@@ -63,6 +70,9 @@ export default async function PanelHome({
           <p>
             Vendido: {money(totals.sold)} · cobrado: {money(totals.collected)} ·
             entregados: {totals.delivered}
+            {(ordersWithoutTotal ?? 0) > 0 && (
+              <> · {ordersWithoutTotal} pedidos sin total (no suman ni se estiman)</>
+            )}
           </p>
           <p>
             {totals.pending_events} intenciones de marketing pendientes.
